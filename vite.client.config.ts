@@ -7,7 +7,7 @@ export default defineConfig({
     minify: 'terser', // Use terser for better minification
     lib: {
       entry: {
-        'MMM-FamilyChores': './src/frontend/frontend.ts',
+        'MMM-FamilyChores': './src/frontend/register-frontend.ts',
       },
       formats: ['es'], // Output ES modules
     },

@@ -9,7 +9,7 @@ This is a standalone MagicMirror² module for family chore tracking, maintained 
 ## Architecture
 
 ### Module Structure
-- **Frontend**: TypeScript-based MagicMirror module (`src/frontend/frontend.ts`)
+- **Frontend**: TypeScript-based MagicMirror module (`src/frontend/frontend.ts` - module definition, `src/frontend/register-frontend.ts` - registration)
 - **Backend**: Node helper for data persistence (`src/backend/node-helper.ts`)
 - **Build System**: Vite for both client and node builds
 - **Testing**: Vitest with browser mode support

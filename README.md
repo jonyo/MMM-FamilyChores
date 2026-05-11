@@ -173,15 +173,18 @@ pnpm run test:ci        # Run tests for CI
 ```
 src/
 ├── frontend/
-│   └── frontend.ts          # Main module class
+│   ├── frontend.ts             # Module definition
+│   ├── register-frontend.ts    # Module registration
+│   └── frontend.test.ts        # Frontend tests
 ├── backend/
-│   └── node-helper.ts       # Node helper for data persistence
+│   ├── node-helper.ts          # Node helper for data persistence
+│   └── node-helper.test.ts     # Backend tests
 ├── types/
-│   ├── module.ts            # MagicMirror module types
-│   ├── config.ts            # Configuration types
-│   └── chore-types.ts       # Data structure types
+│   ├── module.ts               # MagicMirror module types
+│   ├── config.ts               # Configuration types
+│   └── chore-types.ts          # Data structure types
 └── constants/
-    └── socket-notifications.ts  # Socket notification constants
+    └── socket-notifications.ts # Socket notification constants
 ```
 
 ## Contributing

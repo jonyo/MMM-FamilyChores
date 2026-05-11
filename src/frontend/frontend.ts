@@ -1,16 +1,23 @@
 import { SocketNotifications } from '../constants/socket-notifications';
 import type { FamilyChoresData } from '../types/chore-types';
-import type { Config } from '../types/config';
+import type { FamilyChoresModule } from '../types/module';
 
-Module.register<Config>('MMM-FamilyChores', {
-  // Default module config
+// Export the module definition for testing and for use in frontend.ts
+export const Frontend: FamilyChoresModule = {
+  name: 'MMM-FamilyChores',
+  config: {
+    updateInterval: 60000,
+    dataFile: 'data.json',
+    adminPin: null,
+  },
+  file: ((filename: string) => filename) as (filename: string) => string,
+  sendSocketNotification: (() => {}) as () => void,
+  updateDom: (() => {}) as () => void,
   defaults: {
     updateInterval: 60000,
     dataFile: 'data.json',
     adminPin: null,
   },
-
-  // Module state
   choreData: null as FamilyChoresData | null,
 
   // MM function: this method is called when all modules are loaded and the system is ready to boot up.
@@ -62,10 +69,7 @@ Module.register<Config>('MMM-FamilyChores', {
   },
 
   // MM function: receives socket notifications from node helper
-  socketNotificationReceived(
-    notificationIdentifier: string,
-    payload: FamilyChoresData | { message: string }
-  ): void {
+  socketNotificationReceived(notificationIdentifier: string, payload: unknown): void {
     Log.debug(`${this.name} received socket notification: '${notificationIdentifier}'`);
 
     switch (notificationIdentifier) {
@@ -73,7 +77,7 @@ Module.register<Config>('MMM-FamilyChores', {
         Log.debug('Received config response');
         break;
       case SocketNotifications.CHORE_DATA:
-        this.choreData = payload;
+        this.choreData = payload as FamilyChoresData;
         this.updateDom();
         break;
       case SocketNotifications.PIN_ERROR:
@@ -96,4 +100,4 @@ Module.register<Config>('MMM-FamilyChores', {
     Log.debug(`${this.name} is loading data`);
     this.sendSocketNotification(SocketNotifications.CONFIG_REQUEST, this.config);
   },
-});
+};

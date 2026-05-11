@@ -1,68 +1,43 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FamilyChoresModule } from '../types/module';
+import { Frontend } from './frontend';
+
+// Mock Log global
+vi.stubGlobal('Log', {
+  info: vi.fn(),
+  log: vi.fn(),
+  error: vi.fn(),
+  warn: vi.fn(),
+  debug: vi.fn(),
+});
 
 describe('Frontend Tests', () => {
   let module: FamilyChoresModule;
+  let mockSendSocketNotification: ReturnType<typeof vi.fn>;
+  let mockUpdateDom: ReturnType<typeof vi.fn>;
+  let mockFile: ReturnType<typeof vi.fn>;
 
-  beforeEach(async () => {
-    // Clear previous mock calls
-    vi.clearAllMocks();
+  beforeEach(() => {
+    // Mock MagicMirror module methods with proper signatures
+    mockSendSocketNotification = vi.fn();
+    mockUpdateDom = vi.fn();
+    mockFile = vi.fn((filename: string) => filename);
 
-    // Create a simple module instance for testing
+    // Use the actual module definition and mock the MagicMirror methods
+    // Create a fresh copy to avoid spy pollution between tests
     module = {
-      name: 'MMM-FamilyChores',
-      config: {
-        updateInterval: 60000,
-        dataFile: 'data.json',
-        adminPin: null,
-      },
-      choreData: null,
-      sendSocketNotification: vi.fn(),
-      updateDom: vi.fn(),
-      file: vi.fn().mockReturnValue('css/mmm-familychores.css'),
-      defaults: {
-        updateInterval: 60000,
-        dataFile: 'data.json',
-        adminPin: null,
-      },
-      getStyles: vi.fn().mockReturnValue(['css/mmm-familychores.css']),
-      getDom: vi.fn().mockImplementation(() => {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'MMM-FamilyChores';
-
-        if (!module.choreData) {
-          wrapper.innerHTML = '<div class="loading">Loading...</div><h2>Family Chores</h2>';
-        } else {
-          const totalChores = module.choreData.chores?.length || 0;
-          const completedCount = module.choreData.state?.completedToday?.length || 0;
-          wrapper.innerHTML = `
-            <h2>Family Chores</h2>
-            <div class="summary">
-              <div>Total Chores: <span class="total">${totalChores}</span></div>
-              <div>Completed Today: <span class="completed">${completedCount}</span></div>
-            </div>
-          `;
-        }
-
-        return wrapper;
-      }),
-      socketNotificationReceived: vi.fn().mockImplementation((notification, payload) => {
-        if (notification === 'CHORE_DATA') {
-          module.choreData = payload;
-          module.updateDom();
-        }
-      }),
-      loadData: vi.fn().mockImplementation(() => {
-        module.sendSocketNotification('CONFIG_REQUEST', module.config);
-      }),
-      scheduleUpdate: vi.fn().mockImplementation(() => {
-        // Use vi.useFakeTimers compatible approach with recurring timer
-        const interval = module.config.updateInterval || 60000;
-        setInterval(() => {
-          module.loadData();
-        }, interval);
-      }),
-      start: vi.fn(),
+      ...Frontend,
+      sendSocketNotification: mockSendSocketNotification as (
+        notification: string,
+        payload: unknown
+      ) => void,
+      updateDom: mockUpdateDom as () => void,
+      file: mockFile as (filename: string) => string,
+    };
+    module.config = {
+      updateInterval: 60000,
+      dataFile: 'data.json',
+      adminPin: null,
     };
   });
 
@@ -76,6 +51,7 @@ describe('Frontend Tests', () => {
     it('should return correct styles', () => {
       const styles = module.getStyles();
       expect(styles).toContain('css/mmm-familychores.css');
+      expect(mockFile).toHaveBeenCalledWith('css/mmm-familychores.css');
     });
   });
 
@@ -128,7 +104,7 @@ describe('Frontend Tests', () => {
       module.socketNotificationReceived('CHORE_DATA', mockData);
 
       expect(module.choreData).toBe(mockData);
-      expect(module.updateDom).toHaveBeenCalled();
+      expect(mockUpdateDom).toHaveBeenCalled();
     });
 
     it('should handle CONFIG_RESPONSE notification', () => {
@@ -151,7 +127,7 @@ describe('Frontend Tests', () => {
     it('should send CONFIG_REQUEST socket notification', () => {
       module.loadData();
 
-      expect(module.sendSocketNotification).toHaveBeenCalledWith('CONFIG_REQUEST', module.config);
+      expect(mockSendSocketNotification).toHaveBeenCalledWith('CONFIG_REQUEST', module.config);
     });
   });
 

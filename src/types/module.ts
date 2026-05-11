@@ -27,11 +27,14 @@ export interface MagicMirrorModule<TConfig = object> {
 }
 
 // Our specific module interface
-export interface FamilyChoresModule extends MagicMirrorModule<Config> {
+export interface FamilyChoresModule extends Omit<MagicMirrorModule<Config>, 'getTranslations'> {
   name: 'MMM-FamilyChores';
   config: Config;
   defaults: Config;
   choreData: FamilyChoresData | null;
+
+  // Override getTranslations to match MagicMirror's expected type
+  getTranslations?: () => { [key: string]: string };
 
   // Custom methods specific to our module
   loadData: () => void;
