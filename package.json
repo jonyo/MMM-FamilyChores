@@ -29,6 +29,7 @@
   "license": "MIT",
   "devDependencies": {
     "@biomejs/biome": "^2.4.15",
+    "@playwright/test": "^1.59.1",
     "@types/magicmirror-module": "^2.16.6",
     "@types/node": "^20.x",
     "@vitest/browser-playwright": "^4.1.5",

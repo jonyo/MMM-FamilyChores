@@ -45,8 +45,8 @@ jobs:
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
 
-    - name: Install Playwright
-      run: npx playwright install --with-deps
+    - name: Install Playwright browsers
+      run: pnpm exec playwright install chromium
 
     - name: Type check
       run: pnpm run typecheck
