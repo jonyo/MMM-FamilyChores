@@ -1,0 +1,16 @@
+node_modules
+
+.DS_Store
+
+# testing artifacts
+__screenshots__
+.vitest-attachments
+
+# Build artifacts - keep dist for development, but allow built files in root for distribution
+dist/
+
+# Development artifacts
+*.tsbuildinfo
+
+# Data files (should not be tracked)
+data.json
