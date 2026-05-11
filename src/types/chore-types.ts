@@ -14,18 +14,16 @@ export interface Chore {
   rotation?: string[]; // Array of person UUIDs for rotating chores
   deadline?: string; // Time in 24-hour format "08:00", "21:00"
   skipDays?: string[]; // Array of day names to skip
-}
 
-export interface ChoreState {
-  rotatingIndex: Record<string, number>; // chore ID -> current rotation index
-  caughtUp: Record<string, boolean>; // chore ID -> true if completed yesterday (false = start day "overdue")
-  completedToday: string[]; // Array of completed chore IDs
+  // State fields (persisted but reset daily)
+  rotatingIndex?: number; // Current position in rotation (rotating chores only)
+  caughtUp?: boolean; // true if completed yesterday (false = start day with "overdue" styling)
+  completedToday?: boolean; // true if completed today (resets daily)
 }
 
 export interface FamilyChoresData {
   people: Person[];
   chores: Chore[];
-  state: ChoreState;
 }
 
 // Notification interfaces

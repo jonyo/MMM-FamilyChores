@@ -73,14 +73,15 @@ describe('Frontend Tests', () => {
           { id: '2', name: 'Bob', color: '#4ECDC4' },
         ],
         chores: [
-          { id: '1', name: 'Take out trash', type: 'rotating', rotation: ['1', '2'] },
+          {
+            id: '1',
+            name: 'Take out trash',
+            type: 'rotating',
+            rotation: ['1', '2'],
+            completedToday: true,
+          },
           { id: '2', name: 'Clean kitchen', type: 'personal', assignedTo: '1' },
         ],
-        state: {
-          rotatingIndex: {},
-          caughtUp: {},
-          completedToday: ['1'],
-        },
       };
 
       const dom = module.getDom();

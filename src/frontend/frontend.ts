@@ -59,7 +59,7 @@ export const Frontend: FamilyChoresModule = {
           </div>
           <div class="summary-item">
             <span class="label">Completed Today:</span>
-            <span class="value">${this.choreData.state.completedToday.length}</span>
+            <span class="value">${this.choreData.chores.filter((c) => c.completedToday).length}</span>
           </div>
         </div>
       </div>

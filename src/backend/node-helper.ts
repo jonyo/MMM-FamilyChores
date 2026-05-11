@@ -118,16 +118,23 @@ export default NodeHelper.create({
         { id: '5', name: 'Evan', color: '#FFEAA7' },
       ],
       chores: [
-        { id: '1', name: 'Take out trash', type: 'rotating', rotation: ['1', '2', '3', '4', '5'] },
-        { id: '2', name: 'Clean kitchen', type: 'rotating', rotation: ['1', '2', '3', '4', '5'] },
+        {
+          id: '1',
+          name: 'Take out trash',
+          type: 'rotating',
+          rotation: ['1', '2', '3', '4', '5'],
+          rotatingIndex: 0,
+        },
+        {
+          id: '2',
+          name: 'Clean kitchen',
+          type: 'rotating',
+          rotation: ['1', '2', '3', '4', '5'],
+          rotatingIndex: 0,
+        },
         { id: '3', name: 'Make bed', type: 'personal', assignedTo: '1' },
         { id: '4', name: 'Do homework', type: 'personal', assignedTo: '3' },
       ],
-      state: {
-        rotatingIndex: { '1': 0, '2': 0 },
-        caughtUp: {},
-        completedToday: [],
-      },
     };
   },
 
@@ -149,13 +156,11 @@ export default NodeHelper.create({
         continue;
       }
 
-      // Check if chore was completed yesterday (i.e., in completedToday before we clear it)
-      const wasCompletedYesterday = this.choreData.state.completedToday.includes(chore.id);
-      this.choreData.state.caughtUp[chore.id] = wasCompletedYesterday;
+      // Check if chore was completed yesterday, update caughtUp status
+      chore.caughtUp = chore.completedToday === true;
+      // Clear completedToday for the new day
+      chore.completedToday = false;
     }
-
-    // Clear today's completed list for the new day
-    this.choreData.state.completedToday = [];
 
     Log.info('Daily reset performed - completedToday cleared, caughtUp status updated');
   },
@@ -171,20 +176,14 @@ export default NodeHelper.create({
     }
 
     // Early exit: check if state is already as requested
-    const isCurrentlyCompleted = this.choreData.state.completedToday.includes(payload.choreId);
+    const isCurrentlyCompleted = chore.completedToday === true;
     if (isCurrentlyCompleted === payload.completed) {
       Log.debug(`Chore ${payload.choreId} is already in desired state, skipping update`);
       return;
     }
 
-    if (payload.completed) {
-      this.choreData.state.completedToday.push(payload.choreId);
-    } else {
-      this.choreData.state.completedToday = this.choreData.state.completedToday.filter(
-        (id: string) => id !== payload.choreId
-      );
-      // Note: we do NOT change caughtUp here - it stays as-is
-    }
+    chore.completedToday = payload.completed;
+    // Note: we do NOT change caughtUp here - it stays as-is
 
     this.saveChoreData();
     this.sendSocketNotification(SocketNotifications.CHORE_UPDATE_RESULT, {
@@ -214,7 +213,7 @@ export default NodeHelper.create({
     if (chore.type === 'personal') {
       currentAssignment = chore.assignedTo;
     } else if (chore.type === 'rotating' && chore.rotation) {
-      const currentIndex = this.choreData.state.rotatingIndex[payload.choreId] || 0;
+      const currentIndex = chore.rotatingIndex ?? 0;
       currentAssignment = chore.rotation[currentIndex];
     }
 
@@ -230,7 +229,7 @@ export default NodeHelper.create({
     } else if (chore.type === 'rotating' && chore.rotation) {
       const currentIndex = chore.rotation.indexOf(payload.newPersonId);
       if (currentIndex !== -1) {
-        this.choreData.state.rotatingIndex[payload.choreId] = currentIndex;
+        chore.rotatingIndex = currentIndex;
       }
     }
 
@@ -251,32 +250,29 @@ export default NodeHelper.create({
       return;
     }
 
-    // Find all chores assigned to this person
-    const personChoreIds = this.choreData.chores
-      .filter((chore: Chore) => {
-        if (chore.type === 'personal') {
-          return chore.assignedTo === payload.personId;
-        } else if (chore.type === 'rotating' && chore.rotation) {
-          const currentIndex = this.choreData?.state.rotatingIndex[chore.id] ?? 0;
-          return chore.rotation[currentIndex] === payload.personId;
-        }
-        return false;
-      })
-      .map((chore: Chore) => chore.id);
+    // Find all chores assigned to this person and reset their caughtUp status
+    let resetCount = 0;
+    for (const chore of this.choreData.chores) {
+      let isAssignedToPerson = false;
+      if (chore.type === 'personal') {
+        isAssignedToPerson = chore.assignedTo === payload.personId;
+      } else if (chore.type === 'rotating' && chore.rotation) {
+        const currentIndex = chore.rotatingIndex ?? 0;
+        isAssignedToPerson = chore.rotation[currentIndex] === payload.personId;
+      }
 
-    // Reset caughtUp to true for all their chores
-    for (const choreId of personChoreIds) {
-      this.choreData.state.caughtUp[choreId] = true;
+      if (isAssignedToPerson) {
+        chore.caughtUp = true;
+        resetCount++;
+      }
     }
 
-    Log.info(
-      `Reset caughtUp status for person ${payload.personId}, affected ${personChoreIds.length} chores`
-    );
+    Log.info(`Reset caughtUp status for person ${payload.personId}, affected ${resetCount} chores`);
 
     this.saveChoreData();
     this.sendSocketNotification(SocketNotifications.CAUGHTUP_RESET_RESULT, {
       personId: payload.personId,
-      resetCount: personChoreIds.length,
+      resetCount,
     });
     this.sendSocketNotification(SocketNotifications.CHORE_DATA, this.choreData);
   },
