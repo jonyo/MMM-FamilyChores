@@ -241,7 +241,7 @@ pnpm run fix            # Auto-fix linting issues
 ### UI Changes
 
 1. Modify `getDom()` method in `src/frontend/frontend.ts`
-2. Update CSS in `css/mmm-familychores.css`
+2. Update CSS in `css/main.css`
 3. Test with different data scenarios
 4. Ensure accessibility and usability
 
