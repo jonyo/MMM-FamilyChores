@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type {
+  CaughtUpResetPayload,
   Chore,
   ChoreReassignPayload,
   ChoreTogglePayload,
-  ChoreUndoPayload,
   FamilyChoresData,
 } from '../types/chore-types';
 import type { Config } from '../types/config';
@@ -17,12 +17,13 @@ interface MockedNodeHelper {
   createDefaultData(): FamilyChoresData;
   loadChoreData(): void;
   saveChoreData: ReturnType<typeof vi.fn>;
+  performDailyReset(): void;
   handleChoreToggle(payload: ChoreTogglePayload): void;
   handleChoreReassign(payload: ChoreReassignPayload): void;
-  handleChoreUndo(payload: ChoreUndoPayload): void;
+  handleCaughtUpReset(payload: CaughtUpResetPayload): void;
   socketNotificationReceived(
     notificationIdentifier: string,
-    payload: Config | ChoreTogglePayload | ChoreReassignPayload | ChoreUndoPayload
+    payload: Config | ChoreTogglePayload | ChoreReassignPayload | CaughtUpResetPayload
   ): void;
 }
 
@@ -72,7 +73,8 @@ describe('Node Helper Tests', () => {
       expect(defaultData).toHaveProperty('state');
       expect(defaultData.people).toHaveLength(5);
       expect(defaultData.chores).toHaveLength(4);
-      expect(defaultData.state).toHaveProperty('previousLastCompleted');
+      expect(defaultData.state).toHaveProperty('caughtUp');
+      expect(defaultData.state).toHaveProperty('completedToday');
     });
   });
 
@@ -83,7 +85,6 @@ describe('Node Helper Tests', () => {
       helperInstance.handleChoreToggle(payload);
 
       expect(helperInstance.choreData?.state.completedToday).toContain('1');
-      expect(helperInstance.choreData?.state.lastCompleted['1']).toMatch(/^\d{4}-\d{2}-\d{2}$/);
       expect(mockSaveChoreData).toHaveBeenCalled();
       expect(mockSendSocketNotification).toHaveBeenCalledWith('CHORE_UPDATE_RESULT', {
         choreId: '1',
@@ -104,40 +105,31 @@ describe('Node Helper Tests', () => {
       expect(mockSaveChoreData).toHaveBeenCalled();
     });
 
-    it('should move current lastCompleted to previousLastCompleted when marking complete', () => {
-      // Set up chore with existing lastCompleted date
-      const originalDate = '2023-01-01';
+    it('should not change caughtUp when marking complete', () => {
       expect(helperInstance.choreData).not.toBeNull();
       if (!helperInstance.choreData) return;
-      helperInstance.choreData.state.lastCompleted['1'] = originalDate;
+      // Set up existing caughtUp value
+      helperInstance.choreData.state.caughtUp['1'] = false;
 
-      // Mark as completed (should move original to previous and set new date)
       const payload = { choreId: '1', completed: true };
       helperInstance.handleChoreToggle(payload);
 
-      expect(helperInstance.choreData.state.completedToday).toContain('1');
-      expect(helperInstance.choreData.state.lastCompleted['1']).not.toBe(originalDate);
-      expect(helperInstance.choreData.state.lastCompleted['1']).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-      expect(helperInstance.choreData.state.previousLastCompleted['1']).toBe(originalDate);
+      // caughtUp should remain unchanged
+      expect(helperInstance.choreData.state.caughtUp['1']).toBe(false);
     });
 
-    it('should restore lastCompleted from previousLastCompleted when marking incomplete', () => {
-      // Set up chore as completed with previous completion history
+    it('should not change caughtUp when marking incomplete', () => {
       expect(helperInstance.choreData).not.toBeNull();
       if (!helperInstance.choreData) return;
-      const originalDate = '2023-01-01';
-      const today = new Date().toISOString().split('T')[0];
       helperInstance.choreData.state.completedToday.push('1');
-      helperInstance.choreData.state.lastCompleted['1'] = today;
-      helperInstance.choreData.state.previousLastCompleted['1'] = originalDate;
+      // Set up existing caughtUp value
+      helperInstance.choreData.state.caughtUp['1'] = true;
 
-      // Mark as incomplete (should restore lastCompleted to previous)
       const payload = { choreId: '1', completed: false };
       helperInstance.handleChoreToggle(payload);
 
-      expect(helperInstance.choreData.state.completedToday).not.toContain('1');
-      expect(helperInstance.choreData.state.lastCompleted['1']).toBe(originalDate);
-      expect(helperInstance.choreData.state.previousLastCompleted['1']).toBe(originalDate);
+      // caughtUp should remain unchanged
+      expect(helperInstance.choreData.state.caughtUp['1']).toBe(true);
     });
 
     it('should early exit when chore is already completed', () => {
@@ -216,37 +208,179 @@ describe('Node Helper Tests', () => {
     });
   });
 
-  describe('handleChoreUndo', () => {
-    it('should undo chore completion', () => {
-      // Set up completed chore
+  describe('performDailyReset', () => {
+    it('should clear completedToday array', () => {
       expect(helperInstance.choreData).not.toBeNull();
       if (!helperInstance.choreData) return;
+      helperInstance.choreData.state.completedToday.push('1', '2');
+
+      helperInstance.performDailyReset();
+
+      expect(helperInstance.choreData.state.completedToday).toHaveLength(0);
+    });
+
+    it('should set caughtUp to true for completed chores', () => {
+      expect(helperInstance.choreData).not.toBeNull();
+      if (!helperInstance.choreData) return;
+      // Mark chore 1 as completed today
       helperInstance.choreData.state.completedToday.push('1');
-      helperInstance.choreData.state.lastCompleted['1'] = '2023-01-01';
 
-      const payload = { choreId: '1', pin: undefined };
-      helperInstance.handleChoreUndo(payload);
+      helperInstance.performDailyReset();
 
-      expect(helperInstance.choreData.state.completedToday).not.toContain('1');
-      expect(helperInstance.choreData.state.lastCompleted['1']).toBeUndefined();
+      expect(helperInstance.choreData.state.caughtUp['1']).toBe(true);
+    });
+
+    it('should set caughtUp to false for incomplete chores', () => {
+      expect(helperInstance.choreData).not.toBeNull();
+      if (!helperInstance.choreData) return;
+      // Chore 1 is NOT in completedToday (incomplete yesterday)
+      helperInstance.choreData.state.caughtUp['1'] = true; // Start with true to verify it changes
+
+      helperInstance.performDailyReset();
+
+      expect(helperInstance.choreData.state.caughtUp['1']).toBe(false);
+    });
+
+    it('should preserve caughtUp on skip days', () => {
+      expect(helperInstance.choreData).not.toBeNull();
+      if (!helperInstance.choreData) return;
+      // Add skip days to chore 1 - yesterday was a skip day
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayDayName = [
+        'sunday',
+        'monday',
+        'tuesday',
+        'wednesday',
+        'thursday',
+        'friday',
+        'saturday',
+      ][yesterday.getDay()];
+      const chore = helperInstance.choreData.chores.find((c: Chore) => c.id === '1');
+      if (chore) {
+        chore.skipDays = [yesterdayDayName];
+      }
+      // Set an existing caughtUp value
+      helperInstance.choreData.state.caughtUp['1'] = true;
+
+      helperInstance.performDailyReset();
+
+      // caughtUp should remain unchanged because yesterday was a skip day
+      expect(helperInstance.choreData.state.caughtUp['1']).toBe(true);
+    });
+
+    it('should handle multiple chores with mixed completion status', () => {
+      expect(helperInstance.choreData).not.toBeNull();
+      if (!helperInstance.choreData) return;
+      // Chore 1 completed yesterday, Chore 2 not completed
+      helperInstance.choreData.state.completedToday.push('1');
+
+      helperInstance.performDailyReset();
+
+      expect(helperInstance.choreData.state.caughtUp['1']).toBe(true);
+      expect(helperInstance.choreData.state.caughtUp['2']).toBe(false);
+    });
+
+    it('should handle empty chore data gracefully', () => {
+      helperInstance.choreData = null;
+
+      // Should not throw
+      expect(() => helperInstance.performDailyReset()).not.toThrow();
+    });
+  });
+
+  describe('handleCaughtUpReset', () => {
+    it('should reset caughtUp to true for personal chores assigned to person', () => {
+      expect(helperInstance.choreData).not.toBeNull();
+      if (!helperInstance.choreData) return;
+      // Chore 3 is assigned to person '1' (personal chore)
+      helperInstance.choreData.state.caughtUp['3'] = false;
+
+      const payload = { personId: '1', pin: undefined };
+      helperInstance.handleCaughtUpReset(payload);
+
+      expect(helperInstance.choreData.state.caughtUp['3']).toBe(true);
       expect(mockSaveChoreData).toHaveBeenCalled();
     });
 
-    it('should early exit when chore is already not completed', () => {
-      // Don't add chore to completedToday - it's already incomplete
-      const payload = { choreId: '2', pin: undefined }; // Different chore that's not completed
+    it('should reset caughtUp to true for rotating chores where person is current assignee', () => {
+      expect(helperInstance.choreData).not.toBeNull();
+      if (!helperInstance.choreData) return;
+      // Chore 1 is rotating with index 0 (person '1' is current)
+      helperInstance.choreData.state.caughtUp['1'] = false;
 
-      helperInstance.handleChoreUndo(payload);
+      const payload = { personId: '1', pin: undefined };
+      helperInstance.handleCaughtUpReset(payload);
 
+      expect(helperInstance.choreData.state.caughtUp['1']).toBe(true);
+      expect(mockSaveChoreData).toHaveBeenCalled();
+    });
+
+    it('should not affect rotating chores where person is not current assignee', () => {
+      expect(helperInstance.choreData).not.toBeNull();
+      if (!helperInstance.choreData) return;
+      // Chore 1 is rotating with index 0 (person '1' is current, not '2')
+      helperInstance.choreData.state.caughtUp['1'] = false;
+
+      const payload = { personId: '2', pin: undefined };
+      helperInstance.handleCaughtUpReset(payload);
+
+      // Should not change caughtUp for chore 1 since person 2 is not assigned
+      expect(helperInstance.choreData.state.caughtUp['1']).toBe(false);
+    });
+
+    it('should require PIN when adminPin is configured', () => {
+      expect(helperInstance.choreData).not.toBeNull();
+      if (!helperInstance.choreData) return;
+      helperInstance.config = { adminPin: '1234', dataFile: 'test-data.json' };
+      helperInstance.choreData.state.caughtUp['1'] = false;
+
+      const payload = { personId: '1', pin: 'wrongpin' };
+      helperInstance.handleCaughtUpReset(payload);
+
+      // Should send PIN error and not save
+      expect(mockSendSocketNotification).toHaveBeenCalledWith('PIN_ERROR', {
+        message: 'Invalid PIN',
+      });
+      expect(helperInstance.choreData.state.caughtUp['1']).toBe(false);
       expect(mockSaveChoreData).not.toHaveBeenCalled();
     });
 
-    it('should return early when chore not found', () => {
-      const payload = { choreId: '999', pin: undefined };
+    it('should succeed with correct PIN when adminPin is configured', () => {
+      expect(helperInstance.choreData).not.toBeNull();
+      if (!helperInstance.choreData) return;
+      helperInstance.config = { adminPin: '1234', dataFile: 'test-data.json' };
+      helperInstance.choreData.state.caughtUp['1'] = false;
 
-      helperInstance.handleChoreUndo(payload);
+      const payload = { personId: '1', pin: '1234' };
+      helperInstance.handleCaughtUpReset(payload);
 
-      expect(mockSaveChoreData).not.toHaveBeenCalled();
+      expect(helperInstance.choreData.state.caughtUp['1']).toBe(true);
+      expect(mockSaveChoreData).toHaveBeenCalled();
+    });
+
+    it('should handle person with no assigned chores', () => {
+      expect(helperInstance.choreData).not.toBeNull();
+      if (!helperInstance.choreData) return;
+      // Person '5' (Evan) has no personal chores in default data
+      const payload = { personId: '5', pin: undefined };
+
+      helperInstance.handleCaughtUpReset(payload);
+
+      // Should still save and notify (just with 0 changes)
+      expect(mockSaveChoreData).toHaveBeenCalled();
+      expect(mockSendSocketNotification).toHaveBeenCalledWith('CAUGHTUP_RESET_RESULT', {
+        personId: '5',
+        resetCount: 0,
+      });
+    });
+
+    it('should handle empty chore data gracefully', () => {
+      helperInstance.choreData = null;
+      const payload = { personId: '1', pin: undefined };
+
+      // Should not throw
+      expect(() => helperInstance.handleCaughtUpReset(payload)).not.toThrow();
     });
   });
 });

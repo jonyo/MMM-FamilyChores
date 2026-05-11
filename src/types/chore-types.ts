@@ -18,8 +18,7 @@ export interface Chore {
 
 export interface ChoreState {
   rotatingIndex: Record<string, number>; // chore ID -> current rotation index
-  lastCompleted: Record<string, string>; // chore ID -> date string
-  previousLastCompleted: Record<string, string>; // chore ID -> previous completion date
+  caughtUp: Record<string, boolean>; // chore ID -> true if completed yesterday (false = start day "overdue")
   completedToday: string[]; // Array of completed chore IDs
 }
 
@@ -42,7 +41,7 @@ export interface ChoreReassignPayload {
   pin?: string;
 }
 
-export interface ChoreUndoPayload {
-  choreId: string;
+export interface CaughtUpResetPayload {
+  personId: string;
   pin?: string;
 }

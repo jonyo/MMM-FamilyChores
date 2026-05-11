@@ -3,13 +3,16 @@ import * as path from 'node:path';
 import NodeHelper from 'node_helper';
 import { SocketNotifications } from '../constants/socket-notifications';
 import type {
+  CaughtUpResetPayload,
   Chore,
   ChoreReassignPayload,
   ChoreTogglePayload,
-  ChoreUndoPayload,
   FamilyChoresData,
 } from '../types/chore-types';
 import type { Config } from '../types/config';
+
+// Day names for skip day checking
+const DAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
 declare global {
   // Logger is available globally in MagicMirror
@@ -35,7 +38,7 @@ export default NodeHelper.create({
   // MM function: called when a socket notification arrives from the module
   socketNotificationReceived(
     notificationIdentifier: string,
-    payload: Config | ChoreTogglePayload | ChoreReassignPayload | ChoreUndoPayload
+    payload: Config | ChoreTogglePayload | ChoreReassignPayload | CaughtUpResetPayload
   ): void {
     Log.debug(`Node helper received: '${notificationIdentifier}'`);
 
@@ -50,8 +53,8 @@ export default NodeHelper.create({
       case SocketNotifications.CHORE_REASSIGN:
         this.handleChoreReassign(payload as ChoreReassignPayload);
         break;
-      case SocketNotifications.CHORE_UNDO:
-        this.handleChoreUndo(payload as ChoreUndoPayload);
+      case SocketNotifications.CAUGHTUP_RESET:
+        this.handleCaughtUpReset(payload as CaughtUpResetPayload);
         break;
       default:
         Log.warn(`Node helper received unknown notification: '${notificationIdentifier}'`);
@@ -122,11 +125,39 @@ export default NodeHelper.create({
       ],
       state: {
         rotatingIndex: { '1': 0, '2': 0 },
-        lastCompleted: {},
-        previousLastCompleted: {},
+        caughtUp: {},
         completedToday: [],
       },
     };
+  },
+
+  // Perform daily reset - clears completedToday and updates caughtUp status
+  // Should be called when detecting a new day
+  performDailyReset(): void {
+    if (!this.choreData) return;
+
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayDayName = DAY_NAMES[yesterday.getDay()];
+
+    for (const chore of this.choreData.chores) {
+      const skipDays = chore.skipDays ?? [];
+      const wasSkipDay = skipDays.includes(yesterdayDayName);
+
+      if (wasSkipDay) {
+        // Yesterday was a skip day - don't change caughtUp, preserve existing value
+        continue;
+      }
+
+      // Check if chore was completed yesterday (i.e., in completedToday before we clear it)
+      const wasCompletedYesterday = this.choreData.state.completedToday.includes(chore.id);
+      this.choreData.state.caughtUp[chore.id] = wasCompletedYesterday;
+    }
+
+    // Clear today's completed list for the new day
+    this.choreData.state.completedToday = [];
+
+    Log.info('Daily reset performed - completedToday cleared, caughtUp status updated');
   },
 
   // Handle chore toggle
@@ -147,27 +178,12 @@ export default NodeHelper.create({
     }
 
     if (payload.completed) {
-      // Move current lastCompleted to previousLastCompleted before updating
-      const currentLastCompleted = this.choreData.state.lastCompleted[payload.choreId];
-      if (currentLastCompleted) {
-        this.choreData.state.previousLastCompleted[payload.choreId] = currentLastCompleted;
-      }
-
       this.choreData.state.completedToday.push(payload.choreId);
-      this.choreData.state.lastCompleted[payload.choreId] = new Date().toISOString().split('T')[0];
     } else {
       this.choreData.state.completedToday = this.choreData.state.completedToday.filter(
         (id: string) => id !== payload.choreId
       );
-
-      // Restore lastCompleted to previousLastCompleted to maintain accurate completion history
-      const previousLastCompleted = this.choreData.state.previousLastCompleted[payload.choreId];
-      if (previousLastCompleted) {
-        this.choreData.state.lastCompleted[payload.choreId] = previousLastCompleted;
-      } else {
-        // If there's no previous completion, remove the entry entirely
-        delete this.choreData.state.lastCompleted[payload.choreId];
-      }
+      // Note: we do NOT change caughtUp here - it stays as-is
     }
 
     this.saveChoreData();
@@ -226,8 +242,8 @@ export default NodeHelper.create({
     this.sendSocketNotification(SocketNotifications.CHORE_DATA, this.choreData);
   },
 
-  // Handle chore undo
-  handleChoreUndo(payload: ChoreUndoPayload): void {
+  // Handle caughtUp reset for a person (admin only - PIN protected)
+  handleCaughtUpReset(payload: CaughtUpResetPayload): void {
     if (!this.choreData || !this.config) return;
 
     if (this.config.adminPin && payload.pin !== this.config.adminPin) {
@@ -235,21 +251,32 @@ export default NodeHelper.create({
       return;
     }
 
-    // Early exit: check if chore is already not completed today
-    const isCurrentlyCompleted = this.choreData.state.completedToday.includes(payload.choreId);
-    if (!isCurrentlyCompleted) {
-      Log.debug(`Chore ${payload.choreId} is already not completed today, skipping undo`);
-      return;
+    // Find all chores assigned to this person
+    const personChoreIds = this.choreData.chores
+      .filter((chore: Chore) => {
+        if (chore.type === 'personal') {
+          return chore.assignedTo === payload.personId;
+        } else if (chore.type === 'rotating' && chore.rotation) {
+          const currentIndex = this.choreData?.state.rotatingIndex[chore.id] ?? 0;
+          return chore.rotation[currentIndex] === payload.personId;
+        }
+        return false;
+      })
+      .map((chore: Chore) => chore.id);
+
+    // Reset caughtUp to true for all their chores
+    for (const choreId of personChoreIds) {
+      this.choreData.state.caughtUp[choreId] = true;
     }
 
-    this.choreData.state.completedToday = this.choreData.state.completedToday.filter(
-      (id: string) => id !== payload.choreId
+    Log.info(
+      `Reset caughtUp status for person ${payload.personId}, affected ${personChoreIds.length} chores`
     );
-    delete this.choreData.state.lastCompleted[payload.choreId];
 
     this.saveChoreData();
-    this.sendSocketNotification(SocketNotifications.CHORE_UNDO_RESULT, {
-      choreId: payload.choreId,
+    this.sendSocketNotification(SocketNotifications.CAUGHTUP_RESET_RESULT, {
+      personId: payload.personId,
+      resetCount: personChoreIds.length,
     });
     this.sendSocketNotification(SocketNotifications.CHORE_DATA, this.choreData);
   },

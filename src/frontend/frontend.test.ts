@@ -78,8 +78,7 @@ describe('Frontend Tests', () => {
         ],
         state: {
           rotatingIndex: {},
-          lastCompleted: {},
-          previousLastCompleted: {},
+          caughtUp: {},
           completedToday: ['1'],
         },
       };

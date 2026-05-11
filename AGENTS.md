@@ -129,6 +129,10 @@ src/
 - `CONFIG_REQUEST`: Frontend requests initial data
 - `CONFIG_RESPONSE`: Backend sends configuration and state
 - `CHORE_DATA`: Backend sends updated chore data
+- `CHORE_TOGGLE`: Toggle chore completion status
+- `CHORE_REASSIGN`: Reassign rotating chore
+- `CAUGHTUP_RESET`: Admin reset of caughtUp status for a person
+- `CHORE_UPDATE_RESULT`, `CHORE_REASSIGN_RESULT`, `CAUGHTUP_RESET_RESULT`: Success responses
 - `PIN_ERROR`: Backend reports invalid PIN
 
 **Payload Types:**
@@ -139,14 +143,15 @@ src/
 ### Admin Actions
 
 **PIN Protection:**
-- Only reassign action requires valid PIN when configured
+- Reassign and caughtUp reset actions require valid PIN when configured
 - Toggle actions (mark complete/incomplete) do not require PIN
-- Validate PIN before performing reassign operation
+- Validate PIN before performing admin operations
 - Return `PIN_ERROR` notification for invalid attempts
 
 **Available Actions:**
 - **Toggle**: Mark chore complete/incomplete (no PIN required)
 - **Reassign**: Move rotating chore to next person (requires PIN)
+- **CaughtUp Reset**: Reset all caughtUp flags to `true` for a person (requires PIN) - useful for vacation returns. **Does NOT rotate** - person picks up at same rotation position.
 
 ### CSS and Styling
 
