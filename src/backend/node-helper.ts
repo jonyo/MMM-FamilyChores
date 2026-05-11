@@ -2,12 +2,13 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import NodeHelper from 'node_helper';
 import { SocketNotifications } from '../constants/socket-notifications';
-import type {
-  CaughtUpResetPayload,
-  Chore,
-  ChoreReassignPayload,
-  ChoreTogglePayload,
-  FamilyChoresData,
+import {
+  type CaughtUpResetPayload,
+  type Chore,
+  type ChoreReassignPayload,
+  type ChoreTogglePayload,
+  type FamilyChoresData,
+  SkipDayVisibility,
 } from '../types/chore-types';
 import type { Config } from '../types/config';
 
@@ -124,6 +125,9 @@ export default NodeHelper.create({
           type: 'rotating',
           rotation: ['1', '2', '3', '4', '5'],
           rotatingIndex: 0,
+          // only Saturday
+          skipDays: ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+          skipDayVisibility: SkipDayVisibility.SHOW_IF_OVERDUE,
         },
         {
           id: '2',
@@ -131,9 +135,25 @@ export default NodeHelper.create({
           type: 'rotating',
           rotation: ['1', '2', '3', '4', '5'],
           rotatingIndex: 0,
+          skipDays: ['saturday'],
+          skipDayVisibility: SkipDayVisibility.HIDE,
         },
-        { id: '3', name: 'Make bed', type: 'personal', assignedTo: '1' },
-        { id: '4', name: 'Do homework', type: 'personal', assignedTo: '3' },
+        {
+          id: '3',
+          name: 'Make bed',
+          type: 'personal',
+          assignedTo: '1',
+          skipDays: ['sunday'],
+          skipDayVisibility: SkipDayVisibility.SHOW_ALWAYS,
+        },
+        {
+          id: '4',
+          name: 'Do homework',
+          type: 'personal',
+          assignedTo: '3',
+          skipDays: ['saturday', 'sunday'],
+          skipDayVisibility: SkipDayVisibility.HIDE,
+        },
       ],
     };
   },
@@ -143,23 +163,31 @@ export default NodeHelper.create({
   performDailyReset(): void {
     if (!this.choreData) return;
 
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayDayName = DAY_NAMES[yesterday.getDay()];
+    const today = new Date();
+    const todayDayName = DAY_NAMES[today.getDay()];
 
     for (const chore of this.choreData.chores) {
       const skipDays = chore.skipDays ?? [];
-      const wasSkipDay = skipDays.includes(yesterdayDayName);
+      const isSkipDay = skipDays.includes(todayDayName);
+      const skipDayVisibility = chore.skipDayVisibility ?? SkipDayVisibility.HIDE;
 
-      if (wasSkipDay) {
-        // Yesterday was a skip day - don't change caughtUp, preserve existing value
+      if (isSkipDay && skipDayVisibility === SkipDayVisibility.HIDE) {
+        // Today is a skip day and visibility is HIDE - skip this chore entirely, don't change any state
+        // - it will resume on the next non-skip day
         continue;
       }
-
-      // Check if chore was completed yesterday, update caughtUp status
+      // for other states, update caughtUp status
       chore.caughtUp = chore.completedToday === true;
-      // Clear completedToday for the new day
+      if (isSkipDay) {
+        // skip day but possibly visible - don't reset completedToday or rotate
+        continue;
+      }
+      // reset completedToday for the new day
       chore.completedToday = false;
+      // rotate if needed
+      if (chore.caughtUp && chore.type === 'rotating') {
+        chore.rotatingIndex = (chore.rotatingIndex + 1) % chore.rotation.length;
+      }
     }
 
     Log.info('Daily reset performed - completedToday cleared, caughtUp status updated');

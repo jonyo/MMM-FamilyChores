@@ -34,6 +34,7 @@ _Note: This roadmap represents current plans and priorities. Features may be add
 ## Installation
 
 1. Clone this repository into your MagicMirror modules folder:
+
    ```bash
    cd ~/MagicMirror/modules
    git clone https://github.com/jonyo/MMM-FamilyChores.git
@@ -47,15 +48,16 @@ That's it! The module includes all necessary dependencies in the bundled JavaScr
 
 ### Basic Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `dataFile` | string | `'data.json'` | Path to data file relative to module folder |
-| `updateInterval` | number | `60000` | Update interval in milliseconds |
-| `adminPin` | string | `null` | PIN for admin actions (reassign, undo) |
+| Option           | Type   | Default       | Description                                 |
+| ---------------- | ------ | ------------- | ------------------------------------------- |
+| `dataFile`       | string | `'data.json'` | Path to data file relative to module folder |
+| `updateInterval` | number | `60000`       | Update interval in milliseconds             |
+| `adminPin`       | string | `null`        | PIN for admin actions (reassign, undo)      |
 
 ### Display Modes
 
 #### Per-Person View
+
 Show only one person's personal chores plus their current rotating assignments:
 
 ```javascript
@@ -68,6 +70,7 @@ Show only one person's personal chores plus their current rotating assignments:
 ```
 
 #### Summary View
+
 Show all incomplete chores and rotating assignments:
 
 ```javascript
@@ -80,6 +83,7 @@ Show all incomplete chores and rotating assignments:
 ```
 
 #### Hybrid View
+
 Mix per-person and summary views:
 
 ```javascript
@@ -106,11 +110,13 @@ The data structure uses stable identifiers internally, so you can rename people 
 ### Chore Types
 
 #### Personal Chores
+
 - Fixed assignment to one person
 - Reset daily at midnight
 - Always visible (unless completed for the day)
 
 #### Rotating Chores
+
 - Cycle through specified people in order
 - Only advance when marked complete
 - Stay with current person until completed
@@ -119,21 +125,32 @@ The data structure uses stable identifiers internally, so you can rename people 
 
 - `deadline`: Time in 24-hour format (`"08:00"`, `"21:00"`)
 - `skipDays`: Array of day names to skip (`["saturday", "sunday"]`)
+- `skipDayVisibility`: How to handle display on skip days (`"hide"`, `"show-if-overdue"`, `"show-always"`)
 
 ## Behavior
 
 ### Deadline Indicators
+
 - **Normal**: Current time before deadline
 - **Yellow**: Past deadline but not completed
 - **Strikethrough**: Completed (clickable to uncheck)
 
 ### Skip Days
-Chores don't appear on specified days. Rotating chores pause until the next valid day.
+
+Chores behavior on skip days depends on the `skipDayVisibility` setting:
+
+- **`"hide"`**: Chore never appears on skip days, no state changes
+- **`"show-if-overdue"`**: Shows only if not caught up (overdue), preserves `completedToday` state, no rotation on skip days
+- **`"show-always"`**: Always shows with checkmark preserved (grace days), no rotation on skip days
+
+Rotating chores pause until the next valid day.
 
 ### Daily Reset
+
 At midnight, all `completedToday` entries are cleared, making personal chores available again.
 
 ### Mirror Interactions
+
 - **Mark Complete/Incomplete**: Anyone can check/uncheck chores without a PIN (UI not yet implemented)
 - **Admin Actions on Mirror**: When `adminPin` is configured, reassign rotating chores to next person in rotation (backend implemented, UI not yet available)
 

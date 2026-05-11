@@ -1,10 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type {
-  CaughtUpResetPayload,
-  Chore,
-  ChoreReassignPayload,
-  ChoreTogglePayload,
-  FamilyChoresData,
+import {
+  type CaughtUpResetPayload,
+  type Chore,
+  type ChoreReassignPayload,
+  type ChoreTogglePayload,
+  type FamilyChoresData,
+  SkipDayVisibility,
 } from '../types/chore-types';
 import type { Config } from '../types/config';
 import nodeHelper from './node-helper';
@@ -224,6 +225,9 @@ describe('Node Helper Tests', () => {
       if (!chore1 || !chore2) return;
       chore1.completedToday = true;
       chore2.completedToday = true;
+      // Ensure no skip days so they process as normal days
+      chore1.skipDays = [];
+      chore2.skipDays = [];
 
       helperInstance.performDailyReset();
 
@@ -257,7 +261,38 @@ describe('Node Helper Tests', () => {
       expect(chore.caughtUp).toBe(false);
     });
 
-    it('should preserve caughtUp on skip days', () => {
+    it('should skip processing entirely when today is a skip day and visibility is HIDE', () => {
+      expect(helperInstance.choreData).not.toBeNull();
+      if (!helperInstance.choreData) return;
+      // Add skip days to chore 1 - today is a skip day
+      const today = new Date();
+      const todayDayName = [
+        'sunday',
+        'monday',
+        'tuesday',
+        'wednesday',
+        'thursday',
+        'friday',
+        'saturday',
+      ][today.getDay()];
+      const chore = helperInstance.choreData.chores.find((c: Chore) => c.id === '1');
+      if (!chore) return;
+      chore.skipDays = [todayDayName];
+      chore.skipDayVisibility = SkipDayVisibility.HIDE;
+      // Set initial state
+      chore.completedToday = true;
+      chore.caughtUp = false;
+      chore.rotatingIndex = 2;
+
+      helperInstance.performDailyReset();
+
+      // Everything should remain unchanged because today is a skip day with HIDE visibility
+      expect(chore.completedToday).toBe(true);
+      expect(chore.caughtUp).toBe(false);
+      expect(chore.rotatingIndex).toBe(2);
+    });
+
+    it('should process normally when yesterday was a skip day', () => {
       expect(helperInstance.choreData).not.toBeNull();
       if (!helperInstance.choreData) return;
       // Add skip days to chore 1 - yesterday was a skip day
@@ -275,16 +310,92 @@ describe('Node Helper Tests', () => {
       const chore = helperInstance.choreData.chores.find((c: Chore) => c.id === '1');
       if (!chore) return;
       chore.skipDays = [yesterdayDayName];
-      // Set an existing caughtUp value
-      chore.caughtUp = true;
+      // Set initial state
+      chore.completedToday = true;
+      chore.caughtUp = false;
+      chore.rotatingIndex = 1;
 
       helperInstance.performDailyReset();
 
-      // caughtUp should remain unchanged because yesterday was a skip day
-      expect(chore.caughtUp).toBe(true);
+      // Should process normally since yesterday being skip day has no special treatment
+      expect(chore.completedToday).toBe(false);
+      expect(chore.caughtUp).toBe(true); // Was completed yesterday
+      expect(chore.rotatingIndex).toBe(2); // Should rotate since caughtUp is true
     });
 
-    it('should handle multiple chores with mixed completion status', () => {
+    it('should rotate rotating chores when caughtUp is true', () => {
+      expect(helperInstance.choreData).not.toBeNull();
+      if (!helperInstance.choreData) return;
+      const chore = helperInstance.choreData.chores.find((c: Chore) => c.id === '1');
+      if (!chore) return;
+      // Set up chore as completed yesterday and at index 0 (no skip days)
+      chore.completedToday = true;
+      chore.rotatingIndex = 0;
+      // Ensure no skip days so it processes as normal day
+      chore.skipDays = [];
+
+      helperInstance.performDailyReset();
+
+      // Should rotate to next person
+      expect(chore.completedToday).toBe(false);
+      expect(chore.caughtUp).toBe(true);
+      expect(chore.rotatingIndex).toBe(1);
+    });
+
+    it('should not rotate rotating chores when caughtUp is false', () => {
+      expect(helperInstance.choreData).not.toBeNull();
+      if (!helperInstance.choreData) return;
+      const chore = helperInstance.choreData.chores.find((c: Chore) => c.id === '1');
+      if (!chore) return;
+      // Set up chore as not completed yesterday and at index 0
+      chore.completedToday = false;
+      chore.rotatingIndex = 0;
+
+      helperInstance.performDailyReset();
+
+      // Should not rotate
+      expect(chore.completedToday).toBe(false);
+      expect(chore.caughtUp).toBe(false);
+      expect(chore.rotatingIndex).toBe(0);
+    });
+
+    it('should handle rotation wrap-around correctly', () => {
+      expect(helperInstance.choreData).not.toBeNull();
+      if (!helperInstance.choreData) return;
+      const chore = helperInstance.choreData.chores.find((c: Chore) => c.id === '1');
+      if (!chore) return;
+      // Set up chore as completed yesterday and at last index (no skip days)
+      chore.completedToday = true;
+      chore.rotatingIndex = 4; // Last index in rotation array
+      chore.skipDays = []; // Ensure no skip days
+
+      helperInstance.performDailyReset();
+
+      // Should wrap around to index 0
+      expect(chore.completedToday).toBe(false);
+      expect(chore.caughtUp).toBe(true);
+      expect(chore.rotatingIndex).toBe(0);
+    });
+
+    it('should not rotate personal chores even when caughtUp is true', () => {
+      expect(helperInstance.choreData).not.toBeNull();
+      if (!helperInstance.choreData) return;
+      const chore = helperInstance.choreData.chores.find((c: Chore) => c.id === '3');
+      if (!chore) return;
+      // Set up personal chore as completed yesterday
+      chore.completedToday = true;
+      chore.caughtUp = false;
+      chore.assignedTo = '1';
+
+      helperInstance.performDailyReset();
+
+      // Should update caughtUp but not affect assignment
+      expect(chore.completedToday).toBe(false);
+      expect(chore.caughtUp).toBe(true);
+      expect(chore.assignedTo).toBe('1');
+    });
+
+    it('should handle multiple chores with mixed completion status and rotation', () => {
       expect(helperInstance.choreData).not.toBeNull();
       if (!helperInstance.choreData) return;
       // Chore 1 completed yesterday, Chore 2 not completed
@@ -292,11 +403,19 @@ describe('Node Helper Tests', () => {
       const chore2 = helperInstance.choreData.chores.find((c: Chore) => c.id === '2');
       if (!chore1 || !chore2) return;
       chore1.completedToday = true;
+      chore1.rotatingIndex = 0;
+      chore2.completedToday = false;
+      chore2.rotatingIndex = 1;
+      // Ensure no skip days so they process as normal days
+      chore1.skipDays = [];
+      chore2.skipDays = [];
 
       helperInstance.performDailyReset();
 
       expect(chore1.caughtUp).toBe(true);
+      expect(chore1.rotatingIndex).toBe(1); // Should rotate
       expect(chore2.caughtUp).toBe(false);
+      expect(chore2.rotatingIndex).toBe(1); // Should not rotate
     });
 
     it('should handle empty chore data gracefully', () => {
@@ -304,6 +423,182 @@ describe('Node Helper Tests', () => {
 
       // Should not throw
       expect(() => helperInstance.performDailyReset()).not.toThrow();
+    });
+
+    describe('skipDayVisibility behavior', () => {
+      it('should not change chore state when skipDayVisibility is HIDE', () => {
+        expect(helperInstance.choreData).not.toBeNull();
+        if (!helperInstance.choreData) return;
+        const today = new Date();
+        const todayDayName = [
+          'sunday',
+          'monday',
+          'tuesday',
+          'wednesday',
+          'thursday',
+          'friday',
+          'saturday',
+        ][today.getDay()];
+        const chore = helperInstance.choreData.chores.find((c: Chore) => c.id === '1');
+        if (!chore) return;
+        chore.skipDays = [todayDayName];
+        chore.skipDayVisibility = SkipDayVisibility.HIDE;
+        chore.completedToday = true;
+        chore.caughtUp = false;
+        chore.rotatingIndex = 2;
+
+        helperInstance.performDailyReset();
+
+        // Everything should remain unchanged
+        expect(chore.completedToday).toBe(true);
+        expect(chore.caughtUp).toBe(false);
+        expect(chore.rotatingIndex).toBe(2);
+      });
+
+      it('should show and process but not rotate when skipDayVisibility is SHOW_IF_OVERDUE and chore is caught up', () => {
+        expect(helperInstance.choreData).not.toBeNull();
+        if (!helperInstance.choreData) return;
+        const today = new Date();
+        const todayDayName = [
+          'sunday',
+          'monday',
+          'tuesday',
+          'wednesday',
+          'thursday',
+          'friday',
+          'saturday',
+        ][today.getDay()];
+        const chore = helperInstance.choreData.chores.find((c: Chore) => c.id === '1');
+        if (!chore) return;
+        chore.skipDays = [todayDayName];
+        chore.skipDayVisibility = SkipDayVisibility.SHOW_IF_OVERDUE;
+        chore.completedToday = true;
+        chore.caughtUp = false;
+        chore.rotatingIndex = 1;
+
+        helperInstance.performDailyReset();
+
+        // Should only update caughtUp, leave completedToday and rotatingIndex alone
+        expect(chore.completedToday).toBe(true); // Should remain unchanged
+        expect(chore.caughtUp).toBe(true); // should have been updated
+        expect(chore.rotatingIndex).toBe(1); // Should not rotate
+      });
+
+      it('should show and process but not rotate when skipDayVisibility is SHOW_IF_OVERDUE and chore is not caught up', () => {
+        expect(helperInstance.choreData).not.toBeNull();
+        if (!helperInstance.choreData) return;
+        const today = new Date();
+        const todayDayName = [
+          'sunday',
+          'monday',
+          'tuesday',
+          'wednesday',
+          'thursday',
+          'friday',
+          'saturday',
+        ][today.getDay()];
+        const chore = helperInstance.choreData.chores.find((c: Chore) => c.id === '1');
+        if (!chore) return;
+        chore.skipDays = [todayDayName];
+        chore.skipDayVisibility = SkipDayVisibility.SHOW_IF_OVERDUE;
+        chore.completedToday = false;
+        chore.caughtUp = true;
+        chore.rotatingIndex = 1;
+
+        helperInstance.performDailyReset();
+
+        // Should only update caughtUp, leave completedToday and rotatingIndex alone
+        expect(chore.completedToday).toBe(false); // Should remain unchanged
+        expect(chore.caughtUp).toBe(false);
+        expect(chore.rotatingIndex).toBe(1); // Should not rotate
+      });
+
+      it('should show and process normally but not rotate when skipDayVisibility is SHOW_ALWAYS', () => {
+        expect(helperInstance.choreData).not.toBeNull();
+        if (!helperInstance.choreData) return;
+        const today = new Date();
+        const todayDayName = [
+          'sunday',
+          'monday',
+          'tuesday',
+          'wednesday',
+          'thursday',
+          'friday',
+          'saturday',
+        ][today.getDay()];
+        const chore = helperInstance.choreData.chores.find((c: Chore) => c.id === '1');
+        if (!chore) return;
+        chore.skipDays = [todayDayName];
+        chore.skipDayVisibility = SkipDayVisibility.SHOW_ALWAYS;
+        chore.completedToday = true;
+        chore.caughtUp = false;
+        chore.rotatingIndex = 1;
+
+        helperInstance.performDailyReset();
+
+        // Should only update caughtUp, leave completedToday and rotatingIndex alone
+        expect(chore.completedToday).toBe(true); // Should remain unchanged (checkmark stays)
+        expect(chore.caughtUp).toBe(true);
+        expect(chore.rotatingIndex).toBe(1); // Should not rotate on skip day
+      });
+
+      it('should default to HIDE when skipDayVisibility is not specified', () => {
+        expect(helperInstance.choreData).not.toBeNull();
+        if (!helperInstance.choreData) return;
+        const today = new Date();
+        const todayDayName = [
+          'sunday',
+          'monday',
+          'tuesday',
+          'wednesday',
+          'thursday',
+          'friday',
+          'saturday',
+        ][today.getDay()];
+        const chore = helperInstance.choreData.chores.find((c: Chore) => c.id === '1');
+        if (!chore) return;
+        chore.skipDays = [todayDayName];
+        // Don't set skipDayVisibility - should default to HIDE
+        chore.completedToday = true;
+        chore.caughtUp = false;
+        chore.rotatingIndex = 2;
+
+        helperInstance.performDailyReset();
+
+        // Should behave like HIDE - everything unchanged except caughtUp gets updated
+        expect(chore.completedToday).toBe(true);
+        expect(chore.caughtUp).toBe(true); // Should be updated since completedToday was true
+        expect(chore.rotatingIndex).toBe(2);
+      });
+
+      it('should handle personal chores with SHOW_IF_OVERDUE on skip days', () => {
+        expect(helperInstance.choreData).not.toBeNull();
+        if (!helperInstance.choreData) return;
+        const today = new Date();
+        const todayDayName = [
+          'sunday',
+          'monday',
+          'tuesday',
+          'wednesday',
+          'thursday',
+          'friday',
+          'saturday',
+        ][today.getDay()];
+        const chore = helperInstance.choreData.chores.find((c: Chore) => c.id === '3');
+        if (!chore) return;
+        chore.skipDays = [todayDayName];
+        chore.skipDayVisibility = SkipDayVisibility.SHOW_IF_OVERDUE;
+        chore.completedToday = true;
+        chore.caughtUp = false;
+        chore.assignedTo = '1';
+
+        helperInstance.performDailyReset();
+
+        // Should only update caughtUp, leave completedToday and assignment alone
+        expect(chore.completedToday).toBe(true); // Should remain unchanged
+        expect(chore.caughtUp).toBe(true);
+        expect(chore.assignedTo).toBe('1');
+      });
     });
   });
 
