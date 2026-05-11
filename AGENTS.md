@@ -74,6 +74,24 @@ src/
 - `node_helper.js` - Compiled backend
 - `*.js.map` - Source maps
 
+### TypeScript Requirements
+
+**CRITICAL: NEVER USE `any` TYPES - THIS INCLUDES TEST FILES**
+- **ABSOLUTELY NO `any` types** anywhere in the codebase - not in production code, not in test files, not anywhere
+- Use proper TypeScript interfaces and types for all data structures
+- If you think you need `any`, you're wrong - create a proper type instead
+- `any` completely defeats the purpose of TypeScript and introduces runtime errors
+- This rule is **NON-NEGOTIABLE** - violations will be rejected immediately
+- Test files are NOT exempt - they must also use proper typing
+
+**Type Safety:**
+- All functions must have explicit return types
+- All parameters must have explicit types
+- Use generic types where appropriate instead of `any`
+- Leverage TypeScript's type inference but provide explicit types when clarity is needed
+- Use `unknown` instead of `any` when you must handle values of uncertain types - requires type narrowing before use
+- Consider `never` for impossible states, unreachable code paths, or functions that never return
+
 ### Testing Requirements
 
 **Before committing:**
@@ -87,6 +105,11 @@ src/
 - PIN validation for admin actions
 - Config validation and error handling
 - Goal of as close to 100% coverage as possible
+
+**Mock Management:**
+- Test configuration automatically clears all mocks between tests
+- Do **NOT** manually call `vi.clearAllMocks()` or similar in `beforeEach`/`afterEach`
+- Focus on test setup and assertions rather than mock cleanup
 
 ### Configuration Patterns
 
