@@ -52,7 +52,7 @@ Module.register<Config>('MMM-FamilyChores', {
 
     if (!this.choreData) {
       wrapper.innerHTML =
-        '<div class="module-header">Family Chores</div><div class="module-content">Loading...</div>';
+        '<div class="module-header">Family Chores</div><div class="module-content loading">Loading...</div>';
       return wrapper;
     }
     // todo: choreData
