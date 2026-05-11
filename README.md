@@ -191,7 +191,6 @@ pnpm run test:ci        # Run tests for CI
 src/
 ├── frontend/
 │   ├── frontend.ts             # Module definition
-│   ├── register-frontend.ts    # Module registration
 │   └── frontend.test.ts        # Frontend tests
 ├── backend/
 │   ├── node-helper.ts          # Node helper for data persistence

@@ -9,15 +9,21 @@ export default defineConfig({
       entry: {
         node_helper: './src/backend/node-helper.ts',
       },
-      formats: ['es'], // Output ES modules
+      formats: ['cjs'], // Output CommonJS modules
     },
     rollupOptions: {
-      external: ['node_helper'],
+      external: [
+        'node_helper',
+        'logger',
+        'fs',
+        'path',
+        /^node:/, // Externalize all node: prefixed modules
+      ],
       output: {
-        // Generate .js files for ES modules
         entryFileNames: '[name].js',
         chunkFileNames: '[name].js',
         assetFileNames: '[name][extname]',
+        exports: 'default',
       },
     },
   },

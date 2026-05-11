@@ -6,18 +6,21 @@ export default defineConfig({
     sourcemap: true,
     minify: 'terser', // Use terser for better minification
     lib: {
+      name: 'MMMFamilyChores',
       entry: {
-        'MMM-FamilyChores': './src/frontend/register-frontend.ts',
+        'MMM-FamilyChores': './src/frontend/frontend.ts',
       },
-      formats: ['es'], // Output ES modules
+      formats: ['umd'],
     },
     rollupOptions: {
-      external: ['node_helper'],
+      external: ['logger'],
       output: {
-        // Generate .js files (not .cjs) even though they're CommonJS
         entryFileNames: '[name].js',
         chunkFileNames: '[name].js',
         assetFileNames: '[name][extname]',
+        globals: {
+          logger: 'Log',
+        },
       },
     },
   },

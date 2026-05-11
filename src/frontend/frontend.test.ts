@@ -1,16 +1,30 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FamilyChoresModule } from '../types/module';
-import { Frontend } from './frontend';
+import './frontend';
 
-// Mock Log global
-vi.stubGlobal('Log', {
-  info: vi.fn(),
-  log: vi.fn(),
-  error: vi.fn(),
-  warn: vi.fn(),
-  debug: vi.fn(),
+const { capturedModule } = vi.hoisted(() => {
+  vi.stubGlobal('Log', {
+    info: vi.fn(),
+    log: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+  });
+
+  // Capture module definition for testing
+  let module: FamilyChoresModule | null = null;
+
+  vi.stubGlobal('Module', {
+    register: vi.fn((_name: string, moduleDefinition: FamilyChoresModule) => {
+      module = moduleDefinition;
+      return moduleDefinition;
+    }),
+  });
+
+  return {
+    capturedModule: () => module,
+  };
 });
-
 describe('Frontend Tests', () => {
   let module: FamilyChoresModule;
   let mockSendSocketNotification: ReturnType<typeof vi.fn>;
@@ -23,10 +37,14 @@ describe('Frontend Tests', () => {
     mockUpdateDom = vi.fn();
     mockFile = vi.fn((filename: string) => filename);
 
-    // Use the actual module definition and mock the MagicMirror methods
-    // Create a fresh copy to avoid spy pollution between tests
+    // Get captured module definition and mock MagicMirror methods
+    const capturedModuleFn = capturedModule();
+    if (!capturedModuleFn) {
+      throw new Error('Module not captured - ensure frontend.ts is imported first');
+    }
+
     module = {
-      ...Frontend,
+      ...capturedModuleFn,
       sendSocketNotification: mockSendSocketNotification as (
         notification: string,
         payload: unknown
@@ -50,8 +68,8 @@ describe('Frontend Tests', () => {
 
     it('should return correct styles', () => {
       const styles = module.getStyles();
-      expect(styles).toContain('css/mmm-familychores.css');
-      expect(mockFile).toHaveBeenCalledWith('css/mmm-familychores.css');
+      expect(styles).toContain('css/main.css');
+      expect(mockFile).toHaveBeenCalledWith('css/main.css');
     });
   });
 

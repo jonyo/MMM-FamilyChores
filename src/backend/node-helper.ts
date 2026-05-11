@@ -1,6 +1,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import NodeHelper from 'node_helper';
+import * as Log from 'logger';
+import * as NodeHelper from 'node_helper';
 import { SocketNotifications } from '../constants/socket-notifications';
 import {
   type CaughtUpResetPayload,
@@ -14,17 +15,6 @@ import type { Config } from '../types/config';
 
 // Day names for skip day checking
 const DAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-
-declare global {
-  // Logger is available globally in MagicMirror
-  const Log: {
-    info: (message: string) => void;
-    log: (message: string) => void;
-    error: (message: string) => void;
-    warn: (message: string) => void;
-    debug: (message: string) => void;
-  };
-}
 
 export default NodeHelper.create({
   // Module state

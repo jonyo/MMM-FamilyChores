@@ -1,18 +1,25 @@
 import { SocketNotifications } from '../constants/socket-notifications';
 import type { FamilyChoresData } from '../types/chore-types';
-import type { FamilyChoresModule } from '../types/module';
+import type { Config } from '../types/config';
 
-// Export the module definition for testing and for use in frontend.ts
-export const Frontend: FamilyChoresModule = {
+declare global {
+  const Log: {
+    info: (message: string) => void;
+    log: (message: string) => void;
+    error: (message: string) => void;
+    warn: (message: string) => void;
+    debug: (message: string) => void;
+  };
+}
+
+// Register the module with MagicMirror
+Module.register<Config>('MMM-FamilyChores', {
   name: 'MMM-FamilyChores',
   config: {
     updateInterval: 60000,
     dataFile: 'data.json',
     adminPin: null,
   },
-  file: ((filename: string) => filename) as (filename: string) => string,
-  sendSocketNotification: (() => {}) as () => void,
-  updateDom: (() => {}) as () => void,
   defaults: {
     updateInterval: 60000,
     dataFile: 'data.json',
@@ -35,7 +42,7 @@ export const Frontend: FamilyChoresModule = {
    * vendor folder.
    */
   getStyles() {
-    return [this.file('css/mmm-familychores.css')];
+    return [this.file('css/main.css')];
   },
 
   // MM function: returns DOM element
@@ -48,6 +55,8 @@ export const Frontend: FamilyChoresModule = {
         '<div class="module-header">Family Chores</div><div class="module-content">Loading...</div>';
       return wrapper;
     }
+    // todo: choreData
+    const choreData = this.choreData as FamilyChoresData;
 
     wrapper.innerHTML = `
       <div class="module-header">Family Chores</div>
@@ -55,11 +64,11 @@ export const Frontend: FamilyChoresModule = {
         <div class="chore-summary">
           <div class="summary-item">
             <span class="label">Total Chores:</span>
-            <span class="value">${this.choreData.chores.length}</span>
+            <span class="value">${choreData.chores.length}</span>
           </div>
           <div class="summary-item">
             <span class="label">Completed Today:</span>
-            <span class="value">${this.choreData.chores.filter((c) => c.completedToday).length}</span>
+            <span class="value">${choreData.chores.filter((c) => c.completedToday).length}</span>
           </div>
         </div>
       </div>
@@ -100,4 +109,4 @@ export const Frontend: FamilyChoresModule = {
     Log.debug(`${this.name} is loading data`);
     this.sendSocketNotification(SocketNotifications.CONFIG_REQUEST, this.config);
   },
-};
+});

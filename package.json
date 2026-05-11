@@ -1,7 +1,6 @@
 {
   "name": "mmm-familychores",
   "version": "0.1.0",
-  "type": "module",
   "description": "A TypeScript-based MagicMirror² module for family chore tracking with personal daily chores, rotating daily chores that cycle through family members, and a summary view.",
   "main": "MMM-FamilyChores.js",
   "scripts": {

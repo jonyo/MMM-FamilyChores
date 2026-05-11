@@ -30,19 +30,17 @@ interface MockedNodeHelper {
 
 // Mock node_helper to return the module object passed to create
 vi.mock('node_helper', () => ({
-  default: {
-    create: (moduleObj: unknown) => moduleObj,
-  },
+  create: (moduleObj: unknown) => moduleObj,
 }));
 
 // Mock Log global
-vi.stubGlobal('Log', {
+vi.mock('logger', () => ({
   info: vi.fn(),
   log: vi.fn(),
   error: vi.fn(),
   warn: vi.fn(),
   debug: vi.fn(),
-});
+}));
 
 describe('Node Helper Tests', () => {
   let mockSendSocketNotification: ReturnType<typeof vi.fn>;
