@@ -118,6 +118,9 @@ Note: These files are committed so that the module works out of the box without 
 1. Run `pnpm run test` - All tests must pass
 2. Run `pnpm run typecheck` - TypeScript must compile without errors
 3. Run `pnpm run lint` - Code must pass linting
+4. Run `pnpm run build` - Verify build succeeds (maintainers will build and commit releases)
+
+**Security Practice**: Contributors should verify builds locally but not commit built files. Maintainers build trusted releases.
 
 **Test Coverage:**
 

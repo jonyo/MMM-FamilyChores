@@ -5,20 +5,25 @@ Contributions are welcome! This is a side project, so please understand that res
 ## How to Contribute
 
 ### Bug Reports
+
 - Check existing issues first
 - Include MagicMirror version, browser, and steps to reproduce
 - Screenshots help!
 
 ### Feature Requests
+
 - Open an issue to discuss before implementing
 - Explain the use case and expected behavior
 
 ### Pull Requests
+
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/my-feature`
 3. Run tests: `pnpm test`
-4. Ensure TypeScript compiles: `pnpm run build`
+4. Ensure TypeScript compiles: `pnpm run build` (verify only, don't commit built files)
 5. Submit PR with clear description
+
+**Security Note**: Do not commit built files (`MMM-FamilyChores.js`, `node_helper.js`) in your PR. Maintainers will build and release trusted versions.
 
 ## Guidelines
 
