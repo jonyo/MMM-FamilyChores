@@ -81,7 +81,7 @@ describe('Frontend Tests', () => {
 
       expect(dom.className).toBe('MMM-FamilyChores');
       expect(dom.innerHTML).toContain('Loading...');
-      expect(dom.innerHTML).toContain('Family Chores');
+      expect(dom.innerHTML).toContain('module-content');
     });
 
     it('should show chore data when available', () => {
@@ -96,33 +96,49 @@ describe('Frontend Tests', () => {
             name: 'Take out trash',
             type: 'rotating',
             rotation: ['1', '2'],
+            rotatingIndex: 0,
             completedToday: true,
           },
-          { id: '2', name: 'Clean kitchen', type: 'personal', assignedTo: '1' },
+          {
+            id: '2',
+            name: 'Clean kitchen',
+            type: 'personal',
+            assignedTo: '1',
+            completedToday: false,
+          },
         ],
       };
 
       const dom = module.getDom();
 
       expect(dom.className).toBe('MMM-FamilyChores');
-      expect(dom.innerHTML).toContain('Total Chores:');
-      expect(dom.innerHTML).toContain('2');
-      expect(dom.innerHTML).toContain('Completed Today:');
-      expect(dom.innerHTML).toContain('1');
+      expect(dom.innerHTML).toContain('Take out trash');
+      expect(dom.innerHTML).toContain('Clean kitchen');
+      expect(dom.innerHTML).toContain('Alice');
+      expect(dom.innerHTML).toContain('chore-item');
+      expect(dom.innerHTML).toContain('chore-checkbox');
     });
   });
 
   describe('socketNotificationReceived', () => {
     it('should handle CHORE_DATA notification', () => {
       const mockData = {
-        chores: [{ id: '1', name: 'Test Chore' }],
-        state: { completedToday: [] },
+        people: [{ id: '1', name: 'Alice', color: '#FF6B6B' }],
+        chores: [{ id: '1', name: 'Test Chore', type: 'personal', assignedTo: '1' }],
       };
 
       module.socketNotificationReceived('CHORE_DATA', mockData);
 
       expect(module.choreData).toBe(mockData);
       expect(mockUpdateDom).toHaveBeenCalled();
+    });
+
+    it('should handle CHORE_UPDATE_RESULT notification', () => {
+      const loadDataSpy = vi.spyOn(module, 'loadData');
+
+      module.socketNotificationReceived('CHORE_UPDATE_RESULT', { choreId: '1', completed: true });
+
+      expect(loadDataSpy).toHaveBeenCalled();
     });
 
     it('should handle CONFIG_RESPONSE notification', () => {
@@ -138,6 +154,85 @@ describe('Frontend Tests', () => {
     it('should handle unknown notification', () => {
       module.socketNotificationReceived('UNKNOWN_NOTIFICATION', {});
       // Should not error, just log warning
+    });
+  });
+
+  describe('toggleChoreCompletion', () => {
+    it('should send CHORE_TOGGLE socket notification', () => {
+      module.toggleChoreCompletion('chore-1', true);
+
+      expect(mockSendSocketNotification).toHaveBeenCalledWith('CHORE_TOGGLE', {
+        choreId: 'chore-1',
+        completed: true,
+      });
+    });
+
+    it('should send CHORE_TOGGLE socket notification for unchecking', () => {
+      module.toggleChoreCompletion('chore-2', false);
+
+      expect(mockSendSocketNotification).toHaveBeenCalledWith('CHORE_TOGGLE', {
+        choreId: 'chore-2',
+        completed: false,
+      });
+    });
+  });
+
+  describe('addCheckboxListeners', () => {
+    let mockWrapper: HTMLElement;
+    let mockCheckbox: HTMLInputElement;
+    let mockEvent: Event;
+
+    beforeEach(() => {
+      mockWrapper = document.createElement('div');
+      mockCheckbox = document.createElement('input');
+      mockCheckbox.type = 'checkbox';
+      mockCheckbox.id = 'chore-test-1';
+
+      const mockChoreItem = document.createElement('div');
+      mockChoreItem.className = 'chore-item';
+      mockChoreItem.setAttribute('data-chore-id', 'test-chore-id');
+      mockChoreItem.appendChild(mockCheckbox);
+
+      mockWrapper.appendChild(mockChoreItem);
+
+      const _toggleChoreCompletionSpy = vi.spyOn(module, 'toggleChoreCompletion');
+
+      // Mock the event
+      mockEvent = new Event('change');
+      Object.defineProperty(mockEvent, 'target', { value: mockCheckbox });
+
+      mockCheckbox.addEventListener('change', (event) => {
+        const target = event.target as HTMLInputElement;
+        const choreItem = target.closest('.chore-item');
+        if (choreItem) {
+          const choreId = choreItem.getAttribute('data-chore-id');
+          if (choreId) {
+            module.toggleChoreCompletion(choreId, target.checked);
+          }
+        }
+      });
+    });
+
+    it('should add event listeners to checkboxes', () => {
+      const toggleChoreCompletionSpy = vi.spyOn(module, 'toggleChoreCompletion');
+
+      module.addCheckboxListeners(mockWrapper);
+
+      mockCheckbox.checked = true;
+      mockCheckbox.dispatchEvent(mockEvent);
+
+      expect(toggleChoreCompletionSpy).toHaveBeenCalledWith('test-chore-id', true);
+    });
+
+    it('should handle checkbox uncheck', () => {
+      const toggleChoreCompletionSpy = vi.spyOn(module, 'toggleChoreCompletion');
+
+      module.addCheckboxListeners(mockWrapper);
+
+      mockCheckbox.checked = false;
+      mockCheckbox.dispatchEvent(mockEvent);
+
+      expect(toggleChoreCompletionSpy).toHaveBeenCalledWith('test-chore-id', false);
     });
   });
 

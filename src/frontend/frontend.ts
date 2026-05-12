@@ -51,30 +51,112 @@ Module.register<Config>('MMM-FamilyChores', {
     wrapper.className = 'MMM-FamilyChores';
 
     if (!this.choreData) {
-      wrapper.innerHTML =
-        '<div class="module-header">Family Chores</div><div class="module-content loading">Loading...</div>';
+      wrapper.innerHTML = '<div class="module-content loading">Loading...</div>';
       return wrapper;
     }
-    // todo: choreData
     const choreData = this.choreData as FamilyChoresData;
 
+    const choreItemsHtml = choreData.chores
+      .map((chore) => this.renderChoreItem(chore, choreData))
+      .join('');
+
     wrapper.innerHTML = `
-      <div class="module-header">Family Chores</div>
       <div class="module-content">
-        <div class="chore-summary">
-          <div class="summary-item">
-            <span class="label">Total Chores:</span>
-            <span class="value">${choreData.chores.length}</span>
-          </div>
-          <div class="summary-item">
-            <span class="label">Completed Today:</span>
-            <span class="value">${choreData.chores.filter((c) => c.completedToday).length}</span>
-          </div>
+        <div class="chore-list">
+          ${choreItemsHtml}
         </div>
       </div>
     `;
 
+    // Add event listeners for checkbox interactions
+    this.addCheckboxListeners(wrapper);
+
     return wrapper;
+  },
+
+  // Custom function: add event listeners to checkboxes
+  addCheckboxListeners(wrapper: HTMLElement): void {
+    const checkboxes = wrapper.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach((checkbox) => {
+      checkbox.addEventListener('change', (event) => {
+        const target = event.target as HTMLInputElement;
+        const choreItem = target.closest('.chore-item');
+        if (choreItem) {
+          const choreId = choreItem.getAttribute('data-chore-id');
+          if (choreId) {
+            this.toggleChoreCompletion(choreId, target.checked);
+          }
+        }
+      });
+    });
+
+    // Also add click listeners to labels for better responsiveness
+    const labels = wrapper.querySelectorAll('.chore-label');
+    labels.forEach((label) => {
+      label.addEventListener('click', (event) => {
+        event.preventDefault();
+        const checkbox = label.querySelector('input[type="checkbox"]') as HTMLInputElement;
+        const choreItem = label.closest('.chore-item');
+        if (checkbox && choreItem) {
+          const choreId = choreItem.getAttribute('data-chore-id');
+          if (choreId) {
+            // Toggle the checkbox state
+            checkbox.checked = !checkbox.checked;
+            this.toggleChoreCompletion(choreId, checkbox.checked);
+          }
+        }
+      });
+    });
+  },
+
+  // Custom function: toggle chore completion
+  toggleChoreCompletion(choreId: string, completed: boolean): void {
+    Log.debug(`${this.name} toggling chore ${choreId} to ${completed}`);
+
+    const payload = {
+      choreId,
+      completed,
+    };
+
+    this.sendSocketNotification(SocketNotifications.CHORE_TOGGLE, payload);
+  },
+
+  // Custom function: render individual chore item
+  renderChoreItem(chore: FamilyChoresData['chores'][0], choreData: FamilyChoresData): string {
+    const assignedPerson = chore.assignedTo
+      ? choreData.people.find((p) => p.id === chore.assignedTo)
+      : null;
+
+    const currentRotationPerson =
+      chore.type === 'rotating' && chore.rotation && chore.rotatingIndex !== undefined
+        ? choreData.people.find((p) => p.id === chore.rotation?.[chore.rotatingIndex ?? -1])
+        : null;
+
+    const displayName = assignedPerson || currentRotationPerson;
+    const personName = displayName ? displayName.name : 'Unassigned';
+    const personColor = displayName ? displayName.color : '#ccc';
+
+    const completedClass = chore.completedToday ? 'completed' : '';
+    const checkedAttr = chore.completedToday ? 'checked' : '';
+
+    let html = `<div class="chore-item ${completedClass}" data-chore-id="${chore.id}">`;
+    html += `<label class="chore-label" for="chore-${chore.id}">`;
+    html += '<div class="chore-checkbox">';
+    html += `<input type="checkbox" id="chore-${chore.id}" ${checkedAttr} />`;
+    html += '</div>';
+    html += '<div class="chore-details">';
+    html += `<div class="chore-name">${chore.name}</div>`;
+    html += '<div class="chore-meta">';
+    html += `<span class="assigned-to" style="color: ${personColor}">${personName}</span>`;
+    if (chore.deadline) {
+      html += `<span class="deadline">${chore.deadline}</span>`;
+    }
+    html += '</div>';
+    html += '</div>';
+    html += '</label>';
+    html += '</div>';
+
+    return html;
   },
 
   // MM function: receives socket notifications from node helper
@@ -88,6 +170,11 @@ Module.register<Config>('MMM-FamilyChores', {
       case SocketNotifications.CHORE_DATA:
         this.choreData = payload as FamilyChoresData;
         this.updateDom();
+        break;
+      case SocketNotifications.CHORE_UPDATE_RESULT:
+        Log.debug('Received chore update result');
+        // Refresh data to get updated state
+        this.loadData();
         break;
       case SocketNotifications.PIN_ERROR:
         Log.warn('PIN error received');

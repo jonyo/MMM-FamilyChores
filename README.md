@@ -6,11 +6,12 @@ A TypeScript-based MagicMirror² module for family chore tracking with personal 
 
 ## Current Features
 
+- **Interactive Checkbox List**: Click checkboxes to mark chores complete/incomplete with immediate visual feedback
 - **Personal Chores**: Daily tasks assigned to specific family members that reset at midnight
 - **Rotating Chores**: Shared tasks that cycle through family members when completed
 - **Flexible Display**: Per-person views or summary view showing all incomplete chores
-- **Deadline Indicators**: Visual warnings when chores are past due (normal → yellow → strikethrough)
-- **Mark as Complete**: Click to mark chores as complete directly from the mirror (with undo option)
+- **Visual Indicators**: Color-coded person names, deadline badges, and completion styling
+- **Real-time Updates**: Changes sync immediately between frontend and backend via socket notifications
 - **Skip Days**: Configure chores to skip specific days (e.g., weekends)
 - **State Persistence**: Single JSON file stores all configuration and current state
 
@@ -100,6 +101,32 @@ Mix per-person and summary views:
   classes: 'others-page'
 }
 ```
+
+## Usage
+
+### Interactive Checkbox Interface
+
+The module provides an intuitive checkbox interface for managing chores:
+
+- **Check the box** to mark a chore as complete
+- **Uncheck the box** to mark a chore as incomplete (undo completion)
+- **Visual feedback**: Completed chores show with strikethrough text and reduced opacity
+- **Real-time updates**: Changes are saved immediately and reflected across all module instances
+
+### Chore Display
+
+Each chore item shows:
+
+- **Chore name** (with strikethrough when completed)
+- **Assigned person** with their color-coded name
+- **Deadline badge** (if configured)
+- **Checkbox** for marking complete/incomplete
+
+### State Management
+
+- **Daily reset**: All `completedToday` flags clear at midnight
+- **Rotating chores**: Advance to next person only when marked complete
+- **Persistent storage**: All changes saved to `data.json` immediately
 
 ## Data File Structure
 
