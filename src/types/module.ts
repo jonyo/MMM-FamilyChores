@@ -8,7 +8,7 @@ export interface MagicMirrorModule<TConfig = object> {
   name: string;
   config: TConfig;
   defaults: TConfig;
-  file: (filename: string) => string;
+  file?: (filename: string) => string;
   getStyles: () => string[];
   getDom: () => HTMLElement;
   getHeader?: () => string;
@@ -21,8 +21,8 @@ export interface MagicMirrorModule<TConfig = object> {
   resume?: () => void;
   notificationReceived?: (notification: string, payload: unknown, sender: object) => void;
   socketNotificationReceived: (notification: string, payload: unknown) => void;
-  sendSocketNotification: (notification: string, payload: unknown) => void;
-  updateDom: () => void;
+  sendSocketNotification?: (notification: string, payload: unknown) => void;
+  updateDom?: () => void;
   nunjucksEnvironment?: () => void;
 }
 
@@ -41,6 +41,8 @@ export interface FamilyChoresModule extends Omit<MagicMirrorModule<Config>, 'get
   scheduleUpdate: () => void;
   addCheckboxListeners: (wrapper: HTMLElement) => void;
   toggleChoreCompletion: (choreId: string, completed: boolean) => void;
+  getFilteredChores: () => FamilyChoresData['chores'];
+  renderChoreItem: (chore: FamilyChoresData['chores'][0], choreData: FamilyChoresData) => string;
 }
 
 // Module registration function type
