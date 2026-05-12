@@ -25,7 +25,7 @@
     "chores",
     "typescript"
   ],
-  "author": "Jonathan Yoakum",
+  "author": "Jonathan Foote",
   "license": "MIT",
   "devDependencies": {
     "@biomejs/biome": "^2.4.15",
