@@ -199,8 +199,11 @@ src/
 │   ├── module.ts               # MagicMirror module types
 │   ├── config.ts               # Configuration types
 │   └── chore-types.ts          # Data structure types
-└── constants/
-    └── socket-notifications.ts # Socket notification constants
+├── constants/
+│   └── socket-notifications.ts # Socket notification constants
+└── utils/
+    ├── uuid.ts                 # UUID v4 generation and validation
+    └── uuid.test.ts            # UUID utilities tests
 ```
 
 ## Contributing
