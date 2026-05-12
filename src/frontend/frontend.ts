@@ -55,22 +55,21 @@ const familyChoresModule: FamilyChoresModule = {
       return [];
     }
 
-    const choreData = this.choreData as FamilyChoresData;
     const filterValue = this.config.personFilter?.trim().toLowerCase();
     if (!filterValue) {
-      return choreData.chores;
+      return this.choreData.chores;
     }
 
     const filteredPerson =
-      choreData.people.find((person) => person.id.toLowerCase() === filterValue) ||
-      choreData.people.find((person) => person.name.toLowerCase() === filterValue);
+      this.choreData.people.find((person) => person.id.toLowerCase() === filterValue) ||
+      this.choreData.people.find((person) => person.name.toLowerCase() === filterValue);
 
     if (!filteredPerson) {
       Log.warn(`${this.name} could not find a person matching '${this.config.personFilter}'`);
       return [];
     }
 
-    return choreData.chores.filter((chore) => {
+    return this.choreData.chores.filter((chore) => {
       if (chore.type === 'personal') {
         return chore.assignedTo === filteredPerson.id;
       }
