@@ -82,8 +82,6 @@ src/
 ├── types/              # TypeScript interfaces
 ├── constants/          # Socket notification constants
 └── utils/              # Utility functions
-    ├── uuid.ts         # UUID v4 generation and validation
-    └── uuid.test.ts    # UUID utilities tests
 ```
 
 **Built Files:**
