@@ -83,11 +83,13 @@ src/
 └── constants/          # Socket notification constants
 ```
 
-**Built Files (gitignored):**
+**Built Files:**
 
 - `MMM-FamilyChores.js` - Compiled frontend
 - `node_helper.js` - Compiled backend
 - `*.js.map` - Source maps
+
+Note: These files are committed so that the module works out of the box without needing to run the build process.
 
 ### TypeScript Requirements
 
