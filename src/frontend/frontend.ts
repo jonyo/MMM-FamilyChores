@@ -1,6 +1,7 @@
 import { SocketNotifications } from '../constants/socket-notifications';
 import type { FamilyChoresData } from '../types/chore-types';
 import type { Config } from '../types/config';
+import type { FamilyChoresModule } from '../types/module';
 
 declare global {
   const Log: {
@@ -12,19 +13,26 @@ declare global {
   };
 }
 
+type FamilyChoresModuleWithExtras = FamilyChoresModule & {
+  getFilteredChores: () => FamilyChoresData['chores'];
+  renderChoreItem: (chore: FamilyChoresData['chores'][0], choreData: FamilyChoresData) => string;
+};
+
 // Register the module with MagicMirror
-Module.register<Config>('MMM-FamilyChores', {
+const familyChoresModule: FamilyChoresModuleWithExtras = {
   name: 'MMM-FamilyChores',
   config: {
     updateInterval: 60000,
     dataFile: 'data.json',
     adminPin: null,
+    personFilter: null,
     dailyResetTime: '03:00',
   },
   defaults: {
     updateInterval: 60000,
     dataFile: 'data.json',
     adminPin: null,
+    personFilter: null,
     dailyResetTime: '03:00',
   },
   choreData: null as FamilyChoresData | null,
@@ -44,7 +52,41 @@ Module.register<Config>('MMM-FamilyChores', {
    * vendor folder.
    */
   getStyles() {
-    return [this.file('css/main.css')];
+    return [this.file?.('css/main.css') || ''];
+  },
+
+  getFilteredChores(): FamilyChoresData['chores'] {
+    if (!this.choreData) {
+      return [];
+    }
+
+    const choreData = this.choreData as FamilyChoresData;
+    const filterValue = this.config.personFilter?.trim().toLowerCase();
+    if (!filterValue) {
+      return choreData.chores;
+    }
+
+    const filteredPerson =
+      choreData.people.find((person) => person.id.toLowerCase() === filterValue) ||
+      choreData.people.find((person) => person.name.toLowerCase() === filterValue);
+
+    if (!filteredPerson) {
+      Log.warn(`${this.name} could not find a person matching '${this.config.personFilter}'`);
+      return [];
+    }
+
+    return choreData.chores.filter((chore) => {
+      if (chore.type === 'personal') {
+        return chore.assignedTo === filteredPerson.id;
+      }
+
+      if (chore.type === 'rotating' && chore.rotation?.length) {
+        const currentIndex = chore.rotatingIndex ?? 0;
+        return chore.rotation[currentIndex] === filteredPerson.id;
+      }
+
+      return false;
+    });
   },
 
   // MM function: returns DOM element
@@ -57,8 +99,18 @@ Module.register<Config>('MMM-FamilyChores', {
       return wrapper;
     }
     const choreData = this.choreData as FamilyChoresData;
+    const visibleChores = this.getFilteredChores();
 
-    const choreItemsHtml = choreData.chores
+    if (visibleChores.length === 0) {
+      wrapper.innerHTML = `
+      <div class="module-content">
+        <div class="chore-list empty-state">No chores match the current filter.</div>
+      </div>
+      `;
+      return wrapper;
+    }
+
+    const choreItemsHtml = visibleChores
       .map((chore) => this.renderChoreItem(chore, choreData))
       .join('');
 
@@ -120,7 +172,7 @@ Module.register<Config>('MMM-FamilyChores', {
       completed,
     };
 
-    this.sendSocketNotification(SocketNotifications.CHORE_TOGGLE, payload);
+    this.sendSocketNotification?.(SocketNotifications.CHORE_TOGGLE, payload);
   },
 
   // Custom function: render individual chore item
@@ -171,7 +223,7 @@ Module.register<Config>('MMM-FamilyChores', {
         break;
       case SocketNotifications.CHORE_DATA:
         this.choreData = payload as FamilyChoresData;
-        this.updateDom();
+        this.updateDom?.();
         break;
       case SocketNotifications.CHORE_UPDATE_RESULT:
         Log.debug('Received chore update result');
@@ -196,6 +248,8 @@ Module.register<Config>('MMM-FamilyChores', {
   // Custom function: send socket notification to node helper
   loadData(): void {
     Log.debug(`${this.name} is loading data`);
-    this.sendSocketNotification(SocketNotifications.CONFIG_REQUEST, this.config);
+    this.sendSocketNotification?.(SocketNotifications.CONFIG_REQUEST, this.config);
   },
-});
+};
+
+Module.register<Config>('MMM-FamilyChores', familyChoresModule);

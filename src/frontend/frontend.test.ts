@@ -1,8 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import '../../css/main.css';
+import type { FamilyChoresData } from '../types/chore-types';
 import type { FamilyChoresModule } from '../types/module';
 import './frontend';
+
+type FamilyChoresModuleWithExtras = FamilyChoresModule & {
+  getFilteredChores: () => FamilyChoresData['chores'];
+  renderChoreItem: (chore: FamilyChoresData['chores'][0], choreData: FamilyChoresData) => string;
+};
 
 const { capturedModule } = vi.hoisted(() => {
   vi.stubGlobal('Log', {
@@ -29,7 +35,7 @@ const { capturedModule } = vi.hoisted(() => {
 });
 
 describe('Frontend Tests', () => {
-  let module: FamilyChoresModule;
+  let module: FamilyChoresModuleWithExtras;
   let mockSendSocketNotification: ReturnType<typeof vi.fn>;
   let mockUpdateDom: ReturnType<typeof vi.fn>;
   let mockFile: ReturnType<typeof vi.fn>;
@@ -66,12 +72,13 @@ describe('Frontend Tests', () => {
       ) => void,
       updateDom: mockUpdateDom as (speed?: number) => void,
       file: mockFile as (filename: string) => string,
-    };
+    } as FamilyChoresModuleWithExtras;
 
     module.config = {
       updateInterval: 60000,
       dataFile: 'data.json',
       adminPin: null,
+      personFilter: null,
     };
   });
 
@@ -95,6 +102,209 @@ describe('Frontend Tests', () => {
       const styles = module.getStyles();
       expect(styles).toContain('css/main.css');
       expect(mockFile).toHaveBeenCalledWith('css/main.css');
+    });
+  });
+
+  describe('start', () => {
+    it('should initialize module and start data loading', () => {
+      const loadDataSpy = vi.spyOn(module, 'loadData');
+      const scheduleUpdateSpy = vi.spyOn(module, 'scheduleUpdate');
+
+      module.start();
+
+      expect(loadDataSpy).toHaveBeenCalled();
+      expect(scheduleUpdateSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('getFilteredChores', () => {
+    beforeEach(() => {
+      module.choreData = {
+        people: [
+          { id: 'alice', name: 'Alice', color: '#FF6B6B' },
+          { id: 'bob', name: 'Bob', color: '#4ECDC4' },
+          { id: 'charlie', name: 'Charlie', color: '#45B7D1' },
+        ],
+        chores: [
+          {
+            id: '1',
+            name: 'Take out trash',
+            type: 'rotating',
+            rotation: ['alice', 'bob'],
+            rotatingIndex: 0,
+            completedToday: false,
+          },
+          {
+            id: '2',
+            name: 'Clean kitchen',
+            type: 'personal',
+            assignedTo: 'bob',
+            completedToday: false,
+          },
+          {
+            id: '3',
+            name: 'Vacuum living room',
+            type: 'personal',
+            assignedTo: 'charlie',
+            completedToday: false,
+          },
+        ],
+      };
+    });
+
+    it('should return all chores when no filter is set', () => {
+      module.config.personFilter = null;
+      const filtered = module.getFilteredChores();
+      expect(filtered).toHaveLength(3);
+    });
+
+    it('should filter by person ID', () => {
+      module.config.personFilter = 'bob';
+      const filtered = module.getFilteredChores();
+      expect(filtered).toHaveLength(1); // only personal chore assigned to bob
+      expect(filtered.map((c) => c.id)).toEqual(['2']);
+    });
+
+    it('should filter by person name (case insensitive)', () => {
+      module.config.personFilter = 'ALICE';
+      const filtered = module.getFilteredChores();
+      expect(filtered).toHaveLength(1);
+      expect(filtered[0].id).toBe('1');
+    });
+
+    it('should filter rotating chores correctly', () => {
+      module.config.personFilter = 'alice';
+      const filtered = module.getFilteredChores();
+      // rotating chore where alice is current
+      expect(filtered.some((c) => c.id === '1')).toBe(true);
+      expect(filtered).toHaveLength(1);
+    });
+
+    it('should return empty array when no person matches filter', () => {
+      module.config.personFilter = 'nonexistent';
+      const filtered = module.getFilteredChores();
+      expect(filtered).toHaveLength(0);
+    });
+
+    it('should return empty array when no chore data', () => {
+      module.choreData = null;
+      const filtered = module.getFilteredChores();
+      expect(filtered).toHaveLength(0);
+    });
+
+    it('should handle whitespace in filter', () => {
+      module.config.personFilter = '  alice  ';
+      const filtered = module.getFilteredChores();
+      expect(filtered).toHaveLength(1);
+      expect(filtered[0].id).toBe('1');
+    });
+  });
+
+  describe('renderChoreItem', () => {
+    beforeEach(() => {
+      module.choreData = {
+        people: [
+          { id: 'alice', name: 'Alice', color: '#FF6B6B' },
+          { id: 'bob', name: 'Bob', color: '#4ECDC4' },
+        ],
+        chores: [],
+      };
+    });
+
+    it('should render personal chore with assigned person', () => {
+      if (!module.choreData) {
+        throw new Error('choreData is null');
+      }
+      const chore = {
+        id: '1',
+        name: 'Clean kitchen',
+        type: 'personal' as const,
+        assignedTo: 'alice',
+        completedToday: false,
+      };
+
+      const html = module.renderChoreItem(chore, module.choreData);
+
+      expect(html).toContain('Clean kitchen');
+      expect(html).toContain('Alice');
+      expect(html).toContain('#FF6B6B');
+      expect(html).toContain('data-chore-id="1"');
+      expect(html).toContain('id="chore-1"');
+      expect(html).not.toContain('checked');
+      expect(html).not.toContain('completed');
+    });
+
+    it('should render completed chore', () => {
+      if (!module.choreData) {
+        throw new Error('choreData is null');
+      }
+      const chore = {
+        id: '2',
+        name: 'Take out trash',
+        type: 'personal' as const,
+        assignedTo: 'bob',
+        completedToday: true,
+      };
+
+      const html = module.renderChoreItem(chore, module.choreData);
+
+      expect(html).toContain('completed');
+      expect(html).toContain('checked');
+    });
+
+    it('should render rotating chore with current person', () => {
+      if (!module.choreData) {
+        throw new Error('choreData is null');
+      }
+      const chore = {
+        id: '3',
+        name: 'Vacuum',
+        type: 'rotating' as const,
+        rotation: ['alice', 'bob'],
+        rotatingIndex: 1,
+        completedToday: false,
+      };
+
+      const html = module.renderChoreItem(chore, module.choreData);
+
+      expect(html).toContain('Bob');
+      expect(html).toContain('#4ECDC4');
+    });
+
+    it('should render chore with deadline', () => {
+      if (!module.choreData) {
+        throw new Error('choreData is null');
+      }
+      const chore = {
+        id: '4',
+        name: 'Water plants',
+        type: 'personal' as const,
+        assignedTo: 'alice',
+        completedToday: false,
+        deadline: 'Daily',
+      };
+
+      const html = module.renderChoreItem(chore, module.choreData);
+
+      expect(html).toContain('Daily');
+    });
+
+    it('should render unassigned chore', () => {
+      if (!module.choreData) {
+        throw new Error('choreData is null');
+      }
+      const chore = {
+        id: '5',
+        name: 'General cleanup',
+        type: 'personal' as const,
+        assignedTo: 'nonexistent',
+        completedToday: false,
+      };
+
+      const html = module.renderChoreItem(chore, module.choreData);
+
+      expect(html).toContain('Unassigned');
+      expect(html).toContain('#ccc');
     });
   });
 
@@ -145,6 +355,66 @@ describe('Frontend Tests', () => {
       expect(page.getByText('Alice').first()).toBeVisible();
       expect(page.getByRole('checkbox').first()).toBeVisible();
       expect(page.getByText('Loading...').elements()).toHaveLength(0);
+    });
+
+    it('should filter chores by personFilter using person name', async () => {
+      module.choreData = {
+        people: [
+          { id: '1', name: 'Alice', color: '#FF6B6B' },
+          { id: '2', name: 'Bob', color: '#4ECDC4' },
+        ],
+        chores: [
+          {
+            id: '1',
+            name: 'Take out trash',
+            type: 'rotating',
+            rotation: ['1', '2'],
+            rotatingIndex: 0,
+            completedToday: true,
+          },
+          {
+            id: '2',
+            name: 'Clean kitchen',
+            type: 'personal',
+            assignedTo: '2',
+            completedToday: false,
+          },
+        ],
+      };
+
+      module.config.personFilter = 'Alice';
+
+      const dom = module.getDom();
+      document.body.appendChild(dom);
+
+      expect(page.getByText('Take out trash')).toBeVisible();
+      expect(page.getByText('Clean kitchen').elements()).toHaveLength(0);
+    });
+
+    it('should show empty state when filter matches no chores', async () => {
+      module.choreData = {
+        people: [
+          { id: '1', name: 'Alice', color: '#FF6B6B' },
+          { id: '2', name: 'Bob', color: '#4ECDC4' },
+        ],
+        chores: [
+          {
+            id: '1',
+            name: 'Clean kitchen',
+            type: 'personal',
+            assignedTo: '1',
+            completedToday: false,
+          },
+        ],
+      };
+
+      module.config.personFilter = 'Bob'; // Bob has no chores
+
+      const dom = module.getDom();
+      document.body.appendChild(dom);
+
+      expect(page.getByText('No chores match the current filter.')).toBeVisible();
+      expect(page.getByText('Clean kitchen').elements()).toHaveLength(0);
     });
   });
 

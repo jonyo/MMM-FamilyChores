@@ -49,11 +49,13 @@ That's it! The module includes all necessary dependencies in the bundled JavaScr
 
 ### Basic Options
 
-| Option           | Type   | Default       | Description                                 |
-| ---------------- | ------ | ------------- | ------------------------------------------- |
-| `dataFile`       | string | `'data.json'` | Path to data file relative to module folder |
-| `updateInterval` | number | `60000`       | Update interval in milliseconds             |
-| `adminPin`       | string | `null`        | PIN for admin actions (reassign, undo)      |
+| Option           | Type   | Default       | Description                                     |
+| ---------------- | ------ | ------------- | ----------------------------------------------- |
+| `dataFile`       | string | `'data.json'` | Path to data file relative to module folder     |
+| `updateInterval` | number | `60000`       | Update interval in milliseconds                 |
+| `adminPin`       | string | `null`        | PIN for admin actions (reassign, undo)          |
+| `personFilter`   | string | `null`        | Filter chores by person name (case-insensitive) |
+| `dailyResetTime` | string | `'03:00'`     | Daily reset time in 24-hour format (HH:mm)      |
 
 ### Display Modes
 
@@ -66,39 +68,50 @@ Show only one person's personal chores plus their current rotating assignments:
   module: 'MMM-FamilyChores',
   position: 'middle_center',
   header: "Alice's Chores",
-  config: { personFilter: 'alice' }
+  config: { personFilter: 'Alice' }
 }
 ```
 
-#### Summary View
+#### All Chores View
 
-Show all incomplete chores and rotating assignments:
+Show all incomplete chores and rotating assignments (default behavior):
 
 ```javascript
 {
   module: 'MMM-FamilyChores',
   position: 'middle_center',
-  header: 'Family Chores',
-  config: { viewMode: 'summary' }
+  header: 'Family Chores'
+  // No personFilter means show all chores
 }
 ```
 
-#### Hybrid View
+#### Multiple Views
 
-Mix per-person and summary views:
+Use multiple module instances for different views on separate pages:
 
 ```javascript
 // Alice gets her own page
 {
   module: 'MMM-FamilyChores',
-  config: { personFilter: 'alice' },
+  position: 'middle_center',
+  header: "Alice's Chores",
+  config: { personFilter: 'Alice' },
   classes: 'alice-page'
 },
-// Bob and Charlie share a summary page
+// Bob gets his own page
 {
   module: 'MMM-FamilyChores',
-  config: { viewMode: 'summary', excludePerson: 'alice' },
-  classes: 'others-page'
+  position: 'middle_center',
+  header: "Bob's Chores",
+  config: { personFilter: 'Bob' },
+  classes: 'bob-page'
+},
+// Summary page shows all chores
+{
+  module: 'MMM-FamilyChores',
+  position: 'middle_center',
+  header: 'All Family Chores',
+  classes: 'summary-page'
 }
 ```
 

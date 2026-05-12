@@ -8,7 +8,7 @@ export interface MagicMirrorModule<TConfig = object> {
   name: string;
   config: TConfig;
   defaults: TConfig;
-  file: (filename: string) => string;
+  file?: (filename: string) => string;
   getStyles: () => string[];
   getDom: () => HTMLElement;
   getHeader?: () => string;
@@ -21,8 +21,8 @@ export interface MagicMirrorModule<TConfig = object> {
   resume?: () => void;
   notificationReceived?: (notification: string, payload: unknown, sender: object) => void;
   socketNotificationReceived: (notification: string, payload: unknown) => void;
-  sendSocketNotification: (notification: string, payload: unknown) => void;
-  updateDom: () => void;
+  sendSocketNotification?: (notification: string, payload: unknown) => void;
+  updateDom?: () => void;
   nunjucksEnvironment?: () => void;
 }
 
