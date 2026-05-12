@@ -1,0 +1,45 @@
+{
+  "name": "mmm-familychores",
+  "version": "0.1.0",
+  "description": "A TypeScript-based MagicMirror² module for family chore tracking with personal daily chores, rotating daily chores that cycle through family members, and a summary view.",
+  "main": "MMM-FamilyChores.js",
+  "scripts": {
+    "build": "pnpm run build:client && pnpm run build:node && pnpm run copy:dist",
+    "build:client": "vite build --config vite.client.config.ts",
+    "build:node": "vite build --config vite.node.config.ts",
+    "copy:dist": "cp -r dist/client/* . && cp -r dist/node/* .",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check",
+    "fix": "biome check --write --unsafe",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ci": "vitest run",
+    "prepare": "husky install",
+    "test:browser": "vitest --config=vitest.browser.config.ts",
+    "playwright:install": "playwright install"
+  },
+  "keywords": [
+    "magicmirror",
+    "module",
+    "family",
+    "chores",
+    "typescript"
+  ],
+  "author": "Jonathan Foote",
+  "license": "MIT",
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.15",
+    "@playwright/test": "^1.59.1",
+    "@types/magicmirror-module": "^2.16.6",
+    "@types/node": "^20.x",
+    "@vitest/browser-playwright": "^4.1.5",
+    "husky": "^9.1.7",
+    "terser": "^5.47.1",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.11",
+    "vitest": "^4.1.5"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}
