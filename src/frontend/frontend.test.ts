@@ -1,4 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { page } from 'vitest/browser';
+import '../../css/main.css';
 import type { FamilyChoresModule } from '../types/module';
 import './frontend';
 
@@ -25,6 +27,7 @@ const { capturedModule } = vi.hoisted(() => {
     capturedModule: () => module,
   };
 });
+
 describe('Frontend Tests', () => {
   let module: FamilyChoresModule;
   let mockSendSocketNotification: ReturnType<typeof vi.fn>;
@@ -32,6 +35,18 @@ describe('Frontend Tests', () => {
   let mockFile: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
+    // Add black background for better screenshot visibility in tests
+    const testStyle = document.createElement('style');
+    testStyle.type = 'text/css';
+    testStyle.textContent = `
+      body {
+        background: #000 !important;
+        margin: 0;
+        padding: 20px;
+      }
+    `;
+    document.head.appendChild(testStyle);
+
     // Mock MagicMirror module methods with proper signatures
     mockSendSocketNotification = vi.fn();
     mockUpdateDom = vi.fn();
@@ -47,16 +62,26 @@ describe('Frontend Tests', () => {
       ...capturedModuleFn,
       sendSocketNotification: mockSendSocketNotification as (
         notification: string,
-        payload: unknown
+        payload?: unknown
       ) => void,
-      updateDom: mockUpdateDom as () => void,
+      updateDom: mockUpdateDom as (speed?: number) => void,
       file: mockFile as (filename: string) => string,
     };
+
     module.config = {
       updateInterval: 60000,
       dataFile: 'data.json',
       adminPin: null,
     };
+  });
+
+  afterEach(() => {
+    // Clean up DOM after each test to prevent interference
+    document.body.innerHTML = '';
+    document.head.innerHTML = '';
+    if (module) {
+      module.choreData = null;
+    }
   });
 
   describe('Module Configuration', () => {
@@ -74,17 +99,18 @@ describe('Frontend Tests', () => {
   });
 
   describe('getDom', () => {
-    it('should show loading state when no chore data', () => {
+    it('should show loading state when no chore data', async () => {
       module.choreData = null;
 
+      // Render the module to page
       const dom = module.getDom();
+      document.body.appendChild(dom);
 
-      expect(dom.className).toBe('MMM-FamilyChores');
-      expect(dom.innerHTML).toContain('Loading...');
-      expect(dom.innerHTML).toContain('Family Chores');
+      // Use page locators to verify loading state
+      expect(page.getByText('Loading...')).toBeVisible();
     });
 
-    it('should show chore data when available', () => {
+    it('should show chore data when available', async () => {
       module.choreData = {
         people: [
           { id: '1', name: 'Alice', color: '#FF6B6B' },
@@ -96,33 +122,51 @@ describe('Frontend Tests', () => {
             name: 'Take out trash',
             type: 'rotating',
             rotation: ['1', '2'],
+            rotatingIndex: 0,
             completedToday: true,
           },
-          { id: '2', name: 'Clean kitchen', type: 'personal', assignedTo: '1' },
+          {
+            id: '2',
+            name: 'Clean kitchen',
+            type: 'personal',
+            assignedTo: '1',
+            completedToday: false,
+          },
         ],
       };
 
+      // Render the module to page
       const dom = module.getDom();
+      document.body.appendChild(dom);
 
-      expect(dom.className).toBe('MMM-FamilyChores');
-      expect(dom.innerHTML).toContain('Total Chores:');
-      expect(dom.innerHTML).toContain('2');
-      expect(dom.innerHTML).toContain('Completed Today:');
-      expect(dom.innerHTML).toContain('1');
+      // Use page locators to verify content
+      expect(page.getByText('Take out trash')).toBeVisible();
+      expect(page.getByText('Clean kitchen')).toBeVisible();
+      expect(page.getByText('Alice').first()).toBeVisible();
+      expect(page.getByRole('checkbox').first()).toBeVisible();
+      expect(page.getByText('Loading...').elements()).toHaveLength(0);
     });
   });
 
   describe('socketNotificationReceived', () => {
     it('should handle CHORE_DATA notification', () => {
       const mockData = {
-        chores: [{ id: '1', name: 'Test Chore' }],
-        state: { completedToday: [] },
+        people: [{ id: '1', name: 'Alice', color: '#FF6B6B' }],
+        chores: [{ id: '1', name: 'Test Chore', type: 'personal', assignedTo: '1' }],
       };
 
       module.socketNotificationReceived('CHORE_DATA', mockData);
 
       expect(module.choreData).toBe(mockData);
       expect(mockUpdateDom).toHaveBeenCalled();
+    });
+
+    it('should handle CHORE_UPDATE_RESULT notification', () => {
+      const loadDataSpy = vi.spyOn(module, 'loadData');
+
+      module.socketNotificationReceived('CHORE_UPDATE_RESULT', { choreId: '1', completed: true });
+
+      expect(loadDataSpy).toHaveBeenCalled();
     });
 
     it('should handle CONFIG_RESPONSE notification', () => {
@@ -138,6 +182,114 @@ describe('Frontend Tests', () => {
     it('should handle unknown notification', () => {
       module.socketNotificationReceived('UNKNOWN_NOTIFICATION', {});
       // Should not error, just log warning
+    });
+  });
+
+  describe('toggleChoreCompletion', () => {
+    it('should send CHORE_TOGGLE socket notification', () => {
+      module.toggleChoreCompletion('chore-1', true);
+
+      expect(mockSendSocketNotification).toHaveBeenCalledWith('CHORE_TOGGLE', {
+        choreId: 'chore-1',
+        completed: true,
+      });
+    });
+
+    it('should send CHORE_TOGGLE socket notification for unchecking', () => {
+      module.toggleChoreCompletion('chore-2', false);
+
+      expect(mockSendSocketNotification).toHaveBeenCalledWith('CHORE_TOGGLE', {
+        choreId: 'chore-2',
+        completed: false,
+      });
+    });
+  });
+
+  describe('Checkbox Interactions', () => {
+    beforeEach(() => {
+      // Set up chore data for interaction tests
+      module.choreData = {
+        people: [
+          { id: '1', name: 'Alice', color: '#FF6B6B' },
+          { id: '2', name: 'Bob', color: '#4ECDC4' },
+        ],
+        chores: [
+          {
+            id: 'chore-1',
+            name: 'Take out trash',
+            type: 'rotating',
+            rotation: ['1', '2'],
+            rotatingIndex: 0,
+            completedToday: false,
+          },
+        ],
+      };
+    });
+
+    it('should toggle chore when checkbox is clicked', async () => {
+      // Render the module to page
+      const dom = module.getDom();
+      document.body.appendChild(dom);
+      module.addCheckboxListeners(dom);
+
+      const toggleChoreCompletionSpy = vi.spyOn(module, 'toggleChoreCompletion');
+
+      // Use page to find and click checkbox by role
+      const checkbox = page.getByRole('checkbox');
+      await checkbox.click();
+
+      expect(toggleChoreCompletionSpy).toHaveBeenCalledWith('chore-1', true);
+    });
+
+    it('should toggle chore when chore name is clicked', async () => {
+      // Render the module to page
+      const dom = module.getDom();
+      document.body.appendChild(dom);
+      module.addCheckboxListeners(dom);
+
+      const toggleChoreCompletionSpy = vi.spyOn(module, 'toggleChoreCompletion');
+
+      // Use page to find and click by text content
+      const choreName = page.getByText('Take out trash');
+      await choreName.click();
+
+      expect(toggleChoreCompletionSpy).toHaveBeenCalledWith('chore-1', true);
+    });
+
+    it('should toggle chore when assigned person is clicked', async () => {
+      // Render the module to page
+      const dom = module.getDom();
+      document.body.appendChild(dom);
+      module.addCheckboxListeners(dom);
+
+      const toggleChoreCompletionSpy = vi.spyOn(module, 'toggleChoreCompletion');
+
+      // Use page to find and click by person name
+      const assignedPerson = page.getByText('Alice');
+      await assignedPerson.click();
+
+      expect(toggleChoreCompletionSpy).toHaveBeenCalledWith('chore-1', true);
+    });
+
+    it('should handle checkbox unchecking', async () => {
+      // Render the module to page
+      const dom = module.getDom();
+      document.body.appendChild(dom);
+      module.addCheckboxListeners(dom);
+
+      const toggleChoreCompletionSpy = vi.spyOn(module, 'toggleChoreCompletion');
+
+      // First click to check
+      const checkbox = page.getByRole('checkbox');
+      await checkbox.click();
+
+      // Clear previous calls
+      toggleChoreCompletionSpy.mockClear();
+
+      // Second click to uncheck
+      await checkbox.click();
+
+      expect(toggleChoreCompletionSpy).toHaveBeenCalledWith('chore-1', false);
     });
   });
 

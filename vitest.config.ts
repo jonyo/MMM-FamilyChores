@@ -17,6 +17,9 @@ export default defineConfig({
         test: {
           name: 'browser',
           include: ['src/frontend/**/*.test.ts'],
+          css: {
+            include: /.+/,
+          },
           browser: {
             enabled: true,
             headless: true,
