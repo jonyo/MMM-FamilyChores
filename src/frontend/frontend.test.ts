@@ -108,9 +108,6 @@ describe('Frontend Tests', () => {
 
       // Use page locators to verify loading state
       expect(page.getByText('Loading...')).toBeVisible();
-
-      // Clean up
-      document.body.removeChild(dom);
     });
 
     it('should show chore data when available', async () => {
@@ -148,9 +145,6 @@ describe('Frontend Tests', () => {
       expect(page.getByText('Alice').first()).toBeVisible();
       expect(page.getByRole('checkbox').first()).toBeVisible();
       expect(page.getByText('Loading...').elements()).toHaveLength(0);
-
-      // Clean up
-      document.body.removeChild(dom);
     });
   });
 
@@ -245,9 +239,6 @@ describe('Frontend Tests', () => {
       await checkbox.click();
 
       expect(toggleChoreCompletionSpy).toHaveBeenCalledWith('chore-1', true);
-
-      // Clean up
-      document.body.removeChild(dom);
     });
 
     it('should toggle chore when chore name is clicked', async () => {
@@ -263,9 +254,6 @@ describe('Frontend Tests', () => {
       await choreName.click();
 
       expect(toggleChoreCompletionSpy).toHaveBeenCalledWith('chore-1', true);
-
-      // Clean up
-      document.body.removeChild(dom);
     });
 
     it('should toggle chore when assigned person is clicked', async () => {
@@ -281,9 +269,6 @@ describe('Frontend Tests', () => {
       await assignedPerson.click();
 
       expect(toggleChoreCompletionSpy).toHaveBeenCalledWith('chore-1', true);
-
-      // Clean up
-      document.body.removeChild(dom);
     });
 
     it('should handle checkbox unchecking', async () => {
@@ -305,9 +290,6 @@ describe('Frontend Tests', () => {
       await checkbox.click();
 
       expect(toggleChoreCompletionSpy).toHaveBeenCalledWith('chore-1', false);
-
-      // Clean up
-      document.body.removeChild(dom);
     });
   });
 
