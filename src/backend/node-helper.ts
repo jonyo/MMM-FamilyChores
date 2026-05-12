@@ -12,9 +12,7 @@ import {
   SkipDayVisibility,
 } from '../types/chore-types';
 import type { Config } from '../types/config';
-
-// Day names for skip day checking
-const DAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+import { getLocalDateString, getLocalDayName, getLocalTimeString } from '../utils/date';
 
 export default NodeHelper.create({
   // Module state
@@ -73,6 +71,8 @@ export default NodeHelper.create({
         Log.info(`Created default chore data at ${dataPath}`);
       }
 
+      // Check if daily reset is needed before sending data
+      this.checkAndPerformDailyReset();
       this.sendSocketNotification(SocketNotifications.CHORE_DATA, this.choreData);
     } catch (error) {
       Log.error(`Error loading chore data: ${error}`);
@@ -145,16 +145,48 @@ export default NodeHelper.create({
           skipDayVisibility: SkipDayVisibility.HIDE,
         },
       ],
+      // Initialize to today to prevent immediate rotation
+      lastResetDate: getLocalDateString(),
     };
   },
 
-  // Perform daily reset - clears completedToday and updates caughtUp status
-  // Should be called when detecting a new day
-  performDailyReset(): void {
+  // Check if daily reset should be performed and execute if needed
+  checkAndPerformDailyReset(): void {
+    if (!this.choreData || !this.config) return;
+
+    // Get current local date and time
+    const todayDateString = getLocalDateString();
+    const currentTimeString = getLocalTimeString();
+
+    if (this.choreData.lastResetDate && todayDateString <= this.choreData.lastResetDate) {
+      // already run today
+      return;
+    }
+    const dailyResetTime = this.config.dailyResetTime || '03:00';
+
+    if (currentTimeString < dailyResetTime) {
+      // not time yet - NOTE: if we skipped an entire day, we still wait for the reset time to pass
+      return;
+    }
+    Log.info(
+      `Daily reset triggered for ${getLocalDateString()} at ${currentTimeString}, reset time: ${dailyResetTime}`
+    );
+    this.transitionChoresForNewDay();
+    this.choreData.lastResetDate = getLocalDateString();
+    this.saveChoreData();
+  },
+  /**
+   * Transitions chore state for a new day.
+   *
+   * Updates caughtUp status, clears completedToday, and rotates chores as needed.
+   * Does NOT guard against multiple executions in the same day.
+   *
+   * See {@link checkAndPerformDailyReset} for the guard.
+   */
+  transitionChoresForNewDay() {
     if (!this.choreData) return;
 
-    const today = new Date();
-    const todayDayName = DAY_NAMES[today.getDay()];
+    const todayDayName = getLocalDayName();
 
     for (const chore of this.choreData.chores) {
       const skipDays = chore.skipDays ?? [];

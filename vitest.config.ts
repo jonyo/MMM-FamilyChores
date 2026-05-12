@@ -9,14 +9,14 @@ export default defineConfig({
         test: {
           name: 'node',
           environment: 'node',
-          include: ['src/backend/**/*.test.ts'],
+          include: ['src/backend/**/*.test.ts', 'src/utils/**/*.test.ts'],
         },
       },
       // Browser project for frontend tests
       {
         test: {
           name: 'browser',
-          include: ['src/frontend/**/*.test.ts'],
+          include: ['src/frontend/**/*.test.ts', 'src/utils/**/*.test.ts'],
           css: {
             include: /.+/,
           },

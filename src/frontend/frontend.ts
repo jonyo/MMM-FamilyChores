@@ -19,11 +19,13 @@ Module.register<Config>('MMM-FamilyChores', {
     updateInterval: 60000,
     dataFile: 'data.json',
     adminPin: null,
+    dailyResetTime: '03:00',
   },
   defaults: {
     updateInterval: 60000,
     dataFile: 'data.json',
     adminPin: null,
+    dailyResetTime: '03:00',
   },
   choreData: null as FamilyChoresData | null,
 
