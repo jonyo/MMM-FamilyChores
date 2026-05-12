@@ -80,7 +80,10 @@ src/
 ├── frontend/           # Client-side MagicMirror module
 ├── backend/            # Node.js helper for data persistence
 ├── types/              # TypeScript interfaces
-└── constants/          # Socket notification constants
+├── constants/          # Socket notification constants
+└── utils/              # Utility functions
+    ├── uuid.ts         # UUID v4 generation and validation
+    └── uuid.test.ts    # UUID utilities tests
 ```
 
 **Built Files:**
@@ -129,6 +132,7 @@ Note: These files are committed so that the module works out of the box without 
 - PIN validation for admin actions
 - Config validation and error handling
 - Skip day visibility behavior for all enum values
+- UUID generation and validation utilities
 - Goal of as close to 100% coverage as possible
 
 **Mock Management:**
@@ -235,6 +239,14 @@ pnpm run fix            # Auto-fix linting issues
 3. Update frontend in `src/frontend/frontend.ts`
 4. Add tests for new functionality
 5. Update documentation
+
+### Working with UUID Utilities
+
+1. Use `generateUUID()` for creating new person/chore identifiers
+2. Use `isValidUUID()` to validate UUID strings from external sources
+3. Use `generateTestUUID()` only in tests for deterministic UUIDs
+4. All UUID utilities are located in `src/utils/uuid.ts`
+5. Tests for UUID utilities are in `src/utils/uuid.test.ts`
 
 ### Modifying State Management
 

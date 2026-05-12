@@ -1,5 +1,8 @@
 // Data structures from our development plan
 
+// UUID v4 type alias
+export type UUID = string;
+
 export enum SkipDayVisibility {
   HIDE = 'hide', // Never show on skip days
   SHOW_IF_OVERDUE = 'show-if-overdue', // Show only if not caught up
@@ -7,17 +10,17 @@ export enum SkipDayVisibility {
 }
 
 export interface Person {
-  id: string; // UUID v4
+  id: UUID; // UUID v4
   name: string;
   color: string;
 }
 
 export interface Chore {
-  id: string; // UUID v4
+  id: UUID; // UUID v4
   name: string;
   type: 'personal' | 'rotating';
-  assignedTo?: string; // UUID for personal chores
-  rotation?: string[]; // Array of person UUIDs for rotating chores
+  assignedTo?: UUID; // UUID for personal chores
+  rotation?: UUID[]; // Array of person UUIDs for rotating chores
   deadline?: string; // Time in 24-hour format "08:00", "21:00"
   skipDays?: string[]; // Array of day names to skip
   skipDayVisibility?: SkipDayVisibility; // How to handle display on skip days
