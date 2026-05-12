@@ -52,16 +52,6 @@
           }
         }
       }
-    },
-    {
-      // Disable linting for built files
-      "includes": ["MMM-FamilyChores.js", "node_helper.js"],
-      "linter": {
-        "enabled": false
-      },
-      "formatter": {
-        "enabled": false
-      }
     }
   ]
 }
