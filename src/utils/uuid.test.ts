@@ -37,7 +37,7 @@ describe('UUID Utilities', () => {
     it('should validate correct UUID v4 strings', () => {
       const validUUIDs = [
         '550e8400-e29b-41d4-a716-446655440000',
-        '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
+        '6ba7b810-9dad-41d1-80b4-00c04fd430c8',
         'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
       ];
 
@@ -50,9 +50,9 @@ describe('UUID Utilities', () => {
       const invalidUUIDs = [
         'invalid-uuid',
         '550e8400-e29b-41d4-a716', // too short
-        '550e8400-e29b-41d4-a716-446655440000', // too long
+        '550e8400-e29b-41d4-a716-44665544', // too short
         '550e8400-e29b-51d4-a716-446655440000', // wrong version (5)
-        '550e8400-e29b-41d4-a716-446655440000', // wrong variant
+        '550e8400-e29b-41d4-c716-446655440000', // wrong variant (c)
         '',
         null,
         undefined,

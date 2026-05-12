@@ -53,6 +53,13 @@ export function isValidUUID(uuid: string): boolean {
  * @returns A deterministic UUID v4 for testing
  */
 export function generateTestUUID(counter: number): string {
-  const hex = counter.toString(16).padStart(8, '0');
-  return `${hex}-0000-4${hex.slice(0, 3)}-8${hex.slice(3, 5)}-${hex.padEnd(12, '0')}`;
+  // Create an 8-digit hex counter for the first segment
+  const counterHex = counter.toString(16).padStart(8, '0');
+
+  // Use the counter value in decimal for the last segment to match test expectations
+  const lastSegment = counter.toString().padStart(12, '0');
+
+  // Construct a deterministic UUID v4 format
+  // xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
+  return `${counterHex}-0000-4000-8000-${lastSegment}`;
 }

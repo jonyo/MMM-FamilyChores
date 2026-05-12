@@ -26,6 +26,84 @@ This is a standalone MagicMirror² module for family chore tracking, maintained 
 
 ## AI Agent Rules
 
+### Comment Style Guide (IMPORTANT)
+
+**Follow these comment formatting rules for consistency:**
+
+**Inline Comments:**
+
+- Place inline comments (`// comment`) **above** the code they describe, not on the same line
+- This improves readability and follows personal preference
+- **Use for**: Implementation details, "why" explanations, temporary notes, or non-essential context
+- **Avoid for**: API documentation or hover information about "what it is" - use JSDoc instead
+
+**Examples of good inline comments:**
+
+```typescript
+// we do it this way so XYZ doesn't break
+const config = { ... };
+
+// This is a temporary workaround for bug #123
+const tempValue = getWorkaround();
+
+// Use local date for comparison (implementation detail)
+const resetDate = getLocalDate();
+```
+
+**JSDoc Comments:**
+
+- Use JSDoc format (`/** comment */`) for interfaces, types, properties, and functions
+- This enables hover information in IDEs and provides better documentation
+- **Use for**: API documentation, property descriptions, parameter/return types, or any information useful when hovering over a "thing"
+
+**Examples of when to use JSDoc:**
+
+```typescript
+export interface Config {
+  /**
+   * Format: "HH:mm" in 24-hour format, default "03:00"
+   */
+  dailyResetTime?: string;
+}
+
+/**
+ * This is the id for XYZ that follows Foo Bar best practices
+ */
+export const XYZ_ID = "xyz-123";
+```
+
+**Decision Framework:**
+Ask yourself: "Is this information useful to know about this specific property/function/interface when I hover over it elsewhere?"
+
+- **YES** → Use JSDoc
+- **NO** (implementation detail) → Use inline comment
+
+**Examples:**
+
+✅ **CORRECT:**
+
+```typescript
+// Use local date for comparison
+const resetDate = getLocalDate();
+
+export interface Config {
+  /**
+   * Format: "HH:mm" in 24-hour format, default "03:00"
+   */
+  dailyResetTime?: string;
+}
+```
+
+❌ **WRONG:**
+
+```typescript
+const resetDate = getLocalDate(); // Use local date for comparison
+
+export interface Config {
+  dailyResetTime?: string; // Format: "HH:mm" in 24-hour format, default "03:00"
+}
+```
+
 ### Development Workflow
 
 **ALWAYS run these commands before making changes:**
