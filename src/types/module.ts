@@ -41,6 +41,8 @@ export interface FamilyChoresModule extends Omit<MagicMirrorModule<Config>, 'get
   scheduleUpdate: () => void;
   addCheckboxListeners: (wrapper: HTMLElement) => void;
   toggleChoreCompletion: (choreId: string, completed: boolean) => void;
+  getFilteredChores: () => FamilyChoresData['chores'];
+  renderChoreItem: (chore: FamilyChoresData['chores'][0], choreData: FamilyChoresData) => string;
 }
 
 // Module registration function type

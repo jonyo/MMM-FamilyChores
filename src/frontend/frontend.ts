@@ -13,13 +13,8 @@ declare global {
   };
 }
 
-type FamilyChoresModuleWithExtras = FamilyChoresModule & {
-  getFilteredChores: () => FamilyChoresData['chores'];
-  renderChoreItem: (chore: FamilyChoresData['chores'][0], choreData: FamilyChoresData) => string;
-};
-
 // Register the module with MagicMirror
-const familyChoresModule: FamilyChoresModuleWithExtras = {
+const familyChoresModule: FamilyChoresModule = {
   name: 'MMM-FamilyChores',
   config: {
     updateInterval: 60000,
