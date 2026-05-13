@@ -12,9 +12,49 @@ import {
   SkipDayVisibility,
 } from '../types/chore-types';
 import type { Config } from '../types/config';
+import type {
+  CreateChoreRequest,
+  CreatePersonRequest,
+  RestoreDataRequest,
+  UpdateChoreRequest,
+  UpdatePersonRequest,
+} from '../types/request-types';
 import { getLocalDateString, getLocalDayName, getLocalTimeString } from '../utils/date';
 
-export default NodeHelper.create({
+// Use more flexible types for MagicMirror's Express implementation
+interface Request {
+  params: Record<string, string>;
+  body: unknown;
+  query: unknown;
+}
+
+interface Response {
+  status(code: number): Response;
+  json(data: unknown): Response;
+  send(data: unknown): Response;
+  sendFile(path: string): void;
+  setHeader(name: string, value: string): Response;
+}
+
+interface FamilyChoresNodeHelper extends Partial<NodeHelper.NodeHelperModule> {
+  // Module state
+  choreData: FamilyChoresData | null;
+  config: Config | null;
+
+  // Custom methods
+  setupAdminRoutes(): void;
+  loadChoreData(): void;
+  saveChoreData(): void;
+  createDefaultData(): FamilyChoresData;
+  checkAndPerformDailyReset(): void;
+  transitionChoresForNewDay(): void;
+  handleChoreToggle(payload: ChoreTogglePayload): void;
+  handleChoreReassign(payload: ChoreReassignPayload): void;
+  handleCaughtUpReset(payload: CaughtUpResetPayload): void;
+  generateUUID(): string;
+}
+
+const nodeHelper: FamilyChoresNodeHelper = {
   // Module state
   choreData: null as FamilyChoresData | null,
   config: null as Config | null,
@@ -22,6 +62,7 @@ export default NodeHelper.create({
   // MM function: called when the node helper starts
   start(): void {
     Log.info(`Starting node helper for MMM-FamilyChores`);
+    this.setupAdminRoutes();
   },
 
   // MM function: called when a socket notification arrives from the module
@@ -33,7 +74,7 @@ export default NodeHelper.create({
 
     switch (notificationIdentifier) {
       case SocketNotifications.CONFIG_REQUEST:
-        this.config = payload;
+        this.config = payload as Config;
         this.loadChoreData();
         break;
       case SocketNotifications.CHORE_TOGGLE:
@@ -73,11 +114,11 @@ export default NodeHelper.create({
 
       // Check if daily reset is needed before sending data
       this.checkAndPerformDailyReset();
-      this.sendSocketNotification(SocketNotifications.CHORE_DATA, this.choreData);
+      this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
     } catch (error) {
       Log.error(`Error loading chore data: ${error}`);
       this.choreData = this.createDefaultData();
-      this.sendSocketNotification(SocketNotifications.CHORE_DATA, this.choreData);
+      this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
     }
   },
 
@@ -98,53 +139,11 @@ export default NodeHelper.create({
     }
   },
 
-  // Create default data structure
+  // Create default empty data structure
   createDefaultData(): FamilyChoresData {
     return {
-      people: [
-        { id: '1', name: 'Alice', color: '#FF6B6B' },
-        { id: '2', name: 'Bob', color: '#4ECDC4' },
-        { id: '3', name: 'Charlie', color: '#45B7D1' },
-        { id: '4', name: 'Diana', color: '#96CEB4' },
-        { id: '5', name: 'Evan', color: '#FFEAA7' },
-      ],
-      chores: [
-        {
-          id: '1',
-          name: 'Take out trash',
-          type: 'rotating',
-          rotation: ['1', '2', '3', '4', '5'],
-          rotatingIndex: 0,
-          // only Saturday
-          skipDays: ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
-          skipDayVisibility: SkipDayVisibility.SHOW_IF_OVERDUE,
-        },
-        {
-          id: '2',
-          name: 'Clean kitchen',
-          type: 'rotating',
-          rotation: ['1', '2', '3', '4', '5'],
-          rotatingIndex: 0,
-          skipDays: ['saturday'],
-          skipDayVisibility: SkipDayVisibility.HIDE,
-        },
-        {
-          id: '3',
-          name: 'Make bed',
-          type: 'personal',
-          assignedTo: '1',
-          skipDays: ['sunday'],
-          skipDayVisibility: SkipDayVisibility.SHOW_ALWAYS,
-        },
-        {
-          id: '4',
-          name: 'Do homework',
-          type: 'personal',
-          assignedTo: '3',
-          skipDays: ['saturday', 'sunday'],
-          skipDayVisibility: SkipDayVisibility.HIDE,
-        },
-      ],
+      people: [],
+      chores: [],
       // Initialize to today to prevent immediate rotation
       lastResetDate: getLocalDateString(),
     };
@@ -208,7 +207,7 @@ export default NodeHelper.create({
       chore.completedToday = false;
       // rotate if needed
       if (chore.caughtUp && chore.type === 'rotating') {
-        chore.rotatingIndex = (chore.rotatingIndex + 1) % chore.rotation.length;
+        chore.rotatingIndex = (chore.rotatingIndex ?? 0 + 1) % (chore.rotation ?? []).length;
       }
     }
 
@@ -236,11 +235,11 @@ export default NodeHelper.create({
     // Note: we do NOT change caughtUp here - it stays as-is
 
     this.saveChoreData();
-    this.sendSocketNotification(SocketNotifications.CHORE_UPDATE_RESULT, {
+    this.sendSocketNotification?.(SocketNotifications.CHORE_UPDATE_RESULT, {
       choreId: payload.choreId,
       completed: payload.completed,
     });
-    this.sendSocketNotification(SocketNotifications.CHORE_DATA, this.choreData);
+    this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
   },
 
   // Handle chore reassignment
@@ -248,7 +247,7 @@ export default NodeHelper.create({
     if (!this.choreData || !this.config) return;
 
     if (this.config.adminPin && payload.pin !== this.config.adminPin) {
-      this.sendSocketNotification(SocketNotifications.PIN_ERROR, { message: 'Invalid PIN' });
+      this.sendSocketNotification?.(SocketNotifications.PIN_ERROR, { message: 'Invalid PIN' });
       return;
     }
 
@@ -284,11 +283,11 @@ export default NodeHelper.create({
     }
 
     this.saveChoreData();
-    this.sendSocketNotification(SocketNotifications.CHORE_REASSIGN_RESULT, {
+    this.sendSocketNotification?.(SocketNotifications.CHORE_REASSIGN_RESULT, {
       choreId: payload.choreId,
       newPersonId: payload.newPersonId,
     });
-    this.sendSocketNotification(SocketNotifications.CHORE_DATA, this.choreData);
+    this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
   },
 
   // Handle caughtUp reset for a person (admin only - PIN protected)
@@ -296,7 +295,7 @@ export default NodeHelper.create({
     if (!this.choreData || !this.config) return;
 
     if (this.config.adminPin && payload.pin !== this.config.adminPin) {
-      this.sendSocketNotification(SocketNotifications.PIN_ERROR, { message: 'Invalid PIN' });
+      this.sendSocketNotification?.(SocketNotifications.PIN_ERROR, { message: 'Invalid PIN' });
       return;
     }
 
@@ -320,10 +319,331 @@ export default NodeHelper.create({
     Log.info(`Reset caughtUp status for person ${payload.personId}, affected ${resetCount} chores`);
 
     this.saveChoreData();
-    this.sendSocketNotification(SocketNotifications.CAUGHTUP_RESET_RESULT, {
+    this.sendSocketNotification?.(SocketNotifications.CAUGHTUP_RESET_RESULT, {
       personId: payload.personId,
       resetCount,
     });
-    this.sendSocketNotification(SocketNotifications.CHORE_DATA, this.choreData);
+    this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
   },
-});
+
+  // Setup admin interface routes using official MagicMirror pattern
+  setupAdminRoutes(): void {
+    // API endpoints for admin operations
+    const handleGetData = (_req: Request, res: Response) => {
+      if (!this.choreData) {
+        res.status(500).json({ error: 'No data available' });
+        return;
+      }
+      res.json(this.choreData);
+    };
+
+    this.expressApp?.get('/MMM-FamilyChores/data', handleGetData);
+
+    // Add person
+    this.expressApp?.post('/MMM-FamilyChores/people', (req: Request, res: Response) => {
+      try {
+        const { name, color } = req.body as CreatePersonRequest;
+        if (!name || !color) {
+          res.status(400).json({ error: 'Name and color are required' });
+          return;
+        }
+
+        if (!this.choreData) {
+          res.status(500).json({ error: 'No data available' });
+          return;
+        }
+
+        // Generate UUID v4 for new person
+        const newPerson = {
+          id: this.generateUUID(),
+          name: name.trim(),
+          color: color.trim(),
+        };
+
+        this.choreData.people.push(newPerson);
+        this.saveChoreData();
+        this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
+
+        res.json(newPerson);
+      } catch (error) {
+        Log.error(`Error adding person: ${error}`);
+        res.status(500).json({ error: 'Failed to add person' });
+      }
+    });
+
+    // Update person
+    this.expressApp?.put('/MMM-FamilyChores/people/:id', (req: Request, res: Response) => {
+      try {
+        const { id } = req.params;
+        const { name, color } = req.body as UpdatePersonRequest;
+
+        if (!this.choreData) {
+          res.status(500).json({ error: 'No data available' });
+          return;
+        }
+
+        const person = this.choreData.people.find((p: { id: string }) => p.id === id);
+        if (!person) {
+          res.status(404).json({ error: 'Person not found' });
+          return;
+        }
+
+        if (name) person.name = name.trim();
+        if (color) person.color = color.trim();
+
+        this.saveChoreData();
+        this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
+
+        res.json(person);
+      } catch (error) {
+        Log.error(`Error updating person: ${error}`);
+        res.status(500).json({ error: 'Failed to update person' });
+      }
+    });
+
+    // Delete person
+    this.expressApp?.delete('/MMM-FamilyChores/people/:id', (req: Request, res: Response) => {
+      try {
+        const { id } = req.params;
+
+        if (!this.choreData) {
+          res.status(500).json({ error: 'No data available' });
+          return;
+        }
+
+        const personIndex = this.choreData.people.findIndex((p: { id: string }) => p.id === id);
+        if (personIndex === -1) {
+          res.status(404).json({ error: 'Person not found' });
+          return;
+        }
+
+        // Remove person
+        this.choreData.people.splice(personIndex, 1);
+
+        // Clean up chores assigned to this person
+        this.choreData.chores = this.choreData.chores.filter((chore: Chore) => {
+          if (chore.type === 'personal') {
+            return chore.assignedTo !== id;
+          } else if (chore.type === 'rotating') {
+            // Remove from rotation lists
+            chore.rotation = chore.rotation?.filter((personId: string) => personId !== id) || [];
+            // If rotation is empty, remove the chore
+            return chore.rotation.length > 0;
+          }
+          return true;
+        });
+
+        this.saveChoreData();
+        this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
+
+        res.json({ success: true });
+      } catch (error) {
+        Log.error(`Error deleting person: ${error}`);
+        res.status(500).json({ error: 'Failed to delete person' });
+      }
+    });
+
+    // Add chore
+    this.expressApp?.post('/MMM-FamilyChores/chores', (req: Request, res: Response) => {
+      try {
+        const { name, type, assignedTo, rotation, deadline, skipDays, skipDayVisibility } =
+          req.body as CreateChoreRequest;
+
+        if (!name || !type) {
+          res.status(400).json({ error: 'Name and type are required' });
+          return;
+        }
+
+        if (type === 'personal' && !assignedTo) {
+          res.status(400).json({ error: 'Personal chores require assignedTo' });
+          return;
+        }
+
+        if (type === 'rotating' && (!rotation || rotation.length === 0)) {
+          res.status(400).json({ error: 'Rotating chores require rotation array' });
+          return;
+        }
+
+        if (!this.choreData) {
+          res.status(500).json({ error: 'No data available' });
+          return;
+        }
+
+        const newChore: Chore = {
+          id: this.generateUUID(),
+          name: name.trim(),
+          type,
+          deadline: deadline?.trim() || undefined,
+          skipDays: skipDays || [],
+          skipDayVisibility: skipDayVisibility || SkipDayVisibility.SHOW_IF_OVERDUE,
+          // Default to caught up since this is a new chore
+          caughtUp: true,
+          completedToday: false,
+        };
+
+        if (type === 'personal') {
+          newChore.assignedTo = assignedTo;
+        } else if (type === 'rotating') {
+          newChore.rotation = rotation;
+          newChore.rotatingIndex = 0;
+        }
+
+        this.choreData.chores.push(newChore);
+        this.saveChoreData();
+        this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
+
+        res.json(newChore);
+      } catch (error) {
+        Log.error(`Error adding chore: ${error}`);
+        res.status(500).json({ error: 'Failed to add chore' });
+      }
+    });
+
+    // Update chore
+    this.expressApp?.put('/MMM-FamilyChores/chores/:id', (req: Request, res: Response) => {
+      try {
+        const { id } = req.params;
+        const { name, type, assignedTo, rotation, deadline, skipDays, skipDayVisibility } =
+          req.body as UpdateChoreRequest;
+
+        if (!this.choreData) {
+          res.status(500).json({ error: 'No data available' });
+          return;
+        }
+
+        const chore = this.choreData.chores.find((c: Chore) => c.id === id);
+        if (!chore) {
+          res.status(404).json({ error: 'Chore not found' });
+          return;
+        }
+
+        if (name) chore.name = name.trim();
+        if (deadline) chore.deadline = deadline.trim();
+        if (skipDays) chore.skipDays = skipDays;
+        if (skipDayVisibility) chore.skipDayVisibility = skipDayVisibility;
+
+        // Handle type changes carefully
+        if (type && type !== chore.type) {
+          if (type === 'personal' && assignedTo) {
+            chore.type = 'personal';
+            chore.assignedTo = assignedTo;
+            delete chore.rotation;
+            delete chore.rotatingIndex;
+          } else if (type === 'rotating' && rotation && rotation.length > 0) {
+            chore.type = 'rotating';
+            chore.rotation = rotation;
+            chore.rotatingIndex = 0;
+            delete chore.assignedTo;
+          } else {
+            res.status(400).json({ error: 'Invalid type change parameters' });
+            return;
+          }
+        } else {
+          // Same type, update specific fields
+          if (chore.type === 'personal' && assignedTo) {
+            chore.assignedTo = assignedTo;
+          } else if (chore.type === 'rotating' && rotation) {
+            chore.rotation = rotation;
+            // Ensure rotatingIndex is valid
+            if ((chore.rotatingIndex ?? 0) >= (chore.rotation ?? []).length) {
+              chore.rotatingIndex = 0;
+            }
+          }
+        }
+
+        this.saveChoreData();
+        this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
+
+        res.json(chore);
+      } catch (error) {
+        Log.error(`Error updating chore: ${error}`);
+        res.status(500).json({ error: 'Failed to update chore' });
+      }
+    });
+
+    // Delete chore
+    this.expressApp?.delete('/MMM-FamilyChores/chores/:id', (req: Request, res: Response) => {
+      try {
+        const { id } = req.params;
+
+        if (!this.choreData) {
+          res.status(500).json({ error: 'No data available' });
+          return;
+        }
+
+        const choreIndex = this.choreData.chores.findIndex((c: Chore) => c.id === id);
+        if (choreIndex === -1) {
+          res.status(404).json({ error: 'Chore not found' });
+          return;
+        }
+
+        this.choreData.chores.splice(choreIndex, 1);
+        this.saveChoreData();
+        this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
+
+        res.json({ success: true });
+      } catch (error) {
+        Log.error(`Error deleting chore: ${error}`);
+        res.status(500).json({ error: 'Failed to delete chore' });
+      }
+    });
+
+    // Download data.json (backup)
+    this.expressApp?.get('/MMM-FamilyChores/backup', (_req: Request, res: Response) => {
+      try {
+        if (!this.choreData) {
+          res.status(500).json({ error: 'No data available' });
+          return;
+        }
+
+        const filename = `family-chores-backup-${new Date().toISOString().split('T')[0]}.json`;
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        res.send(JSON.stringify(this.choreData, null, 2));
+      } catch (error) {
+        Log.error(`Error creating backup: ${error}`);
+        res.status(500).json({ error: 'Failed to create backup' });
+      }
+    });
+
+    // Upload data.json (restore)
+    this.expressApp?.post('/MMM-FamilyChores/restore', (req: Request, res: Response) => {
+      try {
+        const restoredData = req.body as RestoreDataRequest;
+
+        if (!restoredData?.people || !restoredData.chores) {
+          res.status(400).json({ error: 'Invalid data format' });
+          return;
+        }
+
+        // Basic validation
+        if (!Array.isArray(restoredData.people) || !Array.isArray(restoredData.chores)) {
+          res.status(400).json({ error: 'Invalid data format' });
+          return;
+        }
+
+        this.choreData = restoredData as FamilyChoresData;
+        this.saveChoreData();
+        this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
+
+        res.json({ success: true, message: 'Data restored successfully' });
+      } catch (error) {
+        Log.error(`Error restoring data: ${error}`);
+        res.status(500).json({ error: 'Failed to restore data' });
+      }
+    });
+
+    Log.info('Admin routes configured for MMM-FamilyChores');
+  },
+
+  // Generate UUID v4
+  generateUUID(): string {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+      const r = (Math.random() * 16) | 0;
+      const v = c === 'x' ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  },
+};
+
+export default NodeHelper.create(nodeHelper);
