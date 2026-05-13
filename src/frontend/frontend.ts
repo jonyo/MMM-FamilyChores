@@ -186,7 +186,7 @@ const familyChoresModule: FamilyChoresModule = {
     const personColor = displayName ? displayName.color : '#ccc';
 
     // Determine deadline status for CSS classes
-    const deadlineStatus = getDeadlineStatus(chore.deadline, chore.completedToday);
+    const deadlineStatus = getDeadlineStatus(chore.deadline, chore.completedToday, chore.caughtUp);
     const deadlineClass =
       deadlineStatus === DeadlineStatus.COMPLETED ? 'completed' : deadlineStatus;
     const checkedAttr = chore.completedToday ? 'checked' : '';

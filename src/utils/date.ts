@@ -58,16 +58,26 @@ export enum DeadlineStatus {
  * Determines the deadline status for a chore
  * @param deadline - Optional deadline time in "HH:MM" format
  * @param completedToday - Whether the chore is completed today
+ * @param caughtUp - Whether the chore is caught up (completed yesterday)
  * @returns DeadlineStatus for CSS class application
  */
-export const getDeadlineStatus = (deadline?: string, completedToday?: boolean): DeadlineStatus => {
+export const getDeadlineStatus = (
+  deadline?: string,
+  completedToday?: boolean,
+  caughtUp?: boolean
+): DeadlineStatus => {
   // If completed today, always show as completed
   if (completedToday) {
     return DeadlineStatus.COMPLETED;
   }
 
-  // If no deadline, always show as normal
+  if (caughtUp === false) {
+    // always show as overdue if not caught up
+    return DeadlineStatus.OVERDUE;
+  }
+
   if (!deadline) {
+    // No deadline set, show as normal
     return DeadlineStatus.NORMAL;
   }
 

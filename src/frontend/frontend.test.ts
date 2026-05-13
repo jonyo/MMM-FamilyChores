@@ -545,6 +545,68 @@ describe('Frontend Tests', () => {
         const deadline = choreElement.querySelector('.deadline');
         expect(deadline?.textContent).toBe('08:00');
       });
+
+      describe('caughtUp behavior', () => {
+        it('should apply overdue class when not caught up regardless of deadline', () => {
+          if (!module.choreData) {
+            throw new Error('choreData is null');
+          }
+          const chore = {
+            id: 'not-caught-up',
+            name: 'Not caught up task',
+            type: 'personal' as const,
+            assignedTo: 'alice',
+            deadline: '23:59', // Future deadline
+            completedToday: false,
+            caughtUp: false, // Not caught up - should show overdue
+          };
+
+          const html = module.renderChoreItem(chore, module.choreData);
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = html;
+          const choreElement = tempDiv.firstElementChild as HTMLElement;
+          document.body.appendChild(choreElement);
+
+          // Should show overdue because not caught up
+          expect(choreElement.classList.contains('overdue')).toBe(true);
+          expect(choreElement.classList.contains('normal')).toBe(false);
+          expect(choreElement.classList.contains('completed')).toBe(false);
+
+          // Verify content
+          expect(choreElement.querySelector('.chore-name')?.textContent).toBe('Not caught up task');
+          expect(choreElement.querySelector('.deadline')?.textContent).toBe('23:59');
+        });
+
+        it('should apply normal class when caught up and deadline is future', () => {
+          if (!module.choreData) {
+            throw new Error('choreData is null');
+          }
+          const chore = {
+            id: 'caught-up',
+            name: 'Caught up task',
+            type: 'personal' as const,
+            assignedTo: 'alice',
+            deadline: '23:59', // Future deadline
+            completedToday: false,
+            caughtUp: true, // Caught up - should show normal
+          };
+
+          const html = module.renderChoreItem(chore, module.choreData);
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = html;
+          const choreElement = tempDiv.firstElementChild as HTMLElement;
+          document.body.appendChild(choreElement);
+
+          // Should show normal because caught up and deadline is future
+          expect(choreElement.classList.contains('normal')).toBe(true);
+          expect(choreElement.classList.contains('overdue')).toBe(false);
+          expect(choreElement.classList.contains('completed')).toBe(false);
+
+          // Verify content
+          expect(choreElement.querySelector('.chore-name')?.textContent).toBe('Caught up task');
+          expect(choreElement.querySelector('.deadline')?.textContent).toBe('23:59');
+        });
+      });
     });
   });
 
