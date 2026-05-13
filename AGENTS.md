@@ -224,6 +224,9 @@ Note: These files are committed so that the module works out of the box without 
 - Use TypeScript interfaces from `src/types/config.ts`
 - Validate all configuration values
 - Provide sensible defaults
+- **View Modes**: Support both `'personal'` (default) and `'summary'` view modes
+- **Summary Configuration**: Use `summary` object with `showIncomplete`, `showRotating`, `showOverdue` boolean flags to control section visibility in summary view mode
+- **Display Options**: `personFilter` for per-person views, `viewMode: 'summary'` for organized summary sections
 
 **Data File:**
 
