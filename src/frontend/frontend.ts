@@ -22,6 +22,12 @@ const familyChoresModule: FamilyChoresModule = {
     dataFile: 'data.json',
     adminPin: null,
     personFilter: null,
+    viewMode: 'personal',
+    summary: {
+      showIncomplete: true,
+      showRotating: true,
+      showOverdue: true,
+    },
     dailyResetTime: '03:00',
   },
   defaults: {
@@ -29,6 +35,12 @@ const familyChoresModule: FamilyChoresModule = {
     dataFile: 'data.json',
     adminPin: null,
     personFilter: null,
+    viewMode: 'personal',
+    summary: {
+      showIncomplete: true,
+      showRotating: true,
+      showOverdue: true,
+    },
     dailyResetTime: '03:00',
   },
   choreData: null as FamilyChoresData | null,
@@ -56,6 +68,12 @@ const familyChoresModule: FamilyChoresModule = {
       return [];
     }
 
+    // Handle summary view mode - show all incomplete chores + rotating assignments
+    if (this.config.viewMode === 'summary') {
+      return this.getSummaryChores();
+    }
+
+    // Personal view mode (default)
     const filterValue = this.config.personFilter?.trim().toLowerCase();
     if (!filterValue) {
       return this.choreData.chores;
@@ -84,6 +102,27 @@ const familyChoresModule: FamilyChoresModule = {
     });
   },
 
+  // Custom function: get chores for summary view
+  getSummaryChores(): FamilyChoresData['chores'] {
+    if (!this.choreData) {
+      return [];
+    }
+
+    return this.choreData.chores.filter((chore) => {
+      // Show all incomplete chores
+      if (!chore.completedToday) {
+        return true;
+      }
+
+      // For rotating chores, always show current assignment even if completed
+      if (chore.type === 'rotating' && chore.rotation?.length) {
+        return true;
+      }
+
+      return false;
+    });
+  },
+
   // MM function: returns DOM element
   getDom(): HTMLElement {
     const wrapper = document.createElement('div');
@@ -93,6 +132,7 @@ const familyChoresModule: FamilyChoresModule = {
       wrapper.innerHTML = '<div class="module-content loading">Loading...</div>';
       return wrapper;
     }
+
     const choreData = this.choreData as FamilyChoresData;
     const visibleChores = this.getFilteredChores();
 
@@ -105,6 +145,12 @@ const familyChoresModule: FamilyChoresModule = {
       return wrapper;
     }
 
+    // Handle summary view with sections
+    if (this.config.viewMode === 'summary') {
+      return this.renderSummaryView(wrapper);
+    }
+
+    // Personal view (default)
     const choreItemsHtml = visibleChores
       .map((chore) => this.renderChoreItem(chore, choreData))
       .join('');
@@ -209,6 +255,82 @@ const familyChoresModule: FamilyChoresModule = {
     html += '</div>';
 
     return html;
+  },
+
+  // Custom function: render summary view with sections
+  renderSummaryView(wrapper: HTMLElement): HTMLElement {
+    if (!this.choreData) {
+      wrapper.innerHTML = '<div class="module-content loading">Loading...</div>';
+      return wrapper;
+    }
+
+    const choreData = this.choreData;
+    const visibleChores = this.getFilteredChores();
+
+    // Get summary config with defaults
+    const summaryConfig = {
+      showIncomplete: true,
+      showRotating: true,
+      showOverdue: true,
+      ...this.config.summary,
+    };
+
+    // Separate chores into categories
+    const incompleteChores = visibleChores.filter(
+      (chore: FamilyChoresData['chores'][0]) => !chore.completedToday
+    );
+    const behindScheduleChores = visibleChores.filter(
+      (chore: FamilyChoresData['chores'][0]) => chore.caughtUp === false && !chore.completedToday
+    );
+    const rotatingChores = visibleChores.filter(
+      (chore: FamilyChoresData['chores'][0]) => chore.type === 'rotating'
+    );
+
+    let html = '<div class="module-content summary-view">';
+
+    // Incomplete chores section
+    if (summaryConfig.showIncomplete && incompleteChores.length > 0) {
+      html += '<div class="summary-section incomplete-section">';
+      html += '<h3 class="section-title">Incomplete Chores</h3>';
+      html += '<div class="chore-list">';
+      html += incompleteChores
+        .map((chore: FamilyChoresData['chores'][0]) => this.renderChoreItem(chore, choreData))
+        .join('');
+      html += '</div>';
+      html += '</div>';
+    }
+
+    // Rotating assignments section
+    if (summaryConfig.showRotating && rotatingChores.length > 0) {
+      html += '<div class="summary-section rotating-section">';
+      html += '<h3 class="section-title">Current Rotating Assignments</h3>';
+      html += '<div class="chore-list">';
+      html += rotatingChores
+        .map((chore: FamilyChoresData['chores'][0]) => this.renderChoreItem(chore, choreData))
+        .join('');
+      html += '</div>';
+      html += '</div>';
+    }
+
+    // Behind schedule section
+    if (summaryConfig.showOverdue && behindScheduleChores.length > 0) {
+      html += '<div class="summary-section behind-section">';
+      html += '<h3 class="section-title behind-schedule-title">Behind Schedule</h3>';
+      html += '<div class="chore-list">';
+      html += behindScheduleChores
+        .map((chore: FamilyChoresData['chores'][0]) => this.renderChoreItem(chore, choreData))
+        .join('');
+      html += '</div>';
+      html += '</div>';
+    }
+
+    html += '</div>';
+    wrapper.innerHTML = html;
+
+    // Add event listeners for checkbox interactions
+    this.addCheckboxListeners(wrapper);
+
+    return wrapper;
   },
 
   // MM function: receives socket notifications from node helper
