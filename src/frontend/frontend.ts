@@ -177,6 +177,7 @@ const familyChoresModule: FamilyChoresModule = {
 
   // Custom function: add event listeners to checkboxes
   addCheckboxListeners(wrapper: HTMLElement): void {
+    // Add change listeners to checkboxes for accessibility
     const checkboxes = wrapper.querySelectorAll('input[type="checkbox"]');
     checkboxes.forEach((checkbox) => {
       checkbox.addEventListener('change', (event) => {
@@ -186,24 +187,6 @@ const familyChoresModule: FamilyChoresModule = {
           const choreId = choreItem.getAttribute('data-chore-id');
           if (choreId) {
             this.toggleChoreCompletion(choreId, target.checked);
-          }
-        }
-      });
-    });
-
-    // Also add click listeners to labels for better responsiveness
-    const labels = wrapper.querySelectorAll('.chore-label');
-    labels.forEach((label) => {
-      label.addEventListener('click', (event) => {
-        event.preventDefault();
-        const checkbox = label.querySelector('input[type="checkbox"]') as HTMLInputElement;
-        const choreItem = label.closest('.chore-item');
-        if (checkbox && choreItem) {
-          const choreId = choreItem.getAttribute('data-chore-id');
-          if (choreId) {
-            // Toggle the checkbox state
-            checkbox.checked = !checkbox.checked;
-            this.toggleChoreCompletion(choreId, checkbox.checked);
           }
         }
       });
