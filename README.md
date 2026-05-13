@@ -20,7 +20,8 @@ A TypeScript-based MagicMirror² module for family chore tracking with personal 
 
 _Note: This roadmap represents current plans and priorities. Features may be added, removed, or modified based on user feedback and development considerations._
 
-- **Pin-Protected Reassignment**: Admin-only function to reassign rotating chores from the mirror
+- **Admin Interface**: Web-based UI for managing people and chores
+- **PIN-Protected Reassignment**: Admin-only function to reassign rotating chores from the mirror
 - **Activity History**: View who completed which chores and when
 - **Backup/Restore**: Download and upload configuration files
 
