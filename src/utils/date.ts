@@ -44,3 +44,41 @@ export const getLocalDayName = (date = new Date()): string => {
 
   return formatter.format(date).toLowerCase();
 };
+
+/**
+ * Deadline status enum for visual indicators
+ */
+export enum DeadlineStatus {
+  NORMAL = 'normal',
+  OVERDUE = 'overdue',
+  COMPLETED = 'completed',
+}
+
+/**
+ * Determines the deadline status for a chore
+ * @param deadline - Optional deadline time in "HH:MM" format
+ * @param completedToday - Whether the chore is completed today
+ * @returns DeadlineStatus for CSS class application
+ */
+export const getDeadlineStatus = (deadline?: string, completedToday?: boolean): DeadlineStatus => {
+  // If completed today, always show as completed
+  if (completedToday) {
+    return DeadlineStatus.COMPLETED;
+  }
+
+  // If no deadline, always show as normal
+  if (!deadline) {
+    return DeadlineStatus.NORMAL;
+  }
+
+  // Parse deadline time and compare with current time
+  const currentTime = getLocalTimeString();
+
+  // Simple string comparison works for HH:MM format
+  // Use >= so that equal times are considered overdue
+  if (currentTime >= deadline) {
+    return DeadlineStatus.OVERDUE;
+  }
+
+  return DeadlineStatus.NORMAL;
+};
