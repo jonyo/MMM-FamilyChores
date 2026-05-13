@@ -137,3 +137,49 @@
   background: rgba(255, 193, 7, 0.3);
   color: #ffc107;
 }
+
+/* Summary View Styles */
+.MMM-FamilyChores .summary-view {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.MMM-FamilyChores .summary-section {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 15px;
+}
+
+.MMM-FamilyChores .section-title {
+  margin: 0 0 12px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 6px;
+}
+
+.MMM-FamilyChores .overdue-title {
+  color: #ffc107;
+  border-bottom-color: #ffc107;
+}
+
+.MMM-FamilyChores .overdue-section {
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.MMM-FamilyChores .summary-section .chore-list {
+  gap: 8px;
+}
+
+.MMM-FamilyChores .summary-section .chore-item {
+  margin: 0;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.MMM-FamilyChores .behind-section .chore-item.overdue {
+  background: rgba(255, 193, 7, 0.2);
+  border-left-color: #ffc107;
+}

@@ -9,9 +9,10 @@ A TypeScript-based MagicMirror² module for family chore tracking with personal 
 - **Interactive Checkbox List**: Click checkboxes to mark chores complete/incomplete with immediate visual feedback
 - **Personal Chores**: Daily tasks assigned to specific family members that reset at midnight
 - **Rotating Chores**: Shared tasks that cycle through family members when completed
-- **Flexible Display**: Per-person views or summary view showing all incomplete chores
+- **Flexible Display**: Per-person views or configurable summary view showing all incomplete chores
 - **Visual Indicators**: Color-coded person names, deadline badges, and completion styling
 - **Real-time Updates**: Changes sync immediately between frontend and backend via socket notifications
+- **Configurable Summary View**: Show all incomplete chores, rotating assignments, and behind schedule sections with customizable visibility
 - **Skip Days**: Configure chores to skip specific days (e.g., weekends)
 - **State Persistence**: Single JSON file stores all configuration and current state
 
@@ -55,7 +56,84 @@ That's it! The module includes all necessary dependencies in the bundled JavaScr
 | `updateInterval` | number | `60000`       | Update interval in milliseconds                 |
 | `adminPin`       | string | `null`        | PIN for admin actions (reassign, undo)          |
 | `personFilter`   | string | `null`        | Filter chores by person name (case-insensitive) |
+| `viewMode`       | string | `'personal'`  | View mode: `'personal'` or `'summary'`          |
 | `dailyResetTime` | string | `'03:00'`     | Daily reset time in 24-hour format (HH:mm)      |
+| `summary`        | object | see below     | Summary view configuration options              |
+
+### Summary View Configuration
+
+When `viewMode` is set to `'summary'`, you can control which sections are displayed using the `summary` configuration object:
+
+| Option            | Type    | Default                          | Description                               |
+| ----------------- | ------- | -------------------------------- | ----------------------------------------- |
+| `showIncomplete`  | boolean | `true`                           | Show incomplete chores section            |
+| `showRotating`    | boolean | `true`                           | Show current rotating assignments section |
+| `showOverdue`     | boolean | `true`                           | Show overdue chores section               |
+| `incompleteTitle` | string  | `'Incomplete Chores'`            | Custom title for incomplete section       |
+| `rotatingTitle`   | string  | `'Current Rotating Assignments'` | Custom title for rotating section         |
+| `overdueTitle`    | string  | `'Overdue'`                      | Custom title for overdue section          |
+
+#### Summary View Example
+
+```javascript
+{
+  module: 'MMM-FamilyChores',
+  position: 'middle_center',
+  header: 'Family Chores Summary',
+  config: {
+    viewMode: 'summary',
+    summary: {
+      showIncomplete: true,    // Show "Incomplete Chores" section
+      showRotating: true,     // Show "Current Rotating Assignments" section
+      showOverdue: true       // Show "Behind Schedule" section
+    }
+  }
+}
+```
+
+#### Custom Summary View Examples
+
+**Only show rotating assignments:**
+
+```javascript
+config: {
+  viewMode: 'summary',
+  summary: {
+    showIncomplete: false,
+    showRotating: true,
+    showOverdue: false
+  }
+}
+```
+
+**Hide overdue section (less cluttered):**
+
+```javascript
+config: {
+  viewMode: 'summary',
+  summary: {
+    showIncomplete: true,
+    showRotating: true,
+    showOverdue: false
+  }
+}
+```
+
+**Custom section titles:**
+
+```javascript
+config: {
+  viewMode: 'summary',
+  summary: {
+    showIncomplete: true,
+    showRotating: true,
+    showOverdue: true,
+    incompleteTitle: 'To Do Today',
+    rotatingTitle: 'Weekly Rotation',
+    overdueTitle: 'Past Due'
+  }
+}
+```
 
 ### Display Modes
 
@@ -72,9 +150,24 @@ Show only one person's personal chores plus their current rotating assignments:
 }
 ```
 
+#### Summary View
+
+Show all incomplete chores, rotating assignments, and behind schedule chores in organized sections:
+
+```javascript
+{
+  module: 'MMM-FamilyChores',
+  position: 'middle_center',
+  header: 'Family Chores Summary',
+  config: {
+    viewMode: 'summary'
+  }
+}
+```
+
 #### All Chores View
 
-Show all incomplete chores and rotating assignments (default behavior):
+Show all incomplete chores and rotating assignments (default behavior when no personFilter is specified):
 
 ```javascript
 {
@@ -106,11 +199,12 @@ Use multiple module instances for different views on separate pages:
   config: { personFilter: 'Bob' },
   classes: 'bob-page'
 },
-// Summary page shows all chores
+// Summary page shows all chores in organized sections
 {
   module: 'MMM-FamilyChores',
   position: 'middle_center',
-  header: 'All Family Chores',
+  header: 'Family Summary',
+  config: { viewMode: 'summary' },
   classes: 'summary-page'
 }
 ```

@@ -1,14 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import '../../css/main.css';
-import type { FamilyChoresData } from '../types/chore-types';
 import type { FamilyChoresModule } from '../types/module';
 import './frontend';
-
-type FamilyChoresModuleWithExtras = FamilyChoresModule & {
-  getFilteredChores: () => FamilyChoresData['chores'];
-  renderChoreItem: (chore: FamilyChoresData['chores'][0], choreData: FamilyChoresData) => string;
-};
 
 const { capturedModule } = vi.hoisted(() => {
   vi.stubGlobal('Log', {
@@ -35,7 +29,7 @@ const { capturedModule } = vi.hoisted(() => {
 });
 
 describe('Frontend Tests', () => {
-  let module: FamilyChoresModuleWithExtras;
+  let module: FamilyChoresModule;
   let mockSendSocketNotification: ReturnType<typeof vi.fn>;
   let mockUpdateDom: ReturnType<typeof vi.fn>;
   let mockFile: ReturnType<typeof vi.fn>;
@@ -72,7 +66,7 @@ describe('Frontend Tests', () => {
       ) => void,
       updateDom: mockUpdateDom as (speed?: number) => void,
       file: mockFile as (filename: string) => string,
-    } as FamilyChoresModuleWithExtras;
+    } as FamilyChoresModule;
 
     module.config = {
       updateInterval: 60000,
@@ -197,6 +191,101 @@ describe('Frontend Tests', () => {
       const filtered = module.getFilteredChores();
       expect(filtered).toHaveLength(1);
       expect(filtered[0].id).toBe('1');
+    });
+  });
+
+  describe('getSummaryChores', () => {
+    beforeEach(() => {
+      module.choreData = {
+        people: [
+          { id: 'alice', name: 'Alice', color: '#FF6B6B' },
+          { id: 'bob', name: 'Bob', color: '#4ECDC4' },
+          { id: 'charlie', name: 'Charlie', color: '#45B7D1' },
+        ],
+        chores: [
+          {
+            id: '1',
+            name: 'Take out trash',
+            type: 'rotating',
+            rotation: ['alice', 'bob'],
+            rotatingIndex: 0,
+            completedToday: false,
+          },
+          {
+            id: '2',
+            name: 'Clean kitchen',
+            type: 'personal',
+            assignedTo: 'bob',
+            completedToday: true,
+          },
+          {
+            id: '3',
+            name: 'Vacuum living room',
+            type: 'personal',
+            assignedTo: 'charlie',
+            completedToday: false,
+          },
+          {
+            id: '4',
+            name: 'Wash dishes',
+            type: 'rotating',
+            rotation: ['bob', 'charlie'],
+            rotatingIndex: 1,
+            completedToday: true,
+          },
+        ],
+      };
+    });
+
+    it('should return all incomplete chores and rotating chores', () => {
+      const summaryChores = module.getSummaryChores();
+
+      // Should include incomplete personal chores
+      expect(summaryChores.some((c) => c.id === '3')).toBe(true);
+
+      // Should include all rotating chores regardless of completion
+      expect(summaryChores.some((c) => c.id === '1')).toBe(true);
+      expect(summaryChores.some((c) => c.id === '4')).toBe(true);
+
+      // Should not include completed personal chores
+      expect(summaryChores.some((c) => c.id === '2')).toBe(false);
+
+      expect(summaryChores).toHaveLength(3);
+    });
+
+    it('should return empty array when no chore data', () => {
+      module.choreData = null;
+      const summaryChores = module.getSummaryChores();
+      expect(summaryChores).toHaveLength(0);
+    });
+
+    it('should handle all chores completed', () => {
+      if (!module.choreData) return;
+
+      // Mark all chores as completed
+      module.choreData.chores.forEach((chore) => {
+        chore.completedToday = true;
+      });
+
+      const summaryChores = module.getSummaryChores();
+
+      // Should only include rotating chores when all are completed
+      expect(summaryChores).toHaveLength(2);
+      expect(summaryChores.every((c) => c.type === 'rotating')).toBe(true);
+    });
+
+    it('should handle no rotating chores', () => {
+      if (!module.choreData) return;
+
+      // Remove rotating chores
+      module.choreData.chores = module.choreData.chores.filter((c) => c.type !== 'rotating');
+
+      const summaryChores = module.getSummaryChores();
+
+      // Should only include incomplete personal chores
+      expect(summaryChores).toHaveLength(1);
+      expect(summaryChores.every((c) => c.type === 'personal')).toBe(true);
+      expect(summaryChores.every((c) => !c.completedToday)).toBe(true);
     });
   });
 
@@ -717,6 +806,258 @@ describe('Frontend Tests', () => {
 
       expect(page.getByText('No chores match the current filter.')).toBeVisible();
       expect(page.getByText('Clean kitchen').elements()).toHaveLength(0);
+    });
+  });
+
+  describe('renderSummaryView', () => {
+    beforeEach(() => {
+      module.config.viewMode = 'summary';
+      module.choreData = {
+        people: [
+          { id: 'alice', name: 'Alice', color: '#FF6B6B' },
+          { id: 'bob', name: 'Bob', color: '#4ECDC4' },
+          { id: 'charlie', name: 'Charlie', color: '#45B7D1' },
+        ],
+        chores: [
+          {
+            id: '1',
+            name: 'Take out trash',
+            type: 'rotating',
+            rotation: ['alice', 'bob'],
+            rotatingIndex: 0,
+            completedToday: false,
+          },
+          {
+            id: '2',
+            name: 'Clean kitchen',
+            type: 'personal',
+            assignedTo: 'bob',
+            completedToday: false,
+            caughtUp: false,
+          },
+          {
+            id: '3',
+            name: 'Vacuum living room',
+            type: 'personal',
+            assignedTo: 'charlie',
+            completedToday: true,
+          },
+          {
+            id: '4',
+            name: 'Wash dishes',
+            type: 'rotating',
+            rotation: ['bob', 'charlie'],
+            rotatingIndex: 1,
+            completedToday: true,
+          },
+        ],
+      };
+    });
+
+    it('should show all sections when summary config is default (all true)', async () => {
+      // Default config - all sections should be visible
+      module.config.summary = {
+        showIncomplete: true,
+        showRotating: true,
+        showOverdue: true,
+      };
+
+      const wrapper = document.createElement('div');
+      const result = module.renderSummaryView(wrapper);
+      document.body.appendChild(result);
+
+      // Should show incomplete chores section
+      expect(page.getByText('Incomplete Chores')).toBeVisible();
+      expect(page.getByText('Take out trash').first()).toBeVisible();
+      expect(page.getByText('Clean kitchen').first()).toBeVisible();
+
+      // Should show rotating assignments section
+      expect(page.getByText('Current Rotating Assignments')).toBeVisible();
+      expect(page.getByText('Wash dishes')).toBeVisible();
+
+      // Should show overdue section
+      expect(page.getByText('Overdue')).toBeVisible();
+      // Appears in incomplete and overdue sections
+      expect(page.getByText('Clean kitchen').elements()).toHaveLength(2);
+
+      // Should not show completed personal chores
+      expect(page.getByText('Vacuum living room').elements()).toHaveLength(0);
+    });
+
+    it('should only show rotating assignments when showIncomplete and showOverdue are false', async () => {
+      module.config.summary = {
+        showIncomplete: false,
+        showRotating: true,
+        showOverdue: false,
+      };
+
+      const wrapper = document.createElement('div');
+      const result = module.renderSummaryView(wrapper);
+      document.body.appendChild(result);
+
+      // Should only show rotating assignments
+      expect(page.getByText('Current Rotating Assignments')).toBeVisible();
+      expect(page.getByText('Take out trash')).toBeVisible();
+      expect(page.getByText('Wash dishes')).toBeVisible();
+
+      // Should not show other sections
+      expect(page.getByText('Incomplete Chores').elements()).toHaveLength(0);
+      expect(page.getByText('Overdue').elements()).toHaveLength(0);
+    });
+
+    it('should only show incomplete chores when showRotating and showOverdue are false', async () => {
+      module.config.summary = {
+        showIncomplete: true,
+        showRotating: false,
+        showOverdue: false,
+      };
+
+      const wrapper = document.createElement('div');
+      const result = module.renderSummaryView(wrapper);
+      document.body.appendChild(result);
+
+      // Should only show incomplete chores
+      expect(page.getByText('Incomplete Chores')).toBeVisible();
+      expect(page.getByText('Take out trash')).toBeVisible();
+      expect(page.getByText('Clean kitchen')).toBeVisible();
+
+      // Should not show other sections
+      expect(page.getByText('Current Rotating Assignments').elements()).toHaveLength(0);
+      expect(page.getByText('Overdue').elements()).toHaveLength(0);
+    });
+
+    it('should only show overdue when showIncomplete and showRotating are false', async () => {
+      module.config.summary = {
+        showIncomplete: false,
+        showRotating: false,
+        showOverdue: true,
+      };
+
+      const wrapper = document.createElement('div');
+      const result = module.renderSummaryView(wrapper);
+      document.body.appendChild(result);
+
+      // Should only show overdue chores
+      expect(page.getByText('Overdue')).toBeVisible();
+      expect(page.getByText('Clean kitchen')).toBeVisible();
+
+      // Should not show other sections
+      expect(page.getByText('Incomplete Chores').elements()).toHaveLength(0);
+      expect(page.getByText('Current Rotating Assignments').elements()).toHaveLength(0);
+    });
+
+    it('should show empty summary view when all sections are disabled', async () => {
+      module.config.summary = {
+        showIncomplete: false,
+        showRotating: false,
+        showOverdue: false,
+      };
+
+      const wrapper = document.createElement('div');
+      const result = module.renderSummaryView(wrapper);
+      document.body.appendChild(result);
+
+      // Should not show any sections
+      expect(page.getByText('Incomplete Chores').elements()).toHaveLength(0);
+      expect(page.getByText('Current Rotating Assignments').elements()).toHaveLength(0);
+      expect(page.getByText('Overdue').elements()).toHaveLength(0);
+
+      // Should still have the summary-view container
+      expect(result.querySelector('.summary-view')).toBeTruthy();
+    });
+
+    it('should use default values when summary config is undefined', async () => {
+      module.config.summary = undefined;
+
+      const wrapper = document.createElement('div');
+      const result = module.renderSummaryView(wrapper);
+      document.body.appendChild(result);
+
+      // Should show all sections (default behavior)
+      expect(page.getByText('Incomplete Chores')).toBeVisible();
+      expect(page.getByText('Current Rotating Assignments')).toBeVisible();
+      expect(page.getByText('Overdue')).toBeVisible();
+    });
+
+    it('should handle partial config with defaults', async () => {
+      module.config.summary = {
+        showIncomplete: false,
+        // showRotating should default to true
+        // showOverdue should default to true
+      };
+
+      const wrapper = document.createElement('div');
+      const result = module.renderSummaryView(wrapper);
+      document.body.appendChild(result);
+
+      // Should show rotating and overdue sections (defaults)
+      expect(page.getByText('Current Rotating Assignments')).toBeVisible();
+      expect(page.getByText('Overdue')).toBeVisible();
+
+      // Should not show incomplete section (explicitly disabled)
+      expect(page.getByText('Incomplete Chores').elements()).toHaveLength(0);
+    });
+
+    it('should show loading state when no chore data', async () => {
+      module.choreData = null;
+
+      const wrapper = document.createElement('div');
+      const result = module.renderSummaryView(wrapper);
+      document.body.appendChild(result);
+
+      expect(page.getByText('Loading...')).toBeVisible();
+    });
+
+    it('should not show sections when no chores match criteria', async () => {
+      if (!module.choreData) return;
+
+      // Mark all chores as completed and caught up
+      module.choreData.chores.forEach((chore) => {
+        chore.completedToday = true;
+        chore.caughtUp = true;
+      });
+
+      module.config.summary = {
+        showIncomplete: true,
+        showRotating: false,
+        showOverdue: true,
+      };
+
+      const wrapper = document.createElement('div');
+      const result = module.renderSummaryView(wrapper);
+      document.body.appendChild(result);
+
+      // Should not show incomplete or overdue sections (no matching chores)
+      expect(page.getByText('Incomplete Chores').elements()).toHaveLength(0);
+      expect(page.getByText('Overdue').elements()).toHaveLength(0);
+
+      // Should still have the summary-view container
+      expect(result.querySelector('.summary-view')).toBeTruthy();
+    });
+
+    it('should use custom section titles when provided', async () => {
+      module.config.summary = {
+        showIncomplete: true,
+        showRotating: true,
+        showOverdue: true,
+        incompleteTitle: 'To Do Today',
+        rotatingTitle: 'Weekly Rotation',
+        overdueTitle: 'Past Due',
+      };
+
+      const wrapper = document.createElement('div');
+      const result = module.renderSummaryView(wrapper);
+      document.body.appendChild(result);
+
+      // Should show custom titles
+      expect(page.getByText('To Do Today')).toBeVisible();
+      expect(page.getByText('Weekly Rotation')).toBeVisible();
+      expect(page.getByText('Past Due')).toBeVisible();
+
+      // Should not show default titles
+      expect(page.getByText('Incomplete Chores').elements()).toHaveLength(0);
+      expect(page.getByText('Current Rotating Assignments').elements()).toHaveLength(0);
+      expect(page.getByText('Overdue').elements()).toHaveLength(0);
     });
   });
 
