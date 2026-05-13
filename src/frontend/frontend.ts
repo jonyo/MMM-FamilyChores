@@ -27,6 +27,9 @@ const familyChoresModule: FamilyChoresModule = {
       showIncomplete: true,
       showRotating: true,
       showOverdue: true,
+      incompleteTitle: 'Incomplete Chores',
+      rotatingTitle: 'Current Rotating Assignments',
+      overdueTitle: 'Overdue',
     },
     dailyResetTime: '03:00',
   },
@@ -40,6 +43,9 @@ const familyChoresModule: FamilyChoresModule = {
       showIncomplete: true,
       showRotating: true,
       showOverdue: true,
+      incompleteTitle: 'Incomplete Chores',
+      rotatingTitle: 'Current Rotating Assignments',
+      overdueTitle: 'Overdue',
     },
     dailyResetTime: '03:00',
   },
@@ -272,6 +278,9 @@ const familyChoresModule: FamilyChoresModule = {
       showIncomplete: true,
       showRotating: true,
       showOverdue: true,
+      incompleteTitle: 'Incomplete Chores',
+      rotatingTitle: 'Current Rotating Assignments',
+      overdueTitle: 'Overdue',
       ...this.config.summary,
     };
 
@@ -279,9 +288,14 @@ const familyChoresModule: FamilyChoresModule = {
     const incompleteChores = visibleChores.filter(
       (chore: FamilyChoresData['chores'][0]) => !chore.completedToday
     );
-    const behindScheduleChores = visibleChores.filter(
-      (chore: FamilyChoresData['chores'][0]) => chore.caughtUp === false && !chore.completedToday
-    );
+    const overdueChores = visibleChores.filter((chore: FamilyChoresData['chores'][0]) => {
+      const deadlineStatus = getDeadlineStatus(
+        chore.deadline,
+        chore.completedToday,
+        chore.caughtUp
+      );
+      return deadlineStatus === DeadlineStatus.OVERDUE;
+    });
     const rotatingChores = visibleChores.filter(
       (chore: FamilyChoresData['chores'][0]) => chore.type === 'rotating'
     );
@@ -291,7 +305,7 @@ const familyChoresModule: FamilyChoresModule = {
     // Incomplete chores section
     if (summaryConfig.showIncomplete && incompleteChores.length > 0) {
       html += '<div class="summary-section incomplete-section">';
-      html += '<h3 class="section-title">Incomplete Chores</h3>';
+      html += `<h3 class="section-title incomplete-title">${summaryConfig.incompleteTitle}</h3>`;
       html += '<div class="chore-list">';
       html += incompleteChores
         .map((chore: FamilyChoresData['chores'][0]) => this.renderChoreItem(chore, choreData))
@@ -303,7 +317,7 @@ const familyChoresModule: FamilyChoresModule = {
     // Rotating assignments section
     if (summaryConfig.showRotating && rotatingChores.length > 0) {
       html += '<div class="summary-section rotating-section">';
-      html += '<h3 class="section-title">Current Rotating Assignments</h3>';
+      html += `<h3 class="section-title rotating-title">${summaryConfig.rotatingTitle}</h3>`;
       html += '<div class="chore-list">';
       html += rotatingChores
         .map((chore: FamilyChoresData['chores'][0]) => this.renderChoreItem(chore, choreData))
@@ -312,12 +326,12 @@ const familyChoresModule: FamilyChoresModule = {
       html += '</div>';
     }
 
-    // Behind schedule section
-    if (summaryConfig.showOverdue && behindScheduleChores.length > 0) {
-      html += '<div class="summary-section behind-section">';
-      html += '<h3 class="section-title behind-schedule-title">Behind Schedule</h3>';
+    // Overdue section
+    if (summaryConfig.showOverdue && overdueChores.length > 0) {
+      html += '<div class="summary-section overdue-section">';
+      html += `<h3 class="section-title overdue-title">${summaryConfig.overdueTitle}</h3>`;
       html += '<div class="chore-list">';
-      html += behindScheduleChores
+      html += overdueChores
         .map((chore: FamilyChoresData['chores'][0]) => this.renderChoreItem(chore, choreData))
         .join('');
       html += '</div>';

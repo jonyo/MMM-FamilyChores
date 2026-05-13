@@ -20,9 +20,15 @@ export type Config = {
      */
     showRotating?: boolean;
     /**
-     * Show overdue/behind schedule section (default: true)
+     * Show overdue section (default: true)
      */
     showOverdue?: boolean;
+    /**
+     * Custom titles for summary sections
+     */
+    incompleteTitle?: string;
+    rotatingTitle?: string;
+    overdueTitle?: string;
   };
   /**
    * Format: "HH:mm" in 24-hour format, default "03:00"

@@ -63,11 +63,14 @@ That's it! The module includes all necessary dependencies in the bundled JavaScr
 
 When `viewMode` is set to `'summary'`, you can control which sections are displayed using the `summary` configuration object:
 
-| Option           | Type    | Default | Description                                 |
-| ---------------- | ------- | ------- | ------------------------------------------- |
-| `showIncomplete` | boolean | `true`  | Show incomplete chores section              |
-| `showRotating`   | boolean | `true`  | Show current rotating assignments section   |
-| `showOverdue`    | boolean | `true`  | Show behind schedule/overdue chores section |
+| Option            | Type    | Default                          | Description                               |
+| ----------------- | ------- | -------------------------------- | ----------------------------------------- |
+| `showIncomplete`  | boolean | `true`                           | Show incomplete chores section            |
+| `showRotating`    | boolean | `true`                           | Show current rotating assignments section |
+| `showOverdue`     | boolean | `true`                           | Show overdue chores section               |
+| `incompleteTitle` | string  | `'Incomplete Chores'`            | Custom title for incomplete section       |
+| `rotatingTitle`   | string  | `'Current Rotating Assignments'` | Custom title for rotating section         |
+| `overdueTitle`    | string  | `'Overdue'`                      | Custom title for overdue section          |
 
 #### Summary View Example
 
@@ -111,6 +114,22 @@ config: {
     showIncomplete: true,
     showRotating: true,
     showOverdue: false
+  }
+}
+```
+
+**Custom section titles:**
+
+```javascript
+config: {
+  viewMode: 'summary',
+  summary: {
+    showIncomplete: true,
+    showRotating: true,
+    showOverdue: true,
+    incompleteTitle: 'To Do Today',
+    rotatingTitle: 'Weekly Rotation',
+    overdueTitle: 'Past Due'
   }
 }
 ```

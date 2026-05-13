@@ -160,12 +160,12 @@
   padding-bottom: 6px;
 }
 
-.MMM-FamilyChores .behind-schedule-title {
+.MMM-FamilyChores .overdue-title {
   color: #ffc107;
   border-bottom-color: #ffc107;
 }
 
-.MMM-FamilyChores .behind-section {
+.MMM-FamilyChores .overdue-section {
   background: rgba(255, 193, 7, 0.1);
   border: 1px solid rgba(255, 193, 7, 0.3);
 }
