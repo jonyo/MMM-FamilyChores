@@ -40,11 +40,6 @@
   transform: translateX(2px);
 }
 
-.MMM-FamilyChores .chore-item.completed {
-  opacity: 0.7;
-  border-left-color: #4caf50;
-}
-
 .MMM-FamilyChores .chore-checkbox {
   margin-right: 12px;
   flex-shrink: 0;
@@ -93,11 +88,6 @@
   line-height: 1.2;
 }
 
-.MMM-FamilyChores .chore-item.completed .chore-name {
-  text-decoration: line-through;
-  color: #aaa;
-}
-
 .MMM-FamilyChores .chore-meta {
   display: flex;
   align-items: center;
@@ -119,4 +109,31 @@
   font-size: 0.8rem;
   font-weight: 500;
   white-space: nowrap;
+}
+
+/* Completed chore styles */
+.MMM-FamilyChores .chore-item.completed {
+  opacity: 0.7;
+  border-left-color: #4caf50;
+}
+
+.MMM-FamilyChores .chore-item.completed .chore-name {
+  text-decoration: line-through;
+  color: #aaa;
+}
+
+/* Deadline indicator styles - specific selectors at end to avoid specificity issues */
+.MMM-FamilyChores .chore-item.overdue {
+  background: rgba(255, 193, 7, 0.1);
+  border-left-color: #ffc107;
+}
+
+.MMM-FamilyChores .chore-item.overdue .chore-name {
+  color: #ffc107;
+  font-weight: 600;
+}
+
+.MMM-FamilyChores .chore-item.overdue .deadline {
+  background: rgba(255, 193, 7, 0.3);
+  color: #ffc107;
 }

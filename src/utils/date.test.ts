@@ -1,5 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { getLocalDateString, getLocalDayName, getLocalTimeString } from './date';
+import {
+  DeadlineStatus,
+  getDeadlineStatus,
+  getLocalDateString,
+  getLocalDayName,
+  getLocalTimeString,
+} from './date';
 
 describe('Date Utilities', () => {
   beforeEach(() => {
@@ -127,6 +133,120 @@ describe('Date Utilities', () => {
 
       const result = getLocalDayName();
       expect(result).toBe('monday');
+    });
+  });
+
+  describe('getDeadlineStatus', () => {
+    it('should return completed when chore is completed today', () => {
+      // Mock current time: 2024-05-12T15:30:00.000Z (UTC) -> 11:30 in NY
+      const mockDate = new Date('2024-05-12T15:30:00.000Z');
+      vi.setSystemTime(mockDate);
+
+      const result = getDeadlineStatus('08:00', true);
+      expect(result).toBe(DeadlineStatus.COMPLETED);
+    });
+
+    it('should return normal when chore has no deadline', () => {
+      // Mock current time: 2024-05-12T15:30:00.000Z (UTC) -> 11:30 in NY
+      const mockDate = new Date('2024-05-12T15:30:00.000Z');
+      vi.setSystemTime(mockDate);
+
+      const result = getDeadlineStatus(undefined, false);
+      expect(result).toBe(DeadlineStatus.NORMAL);
+    });
+
+    it('should return normal when current time is before deadline', () => {
+      // Mock current time: 2024-05-12T15:30:00.000Z (UTC) -> 11:30 in NY
+      const mockDate = new Date('2024-05-12T15:30:00.000Z');
+      vi.setSystemTime(mockDate);
+
+      const result = getDeadlineStatus('12:00', false);
+      expect(result).toBe(DeadlineStatus.NORMAL);
+    });
+
+    it('should return overdue when current time is after deadline', () => {
+      // Mock current time: 2024-05-12T15:30:00.000Z (UTC) -> 11:30 in NY
+      const mockDate = new Date('2024-05-12T15:30:00.000Z');
+      vi.setSystemTime(mockDate);
+
+      const result = getDeadlineStatus('10:00', false);
+      expect(result).toBe(DeadlineStatus.OVERDUE);
+    });
+
+    it('should return overdue when current time equals deadline', () => {
+      // Mock current time: 2024-05-12T15:30:00.000Z (UTC) -> 11:30 in NY
+      const mockDate = new Date('2024-05-12T15:30:00.000Z');
+      vi.setSystemTime(mockDate);
+
+      const result = getDeadlineStatus('11:30', false);
+      expect(result).toBe(DeadlineStatus.OVERDUE);
+    });
+
+    it('should handle edge cases with midnight deadlines', () => {
+      // Mock current time: 2024-05-12T04:00:00.000Z (UTC) -> 00:00 in NY
+      const mockDate = new Date('2024-05-12T04:00:00.000Z');
+      vi.setSystemTime(mockDate);
+
+      // At exactly midnight, deadline should be overdue
+      const result = getDeadlineStatus('00:00', false);
+      expect(result).toBe(DeadlineStatus.OVERDUE);
+    });
+
+    it('should handle edge cases with 23:59 deadlines', () => {
+      // Mock current time: 2024-05-12T15:30:00.000Z (UTC) -> 11:30 in NY
+      const mockDate = new Date('2024-05-12T15:30:00.000Z');
+      vi.setSystemTime(mockDate);
+
+      // Should be normal since 11:30 < 23:59
+      const result = getDeadlineStatus('23:59', false);
+      expect(result).toBe(DeadlineStatus.NORMAL);
+    });
+
+    it('should prioritize completed status over deadline status', () => {
+      // Mock current time: 2024-05-12T15:30:00.000Z (UTC) -> 11:30 in NY
+      const mockDate = new Date('2024-05-12T15:30:00.000Z');
+      vi.setSystemTime(mockDate);
+
+      // Even though deadline is passed, completed status takes priority
+      const result = getDeadlineStatus('08:00', true);
+      expect(result).toBe(DeadlineStatus.COMPLETED);
+    });
+
+    describe('caughtUp parameter', () => {
+      it('should show overdue when not caught up and no deadline', () => {
+        const result = getDeadlineStatus(undefined, false, false);
+        expect(result).toBe(DeadlineStatus.OVERDUE);
+      });
+
+      it('should show normal when caught up and no deadline', () => {
+        const result = getDeadlineStatus(undefined, false, true);
+        expect(result).toBe(DeadlineStatus.NORMAL);
+      });
+
+      it('should show overdue when not caught up regardless of deadline time', () => {
+        // Mock current time: 2024-05-12T15:30:00.000Z (UTC) -> 11:30 in NY
+        const mockDate = new Date('2024-05-12T15:30:00.000Z');
+        vi.setSystemTime(mockDate);
+
+        // Even though deadline is in future, not caught up should show overdue
+        const result = getDeadlineStatus('23:59', false, false);
+        expect(result).toBe(DeadlineStatus.OVERDUE);
+      });
+
+      it('should show normal when caught up and deadline is in future', () => {
+        // Mock current time: 2024-05-12T15:30:00.000Z (UTC) -> 11:30 in NY
+        const mockDate = new Date('2024-05-12T15:30:00.000Z');
+        vi.setSystemTime(mockDate);
+
+        const result = getDeadlineStatus('23:59', false, true);
+        expect(result).toBe(DeadlineStatus.NORMAL);
+      });
+
+      it('should prioritize completed status over caught up status', () => {
+        // Even though not caught up, completed status takes priority
+        const result = getDeadlineStatus('08:00', true, false);
+        expect(result).toBe(DeadlineStatus.COMPLETED);
+      });
     });
   });
 });

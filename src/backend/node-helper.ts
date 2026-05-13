@@ -57,7 +57,7 @@ export default NodeHelper.create({
       return;
     }
 
-    const dataPath = path.resolve(__dirname, '..', '..', this.config.dataFile || 'data.json');
+    const dataPath = path.resolve(__dirname, this.config.dataFile || 'data.json');
 
     try {
       if (fs.existsSync(dataPath)) {
@@ -88,7 +88,7 @@ export default NodeHelper.create({
       return;
     }
 
-    const dataPath = path.resolve(__dirname, '..', '..', this.config.dataFile || 'data.json');
+    const dataPath = path.resolve(__dirname, this.config.dataFile || 'data.json');
 
     try {
       fs.writeFileSync(dataPath, JSON.stringify(this.choreData, null, 2), 'utf8');

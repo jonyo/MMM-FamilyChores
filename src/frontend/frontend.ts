@@ -2,6 +2,7 @@ import { SocketNotifications } from '../constants/socket-notifications';
 import type { FamilyChoresData } from '../types/chore-types';
 import type { Config } from '../types/config';
 import type { FamilyChoresModule } from '../types/module';
+import { DeadlineStatus, getDeadlineStatus } from '../utils/date';
 
 declare global {
   const Log: {
@@ -184,10 +185,13 @@ const familyChoresModule: FamilyChoresModule = {
     const personName = displayName ? displayName.name : 'Unassigned';
     const personColor = displayName ? displayName.color : '#ccc';
 
-    const completedClass = chore.completedToday ? 'completed' : '';
+    // Determine deadline status for CSS classes
+    const deadlineStatus = getDeadlineStatus(chore.deadline, chore.completedToday, chore.caughtUp);
+    const deadlineClass =
+      deadlineStatus === DeadlineStatus.COMPLETED ? 'completed' : deadlineStatus;
     const checkedAttr = chore.completedToday ? 'checked' : '';
 
-    let html = `<div class="chore-item ${completedClass}" data-chore-id="${chore.id}">`;
+    let html = `<div class="chore-item ${deadlineClass}" data-chore-id="${chore.id}">`;
     html += `<label class="chore-label" for="chore-${chore.id}">`;
     html += '<div class="chore-checkbox">';
     html += `<input type="checkbox" id="chore-${chore.id}" ${checkedAttr} />`;
