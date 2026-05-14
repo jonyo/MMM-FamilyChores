@@ -1,6 +1,9 @@
-// Data structures from our development plan
+/**
+ * Persisted domain model: people, chores, and related enums.
+ * Socket notification payloads live in `socket-payload-types.ts`.
+ * MagicMirror module config lives in `config.ts`.
+ */
 
-// UUID v4 type alias
 export type UUID = string;
 
 export enum SkipDayVisibility {
@@ -87,42 +90,4 @@ export interface FamilyChoresData {
    * ISO date string when daily reset was last performed (YYYY-MM-DD)
    */
   lastResetDate?: string;
-}
-
-// Notification interfaces
-export interface ChoreTogglePayload {
-  /**
-   * ID of the chore to toggle
-   */
-  choreId: string;
-  /**
-   * Whether the chore is completed
-   */
-  completed: boolean;
-}
-
-export interface ChoreReassignPayload {
-  /**
-   * ID of the chore to reassign
-   */
-  choreId: string;
-  /**
-   * ID of the person to assign the chore to
-   */
-  newPersonId: string;
-  /**
-   * Optional PIN for admin actions
-   */
-  pin?: string;
-}
-
-export interface CaughtUpResetPayload {
-  /**
-   * ID of the person to reset caughtUp status for
-   */
-  personId: string;
-  /**
-   * Optional PIN for admin actions
-   */
-  pin?: string;
 }

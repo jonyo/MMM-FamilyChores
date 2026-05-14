@@ -4,10 +4,7 @@ import * as Log from 'logger';
 import * as NodeHelper from 'node_helper';
 import { SocketNotifications } from '../constants/socket-notifications';
 import {
-  type CaughtUpResetPayload,
   type Chore,
-  type ChoreReassignPayload,
-  type ChoreTogglePayload,
   ChoreType,
   type FamilyChoresData,
   type Person,
@@ -22,6 +19,17 @@ import type {
   UpdateChoreRequest,
   UpdatePersonRequest,
 } from '../types/request-types';
+import type { ApiErrorBody } from '../types/response-types';
+import type {
+  CaughtUpResetPayload,
+  CaughtUpResetResultPayload,
+  ChoreReassignPayload,
+  ChoreReassignResultPayload,
+  ChoreTogglePayload,
+  ChoreUpdateResultPayload,
+  NodeHelperIncomingSocketPayload,
+  PinErrorPayload,
+} from '../types/socket-payload-types';
 import { getLocalDateString, getLocalDayName, getLocalTimeString } from '../utils/date';
 import { generateUUID } from '../utils/uuid';
 import { validateChore, validatePerson } from './validator';
@@ -76,7 +84,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
    */
   socketNotificationReceived(
     notificationIdentifier: string,
-    payload: Config | ChoreTogglePayload | ChoreReassignPayload | CaughtUpResetPayload
+    payload: NodeHelperIncomingSocketPayload
   ): void {
     Log.debug(`Node helper received: '${notificationIdentifier}'`);
 
@@ -248,10 +256,11 @@ const nodeHelper: FamilyChoresNodeHelper = {
     // Note: we do NOT change caughtUp here - it stays as-is
 
     this.saveChoreData();
-    this.sendSocketNotification?.(SocketNotifications.CHORE_UPDATE_RESULT, {
+    const updateResult: ChoreUpdateResultPayload = {
       choreId: payload.choreId,
       completed: payload.completed,
-    });
+    };
+    this.sendSocketNotification?.(SocketNotifications.CHORE_UPDATE_RESULT, updateResult);
     this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
   },
 
@@ -260,7 +269,8 @@ const nodeHelper: FamilyChoresNodeHelper = {
     if (!this.choreData || !this.config) return;
 
     if (this.config.adminPin && payload.pin !== this.config.adminPin) {
-      this.sendSocketNotification?.(SocketNotifications.PIN_ERROR, { message: 'Invalid PIN' });
+      const pinError: PinErrorPayload = { message: 'Invalid PIN' };
+      this.sendSocketNotification?.(SocketNotifications.PIN_ERROR, pinError);
       return;
     }
 
@@ -296,10 +306,11 @@ const nodeHelper: FamilyChoresNodeHelper = {
     }
 
     this.saveChoreData();
-    this.sendSocketNotification?.(SocketNotifications.CHORE_REASSIGN_RESULT, {
+    const reassignResult: ChoreReassignResultPayload = {
       choreId: payload.choreId,
       newPersonId: payload.newPersonId,
-    });
+    };
+    this.sendSocketNotification?.(SocketNotifications.CHORE_REASSIGN_RESULT, reassignResult);
     this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
   },
 
@@ -308,7 +319,8 @@ const nodeHelper: FamilyChoresNodeHelper = {
     if (!this.choreData || !this.config) return;
 
     if (this.config.adminPin && payload.pin !== this.config.adminPin) {
-      this.sendSocketNotification?.(SocketNotifications.PIN_ERROR, { message: 'Invalid PIN' });
+      const pinError: PinErrorPayload = { message: 'Invalid PIN' };
+      this.sendSocketNotification?.(SocketNotifications.PIN_ERROR, pinError);
       return;
     }
 
@@ -332,19 +344,22 @@ const nodeHelper: FamilyChoresNodeHelper = {
     Log.info(`Reset caughtUp status for person ${payload.personId}, affected ${resetCount} chores`);
 
     this.saveChoreData();
-    this.sendSocketNotification?.(SocketNotifications.CAUGHTUP_RESET_RESULT, {
+    const caughtUpResult: CaughtUpResetResultPayload = {
       personId: payload.personId,
       resetCount,
-    });
+    };
+    this.sendSocketNotification?.(SocketNotifications.CAUGHTUP_RESET_RESULT, caughtUpResult);
     this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
   },
 
   // Setup admin interface routes using official MagicMirror pattern
   setupAdminRoutes(): void {
+    const apiErr = (message: string): ApiErrorBody => ({ error: message });
+
     // API endpoints for admin operations
     const handleGetData = (_req: Request, res: Response) => {
       if (!this.choreData) {
-        res.status(500).json({ error: 'No data available' });
+        res.status(500).json(apiErr('No data available'));
         return;
       }
       res.json(this.choreData);
@@ -358,7 +373,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
         const { name, color } = req.body as CreatePersonRequest;
 
         if (!this.choreData) {
-          res.status(500).json({ error: 'No data available' });
+          res.status(500).json(apiErr('No data available'));
           return;
         }
 
@@ -372,7 +387,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
         // Validate the constructed person
         const validation = validatePerson(newPerson);
         if (!validation.valid) {
-          res.status(400).json({ error: validation.error });
+          res.status(400).json(apiErr(validation.error));
           return;
         }
 
@@ -383,7 +398,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
         res.json(newPerson);
       } catch (error) {
         Log.error(`Error adding person: ${error}`);
-        res.status(500).json({ error: 'Failed to add person' });
+        res.status(500).json(apiErr('Failed to add person'));
       }
     });
 
@@ -394,13 +409,13 @@ const nodeHelper: FamilyChoresNodeHelper = {
         const { name, color } = req.body as UpdatePersonRequest;
 
         if (!this.choreData) {
-          res.status(500).json({ error: 'No data available' });
+          res.status(500).json(apiErr('No data available'));
           return;
         }
 
         const person = this.choreData.people.find((p: { id: string }) => p.id === id);
         if (!person) {
-          res.status(404).json({ error: 'Person not found' });
+          res.status(404).json(apiErr('Person not found'));
           return;
         }
 
@@ -414,7 +429,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
         // Validate the updated person
         const validation = validatePerson(updatedPerson);
         if (!validation.valid) {
-          res.status(400).json({ error: validation.error });
+          res.status(400).json(apiErr(validation.error));
           return;
         }
 
@@ -425,7 +440,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
         res.json(person);
       } catch (error) {
         Log.error(`Error updating person: ${error}`);
-        res.status(500).json({ error: 'Failed to update person' });
+        res.status(500).json(apiErr('Failed to update person'));
       }
     });
 
@@ -435,13 +450,13 @@ const nodeHelper: FamilyChoresNodeHelper = {
         const { id } = req.params;
 
         if (!this.choreData) {
-          res.status(500).json({ error: 'No data available' });
+          res.status(500).json(apiErr('No data available'));
           return;
         }
 
         const personIndex = this.choreData.people.findIndex((p: { id: string }) => p.id === id);
         if (personIndex === -1) {
-          res.status(404).json({ error: 'Person not found' });
+          res.status(404).json(apiErr('Person not found'));
           return;
         }
 
@@ -467,7 +482,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
         res.json({ success: true });
       } catch (error) {
         Log.error(`Error deleting person: ${error}`);
-        res.status(500).json({ error: 'Failed to delete person' });
+        res.status(500).json(apiErr('Failed to delete person'));
       }
     });
 
@@ -478,7 +493,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
           req.body as CreateChoreRequest;
 
         if (!this.choreData) {
-          res.status(500).json({ error: 'No data available' });
+          res.status(500).json(apiErr('No data available'));
           return;
         }
 
@@ -505,7 +520,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
         // Validate the constructed chore
         const validation = validateChore(newChore, this.choreData.people);
         if (!validation.valid) {
-          res.status(400).json({ error: validation.error });
+          res.status(400).json(apiErr(validation.error));
           return;
         }
 
@@ -516,7 +531,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
         res.json(newChore);
       } catch (error) {
         Log.error(`Error adding chore: ${error}`);
-        res.status(500).json({ error: 'Failed to add chore' });
+        res.status(500).json(apiErr('Failed to add chore'));
       }
     });
 
@@ -528,17 +543,17 @@ const nodeHelper: FamilyChoresNodeHelper = {
           req.body as UpdateChoreRequest;
 
         if (!this.choreData) {
-          res.status(500).json({ error: 'No data available' });
+          res.status(500).json(apiErr('No data available'));
           return;
         }
 
         const chore = this.choreData.chores.find((c: Chore) => c.id === id);
         if (!chore) {
-          res.status(404).json({ error: 'Chore not found' });
+          res.status(404).json(apiErr('Chore not found'));
           return;
         }
         if (type && type !== chore.type) {
-          res.status(400).json({ error: 'Cannot change chore type' });
+          res.status(400).json(apiErr('Cannot change chore type'));
           return;
         }
 
@@ -562,7 +577,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
         // Validate the updated chore
         const validation = validateChore(updatedChore, this.choreData.people);
         if (!validation.valid) {
-          res.status(400).json({ error: validation.error });
+          res.status(400).json(apiErr(validation.error));
           return;
         }
 
@@ -573,7 +588,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
         res.json(chore);
       } catch (error) {
         Log.error(`Error updating chore: ${error}`);
-        res.status(500).json({ error: 'Failed to update chore' });
+        res.status(500).json(apiErr('Failed to update chore'));
       }
     });
 
@@ -583,13 +598,13 @@ const nodeHelper: FamilyChoresNodeHelper = {
         const { id } = req.params;
 
         if (!this.choreData) {
-          res.status(500).json({ error: 'No data available' });
+          res.status(500).json(apiErr('No data available'));
           return;
         }
 
         const choreIndex = this.choreData.chores.findIndex((c: Chore) => c.id === id);
         if (choreIndex === -1) {
-          res.status(404).json({ error: 'Chore not found' });
+          res.status(404).json(apiErr('Chore not found'));
           return;
         }
 
@@ -600,7 +615,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
         res.json({ success: true });
       } catch (error) {
         Log.error(`Error deleting chore: ${error}`);
-        res.status(500).json({ error: 'Failed to delete chore' });
+        res.status(500).json(apiErr('Failed to delete chore'));
       }
     });
 
@@ -608,7 +623,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
     this.expressApp?.get('/MMM-FamilyChores/backup', (_req: Request, res: Response) => {
       try {
         if (!this.choreData) {
-          res.status(500).json({ error: 'No data available' });
+          res.status(500).json(apiErr('No data available'));
           return;
         }
 
@@ -618,7 +633,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
         res.send(JSON.stringify(this.choreData, null, 2));
       } catch (error) {
         Log.error(`Error creating backup: ${error}`);
-        res.status(500).json({ error: 'Failed to create backup' });
+        res.status(500).json(apiErr('Failed to create backup'));
       }
     });
 
@@ -628,13 +643,13 @@ const nodeHelper: FamilyChoresNodeHelper = {
         const restoredData = req.body as RestoreDataRequest;
 
         if (!restoredData?.people || !restoredData.chores) {
-          res.status(400).json({ error: 'Invalid data format' });
+          res.status(400).json(apiErr('Invalid data format'));
           return;
         }
 
         // Basic validation
         if (!Array.isArray(restoredData.people) || !Array.isArray(restoredData.chores)) {
-          res.status(400).json({ error: 'Invalid data format' });
+          res.status(400).json(apiErr('Invalid data format'));
           return;
         }
 
@@ -643,7 +658,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
         for (const person of restoredData.people) {
           const validation = validatePerson(person);
           if (!validation.valid) {
-            res.status(400).json({ error: `Invalid person data: ${validation.error}` });
+            res.status(400).json(apiErr(`Invalid person data: ${validation.error}`));
             return;
           }
           validPeople.push(person as Person);
@@ -654,7 +669,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
         for (const chore of restoredData.chores) {
           const validation = validateChore(chore, validPeople);
           if (!validation.valid) {
-            res.status(400).json({ error: `Invalid chore data: ${validation.error}` });
+            res.status(400).json(apiErr(`Invalid chore data: ${validation.error}`));
             return;
           }
           validChores.push(chore as Chore);
@@ -671,7 +686,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
         res.json({ success: true, message: 'Data restored successfully' });
       } catch (error) {
         Log.error(`Error restoring data: ${error}`);
-        res.status(500).json({ error: 'Failed to restore data' });
+        res.status(500).json(apiErr('Failed to restore data'));
       }
     });
 
@@ -681,12 +696,12 @@ const nodeHelper: FamilyChoresNodeHelper = {
         const { fromPersonId, toPersonId, choreIds } = req.body as CopyChoresRequest;
 
         if (!fromPersonId || !toPersonId || !choreIds) {
-          res.status(400).json({ error: 'fromPersonId, toPersonId, and choreIds are required' });
+          res.status(400).json(apiErr('fromPersonId, toPersonId, and choreIds are required'));
           return;
         }
 
         if (!this.choreData) {
-          res.status(500).json({ error: 'No data available' });
+          res.status(500).json(apiErr('No data available'));
           return;
         }
 
@@ -731,7 +746,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
         res.json(newChores);
       } catch (error) {
         Log.error(`Error copying chores: ${error}`);
-        res.status(500).json({ error: 'Failed to copy chores' });
+        res.status(500).json(apiErr('Failed to copy chores'));
       }
     });
 

@@ -1,4 +1,10 @@
-import type { SkipDayVisibility, UUID } from './chore-types';
+import type { Chore, Person, SkipDayVisibility, UUID } from './chore-types';
+
+/**
+ * JSON **request** bodies for the Express admin routes in `setupAdminRoutes`
+ * (node_helper). Error **response** bodies use `ApiErrorBody` in `response-types.ts`.
+ * Socket payloads use `socket-payload-types.ts`.
+ */
 
 /**
  * Request body for creating a new person
@@ -35,13 +41,30 @@ export interface CreateChoreRequest {
 export interface UpdateChoreRequest extends Partial<CreateChoreRequest> {}
 
 /**
- * Request body for restoring data from backup
+ * Restore upload JSON. Defaults use `unknown` for each row so the **server** can
+ * treat the body as untrusted. Typed senders use `RestoreDataBody<Person, Chore>`,
+ * {@link RestoreDataSubmission}, or `extends` this interface with narrower element
+ * types (or extra metadata fields).
+ *
+ * This does not validate at runtime: the receiver must still run `validatePerson` /
+ * `validateChore` on each entry.
  */
-export interface RestoreDataRequest {
-  people: unknown[];
-  chores: unknown[];
+export interface RestoreDataBody<TPerson = unknown, TChore = unknown> {
+  people: TPerson[];
+  chores: TChore[];
   lastResetDate?: string;
 }
+
+/**
+ * Untrusted POST `/MMM-FamilyChores/restore` body after deserialization.
+ */
+export type RestoreDataRequest = RestoreDataBody;
+
+/**
+ * Payload built from trusted in-memory data (e.g. `FamilyChoresData`) when the
+ * admin or tooling composes JSON locally in TypeScript.
+ */
+export type RestoreDataSubmission = RestoreDataBody<Person, Chore>;
 
 /**
  * Request body for copying chores from one person to another

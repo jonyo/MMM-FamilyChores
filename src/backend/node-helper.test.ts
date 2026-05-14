@@ -1,9 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  type CaughtUpResetPayload,
   type Chore,
-  type ChoreReassignPayload,
-  type ChoreTogglePayload,
   ChoreType,
   DayOfWeek,
   type FamilyChoresData,
@@ -12,6 +9,12 @@ import {
   SkipDayVisibility,
 } from '../types/chore-types';
 import type { Config } from '../types/config';
+import type {
+  CaughtUpResetPayload,
+  ChoreReassignPayload,
+  ChoreTogglePayload,
+  NodeHelperIncomingSocketPayload,
+} from '../types/socket-payload-types';
 import { getLocalDateString, getLocalDayName } from '../utils/date';
 import { generateTestUUID } from '../utils/uuid';
 import './node-helper';
@@ -39,7 +42,7 @@ const { nodeHelperInstance, setNodeHelperInstance } = vi.hoisted(() => {
     };
     socketNotificationReceived: (
       notificationIdentifier: string,
-      payload: Config | ChoreTogglePayload | ChoreReassignPayload | CaughtUpResetPayload
+      payload: NodeHelperIncomingSocketPayload
     ) => void;
   };
   const setNodeHelperInstance = (instance: typeof nodeHelperInstance) => {
