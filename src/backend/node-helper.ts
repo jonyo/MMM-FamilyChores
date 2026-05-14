@@ -21,6 +21,7 @@ import type {
   UpdatePersonRequest,
 } from '../types/request-types';
 import { getLocalDateString, getLocalDayName, getLocalTimeString } from '../utils/date';
+import { generateUUID } from '../utils/uuid';
 
 // Use more flexible types for MagicMirror's Express implementation
 interface Request {
@@ -52,7 +53,6 @@ interface FamilyChoresNodeHelper extends Partial<NodeHelper.NodeHelperModule> {
   handleChoreToggle(payload: ChoreTogglePayload): void;
   handleChoreReassign(payload: ChoreReassignPayload): void;
   handleCaughtUpReset(payload: CaughtUpResetPayload): void;
-  generateUUID(): string;
 }
 
 const nodeHelper: FamilyChoresNodeHelper = {
@@ -356,7 +356,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
 
         // Generate UUID v4 for new person
         const newPerson = {
-          id: this.generateUUID(),
+          id: generateUUID(),
           name: name.trim(),
           color: color.trim(),
         };
@@ -471,7 +471,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
         }
 
         const newChore: Chore = {
-          id: this.generateUUID(),
+          id: generateUUID(),
           name: name.trim(),
           type,
           deadline: deadline?.trim() || undefined,
@@ -669,7 +669,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
 
           // Create new chore with new UUID
           const newChore: Chore = {
-            id: this.generateUUID(),
+            id: generateUUID(),
             name: chore.name,
             type: chore.type,
             assignedTo: toPersonId,
@@ -695,15 +695,6 @@ const nodeHelper: FamilyChoresNodeHelper = {
     });
 
     Log.info('Admin routes configured for MMM-FamilyChores');
-  },
-
-  // Generate UUID v4
-  generateUUID(): string {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-      const r = (Math.random() * 16) | 0;
-      const v = c === 'x' ? r : (r & 0x3) | 0x8;
-      return v.toString(16);
-    });
   },
 };
 
