@@ -1,6 +1,41 @@
 // API base URL
 const API_BASE = '/MMM-FamilyChores';
 
+// Generate a random light/pastel color suitable for display on a dark background
+function generateRandomLightColor() {
+  const hue = Math.floor(Math.random() * 360);
+  const saturation = 55 + Math.floor(Math.random() * 20);
+  const lightness = 60 + Math.floor(Math.random() * 15);
+
+  // Convert HSL to hex
+  const h = hue / 360;
+  const s = saturation / 100;
+  const l = lightness / 100;
+
+  const hue2rgb = (p, q, t) => {
+    let tVal = t;
+    if (tVal < 0) tVal += 1;
+    if (tVal > 1) tVal -= 1;
+    if (tVal < 1 / 6) return p + (q - p) * 6 * tVal;
+    if (tVal < 1 / 2) return q;
+    if (tVal < 2 / 3) return p + (q - p) * (2 / 3 - tVal) * 6;
+    return p;
+  };
+
+  const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+  const p = 2 * l - q;
+  const r = hue2rgb(p, q, h + 1 / 3);
+  const g = hue2rgb(p, q, h);
+  const b = hue2rgb(p, q, h - 1 / 3);
+
+  const toHex = (x) => {
+    const hex = Math.round(x * 255).toString(16);
+    return hex.length === 1 ? `0${hex}` : hex;
+  };
+
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
 // State
 let choreData = null;
 
@@ -17,7 +52,7 @@ async function loadData() {
     if (!response.ok) throw new Error('Failed to load data');
     choreData = await response.json();
     renderPeople();
-    renderChores();
+    renderRotatingChores();
     renderSystemState();
   } catch (error) {
     console.error('Error loading data:', error);
@@ -32,9 +67,9 @@ function setupEventListeners() {
     openPersonModal();
   });
 
-  // Add chore
-  document.getElementById('addChoreBtn').addEventListener('click', () => {
-    openChoreModal();
+  // Add rotating chore
+  document.getElementById('addRotatingChoreBtn').addEventListener('click', () => {
+    openChoreModal('rotating');
   });
 
   // Person form
@@ -43,8 +78,13 @@ function setupEventListeners() {
   // Chore form
   document.getElementById('choreForm').addEventListener('submit', handleChoreSubmit);
 
-  // Chore type change
-  document.getElementById('choreType').addEventListener('change', handleChoreTypeChange);
+  // Copy form
+  document.getElementById('copyForm').addEventListener('submit', handleCopySubmit);
+
+  // Randomize color button
+  document.getElementById('randomizeColorBtn').addEventListener('click', () => {
+    document.getElementById('personColor').value = generateRandomLightColor();
+  });
 
   // Cancel buttons
   document.querySelectorAll('.cancel-btn').forEach((btn) => {
@@ -90,41 +130,119 @@ function renderPeople() {
   const container = document.getElementById('peopleList');
   container.innerHTML = '';
 
+  // Show info icon if no people exist
+  const addPersonInfo = document.getElementById('addPersonInfo');
+  if (addPersonInfo) {
+    addPersonInfo.style.display = choreData.people.length === 0 ? 'inline' : 'none';
+  }
+
+  // Show rotating chores section if people exist
+  const rotatingChoresSection = document.getElementById('rotatingChoresSection');
+  if (rotatingChoresSection) {
+    rotatingChoresSection.style.display = choreData.people.length > 0 ? 'block' : 'none';
+  }
+
   choreData.people.forEach((person) => {
     const card = document.createElement('div');
     card.className = 'item-card';
+
+    // Get personal chores for this person
+    const personalChores = choreData.chores.filter(
+      (chore) => chore.type === 'personal' && chore.assignedTo === person.id
+    );
+
+    let choresHtml = '';
+    choresHtml += `
+      <div class="person-chores-header">
+        <h4>${person.name}'s Personal Chores</h4>
+        <div class="person-chores-actions">
+          <button type="button" class="btn btn-primary btn-sm" onclick="openChoreModal('personal', '${person.id}')">Add Chore</button>
+          ${
+            personalChores.length > 0
+              ? `
+            <button type="button" class="btn btn-secondary btn-sm" onclick="openCopyModal('${person.id}')">Copy Chores</button>
+          `
+              : ''
+          }
+        </div>
+      </div>
+    `;
+
+    if (personalChores.length > 0) {
+      choresHtml += '<div class="person-chores">';
+      personalChores.forEach((chore) => {
+        const skipDays =
+          chore.skipDays && chore.skipDays.length > 0
+            ? chore.skipDays.map((d) => d.charAt(0).toUpperCase() + d.slice(1)).join(', ')
+            : 'None';
+        choresHtml += `
+          <div class="chore-item">
+            <div class="chore-info">
+              <h4>${chore.name}</h4>
+              ${chore.deadline ? `<p class="deadline">Deadline: ${chore.deadline}</p>` : ''}
+              <p class="skip-days">Skip days: ${skipDays}</p>
+            </div>
+            <div class="chore-actions">
+              <button type="button" class="btn btn-secondary btn-sm" onclick="editChore('${chore.id}')">Edit</button>
+              <button type="button" class="btn btn-danger btn-sm" onclick="deleteChore('${chore.id}')">Delete</button>
+            </div>
+          </div>
+        `;
+      });
+      choresHtml += '</div>';
+    } else {
+      choresHtml +=
+        '<div class="person-chores"><p class="empty-message">No personal chores yet.</p></div>';
+    }
+
     card.innerHTML = `
-      <div class="item-info">
-        <h3>${person.name} <span class="color-badge" style="background-color: ${person.color}"></span></h3>
-        <p>ID: ${person.id}</p>
+      <div class="person-header">
+        <div class="item-info">
+          <h3>${person.name} <span class="color-badge" style="background-color: ${person.color}"></span></h3>
+          <p>ID: ${person.id}</p>
+        </div>
+        <div class="item-actions">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="editPerson('${person.id}')">Edit</button>
+          <button type="button" class="btn btn-danger btn-sm" onclick="deletePerson('${person.id}')">Delete</button>
+        </div>
       </div>
-      <div class="item-actions">
-        <button class="btn btn-secondary" onclick="editPerson('${person.id}')">Edit</button>
-        <button class="btn btn-danger" onclick="deletePerson('${person.id}')">Delete</button>
-      </div>
+      ${choresHtml}
     `;
     container.appendChild(card);
   });
 }
 
-// Render chores list
-function renderChores() {
-  const container = document.getElementById('choresList');
+// Render rotating chores list
+function renderRotatingChores() {
+  const container = document.getElementById('rotatingChoresList');
+  if (!container) return;
   container.innerHTML = '';
 
-  choreData.chores.forEach((chore) => {
+  const rotatingChores = choreData.chores.filter((chore) => chore.type === 'rotating');
+
+  rotatingChores.forEach((chore) => {
     const card = document.createElement('div');
     card.className = 'item-card';
 
-    let assignment = '';
-    if (chore.type === 'personal') {
-      const person = choreData.people.find((p) => p.id === chore.assignedTo);
-      assignment = person ? `Assigned to: ${person.name}` : 'Unassigned';
-    } else if (chore.type === 'rotating') {
-      const currentPerson = chore.rotation[chore.rotatingIndex];
-      const person = choreData.people.find((p) => p.id === currentPerson);
-      assignment = person ? `Current: ${person.name}` : 'Unassigned';
-    }
+    // Get rotation list names
+    const rotationNames = chore.rotation
+      .map((personId) => {
+        const person = choreData.people.find((p) => p.id === personId);
+        return person ? person.name : 'Unknown';
+      })
+      .join(', ');
+
+    // Check if rotation includes everyone
+    const includesEveryone =
+      chore.rotation.length === choreData.people.length &&
+      chore.rotation.every((personId) => choreData.people.some((p) => p.id === personId));
+
+    const rotationText = includesEveryone ? 'Everyone' : rotationNames;
+
+    // Get current assignee
+    const currentPersonId = chore.rotation[chore.rotatingIndex ?? 0];
+    const currentPerson = choreData.people.find((p) => p.id === currentPersonId);
+    const currentAssignee = currentPerson ? currentPerson.name : 'Unassigned';
 
     const skipDays =
       chore.skipDays && chore.skipDays.length > 0
@@ -133,14 +251,15 @@ function renderChores() {
 
     card.innerHTML = `
       <div class="item-info">
-        <h3>${chore.name} <span class="chore-type-badge ${chore.type}">${chore.type}</span></h3>
-        <p>${assignment}</p>
+        <h3>${chore.name} <span class="chore-type-badge rotating">Rotating</span></h3>
+        <p>Current: ${currentAssignee}</p>
+        <p>Rotation: ${rotationText}</p>
         ${chore.deadline ? `<p class="deadline">Deadline: ${chore.deadline}</p>` : ''}
         <p class="skip-days">Skip days: ${skipDays}</p>
       </div>
       <div class="item-actions">
-        <button class="btn btn-secondary" onclick="editChore('${chore.id}')">Edit</button>
-        <button class="btn btn-danger" onclick="deleteChore('${chore.id}')">Delete</button>
+        <button type="button" class="btn btn-secondary" onclick="editChore('${chore.id}')">Edit</button>
+        <button type="button" class="btn btn-danger" onclick="deleteChore('${chore.id}')">Delete</button>
       </div>
     `;
     container.appendChild(card);
@@ -167,14 +286,14 @@ function openPersonModal(person = null) {
     title.textContent = 'Add Person';
     form.reset();
     document.getElementById('personId').value = '';
-    document.getElementById('personColor').value = '#FF6B6B';
+    document.getElementById('personColor').value = generateRandomLightColor();
   }
 
   modal.classList.add('active');
 }
 
 // Chore modal
-function openChoreModal(chore = null) {
+function openChoreModal(type = null, personId = null, chore = null) {
   const modal = document.getElementById('choreModal');
   const title = document.getElementById('choreModalTitle');
   const form = document.getElementById('choreForm');
@@ -198,7 +317,11 @@ function openChoreModal(chore = null) {
     rotationList.appendChild(label);
   });
 
+  const assignedToGroup = document.getElementById('assignedToGroup');
+  const rotationGroup = document.getElementById('rotationGroup');
+
   if (chore) {
+    // Editing existing chore
     title.textContent = 'Edit Chore';
     document.getElementById('choreId').value = chore.id;
     document.getElementById('choreName').value = chore.name;
@@ -212,22 +335,37 @@ function openChoreModal(chore = null) {
       checkbox.checked = chore.skipDays?.includes(checkbox.value);
     });
 
-    handleChoreTypeChange();
-
+    // Show/hide fields based on type
     if (chore.type === 'personal') {
+      assignedToGroup.style.display = 'block';
+      rotationGroup.style.display = 'none';
       document.getElementById('assignedTo').value = chore.assignedTo;
     } else if (chore.type === 'rotating') {
+      assignedToGroup.style.display = 'none';
+      rotationGroup.style.display = 'block';
       document.querySelectorAll('.rotation-checkbox').forEach((checkbox) => {
         checkbox.checked = chore.rotation?.includes(checkbox.value);
       });
     }
   } else {
-    title.textContent = 'Add Chore';
+    // Adding new chore with type locked
+    title.textContent = type === 'personal' ? 'Add Personal Chore' : 'Add Rotating Chore';
     form.reset();
     document.getElementById('choreId').value = '';
-    document.getElementById('choreType').value = 'personal';
+    document.getElementById('choreType').value = type;
     document.getElementById('skipDayVisibility').value = 'show_if_overdue';
-    handleChoreTypeChange();
+
+    // Show/hide fields based on locked type
+    if (type === 'personal') {
+      assignedToGroup.style.display = 'block';
+      rotationGroup.style.display = 'none';
+      if (personId) {
+        document.getElementById('assignedTo').value = personId;
+      }
+    } else if (type === 'rotating') {
+      assignedToGroup.style.display = 'none';
+      rotationGroup.style.display = 'block';
+    }
   }
 
   modal.classList.add('active');
@@ -238,21 +376,6 @@ function closeModals() {
   document.querySelectorAll('.modal').forEach((modal) => {
     modal.classList.remove('active');
   });
-}
-
-// Handle chore type change
-function handleChoreTypeChange() {
-  const type = document.getElementById('choreType').value;
-  const assignedToGroup = document.getElementById('assignedToGroup');
-  const rotationGroup = document.getElementById('rotationGroup');
-
-  if (type === 'personal') {
-    assignedToGroup.style.display = 'block';
-    rotationGroup.style.display = 'none';
-  } else {
-    assignedToGroup.style.display = 'none';
-    rotationGroup.style.display = 'block';
-  }
 }
 
 // Handle person form submit
@@ -396,7 +519,7 @@ window.deletePerson = async (id) => {
 // Edit chore (global function for onclick)
 window.editChore = (id) => {
   const chore = choreData.chores.find((c) => c.id === id);
-  if (chore) openChoreModal(chore);
+  if (chore) openChoreModal(null, null, chore);
 };
 
 // Delete chore (global function for onclick)
@@ -501,5 +624,84 @@ async function handleForceReset() {
   } catch (error) {
     console.error('Error forcing reset:', error);
     alert('Failed to force reset. Please try again.');
+  }
+}
+
+// Copy modal
+window.openCopyModal = (fromPersonId) => {
+  const modal = document.getElementById('copyModal');
+  const fromPerson = choreData.people.find((p) => p.id === fromPersonId);
+
+  if (!fromPerson) return;
+
+  // Set from person info
+  document.getElementById('copyFromPersonId').value = fromPersonId;
+  document.getElementById('copyFromPersonName').textContent = fromPerson.name;
+
+  // Populate "to" dropdown (exclude from person)
+  const toSelect = document.getElementById('copyToPersonId');
+  toSelect.innerHTML = '';
+  choreData.people
+    .filter((p) => p.id !== fromPersonId)
+    .forEach((person) => {
+      const option = document.createElement('option');
+      option.value = person.id;
+      option.textContent = person.name;
+      toSelect.appendChild(option);
+    });
+
+  // Get personal chores for from person
+  const personalChores = choreData.chores.filter(
+    (chore) => chore.type === 'personal' && chore.assignedTo === fromPersonId
+  );
+
+  // Populate chores list with checkboxes (all checked by default)
+  const choresList = document.getElementById('copyChoresList');
+  choresList.innerHTML = '';
+  personalChores.forEach((chore) => {
+    const label = document.createElement('label');
+    label.innerHTML = `<input type="checkbox" value="${chore.id}" class="copy-chore-checkbox" checked> ${chore.name}`;
+    choresList.appendChild(label);
+  });
+
+  modal.classList.add('active');
+};
+
+// Handle copy form submit
+async function handleCopySubmit(e) {
+  e.preventDefault();
+
+  const fromPersonId = document.getElementById('copyFromPersonId').value;
+  const toPersonId = document.getElementById('copyToPersonId').value;
+
+  // Get selected chore IDs
+  const selectedChoreIds = [];
+  document.querySelectorAll('.copy-chore-checkbox:checked').forEach((checkbox) => {
+    selectedChoreIds.push(checkbox.value);
+  });
+
+  if (selectedChoreIds.length === 0) {
+    alert('Please select at least one chore to copy.');
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/copy-chores`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fromPersonId,
+        toPersonId,
+        choreIds: selectedChoreIds,
+      }),
+    });
+
+    if (!response.ok) throw new Error('Failed to copy chores');
+
+    closeModals();
+    await loadData();
+  } catch (error) {
+    console.error('Error copying chores:', error);
+    alert('Failed to copy chores. Please try again.');
   }
 }

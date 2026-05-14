@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import '../../css/main.css';
+import { type Chore, SkipDayVisibility } from '../types/chore-types';
 import type { FamilyChoresModule } from '../types/module';
 import './frontend';
 
@@ -192,6 +193,204 @@ describe('Frontend Tests', () => {
       expect(filtered).toHaveLength(1);
       expect(filtered[0].id).toBe('1');
     });
+
+    describe('skip day filtering', () => {
+      beforeEach(() => {
+        // Set system time to a Monday (2026-05-11 12:00 UTC) for consistent skip day testing
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-05-11T12:00:00.000Z'));
+
+        if (module.choreData) {
+          module.choreData.chores.push(
+            {
+              id: 'skip-hide',
+              name: 'Hidden on Monday',
+              type: 'personal',
+              assignedTo: 'alice',
+              completedToday: false,
+              skipDays: ['monday'],
+              // default visibility is HIDE
+            },
+            {
+              id: 'skip-show-always',
+              name: 'Always shown on Monday',
+              type: 'personal',
+              assignedTo: 'alice',
+              completedToday: false,
+              skipDays: ['monday'],
+              skipDayVisibility: SkipDayVisibility.SHOW_ALWAYS,
+            },
+            {
+              id: 'skip-overdue-not-caught-up',
+              name: 'Overdue on Monday - not caught up',
+              type: 'personal',
+              assignedTo: 'alice',
+              completedToday: false,
+              skipDays: ['monday'],
+              skipDayVisibility: SkipDayVisibility.SHOW_IF_OVERDUE,
+              caughtUp: false,
+            },
+            {
+              id: 'skip-overdue-caught-up',
+              name: 'Overdue on Monday - caught up',
+              type: 'personal',
+              assignedTo: 'alice',
+              completedToday: false,
+              skipDays: ['monday'],
+              skipDayVisibility: SkipDayVisibility.SHOW_IF_OVERDUE,
+              caughtUp: true,
+            }
+          );
+        }
+      });
+
+      it('should hide personal chore with default HIDE visibility on skip day', () => {
+        module.config.personFilter = null;
+        const filtered = module.getFilteredChores();
+        expect(filtered.some((c) => c.id === 'skip-hide')).toBe(false);
+      });
+
+      it('should include personal chore with SHOW_ALWAYS visibility on skip day', () => {
+        module.config.personFilter = null;
+        const filtered = module.getFilteredChores();
+        expect(filtered.some((c) => c.id === 'skip-show-always')).toBe(true);
+      });
+
+      it('should include personal chore with SHOW_IF_OVERDUE when not caught up on skip day', () => {
+        module.config.personFilter = null;
+        const filtered = module.getFilteredChores();
+        expect(filtered.some((c) => c.id === 'skip-overdue-not-caught-up')).toBe(true);
+      });
+
+      it('should hide personal chore with SHOW_IF_OVERDUE when caught up on skip day', () => {
+        module.config.personFilter = null;
+        const filtered = module.getFilteredChores();
+        expect(filtered.some((c) => c.id === 'skip-overdue-caught-up')).toBe(false);
+      });
+
+      it('should include chores whose skip days do not include today', () => {
+        module.config.personFilter = null;
+        const filtered = module.getFilteredChores();
+        // Chore '2' (Clean kitchen - no skip days) should always be included
+        expect(filtered.some((c) => c.id === '2')).toBe(true);
+      });
+
+      it('should apply skip day filtering when person filter is set', () => {
+        module.config.personFilter = 'alice';
+        const filtered = module.getFilteredChores();
+        // skip-hide (alice's, HIDE on monday) should be excluded
+        expect(filtered.some((c) => c.id === 'skip-hide')).toBe(false);
+        // skip-show-always (alice's, SHOW_ALWAYS on monday) should be included
+        expect(filtered.some((c) => c.id === 'skip-show-always')).toBe(true);
+      });
+
+      it('should apply skip day filtering to rotating chores', () => {
+        if (!module.choreData) return;
+        // Add skip day to the rotating chore
+        const rotatingChore = module.choreData.chores.find((c) => c.id === '1');
+        if (rotatingChore) {
+          rotatingChore.skipDays = ['monday'];
+          rotatingChore.skipDayVisibility = SkipDayVisibility.HIDE;
+        }
+        module.config.personFilter = null;
+        const filtered = module.getFilteredChores();
+        expect(filtered.some((c) => c.id === '1')).toBe(false);
+      });
+
+      afterEach(() => {
+        vi.useRealTimers();
+      });
+    });
+  });
+
+  describe('shouldShowChore', () => {
+    beforeEach(() => {
+      module.choreData = {
+        people: [{ id: 'alice', name: 'Alice', color: '#FF6B6B' }],
+        chores: [
+          {
+            id: '1',
+            name: 'Test chore',
+            type: 'personal',
+            assignedTo: 'alice',
+            completedToday: false,
+            caughtUp: false,
+          },
+        ],
+      };
+    });
+
+    it('should return true when today is not a skip day', () => {
+      const chore = module.choreData?.chores[0] as Chore;
+      const todayDayName = 'monday';
+      chore.skipDays = ['tuesday', 'wednesday'];
+
+      const result = module.shouldShowChore(chore, todayDayName);
+      expect(result).toBe(true);
+    });
+
+    it('should return false when today is a skip day and visibility is HIDE', () => {
+      const chore = module.choreData?.chores[0] as Chore;
+      const todayDayName = 'monday';
+      chore.skipDays = ['monday'];
+      chore.skipDayVisibility = SkipDayVisibility.HIDE;
+
+      const result = module.shouldShowChore(chore, todayDayName);
+      expect(result).toBe(false);
+    });
+
+    it('should return false when today is a skip day and visibility defaults to HIDE', () => {
+      const chore = module.choreData?.chores[0] as Chore;
+      const todayDayName = 'monday';
+      chore.skipDays = ['monday'];
+      // skipDayVisibility is undefined, should default to 'hide'
+
+      const result = module.shouldShowChore(chore, todayDayName);
+      expect(result).toBe(false);
+    });
+
+    it('should return true when today is a skip day and visibility is SHOW_ALWAYS', () => {
+      const chore = module.choreData?.chores[0] as Chore;
+      const todayDayName = 'monday';
+      chore.skipDays = ['monday'];
+      chore.skipDayVisibility = SkipDayVisibility.SHOW_ALWAYS;
+
+      const result = module.shouldShowChore(chore, todayDayName);
+      expect(result).toBe(true);
+    });
+
+    it('should return true when today is a skip day, visibility is SHOW_IF_OVERDUE, and chore is not caught up', () => {
+      const chore = module.choreData?.chores[0] as Chore;
+      const todayDayName = 'monday';
+      chore.skipDays = ['monday'];
+      chore.skipDayVisibility = SkipDayVisibility.SHOW_IF_OVERDUE;
+      chore.caughtUp = false;
+
+      const result = module.shouldShowChore(chore, todayDayName);
+      expect(result).toBe(true);
+    });
+
+    it('should return false when today is a skip day, visibility is SHOW_IF_OVERDUE, and chore is caught up', () => {
+      const chore = module.choreData?.chores[0] as Chore;
+      const todayDayName = 'monday';
+      chore.skipDays = ['monday'];
+      chore.skipDayVisibility = SkipDayVisibility.SHOW_IF_OVERDUE;
+      chore.caughtUp = true;
+
+      const result = module.shouldShowChore(chore, todayDayName);
+      expect(result).toBe(false);
+    });
+
+    it('should return true when today is a skip day, visibility is SHOW_IF_OVERDUE, and caughtUp is undefined', () => {
+      const chore = module.choreData?.chores[0] as Chore;
+      const todayDayName = 'monday';
+      chore.skipDays = ['monday'];
+      chore.skipDayVisibility = SkipDayVisibility.SHOW_IF_OVERDUE;
+      chore.caughtUp = undefined;
+
+      const result = module.shouldShowChore(chore, todayDayName);
+      expect(result).toBe(true);
+    });
   });
 
   describe('getSummaryChores', () => {
@@ -286,6 +485,116 @@ describe('Frontend Tests', () => {
       expect(summaryChores).toHaveLength(1);
       expect(summaryChores.every((c) => c.type === 'personal')).toBe(true);
       expect(summaryChores.every((c) => !c.completedToday)).toBe(true);
+    });
+
+    describe('skip day filtering', () => {
+      beforeEach(() => {
+        // Set system time to a Monday (2026-05-11 12:00 UTC) for consistent skip day testing
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-05-11T12:00:00.000Z'));
+
+        if (module.choreData) {
+          module.choreData.chores.push(
+            {
+              id: 'skip-hide-personal',
+              name: 'Hidden personal on Monday',
+              type: 'personal',
+              assignedTo: 'alice',
+              completedToday: false,
+              skipDays: ['monday'],
+              // default visibility is HIDE
+            },
+            {
+              id: 'skip-show-always-personal',
+              name: 'Always shown personal on Monday',
+              type: 'personal',
+              assignedTo: 'alice',
+              completedToday: false,
+              skipDays: ['monday'],
+              skipDayVisibility: SkipDayVisibility.SHOW_ALWAYS,
+            },
+            {
+              id: 'skip-hide-rotating',
+              name: 'Hidden rotating on Monday',
+              type: 'rotating',
+              rotation: ['alice', 'bob'],
+              rotatingIndex: 0,
+              completedToday: false,
+              skipDays: ['monday'],
+              // default visibility is HIDE
+            },
+            {
+              id: 'skip-overdue-not-caught-up',
+              name: 'Overdue personal - not caught up',
+              type: 'personal',
+              assignedTo: 'alice',
+              completedToday: false,
+              skipDays: ['monday'],
+              skipDayVisibility: SkipDayVisibility.SHOW_IF_OVERDUE,
+              caughtUp: false,
+            },
+            {
+              id: 'skip-overdue-caught-up',
+              name: 'Overdue personal - caught up',
+              type: 'personal',
+              assignedTo: 'alice',
+              completedToday: false,
+              skipDays: ['monday'],
+              skipDayVisibility: SkipDayVisibility.SHOW_IF_OVERDUE,
+              caughtUp: true,
+            }
+          );
+        }
+      });
+
+      it('should hide personal chore with default HIDE visibility on skip day', () => {
+        const summary = module.getSummaryChores();
+        expect(summary.some((c) => c.id === 'skip-hide-personal')).toBe(false);
+      });
+
+      it('should include personal chore with SHOW_ALWAYS visibility on skip day', () => {
+        const summary = module.getSummaryChores();
+        expect(summary.some((c) => c.id === 'skip-show-always-personal')).toBe(true);
+      });
+
+      it('should hide rotating chore with default HIDE visibility on skip day', () => {
+        const summary = module.getSummaryChores();
+        expect(summary.some((c) => c.id === 'skip-hide-rotating')).toBe(false);
+      });
+
+      it('should include personal chore with SHOW_IF_OVERDUE when not caught up on skip day', () => {
+        const summary = module.getSummaryChores();
+        expect(summary.some((c) => c.id === 'skip-overdue-not-caught-up')).toBe(true);
+      });
+
+      it('should hide personal chore with SHOW_IF_OVERDUE when caught up on skip day', () => {
+        const summary = module.getSummaryChores();
+        expect(summary.some((c) => c.id === 'skip-overdue-caught-up')).toBe(false);
+      });
+
+      it('should include chores whose skip days do not include today', () => {
+        const summary = module.getSummaryChores();
+        // Chore '3' (Vacuum - no skip days, incomplete personal) should be included
+        expect(summary.some((c) => c.id === '3')).toBe(true);
+        // Chore '1' (Take out trash - no skip days, incomplete rotating) should be included
+        expect(summary.some((c) => c.id === '1')).toBe(true);
+      });
+
+      it('should apply skip day filtering to completed rotating chores', () => {
+        if (!module.choreData) return;
+        // Add skip day to the completed rotating chore '4'
+        const rotatingChore = module.choreData.chores.find((c) => c.id === '4');
+        if (rotatingChore) {
+          rotatingChore.skipDays = ['monday'];
+          rotatingChore.skipDayVisibility = SkipDayVisibility.HIDE;
+        }
+        const summary = module.getSummaryChores();
+        expect(summary.some((c) => c.id === '4')).toBe(false);
+      });
+
+      afterEach(() => {
+        vi.useRealTimers();
+      });
     });
   });
 

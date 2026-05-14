@@ -20,16 +20,23 @@
     <main>
       <!-- People Section -->
       <section class="section">
-        <h2>People</h2>
-        <button id="addPersonBtn" type="button" class="btn btn-primary">Add Person</button>
+        <div class="section-header">
+          <h2>People</h2>
+          <div class="button-with-tooltip">
+            <button id="addPersonBtn" type="button" class="btn btn-primary">Add Person</button>
+            <span id="addPersonInfo" class="info-icon" data-tooltip="Add at least one person before you can create chores" style="display: none;">ℹ️</span>
+          </div>
+        </div>
         <div id="peopleList" class="item-list"></div>
       </section>
 
-      <!-- Chores Section -->
-      <section class="section">
-        <h2>Chores</h2>
-        <button id="addChoreBtn" type="button" class="btn btn-primary">Add Chore</button>
-        <div id="choresList" class="item-list"></div>
+      <!-- Rotating Chores Section -->
+      <section class="section" id="rotatingChoresSection" style="display: none;">
+        <div class="section-header">
+          <h2>Rotating Chores</h2>
+          <button id="addRotatingChoreBtn" type="button" class="btn btn-primary">Add Rotating Chore</button>
+        </div>
+        <div id="rotatingChoresList" class="item-list"></div>
       </section>
 
       <!-- System State Section -->
@@ -57,7 +64,10 @@
           </div>
           <div class="form-group">
             <label for="personColor">Color:</label>
-            <input type="color" id="personColor" value="#FF6B6B" required>
+            <div class="color-input-group">
+              <input type="color" id="personColor" value="#FF6B6B" required>
+              <button type="button" id="randomizeColorBtn" class="btn btn-secondary btn-sm">Randomize</button>
+            </div>
           </div>
           <div class="form-actions">
             <button type="submit" class="btn btn-primary">Save</button>
@@ -72,16 +82,10 @@
         <h3 id="choreModalTitle">Add Chore</h3>
         <form id="choreForm">
           <input type="hidden" id="choreId">
+          <input type="hidden" id="choreType">
           <div class="form-group">
             <label for="choreName">Name:</label>
             <input type="text" id="choreName" required>
-          </div>
-          <div class="form-group">
-            <label for="choreType">Type:</label>
-            <select id="choreType" required>
-              <option value="personal">Personal</option>
-              <option value="rotating">Rotating</option>
-            </select>
           </div>
           <div class="form-group" id="assignedToGroup">
             <label for="assignedTo">Assigned To:</label>
@@ -117,6 +121,31 @@
           </div>
           <div class="form-actions">
             <button type="submit" class="btn btn-primary">Save</button>
+            <button type="button" class="btn btn-secondary cancel-btn">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="copyModal" class="modal">
+      <div class="modal-content">
+        <h3>Copy Chores</h3>
+        <form id="copyForm">
+          <input type="hidden" id="copyFromPersonId">
+          <div class="form-group">
+            <label>From:</label>
+            <p id="copyFromPersonName" style="font-weight: bold;"></p>
+          </div>
+          <div class="form-group">
+            <label for="copyToPersonId">To:</label>
+            <select id="copyToPersonId" required></select>
+          </div>
+          <div class="form-group">
+            <label>Chores to copy:</label>
+            <div id="copyChoresList" class="checkbox-list"></div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Copy</button>
             <button type="button" class="btn btn-secondary cancel-btn">Cancel</button>
           </div>
         </form>

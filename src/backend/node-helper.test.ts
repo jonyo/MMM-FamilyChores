@@ -8,7 +8,7 @@ import {
   SkipDayVisibility,
 } from '../types/chore-types';
 import type { Config } from '../types/config';
-import { getLocalDayName } from '../utils/date';
+import { getLocalDateString, getLocalDayName } from '../utils/date';
 import './node-helper';
 
 // Create node helper instance variable in hoisted scope
@@ -72,8 +72,65 @@ describe('Node Helper Tests', () => {
     // Set up config
     nodeHelper.config = { adminPin: null, dataFile: 'test-data.json' };
 
-    // Create default chore data
-    nodeHelper.choreData = nodeHelper.createDefaultData();
+    // Create sample chore data for testing
+    nodeHelper.choreData = {
+      people: [
+        { id: '1', name: 'Person 1', color: '#FF6B6B' },
+        { id: '2', name: 'Person 2', color: '#4ECDC4' },
+        { id: '3', name: 'Person 3', color: '#45B7D1' },
+        { id: '4', name: 'Person 4', color: '#96CEB4' },
+        { id: '5', name: 'Person 5', color: '#FFEAA7' },
+      ],
+      chores: [
+        {
+          id: '1',
+          name: 'Rotating Chore 1',
+          type: 'rotating',
+          rotation: ['1', '2', '3'],
+          rotatingIndex: 0,
+          completedToday: false,
+          caughtUp: false,
+          deadline: undefined,
+          skipDays: [],
+          skipDayVisibility: SkipDayVisibility.HIDE,
+        },
+        {
+          id: '2',
+          name: 'Rotating Chore 2',
+          type: 'rotating',
+          rotation: ['1', '2', '3'],
+          rotatingIndex: 0,
+          completedToday: false,
+          caughtUp: false,
+          deadline: undefined,
+          skipDays: [],
+          skipDayVisibility: SkipDayVisibility.HIDE,
+        },
+        {
+          id: '3',
+          name: 'Personal Chore 1',
+          type: 'personal',
+          assignedTo: '1',
+          completedToday: false,
+          caughtUp: false,
+          deadline: undefined,
+          skipDays: [],
+          skipDayVisibility: SkipDayVisibility.HIDE,
+        },
+        {
+          id: '4',
+          name: 'Personal Chore 2',
+          type: 'personal',
+          assignedTo: '2',
+          completedToday: false,
+          caughtUp: false,
+          deadline: undefined,
+          skipDays: [],
+          skipDayVisibility: SkipDayVisibility.HIDE,
+        },
+      ],
+      lastResetDate: getLocalDateString(),
+    };
   });
 
   describe('createDefaultData', () => {
@@ -82,8 +139,9 @@ describe('Node Helper Tests', () => {
 
       expect(defaultData).toHaveProperty('people');
       expect(defaultData).toHaveProperty('chores');
-      expect(defaultData.people).toHaveLength(5);
-      expect(defaultData.chores).toHaveLength(4);
+      expect(defaultData).toHaveProperty('lastResetDate');
+      expect(defaultData.people).toHaveLength(0);
+      expect(defaultData.chores).toHaveLength(0);
     });
   });
 
@@ -288,9 +346,9 @@ describe('Node Helper Tests', () => {
 
       nodeHelper.transitionChoresForNewDay();
 
-      // Everything should remain unchanged because today is a skip day with HIDE visibility
+      // CompletedToday and rotatingIndex should remain unchanged, but caughtUp gets updated
       expect(chore.completedToday).toBe(true);
-      expect(chore.caughtUp).toBe(false);
+      expect(chore.caughtUp).toBe(true); // Updated since completedToday was true
       expect(chore.rotatingIndex).toBe(2);
     });
 
@@ -360,7 +418,7 @@ describe('Node Helper Tests', () => {
       if (!chore) return;
       // Set up chore as completed yesterday and at last index (no skip days)
       chore.completedToday = true;
-      chore.rotatingIndex = 4; // Last index in rotation array
+      chore.rotatingIndex = 2; // Last valid index in rotation array ['1', '2', '3']
       chore.skipDays = []; // Ensure no skip days
 
       nodeHelper.transitionChoresForNewDay();
@@ -434,9 +492,9 @@ describe('Node Helper Tests', () => {
 
         nodeHelper.transitionChoresForNewDay();
 
-        // Everything should remain unchanged
+        // CompletedToday and rotatingIndex should remain unchanged, but caughtUp gets updated
         expect(chore.completedToday).toBe(true);
-        expect(chore.caughtUp).toBe(false);
+        expect(chore.caughtUp).toBe(true); // Updated since completedToday was true
         expect(chore.rotatingIndex).toBe(2);
       });
 
@@ -876,4 +934,9 @@ describe('Node Helper Tests', () => {
       expect(nodeHelper.choreData?.lastResetDate).not.toBe('2024-05-11');
     });
   });
+
+  // Note: copy-chores endpoint tests require Express app mocking
+  // The endpoint logic is inline in setupAdminRoutes and would need
+  // to be extracted into a separate method for proper unit testing
+  // Integration testing would be needed for full endpoint coverage
 });

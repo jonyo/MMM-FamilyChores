@@ -41,3 +41,12 @@ export interface RestoreDataRequest {
   people: unknown[];
   chores: unknown[];
 }
+
+/**
+ * Request body for copying chores from one person to another
+ */
+export interface CopyChoresRequest {
+  fromPersonId: UUID;
+  toPersonId: UUID;
+  choreIds: UUID[];
+}

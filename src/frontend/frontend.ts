@@ -1,8 +1,8 @@
 import { SocketNotifications } from '../constants/socket-notifications';
-import type { FamilyChoresData } from '../types/chore-types';
+import { type FamilyChoresData, SkipDayVisibility } from '../types/chore-types';
 import type { Config } from '../types/config';
 import type { FamilyChoresModule } from '../types/module';
-import { DeadlineStatus, getDeadlineStatus } from '../utils/date';
+import { DeadlineStatus, getDeadlineStatus, getLocalDayName } from '../utils/date';
 
 declare global {
   const Log: {
@@ -69,6 +69,28 @@ const familyChoresModule: FamilyChoresModule = {
     return [this.file?.('css/main.css') || ''];
   },
 
+  // Helper function: check if a chore should be shown based on skip day visibility
+  shouldShowChore(chore: FamilyChoresData['chores'][0], todayDayName: string): boolean {
+    const skipDays = chore.skipDays ?? [];
+    if (!skipDays.includes(todayDayName)) {
+      // not a skip day
+      return true;
+    }
+    // skip day - decide whether to show based on visibility setting
+    const skipDayVisibility = chore.skipDayVisibility ?? SkipDayVisibility.HIDE;
+
+    if (skipDayVisibility === SkipDayVisibility.HIDE) {
+      // Today is a skip day and visibility is HIDE - skip this chore entirely
+      return false;
+    }
+    if (skipDayVisibility === SkipDayVisibility.SHOW_IF_OVERDUE && chore.caughtUp) {
+      // Visibility is "show if overdue" and we are caught up - don't show
+      return false;
+    }
+    // either "always show" or "show if overdue" and it is overdue
+    return true;
+  },
+
   getFilteredChores(): FamilyChoresData['chores'] {
     if (!this.choreData) {
       return [];
@@ -79,10 +101,13 @@ const familyChoresModule: FamilyChoresModule = {
       return this.getSummaryChores();
     }
 
+    const todayDayName = getLocalDayName();
+
     // Personal view mode (default)
     const filterValue = this.config.personFilter?.trim().toLowerCase();
     if (!filterValue) {
-      return this.choreData.chores;
+      // No person filter - apply skip day filtering to all chores
+      return this.choreData.chores.filter((chore) => this.shouldShowChore(chore, todayDayName));
     }
 
     const filteredPerson =
@@ -95,6 +120,12 @@ const familyChoresModule: FamilyChoresModule = {
     }
 
     return this.choreData.chores.filter((chore) => {
+      // Check skip day visibility
+      if (!this.shouldShowChore(chore, todayDayName)) {
+        return false;
+      }
+
+      // Apply person filter
       if (chore.type === 'personal') {
         return chore.assignedTo === filteredPerson.id;
       }
@@ -114,7 +145,14 @@ const familyChoresModule: FamilyChoresModule = {
       return [];
     }
 
+    const todayDayName = getLocalDayName();
+
     return this.choreData.chores.filter((chore) => {
+      // Check skip day visibility
+      if (!this.shouldShowChore(chore, todayDayName)) {
+        return false;
+      }
+
       // Show all incomplete chores
       if (!chore.completedToday) {
         return true;

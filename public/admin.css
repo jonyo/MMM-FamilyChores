@@ -51,12 +51,19 @@ main {
   margin-bottom: 40px;
 }
 
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
 .section h2 {
   font-size: 1.5rem;
-  margin-bottom: 20px;
   color: #667eea;
   border-bottom: 2px solid #667eea;
   padding-bottom: 10px;
+  margin: 0;
 }
 
 .btn {
@@ -130,15 +137,77 @@ main {
   border: 1px solid #e9ecef;
   border-radius: 8px;
   padding: 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   transition: all 0.2s;
 }
 
 .item-card:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   border-color: #667eea;
+}
+
+.person-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.person-chores {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #e9ecef;
+}
+
+.person-chores-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #e9ecef;
+}
+
+.person-chores-header h4 {
+  font-size: 1.1rem;
+  color: #667eea;
+  margin: 0;
+}
+
+.person-chores-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.empty-message {
+  color: #6c757d;
+  font-style: italic;
+  margin: 10px 0;
+}
+
+.chore-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.chore-item:last-child {
+  margin-bottom: 0;
+}
+
+.chore-info h4 {
+  font-size: 1rem;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.chore-actions {
+  display: flex;
+  gap: 8px;
 }
 
 .item-info {
@@ -216,7 +285,7 @@ main {
   padding: 8px 12px;
   border-radius: 6px;
   font-size: 0.85rem;
-  white-space: nowrap;
+  white-space: normal;
   max-width: 300px;
   width: max-content;
   opacity: 0;
@@ -304,6 +373,17 @@ main {
   border: 1px solid #ddd;
   border-radius: 6px;
   cursor: pointer;
+}
+
+.color-input-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.85rem;
 }
 
 .checkbox-list {

@@ -13,6 +13,7 @@ import {
 } from '../types/chore-types';
 import type { Config } from '../types/config';
 import type {
+  CopyChoresRequest,
   CreateChoreRequest,
   CreatePersonRequest,
   RestoreDataRequest,
@@ -193,8 +194,8 @@ const nodeHelper: FamilyChoresNodeHelper = {
       const skipDayVisibility = chore.skipDayVisibility ?? SkipDayVisibility.HIDE;
 
       if (isSkipDay && skipDayVisibility === SkipDayVisibility.HIDE) {
-        // Today is a skip day and visibility is HIDE - skip this chore entirely, don't change any state
-        // - it will resume on the next non-skip day
+        // Today is a skip day and visibility is HIDE - update caughtUp but skip rotation/completion reset
+        chore.caughtUp = chore.completedToday === true;
         continue;
       }
       // for other states, update caughtUp status
@@ -207,7 +208,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
       chore.completedToday = false;
       // rotate if needed
       if (chore.caughtUp && chore.type === 'rotating') {
-        chore.rotatingIndex = (chore.rotatingIndex ?? 0 + 1) % (chore.rotation ?? []).length;
+        chore.rotatingIndex = ((chore.rotatingIndex ?? 0) + 1) % (chore.rotation ?? []).length;
       }
     }
 
@@ -630,6 +631,66 @@ const nodeHelper: FamilyChoresNodeHelper = {
       } catch (error) {
         Log.error(`Error restoring data: ${error}`);
         res.status(500).json({ error: 'Failed to restore data' });
+      }
+    });
+
+    // Copy chores from one person to another
+    this.expressApp?.post('/MMM-FamilyChores/copy-chores', (req: Request, res: Response) => {
+      try {
+        const { fromPersonId, toPersonId, choreIds } = req.body as CopyChoresRequest;
+
+        if (!fromPersonId || !toPersonId || !choreIds) {
+          res.status(400).json({ error: 'fromPersonId, toPersonId, and choreIds are required' });
+          return;
+        }
+
+        if (!this.choreData) {
+          res.status(500).json({ error: 'No data available' });
+          return;
+        }
+
+        const newChores: Chore[] = [];
+
+        for (const choreId of choreIds) {
+          const chore = this.choreData.chores.find((c: Chore) => c.id === choreId);
+
+          if (!chore) {
+            Log.warn(`Chore not found: ${choreId}, skipping`);
+            continue;
+          }
+
+          // Validate it's a personal chore assigned to fromPersonId
+          if (chore.type !== 'personal' || chore.assignedTo !== fromPersonId) {
+            Log.warn(
+              `Chore ${choreId} is not a personal chore assigned to ${fromPersonId}, skipping`
+            );
+            continue;
+          }
+
+          // Create new chore with new UUID
+          const newChore: Chore = {
+            id: this.generateUUID(),
+            name: chore.name,
+            type: chore.type,
+            assignedTo: toPersonId,
+            deadline: chore.deadline,
+            skipDays: chore.skipDays,
+            skipDayVisibility: chore.skipDayVisibility,
+            caughtUp: true,
+            completedToday: false,
+          };
+
+          this.choreData.chores.push(newChore);
+          newChores.push(newChore);
+        }
+
+        this.saveChoreData();
+        this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
+
+        res.json(newChores);
+      } catch (error) {
+        Log.error(`Error copying chores: ${error}`);
+        res.status(500).json({ error: 'Failed to copy chores' });
       }
     });
 
