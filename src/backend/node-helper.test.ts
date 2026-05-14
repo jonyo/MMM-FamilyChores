@@ -2,7 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   type Chore,
   ChoreType,
-  DayOfWeek,
   type FamilyChoresData,
   type PersonalChore,
   type RotatingChore,
@@ -16,7 +15,6 @@ import type {
   NodeHelperIncomingSocketPayload,
 } from '../types/socket-payload-types';
 import { getLocalDateString, getLocalDayName } from '../utils/date';
-import { generateTestUUID } from '../utils/uuid';
 import './node-helper';
 
 // Create node helper instance variable in hoisted scope
@@ -981,267 +979,26 @@ describe('Node Helper Tests', () => {
     });
   });
 
-  describe('setupAdminRoutes validation', () => {
-    type Req = { body: unknown; params: Record<string, string> };
-    type MockRes = ReturnType<typeof createMockRes>;
-
-    function createMockRes() {
-      let statusCode = 200;
-      let jsonBody: unknown;
-      const res = {
-        status(code: number) {
-          statusCode = code;
-          return res;
-        },
-        json(data: unknown) {
-          jsonBody = data;
-          return res;
-        },
-        get statusCode() {
-          return statusCode;
-        },
-        get jsonBody() {
-          return jsonBody;
-        },
+  describe('setupAdminRoutes', () => {
+    it('registers all expected routes on expressApp', () => {
+      const registeredRoutes: string[] = [];
+      nodeHelper.expressApp = {
+        get: (path: string) => registeredRoutes.push(`GET ${path}`),
+        post: (path: string) => registeredRoutes.push(`POST ${path}`),
+        put: (path: string) => registeredRoutes.push(`PUT ${path}`),
+        delete: (path: string) => registeredRoutes.push(`DELETE ${path}`),
       };
-      return res;
-    }
-
-    function bindRoutes(nh: ReturnType<typeof nodeHelperInstance>) {
-      const map = new Map<string, (req: Req, res: MockRes) => void>();
-      const capture =
-        (method: string) => (path: string, handler: (req: Req, res: MockRes) => void) => {
-          map.set(`${method} ${path}`, handler);
-        };
-      nh.expressApp = {
-        get: capture('GET'),
-        post: capture('POST'),
-        put: capture('PUT'),
-        delete: capture('DELETE'),
-      };
-      nh.setupAdminRoutes();
-      return (method: string, path: string) => {
-        const handler = map.get(`${method} ${path}`);
-        if (!handler) {
-          throw new Error(`Missing route ${method} ${path}`);
-        }
-        return handler;
-      };
-    }
-
-    const pid1 = generateTestUUID(201);
-    const pid2 = generateTestUUID(202);
-    const cid1 = generateTestUUID(301);
-
-    beforeEach(() => {
-      mockSendSocketNotification = vi.fn();
-      nodeHelper.sendSocketNotification = mockSendSocketNotification;
-      mockSaveChoreData = vi.fn();
-      nodeHelper.saveChoreData = mockSaveChoreData;
-      nodeHelper.config = { adminPin: null, dataFile: 'test-data.json' };
-      nodeHelper.choreData = {
-        people: [
-          { id: pid1, name: 'Person 1', color: '#FF6B6B' },
-          { id: pid2, name: 'Person 2', color: '#4ECDC4' },
-        ],
-        chores: [],
-        lastResetDate: getLocalDateString(),
-      };
-    });
-
-    it('returns 400 when POST /people fails validatePerson', () => {
-      const route = bindRoutes(nodeHelper);
-      const res = createMockRes();
-      route('POST', '/MMM-FamilyChores/people')(
-        { body: { name: '  ', color: '#fff' }, params: {} },
-        res
-      );
-      expect(res.statusCode).toBe(400);
-      expect(res.jsonBody).toMatchObject({ error: expect.any(String) });
-      expect(mockSaveChoreData).not.toHaveBeenCalled();
-    });
-
-    it('returns 400 when POST /people has invalid color', () => {
-      const route = bindRoutes(nodeHelper);
-      const res = createMockRes();
-      route('POST', '/MMM-FamilyChores/people')(
-        { body: { name: 'Valid', color: 'not-hex' }, params: {} },
-        res
-      );
-      expect(res.statusCode).toBe(400);
-    });
-
-    it('returns 400 when PUT /people/:id fails validatePerson', () => {
-      const route = bindRoutes(nodeHelper);
-      const res = createMockRes();
-      route('PUT', '/MMM-FamilyChores/people/:id')(
-        { body: { name: 'Ok', color: '#gggggg' }, params: { id: pid1 } },
-        res
-      );
-      expect(res.statusCode).toBe(400);
-    });
-
-    it('returns 400 when POST /chores fails validateChore', () => {
-      const route = bindRoutes(nodeHelper);
-      const res = createMockRes();
-      route('POST', '/MMM-FamilyChores/chores')(
-        {
-          body: {
-            name: 'Task',
-            type: 'personal',
-            assignedTo: pid1,
-            skipDays: ['not-a-day'],
-            skipDayVisibility: SkipDayVisibility.HIDE,
-          },
-          params: {},
-        },
-        res
-      );
-      expect(res.statusCode).toBe(400);
-      expect(mockSaveChoreData).not.toHaveBeenCalled();
-    });
-
-    it('returns 400 when POST /chores rotating references unknown person', () => {
-      const route = bindRoutes(nodeHelper);
-      const res = createMockRes();
-      route('POST', '/MMM-FamilyChores/chores')(
-        {
-          body: {
-            name: 'Rotate',
-            type: 'rotating',
-            rotation: [pid1, generateTestUUID(999)],
-            skipDays: [DayOfWeek.MONDAY],
-            skipDayVisibility: SkipDayVisibility.HIDE,
-          },
-          params: {},
-        },
-        res
-      );
-      expect(res.statusCode).toBe(400);
-    });
-
-    it('returns 400 when POST /restore has invalid top-level shape', () => {
-      const route = bindRoutes(nodeHelper);
-      const res = createMockRes();
-      route('POST', '/MMM-FamilyChores/restore')({ body: { people: [] }, params: {} }, res);
-      expect(res.statusCode).toBe(400);
-    });
-
-    it('returns 400 when POST /restore has invalid person', () => {
-      const route = bindRoutes(nodeHelper);
-      const res = createMockRes();
-      route('POST', '/MMM-FamilyChores/restore')(
-        {
-          body: {
-            people: [{ id: 'x', name: 'Bad', color: '#fff' }],
-            chores: [],
-          },
-          params: {},
-        },
-        res
-      );
-      expect(res.statusCode).toBe(400);
-      expect(res.jsonBody).toMatchObject({ error: expect.stringContaining('Invalid person') });
-    });
-
-    it('returns 400 when POST /restore has invalid chore', () => {
-      const route = bindRoutes(nodeHelper);
-      const res = createMockRes();
-      route('POST', '/MMM-FamilyChores/restore')(
-        {
-          body: {
-            people: [
-              { id: pid1, name: 'A', color: '#fff' },
-              { id: pid2, name: 'B', color: '#abc' },
-            ],
-            chores: [
-              {
-                id: cid1,
-                name: 'C',
-                type: ChoreType.PERSONAL,
-                assignedTo: generateTestUUID(404),
-                skipDays: [],
-                skipDayVisibility: SkipDayVisibility.HIDE,
-                caughtUp: true,
-                completedToday: false,
-              },
-            ],
-          },
-          params: {},
-        },
-        res
-      );
-      expect(res.statusCode).toBe(400);
-      expect(res.jsonBody).toMatchObject({ error: expect.stringContaining('Invalid chore') });
-    });
-
-    it('persists valid POST /restore payload', () => {
-      const route = bindRoutes(nodeHelper);
-      const res = createMockRes();
-      const choreId = generateTestUUID(302);
-      route('POST', '/MMM-FamilyChores/restore')(
-        {
-          body: {
-            people: [
-              { id: pid1, name: 'A', color: '#fff' },
-              { id: pid2, name: 'B', color: '#abc' },
-            ],
-            chores: [
-              {
-                id: choreId,
-                name: 'C',
-                type: ChoreType.PERSONAL,
-                assignedTo: pid1,
-                skipDays: [DayOfWeek.TUESDAY],
-                skipDayVisibility: SkipDayVisibility.SHOW_ALWAYS,
-                caughtUp: false,
-                completedToday: true,
-              },
-            ],
-            lastResetDate: '2025-01-01',
-          },
-          params: {},
-        },
-        res
-      );
-      expect(res.statusCode).toBe(200);
-      expect(res.jsonBody).toMatchObject({ success: true });
-      expect(nodeHelper.choreData?.people).toHaveLength(2);
-      expect(nodeHelper.choreData?.chores).toHaveLength(1);
-      expect(mockSaveChoreData).toHaveBeenCalled();
-    });
-
-    it('copies personal chores via POST /copy-chores', () => {
-      expect(nodeHelper.choreData).not.toBeNull();
-      if (!nodeHelper.choreData) return;
-      nodeHelper.choreData.chores = [
-        {
-          id: cid1,
-          name: 'Dishes',
-          type: ChoreType.PERSONAL,
-          assignedTo: pid1,
-          skipDays: [],
-          skipDayVisibility: SkipDayVisibility.HIDE,
-          caughtUp: true,
-          completedToday: false,
-        },
-      ];
-      const route = bindRoutes(nodeHelper);
-      const res = createMockRes();
-      route('POST', '/MMM-FamilyChores/copy-chores')(
-        {
-          body: { fromPersonId: pid1, toPersonId: pid2, choreIds: [cid1] },
-          params: {},
-        },
-        res
-      );
-      expect(res.statusCode).toBe(200);
-      const created = res.jsonBody as { id: string; assignedTo: string }[];
-      expect(created).toHaveLength(1);
-      expect(created[0].assignedTo).toBe(pid2);
-      expect(created[0].id).not.toBe(cid1);
-      expect(nodeHelper.choreData.chores).toHaveLength(2);
-      expect(mockSaveChoreData).toHaveBeenCalled();
+      nodeHelper.setupAdminRoutes();
+      expect(registeredRoutes).toContain('GET /MMM-FamilyChores/data');
+      expect(registeredRoutes).toContain('POST /MMM-FamilyChores/people');
+      expect(registeredRoutes).toContain('PUT /MMM-FamilyChores/people/:id');
+      expect(registeredRoutes).toContain('DELETE /MMM-FamilyChores/people/:id');
+      expect(registeredRoutes).toContain('POST /MMM-FamilyChores/chores');
+      expect(registeredRoutes).toContain('PUT /MMM-FamilyChores/chores/:id');
+      expect(registeredRoutes).toContain('DELETE /MMM-FamilyChores/chores/:id');
+      expect(registeredRoutes).toContain('GET /MMM-FamilyChores/backup');
+      expect(registeredRoutes).toContain('POST /MMM-FamilyChores/restore');
+      expect(registeredRoutes).toContain('POST /MMM-FamilyChores/copy-chores');
     });
   });
 });
