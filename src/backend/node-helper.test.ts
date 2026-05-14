@@ -1,14 +1,20 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  type CaughtUpResetPayload,
   type Chore,
-  type ChoreReassignPayload,
-  type ChoreTogglePayload,
+  ChoreType,
   type FamilyChoresData,
+  type PersonalChore,
+  type RotatingChore,
   SkipDayVisibility,
 } from '../types/chore-types';
 import type { Config } from '../types/config';
-import { getLocalDayName } from '../utils/date';
+import type {
+  CaughtUpResetPayload,
+  ChoreReassignPayload,
+  ChoreTogglePayload,
+  NodeHelperIncomingSocketPayload,
+} from '../types/socket-payload-types';
+import { getLocalDateString, getLocalDayName } from '../utils/date';
 import './node-helper';
 
 // Create node helper instance variable in hoisted scope
@@ -25,9 +31,16 @@ const { nodeHelperInstance, setNodeHelperInstance } = vi.hoisted(() => {
     handleChoreToggle: (payload: ChoreTogglePayload) => void;
     handleChoreReassign: (payload: ChoreReassignPayload) => void;
     handleCaughtUpReset: (payload: CaughtUpResetPayload) => void;
+    setupAdminRoutes: () => void;
+    expressApp?: {
+      get: (path: string, handler: (req: unknown, res: unknown) => void) => void;
+      post: (path: string, handler: (req: unknown, res: unknown) => void) => void;
+      put: (path: string, handler: (req: unknown, res: unknown) => void) => void;
+      delete: (path: string, handler: (req: unknown, res: unknown) => void) => void;
+    };
     socketNotificationReceived: (
       notificationIdentifier: string,
-      payload: Config | ChoreTogglePayload | ChoreReassignPayload | CaughtUpResetPayload
+      payload: NodeHelperIncomingSocketPayload
     ) => void;
   };
   const setNodeHelperInstance = (instance: typeof nodeHelperInstance) => {
@@ -72,8 +85,65 @@ describe('Node Helper Tests', () => {
     // Set up config
     nodeHelper.config = { adminPin: null, dataFile: 'test-data.json' };
 
-    // Create default chore data
-    nodeHelper.choreData = nodeHelper.createDefaultData();
+    // Create sample chore data for testing
+    nodeHelper.choreData = {
+      people: [
+        { id: '1', name: 'Person 1', color: '#FF6B6B' },
+        { id: '2', name: 'Person 2', color: '#4ECDC4' },
+        { id: '3', name: 'Person 3', color: '#45B7D1' },
+        { id: '4', name: 'Person 4', color: '#96CEB4' },
+        { id: '5', name: 'Person 5', color: '#FFEAA7' },
+      ],
+      chores: [
+        {
+          id: '1',
+          name: 'Rotating Chore 1',
+          type: ChoreType.ROTATING,
+          rotation: ['1', '2', '3'],
+          rotatingIndex: 0,
+          completedToday: false,
+          caughtUp: false,
+          deadline: undefined,
+          skipDays: [],
+          skipDayVisibility: SkipDayVisibility.HIDE,
+        },
+        {
+          id: '2',
+          name: 'Rotating Chore 2',
+          type: ChoreType.ROTATING,
+          rotation: ['1', '2', '3'],
+          rotatingIndex: 0,
+          completedToday: false,
+          caughtUp: false,
+          deadline: undefined,
+          skipDays: [],
+          skipDayVisibility: SkipDayVisibility.HIDE,
+        },
+        {
+          id: '3',
+          name: 'Personal Chore 1',
+          type: ChoreType.PERSONAL,
+          assignedTo: '1',
+          completedToday: false,
+          caughtUp: false,
+          deadline: undefined,
+          skipDays: [],
+          skipDayVisibility: SkipDayVisibility.HIDE,
+        },
+        {
+          id: '4',
+          name: 'Personal Chore 2',
+          type: ChoreType.PERSONAL,
+          assignedTo: '2',
+          completedToday: false,
+          caughtUp: false,
+          deadline: undefined,
+          skipDays: [],
+          skipDayVisibility: SkipDayVisibility.HIDE,
+        },
+      ],
+      lastResetDate: getLocalDateString(),
+    };
   });
 
   describe('createDefaultData', () => {
@@ -82,8 +152,9 @@ describe('Node Helper Tests', () => {
 
       expect(defaultData).toHaveProperty('people');
       expect(defaultData).toHaveProperty('chores');
-      expect(defaultData.people).toHaveLength(5);
-      expect(defaultData.chores).toHaveLength(4);
+      expect(defaultData).toHaveProperty('lastResetDate');
+      expect(defaultData.people).toHaveLength(0);
+      expect(defaultData.chores).toHaveLength(0);
     });
   });
 
@@ -188,7 +259,7 @@ describe('Node Helper Tests', () => {
       nodeHelper.handleChoreReassign(payload);
 
       const updatedChore = nodeHelper.choreData?.chores.find((c: Chore) => c.id === '3');
-      expect(updatedChore?.assignedTo).toBe('2');
+      expect((updatedChore as PersonalChore).assignedTo).toBe('2');
       expect(mockSaveChoreData).toHaveBeenCalled();
     });
 
@@ -198,7 +269,7 @@ describe('Node Helper Tests', () => {
       nodeHelper.handleChoreReassign(payload);
 
       const chore = nodeHelper.choreData?.chores.find((c: Chore) => c.id === '1');
-      expect(chore?.rotatingIndex).toBe(2);
+      expect((chore as RotatingChore).rotatingIndex).toBe(2);
       expect(mockSaveChoreData).toHaveBeenCalled();
     });
 
@@ -224,6 +295,35 @@ describe('Node Helper Tests', () => {
       nodeHelper.handleChoreReassign(payload);
 
       expect(mockSaveChoreData).not.toHaveBeenCalled();
+    });
+
+    it('should require PIN when adminPin is configured', () => {
+      expect(nodeHelper.choreData).not.toBeNull();
+      if (!nodeHelper.choreData) return;
+      nodeHelper.config = { adminPin: '1234', dataFile: 'test-data.json' };
+
+      const payload = { choreId: '3', newPersonId: '2', pin: 'wrong' };
+      nodeHelper.handleChoreReassign(payload);
+
+      expect(mockSendSocketNotification).toHaveBeenCalledWith('PIN_ERROR', {
+        message: 'Invalid PIN',
+      });
+      expect(mockSaveChoreData).not.toHaveBeenCalled();
+    });
+
+    it('should reassign when PIN matches adminPin', () => {
+      expect(nodeHelper.choreData).not.toBeNull();
+      if (!nodeHelper.choreData) return;
+      nodeHelper.config = { adminPin: '1234', dataFile: 'test-data.json' };
+
+      const payload = { choreId: '3', newPersonId: '2', pin: '1234' };
+      nodeHelper.handleChoreReassign(payload);
+
+      const updatedChore = nodeHelper.choreData.chores.find(
+        (c: Chore) => c.id === '3'
+      ) as PersonalChore;
+      expect(updatedChore.assignedTo).toBe('2');
+      expect(mockSaveChoreData).toHaveBeenCalled();
     });
   });
 
@@ -277,7 +377,7 @@ describe('Node Helper Tests', () => {
       if (!nodeHelper.choreData) return;
       // Add skip days to chore 1 - today is a skip day
       const todayDayName = getLocalDayName();
-      const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1');
+      const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1') as RotatingChore;
       if (!chore) return;
       chore.skipDays = [todayDayName];
       chore.skipDayVisibility = SkipDayVisibility.HIDE;
@@ -288,9 +388,9 @@ describe('Node Helper Tests', () => {
 
       nodeHelper.transitionChoresForNewDay();
 
-      // Everything should remain unchanged because today is a skip day with HIDE visibility
+      // CompletedToday and rotatingIndex should remain unchanged, but caughtUp gets updated
       expect(chore.completedToday).toBe(true);
-      expect(chore.caughtUp).toBe(false);
+      expect(chore.caughtUp).toBe(true); // Updated since completedToday was true
       expect(chore.rotatingIndex).toBe(2);
     });
 
@@ -301,7 +401,7 @@ describe('Node Helper Tests', () => {
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
       const yesterdayDayName = getLocalDayName(yesterday);
-      const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1');
+      const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1') as RotatingChore;
       if (!chore) return;
       chore.skipDays = [yesterdayDayName];
       // Set initial state
@@ -320,7 +420,7 @@ describe('Node Helper Tests', () => {
     it('should rotate rotating chores when caughtUp is true', () => {
       expect(nodeHelper.choreData).not.toBeNull();
       if (!nodeHelper.choreData) return;
-      const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1');
+      const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1') as RotatingChore;
       if (!chore) return;
       // Set up chore as completed yesterday and at index 0 (no skip days)
       chore.completedToday = true;
@@ -339,7 +439,7 @@ describe('Node Helper Tests', () => {
     it('should not rotate rotating chores when caughtUp is false', () => {
       expect(nodeHelper.choreData).not.toBeNull();
       if (!nodeHelper.choreData) return;
-      const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1');
+      const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1') as RotatingChore;
       if (!chore) return;
       // Set up chore as not completed yesterday and at index 0
       chore.completedToday = false;
@@ -356,11 +456,11 @@ describe('Node Helper Tests', () => {
     it('should handle rotation wrap-around correctly', () => {
       expect(nodeHelper.choreData).not.toBeNull();
       if (!nodeHelper.choreData) return;
-      const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1');
+      const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1') as RotatingChore;
       if (!chore) return;
       // Set up chore as completed yesterday and at last index (no skip days)
       chore.completedToday = true;
-      chore.rotatingIndex = 4; // Last index in rotation array
+      chore.rotatingIndex = 2; // Last valid index in rotation array ['1', '2', '3']
       chore.skipDays = []; // Ensure no skip days
 
       nodeHelper.transitionChoresForNewDay();
@@ -374,7 +474,7 @@ describe('Node Helper Tests', () => {
     it('should not rotate personal chores even when caughtUp is true', () => {
       expect(nodeHelper.choreData).not.toBeNull();
       if (!nodeHelper.choreData) return;
-      const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '3');
+      const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '3') as PersonalChore;
       if (!chore) return;
       // Set up personal chore as completed yesterday
       chore.completedToday = true;
@@ -393,8 +493,8 @@ describe('Node Helper Tests', () => {
       expect(nodeHelper.choreData).not.toBeNull();
       if (!nodeHelper.choreData) return;
       // Chore 1 completed yesterday, Chore 2 not completed
-      const chore1 = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1');
-      const chore2 = nodeHelper.choreData.chores.find((c: Chore) => c.id === '2');
+      const chore1 = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1') as RotatingChore;
+      const chore2 = nodeHelper.choreData.chores.find((c: Chore) => c.id === '2') as RotatingChore;
       if (!chore1 || !chore2) return;
       chore1.completedToday = true;
       chore1.rotatingIndex = 0;
@@ -424,7 +524,7 @@ describe('Node Helper Tests', () => {
         expect(nodeHelper.choreData).not.toBeNull();
         if (!nodeHelper.choreData) return;
         const todayDayName = getLocalDayName();
-        const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1');
+        const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1') as RotatingChore;
         if (!chore) return;
         chore.skipDays = [todayDayName];
         chore.skipDayVisibility = SkipDayVisibility.HIDE;
@@ -434,9 +534,9 @@ describe('Node Helper Tests', () => {
 
         nodeHelper.transitionChoresForNewDay();
 
-        // Everything should remain unchanged
+        // CompletedToday and rotatingIndex should remain unchanged, but caughtUp gets updated
         expect(chore.completedToday).toBe(true);
-        expect(chore.caughtUp).toBe(false);
+        expect(chore.caughtUp).toBe(true); // Updated since completedToday was true
         expect(chore.rotatingIndex).toBe(2);
       });
 
@@ -444,7 +544,7 @@ describe('Node Helper Tests', () => {
         expect(nodeHelper.choreData).not.toBeNull();
         if (!nodeHelper.choreData) return;
         const todayDayName = getLocalDayName();
-        const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1');
+        const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1') as RotatingChore;
         if (!chore) return;
         chore.skipDays = [todayDayName];
         chore.skipDayVisibility = SkipDayVisibility.SHOW_IF_OVERDUE;
@@ -464,7 +564,7 @@ describe('Node Helper Tests', () => {
         expect(nodeHelper.choreData).not.toBeNull();
         if (!nodeHelper.choreData) return;
         const todayDayName = getLocalDayName();
-        const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1');
+        const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1') as RotatingChore;
         if (!chore) return;
         chore.skipDays = [todayDayName];
         chore.skipDayVisibility = SkipDayVisibility.SHOW_IF_OVERDUE;
@@ -484,7 +584,7 @@ describe('Node Helper Tests', () => {
         expect(nodeHelper.choreData).not.toBeNull();
         if (!nodeHelper.choreData) return;
         const todayDayName = getLocalDayName();
-        const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1');
+        const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1') as RotatingChore;
         if (!chore) return;
         chore.skipDays = [todayDayName];
         chore.skipDayVisibility = SkipDayVisibility.SHOW_ALWAYS;
@@ -504,7 +604,7 @@ describe('Node Helper Tests', () => {
         expect(nodeHelper.choreData).not.toBeNull();
         if (!nodeHelper.choreData) return;
         const todayDayName = getLocalDayName();
-        const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1');
+        const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1') as RotatingChore;
         if (!chore) return;
         chore.skipDays = [todayDayName];
         // Don't set skipDayVisibility - should default to HIDE
@@ -524,7 +624,7 @@ describe('Node Helper Tests', () => {
         expect(nodeHelper.choreData).not.toBeNull();
         if (!nodeHelper.choreData) return;
         const todayDayName = getLocalDayName();
-        const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '3');
+        const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '3') as PersonalChore;
         if (!chore) return;
         chore.skipDays = [todayDayName];
         chore.skipDayVisibility = SkipDayVisibility.SHOW_IF_OVERDUE;
@@ -547,7 +647,7 @@ describe('Node Helper Tests', () => {
       expect(nodeHelper.choreData).not.toBeNull();
       if (!nodeHelper.choreData) return;
       // Chore 3 is assigned to person '1' (personal chore)
-      const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '3');
+      const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '3') as PersonalChore;
       if (!chore) return;
       chore.caughtUp = false;
 
@@ -562,7 +662,7 @@ describe('Node Helper Tests', () => {
       expect(nodeHelper.choreData).not.toBeNull();
       if (!nodeHelper.choreData) return;
       // Chore 1 is rotating with index 0 (person '1' is current)
-      const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1');
+      const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1') as RotatingChore;
       if (!chore) return;
       chore.caughtUp = false;
 
@@ -577,7 +677,7 @@ describe('Node Helper Tests', () => {
       expect(nodeHelper.choreData).not.toBeNull();
       if (!nodeHelper.choreData) return;
       // Chore 1 is rotating with index 0 (person '1' is current, not '2')
-      const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1');
+      const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1') as RotatingChore;
       if (!chore) return;
       chore.caughtUp = false;
 
@@ -592,7 +692,7 @@ describe('Node Helper Tests', () => {
       expect(nodeHelper.choreData).not.toBeNull();
       if (!nodeHelper.choreData) return;
       nodeHelper.config = { adminPin: '1234', dataFile: 'test-data.json' };
-      const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1');
+      const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1') as RotatingChore;
       if (!chore) return;
       chore.caughtUp = false;
 
@@ -611,7 +711,7 @@ describe('Node Helper Tests', () => {
       expect(nodeHelper.choreData).not.toBeNull();
       if (!nodeHelper.choreData) return;
       nodeHelper.config = { adminPin: '1234', dataFile: 'test-data.json' };
-      const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1');
+      const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1') as RotatingChore;
       if (!chore) return;
       chore.caughtUp = false;
 
@@ -660,21 +760,23 @@ describe('Node Helper Tests', () => {
         {
           id: '1',
           name: 'Rotating Chore',
-          type: 'rotating',
+          type: ChoreType.ROTATING,
           rotation: ['1', '2'],
           rotatingIndex: 0,
           completedToday: true,
           caughtUp: true,
-          // No skip days or other options to keep tests clean
+          skipDays: [],
+          skipDayVisibility: SkipDayVisibility.HIDE,
         },
         {
           id: '2',
           name: 'Personal Chore',
-          type: 'personal',
+          type: ChoreType.PERSONAL,
           assignedTo: '1',
           completedToday: true,
           caughtUp: true,
-          // No skip days or other options to keep tests clean
+          skipDays: [],
+          skipDayVisibility: SkipDayVisibility.HIDE,
         },
       ],
       lastResetDate: '2024-05-11',
@@ -747,7 +849,7 @@ describe('Node Helper Tests', () => {
       expect(nodeHelper.choreData?.chores[1].completedToday).toBe(false);
       expect(nodeHelper.choreData?.chores[0].caughtUp).toBe(true); // was completed yesterday
       expect(nodeHelper.choreData?.chores[1].caughtUp).toBe(true); // was completed yesterday
-      expect(nodeHelper.choreData?.chores[0].rotatingIndex).toBe(1); // rotated
+      expect((nodeHelper.choreData?.chores[0] as RotatingChore).rotatingIndex).toBe(1); // rotated
       // Verify that lastResetDate was updated (check it's no longer old value)
       expect(nodeHelper.choreData?.lastResetDate).not.toBe('2024-05-11');
     });
@@ -874,6 +976,29 @@ describe('Node Helper Tests', () => {
       // Should use local date for comparison, not UTC date
       // The exact date depends on timezone, so check it's not to old value
       expect(nodeHelper.choreData?.lastResetDate).not.toBe('2024-05-11');
+    });
+  });
+
+  describe('setupAdminRoutes', () => {
+    it('registers all expected routes on expressApp', () => {
+      const registeredRoutes: string[] = [];
+      nodeHelper.expressApp = {
+        get: (path: string) => registeredRoutes.push(`GET ${path}`),
+        post: (path: string) => registeredRoutes.push(`POST ${path}`),
+        put: (path: string) => registeredRoutes.push(`PUT ${path}`),
+        delete: (path: string) => registeredRoutes.push(`DELETE ${path}`),
+      };
+      nodeHelper.setupAdminRoutes();
+      expect(registeredRoutes).toContain('GET /MMM-FamilyChores/data');
+      expect(registeredRoutes).toContain('POST /MMM-FamilyChores/people');
+      expect(registeredRoutes).toContain('PUT /MMM-FamilyChores/people/:id');
+      expect(registeredRoutes).toContain('DELETE /MMM-FamilyChores/people/:id');
+      expect(registeredRoutes).toContain('POST /MMM-FamilyChores/chores');
+      expect(registeredRoutes).toContain('PUT /MMM-FamilyChores/chores/:id');
+      expect(registeredRoutes).toContain('DELETE /MMM-FamilyChores/chores/:id');
+      expect(registeredRoutes).toContain('GET /MMM-FamilyChores/backup');
+      expect(registeredRoutes).toContain('POST /MMM-FamilyChores/restore');
+      expect(registeredRoutes).toContain('POST /MMM-FamilyChores/copy-chores');
     });
   });
 });

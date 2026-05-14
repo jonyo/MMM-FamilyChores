@@ -1,10 +1,13 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+  // Don't copy public directory files to build output
+  publicDir: false,
   build: {
     outDir: 'dist/client',
     sourcemap: true,
-    minify: 'terser', // Use terser for better minification
+    // Use terser for better minification
+    minify: 'terser',
     lib: {
       name: 'MMMFamilyChores',
       entry: {

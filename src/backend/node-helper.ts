@@ -3,37 +3,63 @@ import * as path from 'node:path';
 import * as Log from 'logger';
 import * as NodeHelper from 'node_helper';
 import { SocketNotifications } from '../constants/socket-notifications';
-import {
-  type CaughtUpResetPayload,
-  type Chore,
-  type ChoreReassignPayload,
-  type ChoreTogglePayload,
-  type FamilyChoresData,
-  SkipDayVisibility,
-} from '../types/chore-types';
+import { type Chore, type FamilyChoresData, SkipDayVisibility } from '../types/chore-types';
 import type { Config } from '../types/config';
+import type {
+  CaughtUpResetPayload,
+  CaughtUpResetResultPayload,
+  ChoreReassignPayload,
+  ChoreReassignResultPayload,
+  ChoreTogglePayload,
+  ChoreUpdateResultPayload,
+  NodeHelperIncomingSocketPayload,
+  PinErrorPayload,
+} from '../types/socket-payload-types';
 import { getLocalDateString, getLocalDayName, getLocalTimeString } from '../utils/date';
+import { createAdminHandlers } from './admin-routes';
 
-export default NodeHelper.create({
+interface FamilyChoresNodeHelper extends Partial<NodeHelper.NodeHelperModule> {
+  // Module state
+  choreData: FamilyChoresData | null;
+  config: Config | null;
+
+  // Custom methods
+  setupAdminRoutes(): void;
+  loadChoreData(): void;
+  saveChoreData(): void;
+  createDefaultData(): FamilyChoresData;
+  checkAndPerformDailyReset(): void;
+  transitionChoresForNewDay(): void;
+  handleChoreToggle(payload: ChoreTogglePayload): void;
+  handleChoreReassign(payload: ChoreReassignPayload): void;
+  handleCaughtUpReset(payload: CaughtUpResetPayload): void;
+}
+
+const nodeHelper: FamilyChoresNodeHelper = {
   // Module state
   choreData: null as FamilyChoresData | null,
   config: null as Config | null,
 
-  // MM function: called when the node helper starts
+  /**
+   * MM function: called when the node helper starts
+   */
   start(): void {
     Log.info(`Starting node helper for MMM-FamilyChores`);
+    this.setupAdminRoutes();
   },
 
-  // MM function: called when a socket notification arrives from the module
+  /**
+   * MM function: called when a socket notification arrives from the module
+   */
   socketNotificationReceived(
     notificationIdentifier: string,
-    payload: Config | ChoreTogglePayload | ChoreReassignPayload | CaughtUpResetPayload
+    payload: NodeHelperIncomingSocketPayload
   ): void {
     Log.debug(`Node helper received: '${notificationIdentifier}'`);
 
     switch (notificationIdentifier) {
       case SocketNotifications.CONFIG_REQUEST:
-        this.config = payload;
+        this.config = payload as Config;
         this.loadChoreData();
         break;
       case SocketNotifications.CHORE_TOGGLE:
@@ -50,7 +76,9 @@ export default NodeHelper.create({
     }
   },
 
-  // Load chore data from file
+  /**
+   * Load chore data from file
+   */
   loadChoreData(): void {
     if (!this.config) {
       Log.error('Config not set, cannot load chore data');
@@ -73,15 +101,14 @@ export default NodeHelper.create({
 
       // Check if daily reset is needed before sending data
       this.checkAndPerformDailyReset();
-      this.sendSocketNotification(SocketNotifications.CHORE_DATA, this.choreData);
+      this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
     } catch (error) {
       Log.error(`Error loading chore data: ${error}`);
       this.choreData = this.createDefaultData();
-      this.sendSocketNotification(SocketNotifications.CHORE_DATA, this.choreData);
+      this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
     }
   },
 
-  // Save chore data to file
   saveChoreData(): void {
     if (!this.config || !this.choreData) {
       Log.error('Config or chore data not set, cannot save');
@@ -98,59 +125,21 @@ export default NodeHelper.create({
     }
   },
 
-  // Create default data structure
+  /**
+   * Create default empty data structure
+   */
   createDefaultData(): FamilyChoresData {
     return {
-      people: [
-        { id: '1', name: 'Alice', color: '#FF6B6B' },
-        { id: '2', name: 'Bob', color: '#4ECDC4' },
-        { id: '3', name: 'Charlie', color: '#45B7D1' },
-        { id: '4', name: 'Diana', color: '#96CEB4' },
-        { id: '5', name: 'Evan', color: '#FFEAA7' },
-      ],
-      chores: [
-        {
-          id: '1',
-          name: 'Take out trash',
-          type: 'rotating',
-          rotation: ['1', '2', '3', '4', '5'],
-          rotatingIndex: 0,
-          // only Saturday
-          skipDays: ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
-          skipDayVisibility: SkipDayVisibility.SHOW_IF_OVERDUE,
-        },
-        {
-          id: '2',
-          name: 'Clean kitchen',
-          type: 'rotating',
-          rotation: ['1', '2', '3', '4', '5'],
-          rotatingIndex: 0,
-          skipDays: ['saturday'],
-          skipDayVisibility: SkipDayVisibility.HIDE,
-        },
-        {
-          id: '3',
-          name: 'Make bed',
-          type: 'personal',
-          assignedTo: '1',
-          skipDays: ['sunday'],
-          skipDayVisibility: SkipDayVisibility.SHOW_ALWAYS,
-        },
-        {
-          id: '4',
-          name: 'Do homework',
-          type: 'personal',
-          assignedTo: '3',
-          skipDays: ['saturday', 'sunday'],
-          skipDayVisibility: SkipDayVisibility.HIDE,
-        },
-      ],
+      people: [],
+      chores: [],
       // Initialize to today to prevent immediate rotation
       lastResetDate: getLocalDateString(),
     };
   },
 
-  // Check if daily reset should be performed and execute if needed
+  /**
+   * Check if daily reset should be performed and execute if needed
+   */
   checkAndPerformDailyReset(): void {
     if (!this.choreData || !this.config) return;
 
@@ -194,8 +183,8 @@ export default NodeHelper.create({
       const skipDayVisibility = chore.skipDayVisibility ?? SkipDayVisibility.HIDE;
 
       if (isSkipDay && skipDayVisibility === SkipDayVisibility.HIDE) {
-        // Today is a skip day and visibility is HIDE - skip this chore entirely, don't change any state
-        // - it will resume on the next non-skip day
+        // Today is a skip day and visibility is HIDE - update caughtUp but skip rotation/completion reset
+        chore.caughtUp = chore.completedToday === true;
         continue;
       }
       // for other states, update caughtUp status
@@ -208,7 +197,7 @@ export default NodeHelper.create({
       chore.completedToday = false;
       // rotate if needed
       if (chore.caughtUp && chore.type === 'rotating') {
-        chore.rotatingIndex = (chore.rotatingIndex + 1) % chore.rotation.length;
+        chore.rotatingIndex = ((chore.rotatingIndex ?? 0) + 1) % (chore.rotation ?? []).length;
       }
     }
 
@@ -236,11 +225,12 @@ export default NodeHelper.create({
     // Note: we do NOT change caughtUp here - it stays as-is
 
     this.saveChoreData();
-    this.sendSocketNotification(SocketNotifications.CHORE_UPDATE_RESULT, {
+    const updateResult: ChoreUpdateResultPayload = {
       choreId: payload.choreId,
       completed: payload.completed,
-    });
-    this.sendSocketNotification(SocketNotifications.CHORE_DATA, this.choreData);
+    };
+    this.sendSocketNotification?.(SocketNotifications.CHORE_UPDATE_RESULT, updateResult);
+    this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
   },
 
   // Handle chore reassignment
@@ -248,7 +238,8 @@ export default NodeHelper.create({
     if (!this.choreData || !this.config) return;
 
     if (this.config.adminPin && payload.pin !== this.config.adminPin) {
-      this.sendSocketNotification(SocketNotifications.PIN_ERROR, { message: 'Invalid PIN' });
+      const pinError: PinErrorPayload = { message: 'Invalid PIN' };
+      this.sendSocketNotification?.(SocketNotifications.PIN_ERROR, pinError);
       return;
     }
 
@@ -284,11 +275,12 @@ export default NodeHelper.create({
     }
 
     this.saveChoreData();
-    this.sendSocketNotification(SocketNotifications.CHORE_REASSIGN_RESULT, {
+    const reassignResult: ChoreReassignResultPayload = {
       choreId: payload.choreId,
       newPersonId: payload.newPersonId,
-    });
-    this.sendSocketNotification(SocketNotifications.CHORE_DATA, this.choreData);
+    };
+    this.sendSocketNotification?.(SocketNotifications.CHORE_REASSIGN_RESULT, reassignResult);
+    this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
   },
 
   // Handle caughtUp reset for a person (admin only - PIN protected)
@@ -296,7 +288,8 @@ export default NodeHelper.create({
     if (!this.choreData || !this.config) return;
 
     if (this.config.adminPin && payload.pin !== this.config.adminPin) {
-      this.sendSocketNotification(SocketNotifications.PIN_ERROR, { message: 'Invalid PIN' });
+      const pinError: PinErrorPayload = { message: 'Invalid PIN' };
+      this.sendSocketNotification?.(SocketNotifications.PIN_ERROR, pinError);
       return;
     }
 
@@ -320,10 +313,39 @@ export default NodeHelper.create({
     Log.info(`Reset caughtUp status for person ${payload.personId}, affected ${resetCount} chores`);
 
     this.saveChoreData();
-    this.sendSocketNotification(SocketNotifications.CAUGHTUP_RESET_RESULT, {
+    const caughtUpResult: CaughtUpResetResultPayload = {
       personId: payload.personId,
       resetCount,
-    });
-    this.sendSocketNotification(SocketNotifications.CHORE_DATA, this.choreData);
+    };
+    this.sendSocketNotification?.(SocketNotifications.CAUGHTUP_RESET_RESULT, caughtUpResult);
+    this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
   },
-});
+
+  // Setup admin interface routes using official MagicMirror pattern
+  setupAdminRoutes(): void {
+    const handlers = createAdminHandlers({
+      getChoreData: () => this.choreData,
+      setChoreData: (data) => {
+        this.choreData = data;
+      },
+      saveChoreData: () => this.saveChoreData(),
+      sendNotification: (notification, payload) =>
+        this.sendSocketNotification?.(notification, payload),
+    });
+
+    this.expressApp?.get('/MMM-FamilyChores/data', handlers.getData);
+    this.expressApp?.post('/MMM-FamilyChores/people', handlers.postPerson);
+    this.expressApp?.put('/MMM-FamilyChores/people/:id', handlers.putPerson);
+    this.expressApp?.delete('/MMM-FamilyChores/people/:id', handlers.deletePerson);
+    this.expressApp?.post('/MMM-FamilyChores/chores', handlers.postChore);
+    this.expressApp?.put('/MMM-FamilyChores/chores/:id', handlers.putChore);
+    this.expressApp?.delete('/MMM-FamilyChores/chores/:id', handlers.deleteChore);
+    this.expressApp?.get('/MMM-FamilyChores/backup', handlers.getBackup);
+    this.expressApp?.post('/MMM-FamilyChores/restore', handlers.postRestore);
+    this.expressApp?.post('/MMM-FamilyChores/copy-chores', handlers.postCopyChores);
+
+    Log.info('Admin routes configured for MMM-FamilyChores');
+  },
+};
+
+export default NodeHelper.create(nodeHelper);

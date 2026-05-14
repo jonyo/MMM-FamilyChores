@@ -157,9 +157,9 @@ pnpm run build:node     # Build backend without copying to root
 src/
 ├── frontend/           # Client-side MagicMirror module
 ├── backend/            # Node.js helper for data persistence
-├── types/              # TypeScript interfaces
+├── types/              # TypeScript types (`chore-types`, `config`, `module`, `request-types`, `response-types`, `socket-payload-types`)
 ├── constants/          # Socket notification constants
-└── utils/              # Utility functions
+└── utils/              # Utility functions (date, uuid, HTML escaping for display)
 ```
 
 **Built Files:**

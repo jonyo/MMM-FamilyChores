@@ -2,6 +2,8 @@
  * Date utility functions for timezone-aware date handling
  */
 
+import type { DayOfWeek } from '../types/chore-types';
+
 /**
  * Gets the local date string in YYYY-MM-DD format
  * Uses Intl.DateTimeFormat for proper timezone and DST handling
@@ -37,12 +39,12 @@ export const getLocalTimeString = (date = new Date()): string => {
  * Uses Intl.DateTimeFormat for proper timezone and DST handling
  * @param date - Optional date to convert (defaults to current time)
  */
-export const getLocalDayName = (date = new Date()): string => {
+export const getLocalDayName = (date = new Date()): DayOfWeek => {
   const formatter = new Intl.DateTimeFormat('en-US', {
     weekday: 'long',
   });
 
-  return formatter.format(date).toLowerCase();
+  return formatter.format(date).toLowerCase() as DayOfWeek;
 };
 
 /**

@@ -1,15 +1,19 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+  // Don't copy public directory files to build output
+  publicDir: false,
   build: {
     outDir: 'dist/node',
     sourcemap: true,
-    minify: 'esbuild', // Minify the output
+    // Minify the output
+    minify: 'esbuild',
     lib: {
       entry: {
         node_helper: './src/backend/node-helper.ts',
       },
-      formats: ['cjs'], // Output CommonJS modules
+      // Output CommonJS modules
+      formats: ['cjs'],
     },
     rollupOptions: {
       external: [
@@ -17,7 +21,8 @@ export default defineConfig({
         'logger',
         'fs',
         'path',
-        /^node:/, // Externalize all node: prefixed modules
+        // Externalize all node: prefixed modules
+        /^node:/,
       ],
       output: {
         entryFileNames: '[name].js',
