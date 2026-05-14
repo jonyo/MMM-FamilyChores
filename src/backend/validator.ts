@@ -1,5 +1,11 @@
-import { Chore, ChoreType, Person } from "../types/chore-types";
-import { isValidUUID } from "../utils/uuid";
+import {
+  type Chore,
+  ChoreType,
+  DayOfWeek,
+  type Person,
+  SkipDayVisibility,
+} from '../types/chore-types';
+import { isValidUUID } from '../utils/uuid';
 
 type ValidatedResult = { valid: true } | { valid: false; error: string };
 
@@ -9,7 +15,6 @@ export const validatePerson = (person: unknown): ValidatedResult => {
   }
 
   const personObj = person as Record<string, unknown>;
-
 
   if (!personObj.id || typeof personObj.id !== 'string' || !personObj.id.trim()) {
     return { valid: false, error: 'Person must have a non-empty id' };
@@ -27,7 +32,10 @@ export const validatePerson = (person: unknown): ValidatedResult => {
     return { valid: false, error: 'Person color must be a string' };
   }
   if (!personObj.color.match(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/)) {
-    return { valid: false, error: 'Person color must be a valid hex color (e.g., #FF5733 or #F53)' };
+    return {
+      valid: false,
+      error: 'Person color must be a valid hex color (e.g., #FF5733 or #F53)',
+    };
   }
 
   return { valid: true };
@@ -59,13 +67,64 @@ export const validateChore = (chore: unknown | Chore, people: Person[]): Validat
   if (!Object.values(ChoreType).includes(choreObj.type as ChoreType)) {
     return { valid: false, error: 'Chore type must be either "personal" or "rotating"' };
   }
+
+  // Validate deadline (optional, but must be HH:MM if present)
+  if (choreObj.deadline !== undefined) {
+    if (typeof choreObj.deadline !== 'string') {
+      return { valid: false, error: 'Chore deadline must be a string' };
+    }
+    if (!choreObj.deadline.match(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)) {
+      return {
+        valid: false,
+        error: 'Chore deadline must be in 24-hour format (e.g., "08:00" or "21:00")',
+      };
+    }
+  }
+
+  // Validate skipDays (required, must be array of DayOfWeek enum values)
+  if (!choreObj.skipDays || !Array.isArray(choreObj.skipDays)) {
+    return { valid: false, error: 'Chore must have a skipDays array' };
+  }
+  for (const day of choreObj.skipDays) {
+    if (typeof day !== 'string' || !Object.values(DayOfWeek).includes(day as DayOfWeek)) {
+      return {
+        valid: false,
+        error: 'Chore skipDays must be valid day names (e.g., "monday", "tuesday")',
+      };
+    }
+  }
+
+  // Validate skipDayVisibility (required, must be SkipDayVisibility enum value)
+  if (!choreObj.skipDayVisibility || typeof choreObj.skipDayVisibility !== 'string') {
+    return { valid: false, error: 'Chore must have a skipDayVisibility' };
+  }
+  if (!Object.values(SkipDayVisibility).includes(choreObj.skipDayVisibility as SkipDayVisibility)) {
+    return {
+      valid: false,
+      error: 'Chore skipDayVisibility must be "hide", "show-if-overdue", or "show-always"',
+    };
+  }
+
+  // Validate caughtUp (required, must be boolean)
+  if (typeof choreObj.caughtUp !== 'boolean') {
+    return { valid: false, error: 'Chore must have a caughtUp boolean' };
+  }
+
+  // Validate completedToday (required, must be boolean)
+  if (typeof choreObj.completedToday !== 'boolean') {
+    return { valid: false, error: 'Chore must have a completedToday boolean' };
+  }
+
   if (choreObj.type === ChoreType.PERSONAL) {
     return validatePersonalChoreParts(choreObj, people);
   }
   return validateRotatingChoreParts(choreObj, people);
 };
 
-const validateRotatingChoreParts = (chore: Record<string, unknown>, people: Person[]): ValidatedResult => {
+const validateRotatingChoreParts = (
+  chore: Record<string, unknown>,
+  people: Person[]
+): ValidatedResult => {
   // validate all of the entries on chore...
   if (chore.type !== ChoreType.ROTATING) {
     return { valid: false, error: 'Chore type must be "rotating"' };
@@ -77,10 +136,16 @@ const validateRotatingChoreParts = (chore: Record<string, unknown>, people: Pers
   }
   for (const personId of chore.rotation) {
     if (typeof personId !== 'string' || !personId) {
-      return { valid: false, error: 'Rotating chore rotation must be an array of non-empty strings' };
+      return {
+        valid: false,
+        error: 'Rotating chore rotation must be an array of non-empty strings',
+      };
     }
-    if (!people.some(person => person.id === personId)) {
-      return { valid: false, error: 'Rotating chore rotation must be an array of valid person IDs' };
+    if (!people.some((person) => person.id === personId)) {
+      return {
+        valid: false,
+        error: 'Rotating chore rotation must be an array of valid person IDs',
+      };
     }
   }
 
@@ -89,10 +154,24 @@ const validateRotatingChoreParts = (chore: Record<string, unknown>, people: Pers
     return { valid: false, error: 'Rotating chore must not have an assignedTo field' };
   }
 
+  // Validate rotatingIndex (required for rotating chores)
+  if (typeof chore.rotatingIndex !== 'number') {
+    return { valid: false, error: 'Rotating chore must have a rotatingIndex number' };
+  }
+  if (chore.rotatingIndex < 0 || chore.rotatingIndex >= chore.rotation.length) {
+    return {
+      valid: false,
+      error: 'Rotating chore rotatingIndex must be within bounds of rotation array',
+    };
+  }
+
   return { valid: true };
 };
 
-const validatePersonalChoreParts = (chore: Record<string, unknown>, people: Person[]): ValidatedResult => {
+const validatePersonalChoreParts = (
+  chore: Record<string, unknown>,
+  people: Person[]
+): ValidatedResult => {
   // validate all of the entries on chore...
   if (chore.type !== ChoreType.PERSONAL) {
     return { valid: false, error: 'Chore type must be "personal"' };
@@ -102,7 +181,7 @@ const validatePersonalChoreParts = (chore: Record<string, unknown>, people: Pers
   if (!chore.assignedTo || typeof chore.assignedTo !== 'string') {
     return { valid: false, error: 'Personal chore must have an assignedTo field' };
   }
-  if (!people.some(person => person.id === chore.assignedTo)) {
+  if (!people.some((person) => person.id === chore.assignedTo)) {
     return { valid: false, error: 'Personal chore assignedTo - person not found' };
   }
 
@@ -115,4 +194,4 @@ const validatePersonalChoreParts = (chore: Record<string, unknown>, people: Pers
   }
 
   return { valid: true };
-}
+};

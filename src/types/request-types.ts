@@ -40,6 +40,7 @@ export interface UpdateChoreRequest extends Partial<CreateChoreRequest> {}
 export interface RestoreDataRequest {
   people: unknown[];
   chores: unknown[];
+  lastResetDate?: string;
 }
 
 /**

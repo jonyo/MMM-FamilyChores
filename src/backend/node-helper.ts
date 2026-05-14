@@ -1,6 +1,6 @@
-import * as Log from 'logger';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import * as Log from 'logger';
 import * as NodeHelper from 'node_helper';
 import { SocketNotifications } from '../constants/socket-notifications';
 import {
@@ -8,7 +8,9 @@ import {
   type Chore,
   type ChoreReassignPayload,
   type ChoreTogglePayload,
+  ChoreType,
   type FamilyChoresData,
+  type Person,
   SkipDayVisibility,
 } from '../types/chore-types';
 import type { Config } from '../types/config';
@@ -22,6 +24,7 @@ import type {
 } from '../types/request-types';
 import { getLocalDateString, getLocalDayName, getLocalTimeString } from '../utils/date';
 import { generateUUID } from '../utils/uuid';
+import { validateChore, validatePerson } from './validator';
 
 // Use more flexible types for MagicMirror's Express implementation
 interface Request {
@@ -128,7 +131,6 @@ const nodeHelper: FamilyChoresNodeHelper = {
       this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
     }
   },
-
 
   saveChoreData(): void {
     if (!this.config || !this.choreData) {
@@ -354,22 +356,25 @@ const nodeHelper: FamilyChoresNodeHelper = {
     this.expressApp?.post('/MMM-FamilyChores/people', (req: Request, res: Response) => {
       try {
         const { name, color } = req.body as CreatePersonRequest;
-        if (!name || !color) {
-          res.status(400).json({ error: 'Name and color are required' });
-          return;
-        }
 
         if (!this.choreData) {
           res.status(500).json({ error: 'No data available' });
           return;
         }
 
-        // Generate UUID v4 for new person
+        // Construct person object with minimal checks (trim strings)
         const newPerson = {
           id: generateUUID(),
-          name: name.trim(),
-          color: color.trim(),
+          name: name?.trim() || '',
+          color: color?.trim() || '',
         };
+
+        // Validate the constructed person
+        const validation = validatePerson(newPerson);
+        if (!validation.valid) {
+          res.status(400).json({ error: validation.error });
+          return;
+        }
 
         this.choreData.people.push(newPerson);
         this.saveChoreData();
@@ -399,9 +404,21 @@ const nodeHelper: FamilyChoresNodeHelper = {
           return;
         }
 
-        if (name) person.name = name.trim();
-        if (color) person.color = color.trim();
+        // Construct updated person object with minimal checks (trim strings)
+        const updatedPerson = {
+          id: person.id,
+          name: name ? name.trim() : person.name,
+          color: color ? color.trim() : person.color,
+        };
 
+        // Validate the updated person
+        const validation = validatePerson(updatedPerson);
+        if (!validation.valid) {
+          res.status(400).json({ error: validation.error });
+          return;
+        }
+
+        Object.assign(person, updatedPerson);
         this.saveChoreData();
         this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
 
@@ -460,31 +477,17 @@ const nodeHelper: FamilyChoresNodeHelper = {
         const { name, type, assignedTo, rotation, deadline, skipDays, skipDayVisibility } =
           req.body as CreateChoreRequest;
 
-        if (!name || !type) {
-          res.status(400).json({ error: 'Name and type are required' });
-          return;
-        }
-
-        if (type === 'personal' && !assignedTo) {
-          res.status(400).json({ error: 'Personal chores require assignedTo' });
-          return;
-        }
-
-        if (type === 'rotating' && (!rotation || rotation.length === 0)) {
-          res.status(400).json({ error: 'Rotating chores require rotation array' });
-          return;
-        }
-
         if (!this.choreData) {
           res.status(500).json({ error: 'No data available' });
           return;
         }
 
-        const newChore: Chore = {
+        // Construct chore object with minimal checks (trim strings)
+        const newChore: Record<string, unknown> = {
           id: generateUUID(),
-          name: name.trim(),
+          name: name?.trim() || '',
           type,
-          deadline: deadline?.trim() || undefined,
+          deadline: deadline?.trim(),
           skipDays: skipDays || [],
           skipDayVisibility: skipDayVisibility || SkipDayVisibility.SHOW_IF_OVERDUE,
           // Default to caught up since this is a new chore
@@ -499,7 +502,14 @@ const nodeHelper: FamilyChoresNodeHelper = {
           newChore.rotatingIndex = 0;
         }
 
-        this.choreData.chores.push(newChore);
+        // Validate the constructed chore
+        const validation = validateChore(newChore, this.choreData.people);
+        if (!validation.valid) {
+          res.status(400).json({ error: validation.error });
+          return;
+        }
+
+        this.choreData.chores.push(newChore as Chore);
         this.saveChoreData();
         this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
 
@@ -527,41 +537,36 @@ const nodeHelper: FamilyChoresNodeHelper = {
           res.status(404).json({ error: 'Chore not found' });
           return;
         }
-
-        if (name) chore.name = name.trim();
-        if (deadline) chore.deadline = deadline.trim();
-        if (skipDays) chore.skipDays = skipDays;
-        if (skipDayVisibility) chore.skipDayVisibility = skipDayVisibility;
-
-        // Handle type changes carefully
         if (type && type !== chore.type) {
-          if (type === 'personal' && assignedTo) {
-            chore.type = 'personal';
-            chore.assignedTo = assignedTo;
-            delete chore.rotation;
-            delete chore.rotatingIndex;
-          } else if (type === 'rotating' && rotation && rotation.length > 0) {
-            chore.type = 'rotating';
-            chore.rotation = rotation;
-            chore.rotatingIndex = 0;
-            delete chore.assignedTo;
-          } else {
-            res.status(400).json({ error: 'Invalid type change parameters' });
-            return;
-          }
-        } else {
-          // Same type, update specific fields
-          if (chore.type === 'personal' && assignedTo) {
-            chore.assignedTo = assignedTo;
-          } else if (chore.type === 'rotating' && rotation) {
-            chore.rotation = rotation;
-            // Ensure rotatingIndex is valid
-            if ((chore.rotatingIndex ?? 0) >= (chore.rotation ?? []).length) {
-              chore.rotatingIndex = 0;
-            }
-          }
+          res.status(400).json({ error: 'Cannot change chore type' });
+          return;
         }
 
+        // Construct updated chore object with minimal checks (trim strings)
+        const updatedChore: Record<string, unknown> = {
+          ...chore,
+          name: name ? name.trim() : chore.name,
+          deadline: deadline ? deadline.trim() : chore.deadline,
+          skipDays: skipDays || chore.skipDays,
+          skipDayVisibility: skipDayVisibility || chore.skipDayVisibility,
+        };
+
+        // Handle type-specific fields
+        if (chore.type === ChoreType.PERSONAL) {
+          updatedChore.assignedTo = assignedTo || chore.assignedTo;
+        } else if (chore.type === ChoreType.ROTATING) {
+          updatedChore.rotation = rotation || chore.rotation;
+          updatedChore.rotatingIndex = chore.rotatingIndex ?? 0;
+        }
+
+        // Validate the updated chore
+        const validation = validateChore(updatedChore, this.choreData.people);
+        if (!validation.valid) {
+          res.status(400).json({ error: validation.error });
+          return;
+        }
+
+        Object.assign(chore, updatedChore);
         this.saveChoreData();
         this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
 
@@ -633,7 +638,33 @@ const nodeHelper: FamilyChoresNodeHelper = {
           return;
         }
 
-        this.choreData = restoredData as FamilyChoresData;
+        // Validate all people
+        const validPeople: Person[] = [];
+        for (const person of restoredData.people) {
+          const validation = validatePerson(person);
+          if (!validation.valid) {
+            res.status(400).json({ error: `Invalid person data: ${validation.error}` });
+            return;
+          }
+          validPeople.push(person as Person);
+        }
+
+        // Validate all chores
+        const validChores: Chore[] = [];
+        for (const chore of restoredData.chores) {
+          const validation = validateChore(chore, validPeople);
+          if (!validation.valid) {
+            res.status(400).json({ error: `Invalid chore data: ${validation.error}` });
+            return;
+          }
+          validChores.push(chore as Chore);
+        }
+
+        this.choreData = {
+          people: validPeople,
+          chores: validChores,
+          lastResetDate: restoredData.lastResetDate,
+        };
         this.saveChoreData();
         this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
 
@@ -681,7 +712,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
           const newChore: Chore = {
             id: generateUUID(),
             name: chore.name,
-            type: chore.type,
+            type: ChoreType.PERSONAL,
             assignedTo: toPersonId,
             deadline: chore.deadline,
             skipDays: chore.skipDays,

@@ -59,16 +59,14 @@ type ChoreBase = {
    * true if completed today (resets daily)
    */
   completedToday: boolean;
-}
+};
 
-type PersonalChore = ChoreBase & {
+export type PersonalChore = ChoreBase & {
   type: ChoreType.PERSONAL;
   assignedTo: UUID;
-  rotation: never;
-  rotatingIndex: never;
-}
+};
 
-type RotatingChore = ChoreBase & {
+export type RotatingChore = ChoreBase & {
   type: ChoreType.ROTATING;
   /**
    * Array of person UUIDs for rotating chores
@@ -78,8 +76,7 @@ type RotatingChore = ChoreBase & {
    * Current position in rotation (rotating chores only)
    */
   rotatingIndex: number;
-  assignedTo: never;
-}
+};
 
 export type Chore = PersonalChore | RotatingChore;
 

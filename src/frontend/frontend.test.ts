@@ -1,7 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import '../../css/main.css';
-import { type Chore, SkipDayVisibility } from '../types/chore-types';
+import {
+  type Chore,
+  ChoreType,
+  DayOfWeek,
+  type PersonalChore,
+  type RotatingChore,
+  SkipDayVisibility,
+} from '../types/chore-types';
 import type { FamilyChoresModule } from '../types/module';
 import './frontend';
 
@@ -124,24 +131,33 @@ describe('Frontend Tests', () => {
           {
             id: '1',
             name: 'Take out trash',
-            type: 'rotating',
+            type: ChoreType.ROTATING,
             rotation: ['alice', 'bob'],
             rotatingIndex: 0,
             completedToday: false,
+            skipDays: [],
+            skipDayVisibility: SkipDayVisibility.HIDE,
+            caughtUp: true,
           },
           {
             id: '2',
             name: 'Clean kitchen',
-            type: 'personal',
+            type: ChoreType.PERSONAL,
             assignedTo: 'bob',
             completedToday: false,
+            skipDays: [],
+            skipDayVisibility: SkipDayVisibility.HIDE,
+            caughtUp: true,
           },
           {
             id: '3',
             name: 'Vacuum living room',
-            type: 'personal',
+            type: ChoreType.PERSONAL,
             assignedTo: 'charlie',
             completedToday: false,
+            skipDays: [],
+            skipDayVisibility: SkipDayVisibility.HIDE,
+            caughtUp: true,
           },
         ],
       };
@@ -187,6 +203,15 @@ describe('Frontend Tests', () => {
       expect(filtered).toHaveLength(0);
     });
 
+    it('should delegate to getSummaryChores when viewMode is summary', () => {
+      module.config.viewMode = 'summary';
+      const spy = vi.spyOn(module, 'getSummaryChores').mockReturnValue([]);
+      expect(module.getFilteredChores()).toEqual([]);
+      expect(spy).toHaveBeenCalled();
+      spy.mockRestore();
+      module.config.viewMode = 'personal';
+    });
+
     it('should handle whitespace in filter', () => {
       module.config.personFilter = '  alice  ';
       const filtered = module.getFilteredChores();
@@ -205,38 +230,40 @@ describe('Frontend Tests', () => {
             {
               id: 'skip-hide',
               name: 'Hidden on Monday',
-              type: 'personal',
+              type: ChoreType.PERSONAL,
               assignedTo: 'alice',
               completedToday: false,
-              skipDays: ['monday'],
-              // default visibility is HIDE
+              skipDays: [DayOfWeek.MONDAY],
+              skipDayVisibility: SkipDayVisibility.HIDE,
+              caughtUp: true,
             },
             {
               id: 'skip-show-always',
               name: 'Always shown on Monday',
-              type: 'personal',
+              type: ChoreType.PERSONAL,
               assignedTo: 'alice',
               completedToday: false,
-              skipDays: ['monday'],
+              skipDays: [DayOfWeek.MONDAY],
               skipDayVisibility: SkipDayVisibility.SHOW_ALWAYS,
+              caughtUp: true,
             },
             {
               id: 'skip-overdue-not-caught-up',
               name: 'Overdue on Monday - not caught up',
-              type: 'personal',
+              type: ChoreType.PERSONAL,
               assignedTo: 'alice',
               completedToday: false,
-              skipDays: ['monday'],
+              skipDays: [DayOfWeek.MONDAY],
               skipDayVisibility: SkipDayVisibility.SHOW_IF_OVERDUE,
               caughtUp: false,
             },
             {
               id: 'skip-overdue-caught-up',
               name: 'Overdue on Monday - caught up',
-              type: 'personal',
+              type: ChoreType.PERSONAL,
               assignedTo: 'alice',
               completedToday: false,
-              skipDays: ['monday'],
+              skipDays: [DayOfWeek.MONDAY],
               skipDayVisibility: SkipDayVisibility.SHOW_IF_OVERDUE,
               caughtUp: true,
             }
@@ -289,7 +316,7 @@ describe('Frontend Tests', () => {
         // Add skip day to the rotating chore
         const rotatingChore = module.choreData.chores.find((c) => c.id === '1');
         if (rotatingChore) {
-          rotatingChore.skipDays = ['monday'];
+          rotatingChore.skipDays = [DayOfWeek.MONDAY];
           rotatingChore.skipDayVisibility = SkipDayVisibility.HIDE;
         }
         module.config.personFilter = null;
@@ -311,10 +338,12 @@ describe('Frontend Tests', () => {
           {
             id: '1',
             name: 'Test chore',
-            type: 'personal',
+            type: ChoreType.PERSONAL,
             assignedTo: 'alice',
             completedToday: false,
             caughtUp: false,
+            skipDays: [],
+            skipDayVisibility: SkipDayVisibility.HIDE,
           },
         ],
       };
@@ -322,8 +351,8 @@ describe('Frontend Tests', () => {
 
     it('should return true when today is not a skip day', () => {
       const chore = module.choreData?.chores[0] as Chore;
-      const todayDayName = 'monday';
-      chore.skipDays = ['tuesday', 'wednesday'];
+      const todayDayName = DayOfWeek.MONDAY;
+      chore.skipDays = [DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY];
 
       const result = module.shouldShowChore(chore, todayDayName);
       expect(result).toBe(true);
@@ -331,8 +360,8 @@ describe('Frontend Tests', () => {
 
     it('should return false when today is a skip day and visibility is HIDE', () => {
       const chore = module.choreData?.chores[0] as Chore;
-      const todayDayName = 'monday';
-      chore.skipDays = ['monday'];
+      const todayDayName = DayOfWeek.MONDAY;
+      chore.skipDays = [DayOfWeek.MONDAY];
       chore.skipDayVisibility = SkipDayVisibility.HIDE;
 
       const result = module.shouldShowChore(chore, todayDayName);
@@ -341,8 +370,8 @@ describe('Frontend Tests', () => {
 
     it('should return false when today is a skip day and visibility defaults to HIDE', () => {
       const chore = module.choreData?.chores[0] as Chore;
-      const todayDayName = 'monday';
-      chore.skipDays = ['monday'];
+      const todayDayName = DayOfWeek.MONDAY;
+      chore.skipDays = [DayOfWeek.MONDAY];
       // skipDayVisibility is undefined, should default to 'hide'
 
       const result = module.shouldShowChore(chore, todayDayName);
@@ -351,8 +380,8 @@ describe('Frontend Tests', () => {
 
     it('should return true when today is a skip day and visibility is SHOW_ALWAYS', () => {
       const chore = module.choreData?.chores[0] as Chore;
-      const todayDayName = 'monday';
-      chore.skipDays = ['monday'];
+      const todayDayName = DayOfWeek.MONDAY;
+      chore.skipDays = [DayOfWeek.MONDAY];
       chore.skipDayVisibility = SkipDayVisibility.SHOW_ALWAYS;
 
       const result = module.shouldShowChore(chore, todayDayName);
@@ -361,8 +390,8 @@ describe('Frontend Tests', () => {
 
     it('should return true when today is a skip day, visibility is SHOW_IF_OVERDUE, and chore is not caught up', () => {
       const chore = module.choreData?.chores[0] as Chore;
-      const todayDayName = 'monday';
-      chore.skipDays = ['monday'];
+      const todayDayName = DayOfWeek.MONDAY;
+      chore.skipDays = [DayOfWeek.MONDAY];
       chore.skipDayVisibility = SkipDayVisibility.SHOW_IF_OVERDUE;
       chore.caughtUp = false;
 
@@ -372,24 +401,13 @@ describe('Frontend Tests', () => {
 
     it('should return false when today is a skip day, visibility is SHOW_IF_OVERDUE, and chore is caught up', () => {
       const chore = module.choreData?.chores[0] as Chore;
-      const todayDayName = 'monday';
-      chore.skipDays = ['monday'];
+      const todayDayName = DayOfWeek.MONDAY;
+      chore.skipDays = [DayOfWeek.MONDAY];
       chore.skipDayVisibility = SkipDayVisibility.SHOW_IF_OVERDUE;
       chore.caughtUp = true;
 
       const result = module.shouldShowChore(chore, todayDayName);
       expect(result).toBe(false);
-    });
-
-    it('should return true when today is a skip day, visibility is SHOW_IF_OVERDUE, and caughtUp is undefined', () => {
-      const chore = module.choreData?.chores[0] as Chore;
-      const todayDayName = 'monday';
-      chore.skipDays = ['monday'];
-      chore.skipDayVisibility = SkipDayVisibility.SHOW_IF_OVERDUE;
-      chore.caughtUp = undefined;
-
-      const result = module.shouldShowChore(chore, todayDayName);
-      expect(result).toBe(true);
     });
   });
 
@@ -405,32 +423,44 @@ describe('Frontend Tests', () => {
           {
             id: '1',
             name: 'Take out trash',
-            type: 'rotating',
+            type: ChoreType.ROTATING,
             rotation: ['alice', 'bob'],
             rotatingIndex: 0,
             completedToday: false,
+            skipDays: [],
+            skipDayVisibility: SkipDayVisibility.HIDE,
+            caughtUp: true,
           },
           {
             id: '2',
             name: 'Clean kitchen',
-            type: 'personal',
+            type: ChoreType.PERSONAL,
             assignedTo: 'bob',
             completedToday: true,
+            skipDays: [],
+            skipDayVisibility: SkipDayVisibility.HIDE,
+            caughtUp: true,
           },
           {
             id: '3',
             name: 'Vacuum living room',
-            type: 'personal',
+            type: ChoreType.PERSONAL,
             assignedTo: 'charlie',
             completedToday: false,
+            skipDays: [],
+            skipDayVisibility: SkipDayVisibility.HIDE,
+            caughtUp: true,
           },
           {
             id: '4',
             name: 'Wash dishes',
-            type: 'rotating',
+            type: ChoreType.ROTATING,
             rotation: ['bob', 'charlie'],
             rotatingIndex: 1,
             completedToday: true,
+            caughtUp: true,
+            skipDays: [],
+            skipDayVisibility: SkipDayVisibility.HIDE,
           },
         ],
       };
@@ -498,48 +528,51 @@ describe('Frontend Tests', () => {
             {
               id: 'skip-hide-personal',
               name: 'Hidden personal on Monday',
-              type: 'personal',
+              type: ChoreType.PERSONAL,
               assignedTo: 'alice',
               completedToday: false,
-              skipDays: ['monday'],
-              // default visibility is HIDE
+              skipDays: [DayOfWeek.MONDAY],
+              skipDayVisibility: SkipDayVisibility.HIDE,
+              caughtUp: true,
             },
             {
               id: 'skip-show-always-personal',
               name: 'Always shown personal on Monday',
-              type: 'personal',
+              type: ChoreType.PERSONAL,
               assignedTo: 'alice',
               completedToday: false,
-              skipDays: ['monday'],
+              skipDays: [DayOfWeek.MONDAY],
               skipDayVisibility: SkipDayVisibility.SHOW_ALWAYS,
+              caughtUp: true,
             },
             {
               id: 'skip-hide-rotating',
               name: 'Hidden rotating on Monday',
-              type: 'rotating',
+              type: ChoreType.ROTATING,
               rotation: ['alice', 'bob'],
               rotatingIndex: 0,
               completedToday: false,
-              skipDays: ['monday'],
-              // default visibility is HIDE
+              skipDays: [DayOfWeek.MONDAY],
+              skipDayVisibility: SkipDayVisibility.HIDE,
+              caughtUp: true,
             },
             {
               id: 'skip-overdue-not-caught-up',
               name: 'Overdue personal - not caught up',
-              type: 'personal',
+              type: ChoreType.PERSONAL,
               assignedTo: 'alice',
               completedToday: false,
-              skipDays: ['monday'],
+              skipDays: [DayOfWeek.MONDAY],
               skipDayVisibility: SkipDayVisibility.SHOW_IF_OVERDUE,
               caughtUp: false,
             },
             {
               id: 'skip-overdue-caught-up',
               name: 'Overdue personal - caught up',
-              type: 'personal',
+              type: ChoreType.PERSONAL,
               assignedTo: 'alice',
               completedToday: false,
-              skipDays: ['monday'],
+              skipDays: [DayOfWeek.MONDAY],
               skipDayVisibility: SkipDayVisibility.SHOW_IF_OVERDUE,
               caughtUp: true,
             }
@@ -585,7 +618,7 @@ describe('Frontend Tests', () => {
         // Add skip day to the completed rotating chore '4'
         const rotatingChore = module.choreData.chores.find((c) => c.id === '4');
         if (rotatingChore) {
-          rotatingChore.skipDays = ['monday'];
+          rotatingChore.skipDays = [DayOfWeek.MONDAY];
           rotatingChore.skipDayVisibility = SkipDayVisibility.HIDE;
         }
         const summary = module.getSummaryChores();
@@ -613,12 +646,15 @@ describe('Frontend Tests', () => {
       if (!module.choreData) {
         throw new Error('choreData is null');
       }
-      const chore = {
+      const chore: PersonalChore = {
         id: '1',
         name: 'Clean kitchen',
-        type: 'personal' as const,
+        type: ChoreType.PERSONAL,
         assignedTo: 'alice',
         completedToday: false,
+        skipDays: [],
+        skipDayVisibility: SkipDayVisibility.HIDE,
+        caughtUp: true,
       };
 
       const html = module.renderChoreItem(chore, module.choreData);
@@ -636,12 +672,15 @@ describe('Frontend Tests', () => {
       if (!module.choreData) {
         throw new Error('choreData is null');
       }
-      const chore = {
+      const chore: PersonalChore = {
         id: '2',
         name: 'Take out trash',
-        type: 'personal' as const,
+        type: ChoreType.PERSONAL,
         assignedTo: 'bob',
         completedToday: true,
+        skipDays: [],
+        skipDayVisibility: SkipDayVisibility.HIDE,
+        caughtUp: true,
       };
 
       // Render and append to DOM
@@ -677,13 +716,16 @@ describe('Frontend Tests', () => {
       if (!module.choreData) {
         throw new Error('choreData is null');
       }
-      const chore = {
+      const chore: RotatingChore = {
         id: '3',
         name: 'Vacuum',
-        type: 'rotating' as const,
+        type: ChoreType.ROTATING,
         rotation: ['alice', 'bob'],
         rotatingIndex: 1,
         completedToday: false,
+        skipDays: [],
+        skipDayVisibility: SkipDayVisibility.HIDE,
+        caughtUp: true,
       };
 
       const html = module.renderChoreItem(chore, module.choreData);
@@ -696,13 +738,16 @@ describe('Frontend Tests', () => {
       if (!module.choreData) {
         throw new Error('choreData is null');
       }
-      const chore = {
+      const chore: PersonalChore = {
         id: '4',
         name: 'Water plants',
-        type: 'personal' as const,
+        type: ChoreType.PERSONAL,
         assignedTo: 'alice',
         completedToday: false,
         deadline: 'Daily',
+        skipDays: [],
+        skipDayVisibility: SkipDayVisibility.HIDE,
+        caughtUp: true,
       };
 
       const html = module.renderChoreItem(chore, module.choreData);
@@ -714,12 +759,15 @@ describe('Frontend Tests', () => {
       if (!module.choreData) {
         throw new Error('choreData is null');
       }
-      const chore = {
+      const chore: PersonalChore = {
         id: '5',
         name: 'General cleanup',
-        type: 'personal' as const,
+        type: ChoreType.PERSONAL,
         assignedTo: 'nonexistent',
         completedToday: false,
+        skipDays: [],
+        skipDayVisibility: SkipDayVisibility.HIDE,
+        caughtUp: true,
       };
 
       const html = module.renderChoreItem(chore, module.choreData);
@@ -748,13 +796,16 @@ describe('Frontend Tests', () => {
         if (!module.choreData) {
           throw new Error('choreData is null');
         }
-        const chore = {
+        const chore: PersonalChore = {
           id: 'deadline-overdue',
           name: 'Morning task',
-          type: 'personal' as const,
+          type: ChoreType.PERSONAL,
           assignedTo: 'alice',
           deadline: '08:00', // Past current time (11:30)
           completedToday: false,
+          skipDays: [],
+          skipDayVisibility: SkipDayVisibility.HIDE,
+          caughtUp: true,
         };
 
         // Render and append to DOM
@@ -786,13 +837,16 @@ describe('Frontend Tests', () => {
         if (!module.choreData) {
           throw new Error('choreData is null');
         }
-        const chore = {
+        const chore: PersonalChore = {
           id: 'deadline-normal',
           name: 'Evening task',
-          type: 'personal' as const,
+          type: ChoreType.PERSONAL,
           assignedTo: 'alice',
           deadline: '21:00', // Future time (11:30 < 21:00)
           completedToday: false,
+          skipDays: [],
+          skipDayVisibility: SkipDayVisibility.HIDE,
+          caughtUp: true,
         };
 
         const html = module.renderChoreItem(chore, module.choreData);
@@ -818,13 +872,16 @@ describe('Frontend Tests', () => {
         if (!module.choreData) {
           throw new Error('choreData is null');
         }
-        const chore = {
+        const chore: PersonalChore = {
           id: 'deadline-equal',
           name: 'Exact time task',
-          type: 'personal' as const,
+          type: ChoreType.PERSONAL,
           assignedTo: 'alice',
           deadline: '11:30', // Equal to current time
           completedToday: false,
+          skipDays: [],
+          skipDayVisibility: SkipDayVisibility.HIDE,
+          caughtUp: true,
         };
 
         const html = module.renderChoreItem(chore, module.choreData);
@@ -848,13 +905,16 @@ describe('Frontend Tests', () => {
         if (!module.choreData) {
           throw new Error('choreData is null');
         }
-        const chore = {
+        const chore: PersonalChore = {
           id: 'deadline-completed',
           name: 'Completed task',
-          type: 'personal' as const,
+          type: ChoreType.PERSONAL,
           assignedTo: 'alice',
           deadline: '08:00', // Past current time
           completedToday: true, // But completed
+          skipDays: [],
+          skipDayVisibility: SkipDayVisibility.HIDE,
+          caughtUp: true,
         };
 
         const html = module.renderChoreItem(chore, module.choreData);
@@ -886,13 +946,16 @@ describe('Frontend Tests', () => {
         if (!module.choreData) {
           throw new Error('choreData is null');
         }
-        const chore = {
+        const chore: PersonalChore = {
           id: 'no-deadline',
           name: 'No deadline task',
-          type: 'personal' as const,
+          type: ChoreType.PERSONAL,
           assignedTo: 'alice',
           completedToday: false,
           // No deadline property
+          skipDays: [],
+          skipDayVisibility: SkipDayVisibility.HIDE,
+          caughtUp: true,
         };
 
         const html = module.renderChoreItem(chore, module.choreData);
@@ -914,14 +977,17 @@ describe('Frontend Tests', () => {
         if (!module.choreData) {
           throw new Error('choreData is null');
         }
-        const chore = {
+        const chore: RotatingChore = {
           id: 'rotating-overdue',
           name: 'Rotating task',
-          type: 'rotating' as const,
+          type: ChoreType.ROTATING,
           rotation: ['alice', 'bob'],
           rotatingIndex: 0,
           deadline: '08:00', // Past current time
           completedToday: false,
+          skipDays: [],
+          skipDayVisibility: SkipDayVisibility.HIDE,
+          caughtUp: true,
         };
 
         const html = module.renderChoreItem(chore, module.choreData);
@@ -949,14 +1015,16 @@ describe('Frontend Tests', () => {
           if (!module.choreData) {
             throw new Error('choreData is null');
           }
-          const chore = {
+          const chore: PersonalChore = {
             id: 'not-caught-up',
             name: 'Not caught up task',
-            type: 'personal' as const,
+            type: ChoreType.PERSONAL,
             assignedTo: 'alice',
             deadline: '23:59', // Future deadline
             completedToday: false,
             caughtUp: false, // Not caught up - should show overdue
+            skipDays: [],
+            skipDayVisibility: SkipDayVisibility.HIDE,
           };
 
           const html = module.renderChoreItem(chore, module.choreData);
@@ -979,14 +1047,16 @@ describe('Frontend Tests', () => {
           if (!module.choreData) {
             throw new Error('choreData is null');
           }
-          const chore = {
+          const chore: PersonalChore = {
             id: 'caught-up',
             name: 'Caught up task',
-            type: 'personal' as const,
+            type: ChoreType.PERSONAL,
             assignedTo: 'alice',
             deadline: '23:59', // Future deadline
             completedToday: false,
             caughtUp: true, // Caught up - should show normal
+            skipDays: [],
+            skipDayVisibility: SkipDayVisibility.HIDE,
           };
 
           const html = module.renderChoreItem(chore, module.choreData);
@@ -1030,17 +1100,23 @@ describe('Frontend Tests', () => {
           {
             id: '1',
             name: 'Take out trash',
-            type: 'rotating',
+            type: ChoreType.ROTATING,
             rotation: ['1', '2'],
             rotatingIndex: 0,
             completedToday: true,
+            skipDays: [],
+            skipDayVisibility: SkipDayVisibility.HIDE,
+            caughtUp: true,
           },
           {
             id: '2',
             name: 'Clean kitchen',
-            type: 'personal',
+            type: ChoreType.PERSONAL,
             assignedTo: '1',
             completedToday: false,
+            skipDays: [],
+            skipDayVisibility: SkipDayVisibility.HIDE,
+            caughtUp: true,
           },
         ],
       };
@@ -1067,17 +1143,23 @@ describe('Frontend Tests', () => {
           {
             id: '1',
             name: 'Take out trash',
-            type: 'rotating',
+            type: ChoreType.ROTATING,
             rotation: ['1', '2'],
             rotatingIndex: 0,
             completedToday: true,
+            skipDays: [],
+            skipDayVisibility: SkipDayVisibility.HIDE,
+            caughtUp: true,
           },
           {
             id: '2',
             name: 'Clean kitchen',
-            type: 'personal',
+            type: ChoreType.PERSONAL,
             assignedTo: '2',
             completedToday: false,
+            skipDays: [],
+            skipDayVisibility: SkipDayVisibility.HIDE,
+            caughtUp: true,
           },
         ],
       };
@@ -1101,9 +1183,12 @@ describe('Frontend Tests', () => {
           {
             id: '1',
             name: 'Clean kitchen',
-            type: 'personal',
+            type: ChoreType.PERSONAL,
             assignedTo: '1',
             completedToday: false,
+            skipDays: [],
+            skipDayVisibility: SkipDayVisibility.HIDE,
+            caughtUp: true,
           },
         ],
       };
@@ -1131,33 +1216,44 @@ describe('Frontend Tests', () => {
           {
             id: '1',
             name: 'Take out trash',
-            type: 'rotating',
+            type: ChoreType.ROTATING,
             rotation: ['alice', 'bob'],
             rotatingIndex: 0,
             completedToday: false,
+            skipDays: [],
+            skipDayVisibility: SkipDayVisibility.HIDE,
+            caughtUp: true,
           },
           {
             id: '2',
             name: 'Clean kitchen',
-            type: 'personal',
+            type: ChoreType.PERSONAL,
             assignedTo: 'bob',
             completedToday: false,
+            skipDays: [],
+            skipDayVisibility: SkipDayVisibility.HIDE,
             caughtUp: false,
           },
           {
             id: '3',
             name: 'Vacuum living room',
-            type: 'personal',
+            type: ChoreType.PERSONAL,
             assignedTo: 'charlie',
             completedToday: true,
+            skipDays: [],
+            skipDayVisibility: SkipDayVisibility.HIDE,
+            caughtUp: true,
           },
           {
             id: '4',
             name: 'Wash dishes',
-            type: 'rotating',
+            type: ChoreType.ROTATING,
             rotation: ['bob', 'charlie'],
             rotatingIndex: 1,
             completedToday: true,
+            skipDays: [],
+            skipDayVisibility: SkipDayVisibility.HIDE,
+            caughtUp: true,
           },
         ],
       };
@@ -1439,10 +1535,13 @@ describe('Frontend Tests', () => {
           {
             id: 'chore-1',
             name: 'Take out trash',
-            type: 'rotating',
+            type: ChoreType.ROTATING,
             rotation: ['1', '2'],
             rotatingIndex: 0,
             completedToday: false,
+            skipDays: [],
+            skipDayVisibility: SkipDayVisibility.HIDE,
+            caughtUp: true,
           },
         ],
       };

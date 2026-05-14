@@ -1,5 +1,5 @@
 import { SocketNotifications } from '../constants/socket-notifications';
-import { type FamilyChoresData, SkipDayVisibility } from '../types/chore-types';
+import { ChoreType, type FamilyChoresData, SkipDayVisibility } from '../types/chore-types';
 import type { Config } from '../types/config';
 import type { FamilyChoresModule } from '../types/module';
 import { DeadlineStatus, getDeadlineStatus, getLocalDayName } from '../utils/date';
@@ -70,8 +70,8 @@ const familyChoresModule: FamilyChoresModule = {
   },
 
   // Helper function: check if a chore should be shown based on skip day visibility
-  shouldShowChore(chore: FamilyChoresData['chores'][0], todayDayName: string): boolean {
-    const skipDays = chore.skipDays ?? [];
+  shouldShowChore(chore, todayDayName): boolean {
+    const skipDays = chore.skipDays;
     if (!skipDays.includes(todayDayName)) {
       // not a skip day
       return true;
@@ -243,14 +243,14 @@ const familyChoresModule: FamilyChoresModule = {
     this.sendSocketNotification?.(SocketNotifications.CHORE_TOGGLE, payload);
   },
 
-  // Custom function: render individual chore item
-  renderChoreItem(chore: FamilyChoresData['chores'][0], choreData: FamilyChoresData): string {
-    const assignedPerson = chore.assignedTo
-      ? choreData.people.find((p) => p.id === chore.assignedTo)
-      : null;
+  renderChoreItem(chore, choreData): string {
+    const assignedPerson =
+      chore.type === ChoreType.PERSONAL
+        ? choreData.people.find((p) => p.id === chore.assignedTo)
+        : null;
 
     const currentRotationPerson =
-      chore.type === 'rotating' && chore.rotation && chore.rotatingIndex !== undefined
+      chore.type === ChoreType.ROTATING && chore.rotation && chore.rotatingIndex !== undefined
         ? choreData.people.find((p) => p.id === chore.rotation?.[chore.rotatingIndex ?? -1])
         : null;
 
