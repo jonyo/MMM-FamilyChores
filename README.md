@@ -31,7 +31,7 @@ _Note: This roadmap represents current plans and priorities. Features may be add
 
 - **Reward System**: Focused on simple chore tracking rather than gamification. Provides visual indicators for overdue tasks but doesn't track completion history or award rewards. Designed as a straightforward reminder system with rotating chore assignments.
 
-- **Security**: Designed for private home environments only. The PIN protection provides minimal deterrence but stores PIN in plain text. Not suitable for public/shared environments.
+- **Security**: Designed for private home environments only. The PIN protection provides minimal deterrence but stores PIN in plain text. Not suitable for public/shared environments. Person and chore names (and similar fields) are stored exactly as entered; the mirror UI and bundled admin page escape them when building HTML so markup in names is shown as text, not executed. This does not replace network-level controls (keep MagicMirror off the public internet; treat your LAN as the trust boundary).
 
 ## Installation
 

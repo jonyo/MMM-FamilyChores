@@ -1,6 +1,12 @@
 // API base URL
 const API_BASE = '/MMM-FamilyChores';
 
+function escapeHtml(raw) {
+  const div = document.createElement('div');
+  div.textContent = raw;
+  return div.innerHTML;
+}
+
 // Generate a random light/pastel color suitable for display on a dark background
 function generateRandomLightColor() {
   const hue = Math.floor(Math.random() * 360);
@@ -154,7 +160,7 @@ function renderPeople() {
     let choresHtml = '';
     choresHtml += `
       <div class="person-chores-header">
-        <h4>${person.name}'s Personal Chores</h4>
+        <h4>${escapeHtml(person.name)}'s Personal Chores</h4>
         <div class="person-chores-actions">
           <button type="button" class="btn btn-primary btn-sm" onclick="openChoreModal('personal', '${person.id}')">Add Chore</button>
           ${
@@ -178,7 +184,7 @@ function renderPeople() {
         choresHtml += `
           <div class="chore-item">
             <div class="chore-info">
-              <h4>${chore.name}</h4>
+              <h4>${escapeHtml(chore.name)}</h4>
               ${chore.deadline ? `<p class="deadline">Deadline: ${chore.deadline}</p>` : ''}
               <p class="skip-days">Skip days: ${skipDays}</p>
             </div>
@@ -198,7 +204,7 @@ function renderPeople() {
     card.innerHTML = `
       <div class="person-header">
         <div class="item-info">
-          <h3>${person.name} <span class="color-badge" style="background-color: ${person.color}"></span></h3>
+          <h3>${escapeHtml(person.name)} <span class="color-badge" style="background-color: ${person.color}"></span></h3>
           <p>ID: ${person.id}</p>
         </div>
         <div class="item-actions">
@@ -228,7 +234,7 @@ function renderRotatingChores() {
     const rotationNames = chore.rotation
       .map((personId) => {
         const person = choreData.people.find((p) => p.id === personId);
-        return person ? person.name : 'Unknown';
+        return person ? escapeHtml(person.name) : 'Unknown';
       })
       .join(', ');
 
@@ -242,7 +248,7 @@ function renderRotatingChores() {
     // Get current assignee
     const currentPersonId = chore.rotation[chore.rotatingIndex ?? 0];
     const currentPerson = choreData.people.find((p) => p.id === currentPersonId);
-    const currentAssignee = currentPerson ? currentPerson.name : 'Unassigned';
+    const currentAssignee = currentPerson ? escapeHtml(currentPerson.name) : 'Unassigned';
 
     const skipDays =
       chore.skipDays && chore.skipDays.length > 0
@@ -251,7 +257,7 @@ function renderRotatingChores() {
 
     card.innerHTML = `
       <div class="item-info">
-        <h3>${chore.name} <span class="chore-type-badge rotating">Rotating</span></h3>
+        <h3>${escapeHtml(chore.name)} <span class="chore-type-badge rotating">Rotating</span></h3>
         <p>Current: ${currentAssignee}</p>
         <p>Rotation: ${rotationText}</p>
         ${chore.deadline ? `<p class="deadline">Deadline: ${chore.deadline}</p>` : ''}
@@ -313,7 +319,7 @@ function openChoreModal(type = null, personId = null, chore = null) {
   rotationList.innerHTML = '';
   choreData.people.forEach((person) => {
     const label = document.createElement('label');
-    label.innerHTML = `<input type="checkbox" value="${person.id}" class="rotation-checkbox"> ${person.name}`;
+    label.innerHTML = `<input type="checkbox" value="${person.id}" class="rotation-checkbox"> ${escapeHtml(person.name)}`;
     rotationList.appendChild(label);
   });
 
@@ -660,7 +666,7 @@ window.openCopyModal = (fromPersonId) => {
   choresList.innerHTML = '';
   personalChores.forEach((chore) => {
     const label = document.createElement('label');
-    label.innerHTML = `<input type="checkbox" value="${chore.id}" class="copy-chore-checkbox" checked> ${chore.name}`;
+    label.innerHTML = `<input type="checkbox" value="${chore.id}" class="copy-chore-checkbox" checked> ${escapeHtml(chore.name)}`;
     choresList.appendChild(label);
   });
 

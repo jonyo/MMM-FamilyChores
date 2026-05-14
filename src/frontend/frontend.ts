@@ -14,6 +14,12 @@ declare global {
   };
 }
 
+const escapeHtml = (raw: string): string => {
+  const div = document.createElement('div');
+  div.textContent = raw;
+  return div.innerHTML;
+};
+
 // Register the module with MagicMirror
 const familyChoresModule: FamilyChoresModule = {
   name: 'MMM-FamilyChores',
@@ -270,9 +276,9 @@ const familyChoresModule: FamilyChoresModule = {
     html += `<input type="checkbox" id="chore-${chore.id}" ${checkedAttr} />`;
     html += '</div>';
     html += '<div class="chore-details">';
-    html += `<div class="chore-name">${chore.name}</div>`;
+    html += `<div class="chore-name">${escapeHtml(chore.name)}</div>`;
     html += '<div class="chore-meta">';
-    html += `<span class="assigned-to" style="color: ${personColor}">${personName}</span>`;
+    html += `<span class="assigned-to" style="color: ${personColor}">${escapeHtml(personName)}</span>`;
     if (chore.deadline) {
       html += `<span class="deadline">${chore.deadline}</span>`;
     }
