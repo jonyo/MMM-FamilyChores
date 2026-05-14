@@ -1,6 +1,6 @@
+import * as Log from 'logger';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import * as Log from 'logger';
 import * as NodeHelper from 'node_helper';
 import { SocketNotifications } from '../constants/socket-notifications';
 import {
@@ -60,13 +60,17 @@ const nodeHelper: FamilyChoresNodeHelper = {
   choreData: null as FamilyChoresData | null,
   config: null as Config | null,
 
-  // MM function: called when the node helper starts
+  /**
+   * MM function: called when the node helper starts
+   */
   start(): void {
     Log.info(`Starting node helper for MMM-FamilyChores`);
     this.setupAdminRoutes();
   },
 
-  // MM function: called when a socket notification arrives from the module
+  /**
+   * MM function: called when a socket notification arrives from the module
+   */
   socketNotificationReceived(
     notificationIdentifier: string,
     payload: Config | ChoreTogglePayload | ChoreReassignPayload | CaughtUpResetPayload
@@ -92,7 +96,9 @@ const nodeHelper: FamilyChoresNodeHelper = {
     }
   },
 
-  // Load chore data from file
+  /**
+   * Load chore data from file
+   */
   loadChoreData(): void {
     if (!this.config) {
       Log.error('Config not set, cannot load chore data');
@@ -123,7 +129,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
     }
   },
 
-  // Save chore data to file
+
   saveChoreData(): void {
     if (!this.config || !this.choreData) {
       Log.error('Config or chore data not set, cannot save');
@@ -140,7 +146,9 @@ const nodeHelper: FamilyChoresNodeHelper = {
     }
   },
 
-  // Create default empty data structure
+  /**
+   * Create default empty data structure
+   */
   createDefaultData(): FamilyChoresData {
     return {
       people: [],
@@ -150,7 +158,9 @@ const nodeHelper: FamilyChoresNodeHelper = {
     };
   },
 
-  // Check if daily reset should be performed and execute if needed
+  /**
+   * Check if daily reset should be performed and execute if needed
+   */
   checkAndPerformDailyReset(): void {
     if (!this.choreData || !this.config) return;
 
