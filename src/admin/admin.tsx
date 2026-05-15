@@ -9,6 +9,7 @@ import { type Component, createSignal, For, onMount, Show } from 'solid-js';
 import { deleteChore, deletePerson } from '../api';
 import { ChoreType, type DayOfWeek } from '../types/chore-types';
 import { escapeHtml } from '../utils/browser';
+import { getLocalDateString } from '../utils/date';
 import { PersonModal } from './person-modal';
 import { PersonalChoreModal } from './personal-chore-modal';
 import { RotatingChoreModal } from './rotating-chore-modal';
@@ -191,7 +192,7 @@ export const Admin: Component<Record<string, never>> = () => {
       // Update lastResetDate to yesterday to trigger reset
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toISOString().split('T')[0];
+      const yesterdayStr = getLocalDateString(yesterday);
 
       data.lastResetDate = yesterdayStr;
 

@@ -1035,6 +1035,20 @@
 		return div.innerHTML;
 	};
 	//#endregion
+	//#region src/utils/date.ts
+	/**
+	* Gets the local date string in YYYY-MM-DD format
+	* Uses Intl.DateTimeFormat for proper timezone and DST handling
+	* @param date - Optional date to convert (defaults to current time)
+	*/
+	var getLocalDateString = (date = /* @__PURE__ */ new Date()) => {
+		return new Intl.DateTimeFormat("en-CA", {
+			year: "numeric",
+			month: "2-digit",
+			day: "2-digit"
+		}).format(date);
+	};
+	//#endregion
 	//#region src/admin/person-modal.tsx
 	var _tmpl$$3 = /* @__PURE__ */ template(`<div class="modal active"><div class=modal-content><h3></h3><form><div class=form-group><label for=personName>Name</label><input type=text id=personName required></div><div class=form-group><label for=personColor>Color</label><div class=color-input-group><input type=color id=personColor required><button type=button class="btn btn-secondary btn-sm">Randomize</button></div></div><div class=form-actions><button type=button class="btn btn-secondary">Cancel</button><button type=submit class="btn btn-primary">`);
 	var PersonModal = (props) => {
@@ -1389,7 +1403,7 @@
 				if (!data) return;
 				const yesterday = /* @__PURE__ */ new Date();
 				yesterday.setDate(yesterday.getDate() - 1);
-				data.lastResetDate = yesterday.toISOString().split("T")[0];
+				data.lastResetDate = getLocalDateString(yesterday);
 				if (!(await fetch(`${API_BASE}/restore`, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
