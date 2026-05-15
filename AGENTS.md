@@ -58,6 +58,16 @@ pnpm run lint         # Run Biome (primary) and ESLint (reactivity errors)
 pnpm run test         # Run tests
 ```
 
+**CRITICAL: Before committing changes, you MUST:**
+
+```bash
+pnpm run build          # Build both client and node and copy to root
+git add .               # Add ALL changes including built files
+git commit -m "message" # Commit
+```
+
+**This is NON-NEGOTIABLE:** Built files (`MMM-FamilyChores.js`, `node_helper.js`, `public/admin.js`, and their source maps) MUST be committed. The module will not work for users without these built files. Never commit source changes without also committing the corresponding built files.
+
 **Build process:**
 
 ```bash
