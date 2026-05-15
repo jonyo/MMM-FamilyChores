@@ -6,8 +6,9 @@ export default defineConfig({
   build: {
     outDir: 'dist/client',
     sourcemap: true,
-    // Use terser for better minification
-    minify: 'terser',
+    // Readable output makes it easier to spot unexpected changes (e.g. supply-chain injections)
+    // in git diffs. There's no performance benefit to minification in this local-only environment.
+    minify: false,
     lib: {
       name: 'MMMFamilyChores',
       entry: {
@@ -24,6 +25,7 @@ export default defineConfig({
         globals: {
           logger: 'Log',
         },
+        banner: '// Automatically built — do not edit directly. Edit src/ and run pnpm build.',
       },
     },
   },

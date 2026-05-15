@@ -6,8 +6,9 @@ export default defineConfig({
   build: {
     outDir: 'dist/node',
     sourcemap: true,
-    // Minify the output
-    minify: 'esbuild',
+    // Readable output makes it easier to spot unexpected changes (e.g. supply-chain injections)
+    // in git diffs. There's no performance benefit to minification in this local-only environment.
+    minify: false,
     lib: {
       entry: {
         node_helper: './src/backend/node-helper.ts',
@@ -29,6 +30,7 @@ export default defineConfig({
         chunkFileNames: '[name].js',
         assetFileNames: '[name][extname]',
         exports: 'default',
+        banner: '// Automatically built — do not edit directly. Edit src/ and run pnpm build.',
       },
     },
   },

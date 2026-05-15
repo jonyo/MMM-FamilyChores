@@ -1,2 +1,328 @@
-!function(e){"function"==typeof define&&define.amd?define([],e):e()}(function(){var e="CONFIG_REQUEST",t="CHORE_TOGGLE",i="CONFIG_RESPONSE",o="CHORE_DATA",n="CHORE_UPDATE_RESULT",r="PIN_ERROR",s=function(e){return e.HIDE="hide",e.SHOW_IF_OVERDUE="show-if-overdue",e.SHOW_ALWAYS="show-always",e}({}),a=function(e){return e.PERSONAL="personal",e.ROTATING="rotating",e}({}),d=(e=new Date)=>new Intl.DateTimeFormat("en-US",{weekday:"long"}).format(e).toLowerCase(),c=function(e){return e.NORMAL="normal",e.OVERDUE="overdue",e.COMPLETED="completed",e}({}),l=(e,t,i)=>t?c.COMPLETED:!1===i||e&&((e=new Date)=>new Intl.DateTimeFormat("en-CA",{hour:"2-digit",minute:"2-digit",hour12:!1}).format(e))()>=e?c.OVERDUE:c.NORMAL,h=e=>{const t=document.createElement("div");return t.textContent=e,t.innerHTML};Module.register("MMM-FamilyChores",{name:"MMM-FamilyChores",config:{updateInterval:6e4,dataFile:"data.json",adminPin:null,personFilter:null,viewMode:"personal",summary:{showIncomplete:!0,showRotating:!0,showOverdue:!0,incompleteTitle:"Incomplete Chores",rotatingTitle:"Current Rotating Assignments",overdueTitle:"Overdue"},dailyResetTime:"03:00"},defaults:{updateInterval:6e4,dataFile:"data.json",adminPin:null,personFilter:null,viewMode:"personal",summary:{showIncomplete:!0,showRotating:!0,showOverdue:!0,incompleteTitle:"Incomplete Chores",rotatingTitle:"Current Rotating Assignments",overdueTitle:"Overdue"},dailyResetTime:"03:00"},choreData:null,start(){Log.info(`${this.name} is starting`),this.loadData(),this.scheduleUpdate()},getStyles(){return[this.file?.("css/main.css")||""]},shouldShowChore(e,t){if(!e.skipDays.includes(t))return!0;const i=e.skipDayVisibility??s.HIDE;return i!==s.HIDE&&(i!==s.SHOW_IF_OVERDUE||!e.caughtUp)},getFilteredChores(){if(!this.choreData)return[];if("summary"===this.config.viewMode)return this.getSummaryChores();const e=d(),t=this.config.personFilter?.trim().toLowerCase();if(!t)return this.choreData.chores.filter(t=>this.shouldShowChore(t,e));const i=this.choreData.people.find(e=>e.id.toLowerCase()===t)||this.choreData.people.find(e=>e.name.toLowerCase()===t);return i?this.choreData.chores.filter(t=>{if(!this.shouldShowChore(t,e))return!1;if("personal"===t.type)return t.assignedTo===i.id;if("rotating"===t.type&&t.rotation?.length){const e=t.rotatingIndex??0;return t.rotation[e]===i.id}return!1}):(Log.warn(`${this.name} could not find a person matching '${this.config.personFilter}'`),[])},getSummaryChores(){if(!this.choreData)return[];const e=d();return this.choreData.chores.filter(t=>!!this.shouldShowChore(t,e)&&(!t.completedToday||!("rotating"!==t.type||!t.rotation?.length)))},getDom(){const e=document.createElement("div");if(e.className="MMM-FamilyChores",!this.choreData)return e.innerHTML='<div class="module-content loading">Loading...</div>',e;const t=this.choreData,i=this.getFilteredChores();return 0===i.length?(e.innerHTML='\n      <div class="module-content">\n        <div class="chore-list empty-state">No chores match the current filter.</div>\n      </div>\n      ',e):"summary"===this.config.viewMode?this.renderSummaryView(e):(e.innerHTML=`\n      <div class="module-content">\n        <div class="chore-list">\n          ${i.map(e=>this.renderChoreItem(e,t)).join("")}\n        </div>\n      </div>\n    `,this.addCheckboxListeners(e),e)},addCheckboxListeners(e){e.querySelectorAll('input[type="checkbox"]').forEach(e=>{e.addEventListener("change",e=>{const t=e.target,i=t.closest(".chore-item");if(i){const e=i.getAttribute("data-chore-id");e&&this.toggleChoreCompletion(e,t.checked)}})})},toggleChoreCompletion(e,i){Log.debug(`${this.name} toggling chore ${e} to ${i}`);const o={choreId:e,completed:i};this.sendSocketNotification?.(t,o)},renderChoreItem(e,t){const i=e.type===a.PERSONAL?t.people.find(t=>t.id===e.assignedTo):null,o=e.type===a.ROTATING&&e.rotation&&void 0!==e.rotatingIndex?t.people.find(t=>t.id===e.rotation?.[e.rotatingIndex??-1]):null,n=i||o,r=n?n.name:"Unassigned",s=n?n.color:"#ccc",d=l(e.deadline,e.completedToday,e.caughtUp),m=d===c.COMPLETED?"completed":d,u=e.completedToday?"checked":"";let g=`<div class="chore-item ${m}" data-chore-id="${e.id}">`;return g+=`<label class="chore-label" for="chore-${e.id}">`,g+='<div class="chore-checkbox">',g+=`<input type="checkbox" id="chore-${e.id}" ${u} />`,g+="</div>",g+='<div class="chore-details">',g+=`<div class="chore-name">${h(e.name)}</div>`,g+='<div class="chore-meta">',g+=`<span class="assigned-to" style="color: ${s}">${h(r)}</span>`,e.deadline&&(g+=`<span class="deadline">${e.deadline}</span>`),g+="</div>",g+="</div>",g+="</label>",g+="</div>",g},renderSummaryView(e){if(!this.choreData)return e.innerHTML='<div class="module-content loading">Loading...</div>',e;const t=this.choreData,i=this.getFilteredChores(),o={showIncomplete:!0,showRotating:!0,showOverdue:!0,incompleteTitle:"Incomplete Chores",rotatingTitle:"Current Rotating Assignments",overdueTitle:"Overdue",...this.config.summary},n=i.filter(e=>!e.completedToday),r=i.filter(e=>l(e.deadline,e.completedToday,e.caughtUp)===c.OVERDUE),s=i.filter(e=>"rotating"===e.type);let a='<div class="module-content summary-view">';return o.showIncomplete&&n.length>0&&(a+='<div class="summary-section incomplete-section">',a+=`<h3 class="section-title incomplete-title">${o.incompleteTitle}</h3>`,a+='<div class="chore-list">',a+=n.map(e=>this.renderChoreItem(e,t)).join(""),a+="</div>",a+="</div>"),o.showRotating&&s.length>0&&(a+='<div class="summary-section rotating-section">',a+=`<h3 class="section-title rotating-title">${o.rotatingTitle}</h3>`,a+='<div class="chore-list">',a+=s.map(e=>this.renderChoreItem(e,t)).join(""),a+="</div>",a+="</div>"),o.showOverdue&&r.length>0&&(a+='<div class="summary-section overdue-section">',a+=`<h3 class="section-title overdue-title">${o.overdueTitle}</h3>`,a+='<div class="chore-list">',a+=r.map(e=>this.renderChoreItem(e,t)).join(""),a+="</div>",a+="</div>"),a+="</div>",e.innerHTML=a,this.addCheckboxListeners(e),e},socketNotificationReceived(e,t){switch(Log.debug(`${this.name} received socket notification: '${e}'`),e){case i:Log.debug("Received config response");break;case o:this.choreData=t,this.updateDom?.();break;case n:Log.debug("Received chore update result"),this.loadData();break;case r:Log.warn("PIN error received");break;default:Log.warn(`${this.name} received unknown socket notification: '${e}'`)}},scheduleUpdate(){setInterval(()=>{this.loadData()},this.config.updateInterval||6e4)},loadData(){Log.debug(`${this.name} is loading data`),this.sendSocketNotification?.(e,this.config)}})});
+// Automatically built — do not edit directly. Edit src/ and run pnpm build.
+(function(factory) {
+	typeof define === "function" && define.amd ? define([], factory) : factory();
+})(function() {
+	//#region src/constants/socket-notifications.ts
+	var SocketNotifications = {
+		CONFIG_REQUEST: "CONFIG_REQUEST",
+		CHORE_TOGGLE: "CHORE_TOGGLE",
+		CHORE_REASSIGN: "CHORE_REASSIGN",
+		CAUGHTUP_RESET: "CAUGHTUP_RESET",
+		CONFIG_RESPONSE: "CONFIG_RESPONSE",
+		CHORE_DATA: "CHORE_DATA",
+		CHORE_UPDATE_RESULT: "CHORE_UPDATE_RESULT",
+		CHORE_REASSIGN_RESULT: "CHORE_REASSIGN_RESULT",
+		CAUGHTUP_RESET_RESULT: "CAUGHTUP_RESET_RESULT",
+		PIN_ERROR: "PIN_ERROR"
+	};
+	//#endregion
+	//#region src/types/chore-types.ts
+	var SkipDayVisibility = /* @__PURE__ */ function(SkipDayVisibility) {
+		SkipDayVisibility["HIDE"] = "hide";
+		SkipDayVisibility["SHOW_IF_OVERDUE"] = "show-if-overdue";
+		SkipDayVisibility["SHOW_ALWAYS"] = "show-always";
+		return SkipDayVisibility;
+	}({});
+	var ChoreType = /* @__PURE__ */ function(ChoreType) {
+		ChoreType["PERSONAL"] = "personal";
+		ChoreType["ROTATING"] = "rotating";
+		return ChoreType;
+	}({});
+	//#endregion
+	//#region src/utils/date.ts
+	/**
+	* Gets the local time string in HH:MM format
+	* Uses Intl.DateTimeFormat for proper timezone and DST handling
+	* @param date - Optional date to convert (defaults to current time)
+	*/
+	var getLocalTimeString = (date = /* @__PURE__ */ new Date()) => {
+		return new Intl.DateTimeFormat("en-CA", {
+			hour: "2-digit",
+			minute: "2-digit",
+			hour12: false
+		}).format(date);
+	};
+	/**
+	* Gets the local day name in lowercase (sunday, monday, etc.)
+	* Uses Intl.DateTimeFormat for proper timezone and DST handling
+	* @param date - Optional date to convert (defaults to current time)
+	*/
+	var getLocalDayName = (date = /* @__PURE__ */ new Date()) => {
+		return new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(date).toLowerCase();
+	};
+	/**
+	* Deadline status enum for visual indicators
+	*/
+	var DeadlineStatus = /* @__PURE__ */ function(DeadlineStatus) {
+		DeadlineStatus["NORMAL"] = "normal";
+		DeadlineStatus["OVERDUE"] = "overdue";
+		DeadlineStatus["COMPLETED"] = "completed";
+		return DeadlineStatus;
+	}({});
+	/**
+	* Determines the deadline status for a chore
+	* @param deadline - Optional deadline time in "HH:MM" format
+	* @param completedToday - Whether the chore is completed today
+	* @param caughtUp - Whether the chore is caught up (completed yesterday)
+	* @returns DeadlineStatus for CSS class application
+	*/
+	var getDeadlineStatus = (deadline, completedToday, caughtUp) => {
+		if (completedToday) return DeadlineStatus.COMPLETED;
+		if (caughtUp === false) return DeadlineStatus.OVERDUE;
+		if (!deadline) return DeadlineStatus.NORMAL;
+		if (getLocalTimeString() >= deadline) return DeadlineStatus.OVERDUE;
+		return DeadlineStatus.NORMAL;
+	};
+	//#endregion
+	//#region src/frontend/frontend.ts
+	var escapeHtml = (raw) => {
+		const div = document.createElement("div");
+		div.textContent = raw;
+		return div.innerHTML;
+	};
+	Module.register("MMM-FamilyChores", {
+		name: "MMM-FamilyChores",
+		config: {
+			updateInterval: 6e4,
+			dataFile: "data.json",
+			adminPin: null,
+			personFilter: null,
+			viewMode: "personal",
+			summary: {
+				showIncomplete: true,
+				showRotating: true,
+				showOverdue: true,
+				incompleteTitle: "Incomplete Chores",
+				rotatingTitle: "Current Rotating Assignments",
+				overdueTitle: "Overdue"
+			},
+			dailyResetTime: "03:00"
+		},
+		defaults: {
+			updateInterval: 6e4,
+			dataFile: "data.json",
+			adminPin: null,
+			personFilter: null,
+			viewMode: "personal",
+			summary: {
+				showIncomplete: true,
+				showRotating: true,
+				showOverdue: true,
+				incompleteTitle: "Incomplete Chores",
+				rotatingTitle: "Current Rotating Assignments",
+				overdueTitle: "Overdue"
+			},
+			dailyResetTime: "03:00"
+		},
+		choreData: null,
+		start() {
+			Log.info(`${this.name} is starting`);
+			this.loadData();
+			this.scheduleUpdate();
+		},
+		/**
+		* The getStyles method is called to request any additional stylesheets that need to be loaded.
+		* This method should therefore return an array with strings. If you want to return a full path
+		* to a file in the module folder, use the this.file('filename.css') method. In all cases the
+		* loader will only load a file once. It even checks if the file is available in the default
+		* vendor folder.
+		*/
+		getStyles() {
+			return [this.file?.("css/main.css") || ""];
+		},
+		shouldShowChore(chore, todayDayName) {
+			if (!chore.skipDays.includes(todayDayName)) return true;
+			const skipDayVisibility = chore.skipDayVisibility ?? SkipDayVisibility.HIDE;
+			if (skipDayVisibility === SkipDayVisibility.HIDE) return false;
+			if (skipDayVisibility === SkipDayVisibility.SHOW_IF_OVERDUE && chore.caughtUp) return false;
+			return true;
+		},
+		getFilteredChores() {
+			if (!this.choreData) return [];
+			if (this.config.viewMode === "summary") return this.getSummaryChores();
+			const todayDayName = getLocalDayName();
+			const filterValue = this.config.personFilter?.trim().toLowerCase();
+			if (!filterValue) return this.choreData.chores.filter((chore) => this.shouldShowChore(chore, todayDayName));
+			const filteredPerson = this.choreData.people.find((person) => person.id.toLowerCase() === filterValue) || this.choreData.people.find((person) => person.name.toLowerCase() === filterValue);
+			if (!filteredPerson) {
+				Log.warn(`${this.name} could not find a person matching '${this.config.personFilter}'`);
+				return [];
+			}
+			return this.choreData.chores.filter((chore) => {
+				if (!this.shouldShowChore(chore, todayDayName)) return false;
+				if (chore.type === "personal") return chore.assignedTo === filteredPerson.id;
+				if (chore.type === "rotating" && chore.rotation?.length) {
+					const currentIndex = chore.rotatingIndex ?? 0;
+					return chore.rotation[currentIndex] === filteredPerson.id;
+				}
+				return false;
+			});
+		},
+		getSummaryChores() {
+			if (!this.choreData) return [];
+			const todayDayName = getLocalDayName();
+			return this.choreData.chores.filter((chore) => {
+				if (!this.shouldShowChore(chore, todayDayName)) return false;
+				if (!chore.completedToday) return true;
+				if (chore.type === "rotating" && chore.rotation?.length) return true;
+				return false;
+			});
+		},
+		getDom() {
+			const wrapper = document.createElement("div");
+			wrapper.className = "MMM-FamilyChores";
+			if (!this.choreData) {
+				wrapper.innerHTML = "<div class=\"module-content loading\">Loading...</div>";
+				return wrapper;
+			}
+			const choreData = this.choreData;
+			const visibleChores = this.getFilteredChores();
+			if (visibleChores.length === 0) {
+				wrapper.innerHTML = `
+      <div class="module-content">
+        <div class="chore-list empty-state">No chores match the current filter.</div>
+      </div>
+      `;
+				return wrapper;
+			}
+			if (this.config.viewMode === "summary") return this.renderSummaryView(wrapper);
+			wrapper.innerHTML = `
+      <div class="module-content">
+        <div class="chore-list">
+          ${visibleChores.map((chore) => this.renderChoreItem(chore, choreData)).join("")}
+        </div>
+      </div>
+    `;
+			this.addCheckboxListeners(wrapper);
+			return wrapper;
+		},
+		addCheckboxListeners(wrapper) {
+			wrapper.querySelectorAll("input[type=\"checkbox\"]").forEach((checkbox) => {
+				checkbox.addEventListener("change", (event) => {
+					const target = event.target;
+					const choreItem = target.closest(".chore-item");
+					if (choreItem) {
+						const choreId = choreItem.getAttribute("data-chore-id");
+						if (choreId) this.toggleChoreCompletion(choreId, target.checked);
+					}
+				});
+			});
+		},
+		toggleChoreCompletion(choreId, completed) {
+			Log.debug(`${this.name} toggling chore ${choreId} to ${completed}`);
+			const payload = {
+				choreId,
+				completed
+			};
+			this.sendSocketNotification?.(SocketNotifications.CHORE_TOGGLE, payload);
+		},
+		renderChoreItem(chore, choreData) {
+			const assignedPerson = chore.type === ChoreType.PERSONAL ? choreData.people.find((p) => p.id === chore.assignedTo) : null;
+			const currentRotationPerson = chore.type === ChoreType.ROTATING && chore.rotation && chore.rotatingIndex !== void 0 ? choreData.people.find((p) => p.id === chore.rotation?.[chore.rotatingIndex ?? -1]) : null;
+			const displayName = assignedPerson || currentRotationPerson;
+			const personName = displayName ? displayName.name : "Unassigned";
+			const personColor = displayName ? displayName.color : "#ccc";
+			const deadlineStatus = getDeadlineStatus(chore.deadline, chore.completedToday, chore.caughtUp);
+			const deadlineClass = deadlineStatus === DeadlineStatus.COMPLETED ? "completed" : deadlineStatus;
+			const checkedAttr = chore.completedToday ? "checked" : "";
+			let html = `<div class="chore-item ${deadlineClass}" data-chore-id="${chore.id}">`;
+			html += `<label class="chore-label" for="chore-${chore.id}">`;
+			html += "<div class=\"chore-checkbox\">";
+			html += `<input type="checkbox" id="chore-${chore.id}" ${checkedAttr} />`;
+			html += "</div>";
+			html += "<div class=\"chore-details\">";
+			html += `<div class="chore-name">${escapeHtml(chore.name)}</div>`;
+			html += "<div class=\"chore-meta\">";
+			html += `<span class="assigned-to" style="color: ${personColor}">${escapeHtml(personName)}</span>`;
+			if (chore.deadline) html += `<span class="deadline">${chore.deadline}</span>`;
+			html += "</div>";
+			html += "</div>";
+			html += "</label>";
+			html += "</div>";
+			return html;
+		},
+		renderSummaryView(wrapper) {
+			if (!this.choreData) {
+				wrapper.innerHTML = "<div class=\"module-content loading\">Loading...</div>";
+				return wrapper;
+			}
+			const choreData = this.choreData;
+			const visibleChores = this.getFilteredChores();
+			const summaryConfig = {
+				showIncomplete: true,
+				showRotating: true,
+				showOverdue: true,
+				incompleteTitle: "Incomplete Chores",
+				rotatingTitle: "Current Rotating Assignments",
+				overdueTitle: "Overdue",
+				...this.config.summary
+			};
+			const incompleteChores = visibleChores.filter((chore) => !chore.completedToday);
+			const overdueChores = visibleChores.filter((chore) => {
+				return getDeadlineStatus(chore.deadline, chore.completedToday, chore.caughtUp) === DeadlineStatus.OVERDUE;
+			});
+			const rotatingChores = visibleChores.filter((chore) => chore.type === "rotating");
+			let html = "<div class=\"module-content summary-view\">";
+			if (summaryConfig.showIncomplete && incompleteChores.length > 0) {
+				html += "<div class=\"summary-section incomplete-section\">";
+				html += `<h3 class="section-title incomplete-title">${summaryConfig.incompleteTitle}</h3>`;
+				html += "<div class=\"chore-list\">";
+				html += incompleteChores.map((chore) => this.renderChoreItem(chore, choreData)).join("");
+				html += "</div>";
+				html += "</div>";
+			}
+			if (summaryConfig.showRotating && rotatingChores.length > 0) {
+				html += "<div class=\"summary-section rotating-section\">";
+				html += `<h3 class="section-title rotating-title">${summaryConfig.rotatingTitle}</h3>`;
+				html += "<div class=\"chore-list\">";
+				html += rotatingChores.map((chore) => this.renderChoreItem(chore, choreData)).join("");
+				html += "</div>";
+				html += "</div>";
+			}
+			if (summaryConfig.showOverdue && overdueChores.length > 0) {
+				html += "<div class=\"summary-section overdue-section\">";
+				html += `<h3 class="section-title overdue-title">${summaryConfig.overdueTitle}</h3>`;
+				html += "<div class=\"chore-list\">";
+				html += overdueChores.map((chore) => this.renderChoreItem(chore, choreData)).join("");
+				html += "</div>";
+				html += "</div>";
+			}
+			html += "</div>";
+			wrapper.innerHTML = html;
+			this.addCheckboxListeners(wrapper);
+			return wrapper;
+		},
+		socketNotificationReceived(notificationIdentifier, payload) {
+			Log.debug(`${this.name} received socket notification: '${notificationIdentifier}'`);
+			switch (notificationIdentifier) {
+				case SocketNotifications.CONFIG_RESPONSE:
+					Log.debug("Received config response");
+					break;
+				case SocketNotifications.CHORE_DATA:
+					this.choreData = payload;
+					this.updateDom?.();
+					break;
+				case SocketNotifications.CHORE_UPDATE_RESULT:
+					Log.debug("Received chore update result");
+					this.loadData();
+					break;
+				case SocketNotifications.PIN_ERROR:
+					Log.warn("PIN error received");
+					break;
+				default: Log.warn(`${this.name} received unknown socket notification: '${notificationIdentifier}'`);
+			}
+		},
+		scheduleUpdate() {
+			setInterval(() => {
+				this.loadData();
+			}, this.config.updateInterval || 6e4);
+		},
+		loadData() {
+			Log.debug(`${this.name} is loading data`);
+			this.sendSocketNotification?.(SocketNotifications.CONFIG_REQUEST, this.config);
+		}
+	});
+	//#endregion
+});
+
 //# sourceMappingURL=MMM-FamilyChores.js.map

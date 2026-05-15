@@ -1,3 +1,854 @@
-var N=Object.create,P=Object.defineProperty,j=Object.getOwnPropertyDescriptor,U=Object.getOwnPropertyNames,k=Object.getPrototypeOf,H=Object.prototype.hasOwnProperty,F=(e,t,r,a)=>{if(t&&typeof t=="object"||typeof t=="function")for(var o=U(t),i=0,l=o.length,s;i<l;i++)s=o[i],!H.call(e,s)&&s!==r&&P(e,s,{get:(d=>t[d]).bind(null,s),enumerable:!(a=j(t,s))||a.enumerable});return e},E=(e,t,r)=>(r=e!=null?N(k(e)):{},F(t||!e||!e.__esModule?P(r,"default",{value:e,enumerable:!0}):r,e));let m=require("node:fs");m=E(m);let C=require("node:path");C=E(C);let n=require("logger");n=E(n);let b=require("node_helper");b=E(b);var c={CONFIG_REQUEST:"CONFIG_REQUEST",CHORE_TOGGLE:"CHORE_TOGGLE",CHORE_REASSIGN:"CHORE_REASSIGN",CAUGHTUP_RESET:"CAUGHTUP_RESET",CONFIG_RESPONSE:"CONFIG_RESPONSE",CHORE_DATA:"CHORE_DATA",CHORE_UPDATE_RESULT:"CHORE_UPDATE_RESULT",CHORE_REASSIGN_RESULT:"CHORE_REASSIGN_RESULT",CAUGHTUP_RESET_RESULT:"CAUGHTUP_RESET_RESULT",PIN_ERROR:"PIN_ERROR"},R=(function(e){return e.HIDE="hide",e.SHOW_IF_OVERDUE="show-if-overdue",e.SHOW_ALWAYS="show-always",e})({}),w=(function(e){return e.SUNDAY="sunday",e.MONDAY="monday",e.TUESDAY="tuesday",e.WEDNESDAY="wednesday",e.THURSDAY="thursday",e.FRIDAY="friday",e.SATURDAY="saturday",e})({}),y=(function(e){return e.PERSONAL="personal",e.ROTATING="rotating",e})({}),v=(e=new Date)=>new Intl.DateTimeFormat("en-CA",{year:"numeric",month:"2-digit",day:"2-digit"}).format(e),M=(e=new Date)=>new Intl.DateTimeFormat("en-CA",{hour:"2-digit",minute:"2-digit",hour12:!1}).format(e),$=(e=new Date)=>new Intl.DateTimeFormat("en-US",{weekday:"long"}).format(e).toLowerCase();function A(){const e=new Uint8Array(16);crypto.getRandomValues(e),e[6]=e[6]&15|64,e[8]=e[8]&63|128;const t=Array.from(e).map(r=>r.toString(16).padStart(2,"0")).join("");return[t.slice(0,8),t.slice(8,12),t.slice(12,16),t.slice(16,20),t.slice(20,32)].join("-")}function S(e){return/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(e)}var T=e=>{if(!e||typeof e!="object")return{valid:!1,error:"Person must be an object"};const t=e;return!t.id||typeof t.id!="string"||!t.id.trim()?{valid:!1,error:"Person must have a non-empty id"}:S(t.id)?!t.name||typeof t.name!="string"?{valid:!1,error:"Person must have a name"}:t.name.trim()?!t.color||typeof t.color!="string"?{valid:!1,error:"Person color must be a string"}:t.color.match(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/)?{valid:!0}:{valid:!1,error:"Person color must be a valid hex color (e.g., #FF5733 or #F53)"}:{valid:!1,error:"Person name must be non-empty"}:{valid:!1,error:"Person id must be a valid UUID"}},I=(e,t)=>{if(!e||typeof e!="object")return{valid:!1,error:"Chore must be an object"};const r=e;if(!r.id||typeof r.id!="string"||!r.id.trim())return{valid:!1,error:"Chore must have a non-empty id"};if(!S(r.id))return{valid:!1,error:"Chore id must be a valid UUID"};if(!r.name||typeof r.name!="string")return{valid:!1,error:"Chore must have a name"};if(!r.name.trim())return{valid:!1,error:"Chore name must be non-empty"};if(!r.type||typeof r.type!="string")return{valid:!1,error:"Chore must have a type"};if(!Object.values(y).includes(r.type))return{valid:!1,error:'Chore type must be either "personal" or "rotating"'};if(r.deadline!==void 0){if(typeof r.deadline!="string")return{valid:!1,error:"Chore deadline must be a string"};if(!r.deadline.match(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/))return{valid:!1,error:'Chore deadline must be in 24-hour format (e.g., "08:00" or "21:00")'}}if(!r.skipDays||!Array.isArray(r.skipDays))return{valid:!1,error:"Chore must have a skipDays array"};for(const a of r.skipDays)if(typeof a!="string"||!Object.values(w).includes(a))return{valid:!1,error:'Chore skipDays must be valid day names (e.g., "monday", "tuesday")'};return!r.skipDayVisibility||typeof r.skipDayVisibility!="string"?{valid:!1,error:"Chore must have a skipDayVisibility"}:Object.values(R).includes(r.skipDayVisibility)?typeof r.caughtUp!="boolean"?{valid:!1,error:"Chore must have a caughtUp boolean"}:typeof r.completedToday!="boolean"?{valid:!1,error:"Chore must have a completedToday boolean"}:r.type===y.PERSONAL?L(r,t):G(r,t):{valid:!1,error:'Chore skipDayVisibility must be "hide", "show-if-overdue", or "show-always"'}},G=(e,t)=>{if(e.type!==y.ROTATING)return{valid:!1,error:'Chore type must be "rotating"'};if(!e.rotation||!Array.isArray(e.rotation))return{valid:!1,error:"Rotating chore must have a rotation array"};for(const r of e.rotation){if(typeof r!="string"||!r)return{valid:!1,error:"Rotating chore rotation must be an array of non-empty strings"};if(!t.some(a=>a.id===r))return{valid:!1,error:"Rotating chore rotation must be an array of valid person IDs"}}return e.assignedTo!==void 0?{valid:!1,error:"Rotating chore must not have an assignedTo field"}:typeof e.rotatingIndex!="number"?{valid:!1,error:"Rotating chore must have a rotatingIndex number"}:e.rotatingIndex<0||e.rotatingIndex>=e.rotation.length?{valid:!1,error:"Rotating chore rotatingIndex must be within bounds of rotation array"}:{valid:!0}},L=(e,t)=>e.type!==y.PERSONAL?{valid:!1,error:'Chore type must be "personal"'}:!e.assignedTo||typeof e.assignedTo!="string"?{valid:!1,error:"Personal chore must have an assignedTo field"}:t.some(r=>r.id===e.assignedTo)?e.rotation!==void 0?{valid:!1,error:"Personal chore must not have a rotation array"}:e.rotatingIndex!==void 0?{valid:!1,error:"Personal chore must not have a rotatingIndex field"}:{valid:!0}:{valid:!1,error:"Personal chore assignedTo - person not found"};function V(e){const t=r=>({error:r});return{getData:(r,a)=>{const o=e.getChoreData();if(!o){a.status(500).json(t("No data available"));return}a.json(o)},postPerson:(r,a)=>{try{const{name:o,color:i}=r.body,l=e.getChoreData();if(!l){a.status(500).json(t("No data available"));return}const s={id:A(),name:o?.trim()||"",color:i?.trim()||""},d=T(s);if(!d.valid){a.status(400).json(t(d.error));return}l.people.push(s),e.saveChoreData(),e.sendNotification(c.CHORE_DATA,l),a.json(s)}catch(o){n.error(`Error adding person: ${o}`),a.status(500).json(t("Failed to add person"))}},putPerson:(r,a)=>{try{const{id:o}=r.params,{name:i,color:l}=r.body,s=e.getChoreData();if(!s){a.status(500).json(t("No data available"));return}const d=s.people.find(g=>g.id===o);if(!d){a.status(404).json(t("Person not found"));return}const p={id:d.id,name:i?i.trim():d.name,color:l?l.trim():d.color},u=T(p);if(!u.valid){a.status(400).json(t(u.error));return}Object.assign(d,p),e.saveChoreData(),e.sendNotification(c.CHORE_DATA,s),a.json(d)}catch(o){n.error(`Error updating person: ${o}`),a.status(500).json(t("Failed to update person"))}},deletePerson:(r,a)=>{try{const{id:o}=r.params,i=e.getChoreData();if(!i){a.status(500).json(t("No data available"));return}const l=i.people.findIndex(s=>s.id===o);if(l===-1){a.status(404).json(t("Person not found"));return}i.people.splice(l,1),i.chores=i.chores.filter(s=>s.type==="personal"?s.assignedTo!==o:s.type==="rotating"?(s.rotation=s.rotation?.filter(d=>d!==o)||[],s.rotation.length>0):!0),e.saveChoreData(),e.sendNotification(c.CHORE_DATA,i),a.json({success:!0})}catch(o){n.error(`Error deleting person: ${o}`),a.status(500).json(t("Failed to delete person"))}},postChore:(r,a)=>{try{const{name:o,type:i,assignedTo:l,rotation:s,deadline:d,skipDays:p,skipDayVisibility:u}=r.body,g=e.getChoreData();if(!g){a.status(500).json(t("No data available"));return}const f={id:A(),name:o?.trim()||"",type:i,deadline:d?.trim(),skipDays:p||[],skipDayVisibility:u||R.SHOW_IF_OVERDUE,caughtUp:!0,completedToday:!1};i==="personal"?f.assignedTo=l:i==="rotating"&&(f.rotation=s,f.rotatingIndex=0);const h=I(f,g.people);if(!h.valid){a.status(400).json(t(h.error));return}g.chores.push(f),e.saveChoreData(),e.sendNotification(c.CHORE_DATA,g),a.json(f)}catch(o){n.error(`Error adding chore: ${o}`),a.status(500).json(t("Failed to add chore"))}},putChore:(r,a)=>{try{const{id:o}=r.params,{name:i,type:l,assignedTo:s,rotation:d,deadline:p,skipDays:u,skipDayVisibility:g}=r.body,f=e.getChoreData();if(!f){a.status(500).json(t("No data available"));return}const h=f.chores.find(O=>O.id===o);if(!h){a.status(404).json(t("Chore not found"));return}if(l&&l!==h.type){a.status(400).json(t("Cannot change chore type"));return}const D={...h,name:i?i.trim():h.name,deadline:p?p.trim():h.deadline,skipDays:u||h.skipDays,skipDayVisibility:g||h.skipDayVisibility};h.type===y.PERSONAL?D.assignedTo=s||h.assignedTo:h.type===y.ROTATING&&(D.rotation=d||h.rotation,D.rotatingIndex=h.rotatingIndex??0);const _=I(D,f.people);if(!_.valid){a.status(400).json(t(_.error));return}Object.assign(h,D),e.saveChoreData(),e.sendNotification(c.CHORE_DATA,f),a.json(h)}catch(o){n.error(`Error updating chore: ${o}`),a.status(500).json(t("Failed to update chore"))}},deleteChore:(r,a)=>{try{const{id:o}=r.params,i=e.getChoreData();if(!i){a.status(500).json(t("No data available"));return}const l=i.chores.findIndex(s=>s.id===o);if(l===-1){a.status(404).json(t("Chore not found"));return}i.chores.splice(l,1),e.saveChoreData(),e.sendNotification(c.CHORE_DATA,i),a.json({success:!0})}catch(o){n.error(`Error deleting chore: ${o}`),a.status(500).json(t("Failed to delete chore"))}},getBackup:(r,a)=>{try{const o=e.getChoreData();if(!o){a.status(500).json(t("No data available"));return}const i=`family-chores-backup-${new Date().toISOString().split("T")[0]}.json`;a.setHeader("Content-Type","application/json"),a.setHeader("Content-Disposition",`attachment; filename="${i}"`),a.send(JSON.stringify(o,null,2))}catch(o){n.error(`Error creating backup: ${o}`),a.status(500).json(t("Failed to create backup"))}},postRestore:(r,a)=>{try{const o=r.body;if(!o?.people||!o.chores){a.status(400).json(t("Invalid data format"));return}if(!Array.isArray(o.people)||!Array.isArray(o.chores)){a.status(400).json(t("Invalid data format"));return}const i=[];for(const s of o.people){const d=T(s);if(!d.valid){a.status(400).json(t(`Invalid person data: ${d.error}`));return}i.push(s)}const l=[];for(const s of o.chores){const d=I(s,i);if(!d.valid){a.status(400).json(t(`Invalid chore data: ${d.error}`));return}l.push(s)}e.setChoreData({people:i,chores:l,lastResetDate:o.lastResetDate}),e.saveChoreData(),e.sendNotification(c.CHORE_DATA,e.getChoreData()),a.json({success:!0,message:"Data restored successfully"})}catch(o){n.error(`Error restoring data: ${o}`),a.status(500).json(t("Failed to restore data"))}},postCopyChores:(r,a)=>{try{const{fromPersonId:o,toPersonId:i,choreIds:l}=r.body;if(!o||!i||!l){a.status(400).json(t("fromPersonId, toPersonId, and choreIds are required"));return}const s=e.getChoreData();if(!s){a.status(500).json(t("No data available"));return}const d=[];for(const p of l){const u=s.chores.find(f=>f.id===p);if(!u){n.warn(`Chore not found: ${p}, skipping`);continue}if(u.type!=="personal"||u.assignedTo!==o){n.warn(`Chore ${p} is not a personal chore assigned to ${o}, skipping`);continue}const g={id:A(),name:u.name,type:y.PERSONAL,assignedTo:i,deadline:u.deadline,skipDays:u.skipDays,skipDayVisibility:u.skipDayVisibility,caughtUp:!0,completedToday:!1};s.chores.push(g),d.push(g)}e.saveChoreData(),e.sendNotification(c.CHORE_DATA,s),a.json(d)}catch(o){n.error(`Error copying chores: ${o}`),a.status(500).json(t("Failed to copy chores"))}}}}var x={choreData:null,config:null,start(){n.info("Starting node helper for MMM-FamilyChores"),this.setupAdminRoutes()},socketNotificationReceived(e,t){switch(n.debug(`Node helper received: '${e}'`),e){case c.CONFIG_REQUEST:this.config=t,this.loadChoreData();break;case c.CHORE_TOGGLE:this.handleChoreToggle(t);break;case c.CHORE_REASSIGN:this.handleChoreReassign(t);break;case c.CAUGHTUP_RESET:this.handleCaughtUpReset(t);break;default:n.warn(`Node helper received unknown notification: '${e}'`)}},loadChoreData(){if(!this.config){n.error("Config not set, cannot load chore data");return}const e=C.resolve(__dirname,this.config.dataFile||"data.json");try{if(m.existsSync(e)){const t=m.readFileSync(e,"utf8");this.choreData=JSON.parse(t),n.info(`Loaded chore data from ${e}`)}else this.choreData=this.createDefaultData(),this.saveChoreData(),n.info(`Created default chore data at ${e}`);this.checkAndPerformDailyReset(),this.sendSocketNotification?.(c.CHORE_DATA,this.choreData)}catch(t){n.error(`Error loading chore data: ${t}`),this.choreData=this.createDefaultData(),this.sendSocketNotification?.(c.CHORE_DATA,this.choreData)}},saveChoreData(){if(!this.config||!this.choreData){n.error("Config or chore data not set, cannot save");return}const e=C.resolve(__dirname,this.config.dataFile||"data.json");try{m.writeFileSync(e,JSON.stringify(this.choreData,null,2),"utf8"),n.info(`Saved chore data to ${e}`)}catch(t){n.error(`Error saving chore data: ${t}`)}},createDefaultData(){return{people:[],chores:[],lastResetDate:v()}},checkAndPerformDailyReset(){if(!this.choreData||!this.config)return;const e=v(),t=M();if(this.choreData.lastResetDate&&e<=this.choreData.lastResetDate)return;const r=this.config.dailyResetTime||"03:00";t<r||(n.info(`Daily reset triggered for ${v()} at ${t}, reset time: ${r}`),this.transitionChoresForNewDay(),this.choreData.lastResetDate=v(),this.saveChoreData())},transitionChoresForNewDay(){if(!this.choreData)return;const e=$();for(const t of this.choreData.chores){const r=(t.skipDays??[]).includes(e),a=t.skipDayVisibility??R.HIDE;if(r&&a===R.HIDE){t.caughtUp=t.completedToday===!0;continue}t.caughtUp=t.completedToday===!0,!r&&(t.completedToday=!1,t.caughtUp&&t.type==="rotating"&&(t.rotatingIndex=((t.rotatingIndex??0)+1)%(t.rotation??[]).length))}n.info("Daily reset performed - completedToday cleared, caughtUp status updated")},handleChoreToggle(e){if(!this.choreData||!this.config)return;const t=this.choreData.chores.find(a=>a.id===e.choreId);if(!t){n.error(`Chore not found: ${e.choreId}`);return}if(t.completedToday===!0===e.completed){n.debug(`Chore ${e.choreId} is already in desired state, skipping update`);return}t.completedToday=e.completed,this.saveChoreData();const r={choreId:e.choreId,completed:e.completed};this.sendSocketNotification?.(c.CHORE_UPDATE_RESULT,r),this.sendSocketNotification?.(c.CHORE_DATA,this.choreData)},handleChoreReassign(e){if(!this.choreData||!this.config)return;if(this.config.adminPin&&e.pin!==this.config.adminPin){this.sendSocketNotification?.(c.PIN_ERROR,{message:"Invalid PIN"});return}const t=this.choreData.chores.find(o=>o.id===e.choreId);if(!t){n.error(`Chore not found: ${e.choreId}`);return}let r;if(t.type==="personal")r=t.assignedTo;else if(t.type==="rotating"&&t.rotation){const o=t.rotatingIndex??0;r=t.rotation[o]}if(r===e.newPersonId){n.debug(`Chore ${e.choreId} is already assigned to ${e.newPersonId}, skipping reassignment`);return}if(t.type==="personal")t.assignedTo=e.newPersonId;else if(t.type==="rotating"&&t.rotation){const o=t.rotation.indexOf(e.newPersonId);o!==-1&&(t.rotatingIndex=o)}this.saveChoreData();const a={choreId:e.choreId,newPersonId:e.newPersonId};this.sendSocketNotification?.(c.CHORE_REASSIGN_RESULT,a),this.sendSocketNotification?.(c.CHORE_DATA,this.choreData)},handleCaughtUpReset(e){if(!this.choreData||!this.config)return;if(this.config.adminPin&&e.pin!==this.config.adminPin){this.sendSocketNotification?.(c.PIN_ERROR,{message:"Invalid PIN"});return}let t=0;for(const a of this.choreData.chores){let o=!1;if(a.type==="personal")o=a.assignedTo===e.personId;else if(a.type==="rotating"&&a.rotation){const i=a.rotatingIndex??0;o=a.rotation[i]===e.personId}o&&(a.caughtUp=!0,t++)}n.info(`Reset caughtUp status for person ${e.personId}, affected ${t} chores`),this.saveChoreData();const r={personId:e.personId,resetCount:t};this.sendSocketNotification?.(c.CAUGHTUP_RESET_RESULT,r),this.sendSocketNotification?.(c.CHORE_DATA,this.choreData)},setupAdminRoutes(){const e=V({getChoreData:()=>this.choreData,setChoreData:t=>{this.choreData=t},saveChoreData:()=>this.saveChoreData(),sendNotification:(t,r)=>this.sendSocketNotification?.(t,r)});this.expressApp?.get("/MMM-FamilyChores/data",e.getData),this.expressApp?.post("/MMM-FamilyChores/people",e.postPerson),this.expressApp?.put("/MMM-FamilyChores/people/:id",e.putPerson),this.expressApp?.delete("/MMM-FamilyChores/people/:id",e.deletePerson),this.expressApp?.post("/MMM-FamilyChores/chores",e.postChore),this.expressApp?.put("/MMM-FamilyChores/chores/:id",e.putChore),this.expressApp?.delete("/MMM-FamilyChores/chores/:id",e.deleteChore),this.expressApp?.get("/MMM-FamilyChores/backup",e.getBackup),this.expressApp?.post("/MMM-FamilyChores/restore",e.postRestore),this.expressApp?.post("/MMM-FamilyChores/copy-chores",e.postCopyChores),n.info("Admin routes configured for MMM-FamilyChores")}},Y=b.create(x);module.exports=Y;
+// Automatically built — do not edit directly. Edit src/ and run pnpm build.
+//#region \0rolldown/runtime.js
+var __create = Object.create;
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __copyProps = (to, from, except, desc) => {
+	if (from && typeof from === "object" || typeof from === "function") for (var keys = __getOwnPropNames(from), i = 0, n = keys.length, key; i < n; i++) {
+		key = keys[i];
+		if (!__hasOwnProp.call(to, key) && key !== except) __defProp(to, key, {
+			get: ((k) => from[k]).bind(null, key),
+			enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable
+		});
+	}
+	return to;
+};
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", {
+	value: mod,
+	enumerable: true
+}) : target, mod));
+//#endregion
+let node_fs = require("node:fs");
+node_fs = __toESM(node_fs);
+let node_path = require("node:path");
+node_path = __toESM(node_path);
+let logger = require("logger");
+logger = __toESM(logger);
+let node_helper = require("node_helper");
+node_helper = __toESM(node_helper);
+//#region src/constants/socket-notifications.ts
+var SocketNotifications = {
+	CONFIG_REQUEST: "CONFIG_REQUEST",
+	CHORE_TOGGLE: "CHORE_TOGGLE",
+	CHORE_REASSIGN: "CHORE_REASSIGN",
+	CAUGHTUP_RESET: "CAUGHTUP_RESET",
+	CONFIG_RESPONSE: "CONFIG_RESPONSE",
+	CHORE_DATA: "CHORE_DATA",
+	CHORE_UPDATE_RESULT: "CHORE_UPDATE_RESULT",
+	CHORE_REASSIGN_RESULT: "CHORE_REASSIGN_RESULT",
+	CAUGHTUP_RESET_RESULT: "CAUGHTUP_RESET_RESULT",
+	PIN_ERROR: "PIN_ERROR"
+};
+//#endregion
+//#region src/types/chore-types.ts
+var SkipDayVisibility = /* @__PURE__ */ function(SkipDayVisibility) {
+	SkipDayVisibility["HIDE"] = "hide";
+	SkipDayVisibility["SHOW_IF_OVERDUE"] = "show-if-overdue";
+	SkipDayVisibility["SHOW_ALWAYS"] = "show-always";
+	return SkipDayVisibility;
+}({});
+var DayOfWeek = /* @__PURE__ */ function(DayOfWeek) {
+	DayOfWeek["SUNDAY"] = "sunday";
+	DayOfWeek["MONDAY"] = "monday";
+	DayOfWeek["TUESDAY"] = "tuesday";
+	DayOfWeek["WEDNESDAY"] = "wednesday";
+	DayOfWeek["THURSDAY"] = "thursday";
+	DayOfWeek["FRIDAY"] = "friday";
+	DayOfWeek["SATURDAY"] = "saturday";
+	return DayOfWeek;
+}({});
+var ChoreType = /* @__PURE__ */ function(ChoreType) {
+	ChoreType["PERSONAL"] = "personal";
+	ChoreType["ROTATING"] = "rotating";
+	return ChoreType;
+}({});
+//#endregion
+//#region src/utils/date.ts
+/**
+* Gets the local date string in YYYY-MM-DD format
+* Uses Intl.DateTimeFormat for proper timezone and DST handling
+* @param date - Optional date to convert (defaults to current time)
+*/
+var getLocalDateString = (date = /* @__PURE__ */ new Date()) => {
+	return new Intl.DateTimeFormat("en-CA", {
+		year: "numeric",
+		month: "2-digit",
+		day: "2-digit"
+	}).format(date);
+};
+/**
+* Gets the local time string in HH:MM format
+* Uses Intl.DateTimeFormat for proper timezone and DST handling
+* @param date - Optional date to convert (defaults to current time)
+*/
+var getLocalTimeString = (date = /* @__PURE__ */ new Date()) => {
+	return new Intl.DateTimeFormat("en-CA", {
+		hour: "2-digit",
+		minute: "2-digit",
+		hour12: false
+	}).format(date);
+};
+/**
+* Gets the local day name in lowercase (sunday, monday, etc.)
+* Uses Intl.DateTimeFormat for proper timezone and DST handling
+* @param date - Optional date to convert (defaults to current time)
+*/
+var getLocalDayName = (date = /* @__PURE__ */ new Date()) => {
+	return new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(date).toLowerCase();
+};
+//#endregion
+//#region src/utils/uuid.ts
+/**
+* UUID v4 generation utilities
+* Implements RFC 4122 UUID version 4
+*/
+/**
+* Generate a random UUID v4
+* Format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
+* @returns A new UUID v4 string
+*/
+function generateUUID() {
+	const bytes = new Uint8Array(16);
+	crypto.getRandomValues(bytes);
+	bytes[6] = bytes[6] & 15 | 64;
+	bytes[8] = bytes[8] & 63 | 128;
+	const hex = Array.from(bytes).map((byte) => byte.toString(16).padStart(2, "0")).join("");
+	return [
+		hex.slice(0, 8),
+		hex.slice(8, 12),
+		hex.slice(12, 16),
+		hex.slice(16, 20),
+		hex.slice(20, 32)
+	].join("-");
+}
+/**
+* Validate if a string is a valid UUID v4
+* @param uuid The string to validate
+* @returns True if valid UUID v4, false otherwise
+*/
+function isValidUUID(uuid) {
+	return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(uuid);
+}
+//#endregion
+//#region src/backend/validator.ts
+var validatePerson = (person) => {
+	if (!person || typeof person !== "object") return {
+		valid: false,
+		error: "Person must be an object"
+	};
+	const personObj = person;
+	if (!personObj.id || typeof personObj.id !== "string" || !personObj.id.trim()) return {
+		valid: false,
+		error: "Person must have a non-empty id"
+	};
+	if (!isValidUUID(personObj.id)) return {
+		valid: false,
+		error: "Person id must be a valid UUID"
+	};
+	if (!personObj.name || typeof personObj.name !== "string") return {
+		valid: false,
+		error: "Person must have a name"
+	};
+	if (!personObj.name.trim()) return {
+		valid: false,
+		error: "Person name must be non-empty"
+	};
+	if (!personObj.color || typeof personObj.color !== "string") return {
+		valid: false,
+		error: "Person color must be a string"
+	};
+	if (!personObj.color.match(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/)) return {
+		valid: false,
+		error: "Person color must be a valid hex color (e.g., #FF5733 or #F53)"
+	};
+	return { valid: true };
+};
+var validateChore = (chore, people) => {
+	if (!chore || typeof chore !== "object") return {
+		valid: false,
+		error: "Chore must be an object"
+	};
+	const choreObj = chore;
+	if (!choreObj.id || typeof choreObj.id !== "string" || !choreObj.id.trim()) return {
+		valid: false,
+		error: "Chore must have a non-empty id"
+	};
+	if (!isValidUUID(choreObj.id)) return {
+		valid: false,
+		error: "Chore id must be a valid UUID"
+	};
+	if (!choreObj.name || typeof choreObj.name !== "string") return {
+		valid: false,
+		error: "Chore must have a name"
+	};
+	if (!choreObj.name.trim()) return {
+		valid: false,
+		error: "Chore name must be non-empty"
+	};
+	if (!choreObj.type || typeof choreObj.type !== "string") return {
+		valid: false,
+		error: "Chore must have a type"
+	};
+	if (!Object.values(ChoreType).includes(choreObj.type)) return {
+		valid: false,
+		error: "Chore type must be either \"personal\" or \"rotating\""
+	};
+	if (choreObj.deadline !== void 0) {
+		if (typeof choreObj.deadline !== "string") return {
+			valid: false,
+			error: "Chore deadline must be a string"
+		};
+		if (!choreObj.deadline.match(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)) return {
+			valid: false,
+			error: "Chore deadline must be in 24-hour format (e.g., \"08:00\" or \"21:00\")"
+		};
+	}
+	if (!choreObj.skipDays || !Array.isArray(choreObj.skipDays)) return {
+		valid: false,
+		error: "Chore must have a skipDays array"
+	};
+	for (const day of choreObj.skipDays) if (typeof day !== "string" || !Object.values(DayOfWeek).includes(day)) return {
+		valid: false,
+		error: "Chore skipDays must be valid day names (e.g., \"monday\", \"tuesday\")"
+	};
+	if (!choreObj.skipDayVisibility || typeof choreObj.skipDayVisibility !== "string") return {
+		valid: false,
+		error: "Chore must have a skipDayVisibility"
+	};
+	if (!Object.values(SkipDayVisibility).includes(choreObj.skipDayVisibility)) return {
+		valid: false,
+		error: "Chore skipDayVisibility must be \"hide\", \"show-if-overdue\", or \"show-always\""
+	};
+	if (typeof choreObj.caughtUp !== "boolean") return {
+		valid: false,
+		error: "Chore must have a caughtUp boolean"
+	};
+	if (typeof choreObj.completedToday !== "boolean") return {
+		valid: false,
+		error: "Chore must have a completedToday boolean"
+	};
+	if (choreObj.type === ChoreType.PERSONAL) return validatePersonalChoreParts(choreObj, people);
+	return validateRotatingChoreParts(choreObj, people);
+};
+var validateRotatingChoreParts = (chore, people) => {
+	if (chore.type !== ChoreType.ROTATING) return {
+		valid: false,
+		error: "Chore type must be \"rotating\""
+	};
+	if (!chore.rotation || !Array.isArray(chore.rotation)) return {
+		valid: false,
+		error: "Rotating chore must have a rotation array"
+	};
+	for (const personId of chore.rotation) {
+		if (typeof personId !== "string" || !personId) return {
+			valid: false,
+			error: "Rotating chore rotation must be an array of non-empty strings"
+		};
+		if (!people.some((person) => person.id === personId)) return {
+			valid: false,
+			error: "Rotating chore rotation must be an array of valid person IDs"
+		};
+	}
+	if (chore.assignedTo !== void 0) return {
+		valid: false,
+		error: "Rotating chore must not have an assignedTo field"
+	};
+	if (typeof chore.rotatingIndex !== "number") return {
+		valid: false,
+		error: "Rotating chore must have a rotatingIndex number"
+	};
+	if (chore.rotatingIndex < 0 || chore.rotatingIndex >= chore.rotation.length) return {
+		valid: false,
+		error: "Rotating chore rotatingIndex must be within bounds of rotation array"
+	};
+	return { valid: true };
+};
+var validatePersonalChoreParts = (chore, people) => {
+	if (chore.type !== ChoreType.PERSONAL) return {
+		valid: false,
+		error: "Chore type must be \"personal\""
+	};
+	if (!chore.assignedTo || typeof chore.assignedTo !== "string") return {
+		valid: false,
+		error: "Personal chore must have an assignedTo field"
+	};
+	if (!people.some((person) => person.id === chore.assignedTo)) return {
+		valid: false,
+		error: "Personal chore assignedTo - person not found"
+	};
+	if (chore.rotation !== void 0) return {
+		valid: false,
+		error: "Personal chore must not have a rotation array"
+	};
+	if (chore.rotatingIndex !== void 0) return {
+		valid: false,
+		error: "Personal chore must not have a rotatingIndex field"
+	};
+	return { valid: true };
+};
+//#endregion
+//#region src/backend/admin-routes.ts
+function createAdminHandlers(context) {
+	const apiErr = (message) => ({ error: message });
+	return {
+		getData: (_req, res) => {
+			const choreData = context.getChoreData();
+			if (!choreData) {
+				res.status(500).json(apiErr("No data available"));
+				return;
+			}
+			res.json(choreData);
+		},
+		postPerson: (req, res) => {
+			try {
+				const { name, color } = req.body;
+				const choreData = context.getChoreData();
+				if (!choreData) {
+					res.status(500).json(apiErr("No data available"));
+					return;
+				}
+				const newPerson = {
+					id: generateUUID(),
+					name: name?.trim() || "",
+					color: color?.trim() || ""
+				};
+				const validation = validatePerson(newPerson);
+				if (!validation.valid) {
+					res.status(400).json(apiErr(validation.error));
+					return;
+				}
+				choreData.people.push(newPerson);
+				context.saveChoreData();
+				context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
+				res.json(newPerson);
+			} catch (error) {
+				logger.error(`Error adding person: ${error}`);
+				res.status(500).json(apiErr("Failed to add person"));
+			}
+		},
+		putPerson: (req, res) => {
+			try {
+				const { id } = req.params;
+				const { name, color } = req.body;
+				const choreData = context.getChoreData();
+				if (!choreData) {
+					res.status(500).json(apiErr("No data available"));
+					return;
+				}
+				const person = choreData.people.find((p) => p.id === id);
+				if (!person) {
+					res.status(404).json(apiErr("Person not found"));
+					return;
+				}
+				const updatedPerson = {
+					id: person.id,
+					name: name ? name.trim() : person.name,
+					color: color ? color.trim() : person.color
+				};
+				const validation = validatePerson(updatedPerson);
+				if (!validation.valid) {
+					res.status(400).json(apiErr(validation.error));
+					return;
+				}
+				Object.assign(person, updatedPerson);
+				context.saveChoreData();
+				context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
+				res.json(person);
+			} catch (error) {
+				logger.error(`Error updating person: ${error}`);
+				res.status(500).json(apiErr("Failed to update person"));
+			}
+		},
+		deletePerson: (req, res) => {
+			try {
+				const { id } = req.params;
+				const choreData = context.getChoreData();
+				if (!choreData) {
+					res.status(500).json(apiErr("No data available"));
+					return;
+				}
+				const personIndex = choreData.people.findIndex((p) => p.id === id);
+				if (personIndex === -1) {
+					res.status(404).json(apiErr("Person not found"));
+					return;
+				}
+				choreData.people.splice(personIndex, 1);
+				choreData.chores = choreData.chores.filter((chore) => {
+					if (chore.type === "personal") return chore.assignedTo !== id;
+					else if (chore.type === "rotating") {
+						chore.rotation = chore.rotation?.filter((personId) => personId !== id) || [];
+						return chore.rotation.length > 0;
+					}
+					return true;
+				});
+				context.saveChoreData();
+				context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
+				res.json({ success: true });
+			} catch (error) {
+				logger.error(`Error deleting person: ${error}`);
+				res.status(500).json(apiErr("Failed to delete person"));
+			}
+		},
+		postChore: (req, res) => {
+			try {
+				const { name, type, assignedTo, rotation, deadline, skipDays, skipDayVisibility } = req.body;
+				const choreData = context.getChoreData();
+				if (!choreData) {
+					res.status(500).json(apiErr("No data available"));
+					return;
+				}
+				const newChore = {
+					id: generateUUID(),
+					name: name?.trim() || "",
+					type,
+					deadline: deadline?.trim(),
+					skipDays: skipDays || [],
+					skipDayVisibility: skipDayVisibility || SkipDayVisibility.SHOW_IF_OVERDUE,
+					caughtUp: true,
+					completedToday: false
+				};
+				if (type === "personal") newChore.assignedTo = assignedTo;
+				else if (type === "rotating") {
+					newChore.rotation = rotation;
+					newChore.rotatingIndex = 0;
+				}
+				const validation = validateChore(newChore, choreData.people);
+				if (!validation.valid) {
+					res.status(400).json(apiErr(validation.error));
+					return;
+				}
+				choreData.chores.push(newChore);
+				context.saveChoreData();
+				context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
+				res.json(newChore);
+			} catch (error) {
+				logger.error(`Error adding chore: ${error}`);
+				res.status(500).json(apiErr("Failed to add chore"));
+			}
+		},
+		putChore: (req, res) => {
+			try {
+				const { id } = req.params;
+				const { name, type, assignedTo, rotation, deadline, skipDays, skipDayVisibility } = req.body;
+				const choreData = context.getChoreData();
+				if (!choreData) {
+					res.status(500).json(apiErr("No data available"));
+					return;
+				}
+				const chore = choreData.chores.find((c) => c.id === id);
+				if (!chore) {
+					res.status(404).json(apiErr("Chore not found"));
+					return;
+				}
+				if (type && type !== chore.type) {
+					res.status(400).json(apiErr("Cannot change chore type"));
+					return;
+				}
+				const updatedChore = {
+					...chore,
+					name: name ? name.trim() : chore.name,
+					deadline: deadline ? deadline.trim() : chore.deadline,
+					skipDays: skipDays || chore.skipDays,
+					skipDayVisibility: skipDayVisibility || chore.skipDayVisibility
+				};
+				if (chore.type === ChoreType.PERSONAL) updatedChore.assignedTo = assignedTo || chore.assignedTo;
+				else if (chore.type === ChoreType.ROTATING) {
+					updatedChore.rotation = rotation || chore.rotation;
+					updatedChore.rotatingIndex = chore.rotatingIndex ?? 0;
+				}
+				const validation = validateChore(updatedChore, choreData.people);
+				if (!validation.valid) {
+					res.status(400).json(apiErr(validation.error));
+					return;
+				}
+				Object.assign(chore, updatedChore);
+				context.saveChoreData();
+				context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
+				res.json(chore);
+			} catch (error) {
+				logger.error(`Error updating chore: ${error}`);
+				res.status(500).json(apiErr("Failed to update chore"));
+			}
+		},
+		deleteChore: (req, res) => {
+			try {
+				const { id } = req.params;
+				const choreData = context.getChoreData();
+				if (!choreData) {
+					res.status(500).json(apiErr("No data available"));
+					return;
+				}
+				const choreIndex = choreData.chores.findIndex((c) => c.id === id);
+				if (choreIndex === -1) {
+					res.status(404).json(apiErr("Chore not found"));
+					return;
+				}
+				choreData.chores.splice(choreIndex, 1);
+				context.saveChoreData();
+				context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
+				res.json({ success: true });
+			} catch (error) {
+				logger.error(`Error deleting chore: ${error}`);
+				res.status(500).json(apiErr("Failed to delete chore"));
+			}
+		},
+		getBackup: (_req, res) => {
+			try {
+				const choreData = context.getChoreData();
+				if (!choreData) {
+					res.status(500).json(apiErr("No data available"));
+					return;
+				}
+				const filename = `family-chores-backup-${(/* @__PURE__ */ new Date()).toISOString().split("T")[0]}.json`;
+				res.setHeader("Content-Type", "application/json");
+				res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+				res.send(JSON.stringify(choreData, null, 2));
+			} catch (error) {
+				logger.error(`Error creating backup: ${error}`);
+				res.status(500).json(apiErr("Failed to create backup"));
+			}
+		},
+		postRestore: (req, res) => {
+			try {
+				const restoredData = req.body;
+				if (!restoredData?.people || !restoredData.chores) {
+					res.status(400).json(apiErr("Invalid data format"));
+					return;
+				}
+				if (!Array.isArray(restoredData.people) || !Array.isArray(restoredData.chores)) {
+					res.status(400).json(apiErr("Invalid data format"));
+					return;
+				}
+				const validPeople = [];
+				for (const person of restoredData.people) {
+					const validation = validatePerson(person);
+					if (!validation.valid) {
+						res.status(400).json(apiErr(`Invalid person data: ${validation.error}`));
+						return;
+					}
+					validPeople.push(person);
+				}
+				const validChores = [];
+				for (const chore of restoredData.chores) {
+					const validation = validateChore(chore, validPeople);
+					if (!validation.valid) {
+						res.status(400).json(apiErr(`Invalid chore data: ${validation.error}`));
+						return;
+					}
+					validChores.push(chore);
+				}
+				context.setChoreData({
+					people: validPeople,
+					chores: validChores,
+					lastResetDate: restoredData.lastResetDate
+				});
+				context.saveChoreData();
+				context.sendNotification(SocketNotifications.CHORE_DATA, context.getChoreData());
+				res.json({
+					success: true,
+					message: "Data restored successfully"
+				});
+			} catch (error) {
+				logger.error(`Error restoring data: ${error}`);
+				res.status(500).json(apiErr("Failed to restore data"));
+			}
+		},
+		postCopyChores: (req, res) => {
+			try {
+				const { fromPersonId, toPersonId, choreIds } = req.body;
+				if (!fromPersonId || !toPersonId || !choreIds) {
+					res.status(400).json(apiErr("fromPersonId, toPersonId, and choreIds are required"));
+					return;
+				}
+				const choreData = context.getChoreData();
+				if (!choreData) {
+					res.status(500).json(apiErr("No data available"));
+					return;
+				}
+				const newChores = [];
+				for (const choreId of choreIds) {
+					const chore = choreData.chores.find((c) => c.id === choreId);
+					if (!chore) {
+						logger.warn(`Chore not found: ${choreId}, skipping`);
+						continue;
+					}
+					if (chore.type !== "personal" || chore.assignedTo !== fromPersonId) {
+						logger.warn(`Chore ${choreId} is not a personal chore assigned to ${fromPersonId}, skipping`);
+						continue;
+					}
+					const newChore = {
+						id: generateUUID(),
+						name: chore.name,
+						type: ChoreType.PERSONAL,
+						assignedTo: toPersonId,
+						deadline: chore.deadline,
+						skipDays: chore.skipDays,
+						skipDayVisibility: chore.skipDayVisibility,
+						caughtUp: true,
+						completedToday: false
+					};
+					choreData.chores.push(newChore);
+					newChores.push(newChore);
+				}
+				context.saveChoreData();
+				context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
+				res.json(newChores);
+			} catch (error) {
+				logger.error(`Error copying chores: ${error}`);
+				res.status(500).json(apiErr("Failed to copy chores"));
+			}
+		}
+	};
+}
+var node_helper_default = node_helper.create({
+	choreData: null,
+	config: null,
+	/**
+	* MM function: called when the node helper starts
+	*/
+	start() {
+		logger.info(`Starting node helper for MMM-FamilyChores`);
+		this.setupAdminRoutes();
+	},
+	/**
+	* MM function: called when a socket notification arrives from the module
+	*/
+	socketNotificationReceived(notificationIdentifier, payload) {
+		logger.debug(`Node helper received: '${notificationIdentifier}'`);
+		switch (notificationIdentifier) {
+			case SocketNotifications.CONFIG_REQUEST:
+				this.config = payload;
+				this.loadChoreData();
+				break;
+			case SocketNotifications.CHORE_TOGGLE:
+				this.handleChoreToggle(payload);
+				break;
+			case SocketNotifications.CHORE_REASSIGN:
+				this.handleChoreReassign(payload);
+				break;
+			case SocketNotifications.CAUGHTUP_RESET:
+				this.handleCaughtUpReset(payload);
+				break;
+			default: logger.warn(`Node helper received unknown notification: '${notificationIdentifier}'`);
+		}
+	},
+	/**
+	* Load chore data from file
+	*/
+	loadChoreData() {
+		if (!this.config) {
+			logger.error("Config not set, cannot load chore data");
+			return;
+		}
+		const dataPath = node_path.resolve(__dirname, this.config.dataFile || "data.json");
+		try {
+			if (node_fs.existsSync(dataPath)) {
+				const fileContent = node_fs.readFileSync(dataPath, "utf8");
+				const rawData = JSON.parse(fileContent);
+				const rawPeople = Array.isArray(rawData.people) ? rawData.people : [];
+				const validPeople = [];
+				for (const person of rawPeople) {
+					const result = validatePerson(person);
+					if (result.valid) validPeople.push(person);
+					else logger.warn(`Skipping invalid person in data file: ${result.error}`);
+				}
+				const rawChores = Array.isArray(rawData.chores) ? rawData.chores : [];
+				const validChores = [];
+				for (const chore of rawChores) {
+					const result = validateChore(chore, validPeople);
+					if (result.valid) validChores.push(chore);
+					else logger.warn(`Skipping invalid chore in data file: ${result.error}`);
+				}
+				this.choreData = {
+					people: validPeople,
+					chores: validChores,
+					lastResetDate: typeof rawData.lastResetDate === "string" ? rawData.lastResetDate : void 0
+				};
+				logger.info(`Loaded chore data from ${dataPath}`);
+			} else {
+				this.choreData = this.createDefaultData();
+				this.saveChoreData();
+				logger.info(`Created default chore data at ${dataPath}`);
+			}
+			this.checkAndPerformDailyReset();
+			this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
+		} catch (error) {
+			logger.error(`Error loading chore data: ${error}`);
+			this.choreData = this.createDefaultData();
+			this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
+		}
+	},
+	saveChoreData() {
+		if (!this.config || !this.choreData) {
+			logger.error("Config or chore data not set, cannot save");
+			return;
+		}
+		const dataPath = node_path.resolve(__dirname, this.config.dataFile || "data.json");
+		try {
+			node_fs.writeFileSync(dataPath, JSON.stringify(this.choreData, null, 2), "utf8");
+			logger.info(`Saved chore data to ${dataPath}`);
+		} catch (error) {
+			logger.error(`Error saving chore data: ${error}`);
+		}
+	},
+	/**
+	* Create default empty data structure
+	*/
+	createDefaultData() {
+		return {
+			people: [],
+			chores: [],
+			lastResetDate: getLocalDateString()
+		};
+	},
+	/**
+	* Check if daily reset should be performed and execute if needed
+	*/
+	checkAndPerformDailyReset() {
+		if (!this.choreData || !this.config) return;
+		const todayDateString = getLocalDateString();
+		const currentTimeString = getLocalTimeString();
+		if (this.choreData.lastResetDate && todayDateString <= this.choreData.lastResetDate) return;
+		const dailyResetTime = this.config.dailyResetTime || "03:00";
+		if (currentTimeString < dailyResetTime) return;
+		logger.info(`Daily reset triggered for ${getLocalDateString()} at ${currentTimeString}, reset time: ${dailyResetTime}`);
+		this.transitionChoresForNewDay();
+		this.choreData.lastResetDate = getLocalDateString();
+		this.saveChoreData();
+	},
+	/**
+	* Transitions chore state for a new day.
+	*
+	* Updates caughtUp status, clears completedToday, and rotates chores as needed.
+	* Does NOT guard against multiple executions in the same day.
+	*
+	* See {@link checkAndPerformDailyReset} for the guard.
+	*/
+	transitionChoresForNewDay() {
+		if (!this.choreData) return;
+		const todayDayName = getLocalDayName();
+		for (const chore of this.choreData.chores) {
+			const isSkipDay = (chore.skipDays ?? []).includes(todayDayName);
+			const skipDayVisibility = chore.skipDayVisibility ?? SkipDayVisibility.HIDE;
+			if (isSkipDay && skipDayVisibility === SkipDayVisibility.HIDE) {
+				chore.caughtUp = chore.completedToday === true;
+				continue;
+			}
+			chore.caughtUp = chore.completedToday === true;
+			if (isSkipDay) continue;
+			chore.completedToday = false;
+			if (chore.caughtUp && chore.type === "rotating") chore.rotatingIndex = ((chore.rotatingIndex ?? 0) + 1) % (chore.rotation ?? []).length;
+		}
+		logger.info("Daily reset performed - completedToday cleared, caughtUp status updated");
+	},
+	handleChoreToggle(payload) {
+		if (!this.choreData || !this.config) return;
+		const chore = this.choreData.chores.find((c) => c.id === payload.choreId);
+		if (!chore) {
+			logger.error(`Chore not found: ${payload.choreId}`);
+			return;
+		}
+		if (chore.completedToday === true === payload.completed) {
+			logger.debug(`Chore ${payload.choreId} is already in desired state, skipping update`);
+			return;
+		}
+		chore.completedToday = payload.completed;
+		this.saveChoreData();
+		const updateResult = {
+			choreId: payload.choreId,
+			completed: payload.completed
+		};
+		this.sendSocketNotification?.(SocketNotifications.CHORE_UPDATE_RESULT, updateResult);
+		this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
+	},
+	handleChoreReassign(payload) {
+		if (!this.choreData || !this.config) return;
+		if (this.config.adminPin && payload.pin !== this.config.adminPin) {
+			this.sendSocketNotification?.(SocketNotifications.PIN_ERROR, { message: "Invalid PIN" });
+			return;
+		}
+		const chore = this.choreData.chores.find((c) => c.id === payload.choreId);
+		if (!chore) {
+			logger.error(`Chore not found: ${payload.choreId}`);
+			return;
+		}
+		let currentAssignment;
+		if (chore.type === "personal") currentAssignment = chore.assignedTo;
+		else if (chore.type === "rotating" && chore.rotation) {
+			const currentIndex = chore.rotatingIndex ?? 0;
+			currentAssignment = chore.rotation[currentIndex];
+		}
+		if (currentAssignment === payload.newPersonId) {
+			logger.debug(`Chore ${payload.choreId} is already assigned to ${payload.newPersonId}, skipping reassignment`);
+			return;
+		}
+		if (chore.type === "personal") chore.assignedTo = payload.newPersonId;
+		else if (chore.type === "rotating" && chore.rotation) {
+			const currentIndex = chore.rotation.indexOf(payload.newPersonId);
+			if (currentIndex !== -1) chore.rotatingIndex = currentIndex;
+		}
+		this.saveChoreData();
+		const reassignResult = {
+			choreId: payload.choreId,
+			newPersonId: payload.newPersonId
+		};
+		this.sendSocketNotification?.(SocketNotifications.CHORE_REASSIGN_RESULT, reassignResult);
+		this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
+	},
+	handleCaughtUpReset(payload) {
+		if (!this.choreData || !this.config) return;
+		if (this.config.adminPin && payload.pin !== this.config.adminPin) {
+			this.sendSocketNotification?.(SocketNotifications.PIN_ERROR, { message: "Invalid PIN" });
+			return;
+		}
+		let resetCount = 0;
+		for (const chore of this.choreData.chores) {
+			let isAssignedToPerson = false;
+			if (chore.type === "personal") isAssignedToPerson = chore.assignedTo === payload.personId;
+			else if (chore.type === "rotating" && chore.rotation) {
+				const currentIndex = chore.rotatingIndex ?? 0;
+				isAssignedToPerson = chore.rotation[currentIndex] === payload.personId;
+			}
+			if (isAssignedToPerson) {
+				chore.caughtUp = true;
+				resetCount++;
+			}
+		}
+		logger.info(`Reset caughtUp status for person ${payload.personId}, affected ${resetCount} chores`);
+		this.saveChoreData();
+		const caughtUpResult = {
+			personId: payload.personId,
+			resetCount
+		};
+		this.sendSocketNotification?.(SocketNotifications.CAUGHTUP_RESET_RESULT, caughtUpResult);
+		this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
+	},
+	setupAdminRoutes() {
+		const handlers = createAdminHandlers({
+			getChoreData: () => this.choreData,
+			setChoreData: (data) => {
+				this.choreData = data;
+			},
+			saveChoreData: () => this.saveChoreData(),
+			sendNotification: (notification, payload) => this.sendSocketNotification?.(notification, payload)
+		});
+		this.expressApp?.get("/MMM-FamilyChores/data", handlers.getData);
+		this.expressApp?.post("/MMM-FamilyChores/people", handlers.postPerson);
+		this.expressApp?.put("/MMM-FamilyChores/people/:id", handlers.putPerson);
+		this.expressApp?.delete("/MMM-FamilyChores/people/:id", handlers.deletePerson);
+		this.expressApp?.post("/MMM-FamilyChores/chores", handlers.postChore);
+		this.expressApp?.put("/MMM-FamilyChores/chores/:id", handlers.putChore);
+		this.expressApp?.delete("/MMM-FamilyChores/chores/:id", handlers.deleteChore);
+		this.expressApp?.get("/MMM-FamilyChores/backup", handlers.getBackup);
+		this.expressApp?.post("/MMM-FamilyChores/restore", handlers.postRestore);
+		this.expressApp?.post("/MMM-FamilyChores/copy-chores", handlers.postCopyChores);
+		logger.info("Admin routes configured for MMM-FamilyChores");
+	}
+});
+//#endregion
+module.exports = node_helper_default;
 
 //# sourceMappingURL=node_helper.js.map
