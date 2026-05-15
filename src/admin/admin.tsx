@@ -35,6 +35,8 @@ export const Admin: Component<Record<string, never>> = () => {
   const [rotatingChoreModalOpen, setRotatingChoreModalOpen] = createSignal(false);
   const [editingPerson, setEditingPerson] = createSignal<Person | null>(null);
   const [editingChore, setEditingChore] = createSignal<Chore | null>(null);
+  const [loading, setLoading] = createSignal(true);
+  const [retryCount, setRetryCount] = createSignal(0);
 
   // Load data from API
   const loadData = async () => {
@@ -43,8 +45,14 @@ export const Admin: Component<Record<string, never>> = () => {
       if (!response.ok) throw new Error('Failed to load data');
       const data = (await response.json()) as FamilyChoresData;
       setChoreData(data);
+      setLoading(false);
     } catch (error) {
       console.error('Error loading data:', error);
+      // Retry after 10 seconds if data not loaded
+      setTimeout(() => {
+        setRetryCount((prev) => prev + 1);
+        loadData();
+      }, 10000);
     }
   };
 
@@ -242,236 +250,251 @@ export const Admin: Component<Record<string, never>> = () => {
         </div>
       </header>
 
-      <main>
-        {/* People Section */}
-        <section class="section">
-          <div class="section-header">
-            <h2>People</h2>
-            <div class="button-with-tooltip">
-              <button
-                type="button"
-                class="btn btn-primary"
-                id="addPersonBtn"
-                onClick={() => openPersonModal()}
-              >
-                Add Person
-              </button>
-              <Show when={choreData()?.people.length === 0}>
-                <span
-                  id="addPersonInfo"
-                  class="info-icon"
-                  data-tooltip="Add at least one person before you can create chores"
-                >
-                  ℹ️
-                </span>
-              </Show>
-            </div>
+      <Show when={loading()}>
+        <div class="loading-message">
+          <div class="loading-message-content">
+            <p>Magic Mirror is starting up, please wait...</p>
+            <Show when={retryCount() > 0}>
+              <p class="retry-info">Retrying... (attempt {retryCount()})</p>
+            </Show>
           </div>
-          <div id="peopleList" class="item-list">
-            <For each={choreData()?.people ?? []}>
-              {(person) => (
-                <div class="item-card">
-                  <div class="person-header">
-                    <div class="item-info">
-                      <h3>
-                        {escapeHtml(person.name)}{' '}
-                        <span
-                          class="color-badge"
-                          style={`background-color: ${person.color}`}
-                        ></span>
-                      </h3>
-                      <p>ID: {person.id}</p>
-                    </div>
-                    <div class="item-actions">
-                      <button
-                        type="button"
-                        class="btn btn-secondary btn-sm"
-                        onClick={() => openPersonModal(person)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        class="btn btn-danger btn-sm"
-                        onClick={() => handleDeletePerson(person.id)}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                  <div class="person-chores-header">
-                    <h4>{escapeHtml(person.name)}'s Personal Chores</h4>
-                    <div class="person-chores-actions">
-                      <button
-                        type="button"
-                        class="btn btn-primary btn-sm"
-                        onClick={() => {
-                          const foundPerson = choreData()?.people.find((p) => p.id === person.id);
-                          if (foundPerson) openPersonalChoreModal(foundPerson, null);
-                        }}
-                      >
-                        Add Chore
-                      </button>
-                    </div>
-                  </div>
-                  <Show
-                    when={getPersonalChores(person.id).length > 0}
-                    fallback={
-                      <div class="person-chores">
-                        <p class="empty-message">No personal chores yet.</p>
-                      </div>
-                    }
-                  >
-                    <div class="person-chores">
-                      <For each={getPersonalChores(person.id)}>
-                        {(chore) => (
-                          <>
-                            <div class="chore-item">
-                              <div class="chore-info">
-                                <h4>{escapeHtml(chore.name)}</h4>
-                                {chore.deadline && (
-                                  <p class="deadline">Deadline: {chore.deadline}</p>
-                                )}
-                                <p class="skip-days">Skip days: {formatSkipDays(chore.skipDays)}</p>
-                              </div>
-                              <div class="chore-actions">
-                                <button
-                                  type="button"
-                                  class="btn btn-secondary btn-sm"
-                                  onClick={() => {
-                                    const foundPerson = choreData()?.people.find(
-                                      (p) => p.id === chore.assignedTo
-                                    );
-                                    if (foundPerson) openPersonalChoreModal(foundPerson, chore);
-                                  }}
-                                >
-                                  Edit
-                                </button>
-                                <button
-                                  type="button"
-                                  class="btn btn-danger btn-sm"
-                                  onClick={() => handleDeleteChore(chore.id)}
-                                >
-                                  Delete
-                                </button>
-                              </div>
-                            </div>
-                          </>
-                        )}
-                      </For>
-                    </div>
-                  </Show>
-                </div>
-              )}
-            </For>
-          </div>
-        </section>
+        </div>
+      </Show>
 
-        {/* Rotating Chores Section */}
-        <Show when={(choreData()?.people?.length ?? 0) > 0}>
-          <section class="section" id="rotatingChoresSection">
+      <Show when={choreData()}>
+        <main>
+          {/* People Section */}
+          <section class="section">
             <div class="section-header">
-              <h2>Rotating Chores</h2>
-              <button
-                type="button"
-                class="btn btn-primary"
-                id="addRotatingChoreBtn"
-                onClick={() => openRotatingChoreModal()}
-              >
-                Add Rotating Chore
-              </button>
+              <h2>People</h2>
+              <div class="button-with-tooltip">
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  id="addPersonBtn"
+                  onClick={() => openPersonModal()}
+                >
+                  Add Person
+                </button>
+                <Show when={choreData()?.people.length === 0}>
+                  <span
+                    id="addPersonInfo"
+                    class="info-icon"
+                    data-tooltip="Add at least one person before you can create chores"
+                  >
+                    ℹ️
+                  </span>
+                </Show>
+              </div>
             </div>
-            <div id="rotatingChoresList" class="item-list">
-              <For each={getRotatingChores()}>
-                {(chore) => {
-                  // Get rotation list names
-                  const rotationNames = chore.rotation
-                    .map((personId) => {
-                      const person = choreData()?.people.find((p) => p.id === personId);
-                      return person ? escapeHtml(person.name) : 'Unknown';
-                    })
-                    .join(', ');
-
-                  // Check if rotation includes everyone
-                  const peopleLength = choreData()?.people.length ?? 0;
-                  const includesEveryone =
-                    chore.rotation.length === peopleLength &&
-                    chore.rotation.every((personId) =>
-                      choreData()?.people.some((p) => p.id === personId)
-                    );
-
-                  const rotationText = includesEveryone ? 'Everyone' : rotationNames;
-
-                  // Get current assignee
-                  const currentPersonId = chore.rotation[chore.rotatingIndex ?? 0];
-                  const currentPerson = choreData()?.people.find((p) => p.id === currentPersonId);
-                  const currentAssignee = currentPerson
-                    ? escapeHtml(currentPerson.name)
-                    : 'Unassigned';
-
-                  return (
-                    <div class="item-card">
+            <div id="peopleList" class="item-list">
+              <For each={choreData()?.people ?? []}>
+                {(person) => (
+                  <div class="item-card">
+                    <div class="person-header">
                       <div class="item-info">
                         <h3>
-                          {escapeHtml(chore.name)}{' '}
-                          <span class="chore-type-badge rotating">Rotating</span>
+                          {escapeHtml(person.name)}{' '}
+                          <span
+                            class="color-badge"
+                            style={`background-color: ${person.color}`}
+                          ></span>
                         </h3>
-                        <p>Current: {currentAssignee}</p>
-                        <p>Rotation: {rotationText}</p>
-                        {chore.deadline && <p class="deadline">Deadline: {chore.deadline}</p>}
-                        <p class="skip-days">Skip days: {formatSkipDays(chore.skipDays)}</p>
+                        <p>ID: {person.id}</p>
                       </div>
                       <div class="item-actions">
                         <button
                           type="button"
-                          class="btn btn-secondary"
-                          onClick={() => openRotatingChoreModal(chore)}
+                          class="btn btn-secondary btn-sm"
+                          onClick={() => openPersonModal(person)}
                         >
                           Edit
                         </button>
                         <button
                           type="button"
                           class="btn btn-danger btn-sm"
-                          onClick={() => handleDeleteChore(chore.id)}
+                          onClick={() => handleDeletePerson(person.id)}
                         >
                           Delete
                         </button>
                       </div>
                     </div>
-                  );
-                }}
+                    <div class="person-chores-header">
+                      <h4>{escapeHtml(person.name)}'s Personal Chores</h4>
+                      <div class="person-chores-actions">
+                        <button
+                          type="button"
+                          class="btn btn-primary btn-sm"
+                          onClick={() => {
+                            const foundPerson = choreData()?.people.find((p) => p.id === person.id);
+                            if (foundPerson) openPersonalChoreModal(foundPerson, null);
+                          }}
+                        >
+                          Add Chore
+                        </button>
+                      </div>
+                    </div>
+                    <Show
+                      when={getPersonalChores(person.id).length > 0}
+                      fallback={
+                        <div class="person-chores">
+                          <p class="empty-message">No personal chores yet.</p>
+                        </div>
+                      }
+                    >
+                      <div class="person-chores">
+                        <For each={getPersonalChores(person.id)}>
+                          {(chore) => (
+                            <>
+                              <div class="chore-item">
+                                <div class="chore-info">
+                                  <h4>{escapeHtml(chore.name)}</h4>
+                                  {chore.deadline && (
+                                    <p class="deadline">Deadline: {chore.deadline}</p>
+                                  )}
+                                  <p class="skip-days">
+                                    Skip days: {formatSkipDays(chore.skipDays)}
+                                  </p>
+                                </div>
+                                <div class="chore-actions">
+                                  <button
+                                    type="button"
+                                    class="btn btn-secondary btn-sm"
+                                    onClick={() => {
+                                      const foundPerson = choreData()?.people.find(
+                                        (p) => p.id === chore.assignedTo
+                                      );
+                                      if (foundPerson) openPersonalChoreModal(foundPerson, chore);
+                                    }}
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    type="button"
+                                    class="btn btn-danger btn-sm"
+                                    onClick={() => handleDeleteChore(chore.id)}
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </div>
+                            </>
+                          )}
+                        </For>
+                      </div>
+                    </Show>
+                  </div>
+                )}
               </For>
             </div>
           </section>
-        </Show>
 
-        {/* System State Section */}
-        <section class="section">
-          <h2>System State</h2>
-          <div class="state-info">
-            <p>
-              <strong>Last Reset Date:</strong>{' '}
-              <span id="lastResetDate">{choreData()?.lastResetDate || 'Never'}</span>
-            </p>
-            <div class="button-with-tooltip">
-              <button
-                type="button"
-                class="btn btn-warning"
-                id="resetDailyBtn"
-                onClick={handleForceReset}
-              >
-                Force Daily Reset
-              </button>
-              <span
-                class="info-icon"
-                data-tooltip="WARNING: This will un-check all chores and rotate assignment on rotating chores to the next person. It does respect skip days if today is a skip day. Useful for testing or immediately advancing chore assignments."
-              >
-                ℹ️
-              </span>
+          {/* Rotating Chores Section */}
+          <Show when={(choreData()?.people?.length ?? 0) > 0}>
+            <section class="section" id="rotatingChoresSection">
+              <div class="section-header">
+                <h2>Rotating Chores</h2>
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  id="addRotatingChoreBtn"
+                  onClick={() => openRotatingChoreModal()}
+                >
+                  Add Rotating Chore
+                </button>
+              </div>
+              <div id="rotatingChoresList" class="item-list">
+                <For each={getRotatingChores()}>
+                  {(chore) => {
+                    // Get rotation list names
+                    const rotationNames = chore.rotation
+                      .map((personId) => {
+                        const person = choreData()?.people.find((p) => p.id === personId);
+                        return person ? escapeHtml(person.name) : 'Unknown';
+                      })
+                      .join(', ');
+
+                    // Check if rotation includes everyone
+                    const peopleLength = choreData()?.people.length ?? 0;
+                    const includesEveryone =
+                      chore.rotation.length === peopleLength &&
+                      chore.rotation.every((personId) =>
+                        choreData()?.people.some((p) => p.id === personId)
+                      );
+
+                    const rotationText = includesEveryone ? 'Everyone' : rotationNames;
+
+                    // Get current assignee
+                    const currentPersonId = chore.rotation[chore.rotatingIndex ?? 0];
+                    const currentPerson = choreData()?.people.find((p) => p.id === currentPersonId);
+                    const currentAssignee = currentPerson
+                      ? escapeHtml(currentPerson.name)
+                      : 'Unassigned';
+
+                    return (
+                      <div class="item-card">
+                        <div class="item-info">
+                          <h3>
+                            {escapeHtml(chore.name)}{' '}
+                            <span class="chore-type-badge rotating">Rotating</span>
+                          </h3>
+                          <p>Current: {currentAssignee}</p>
+                          <p>Rotation: {rotationText}</p>
+                          {chore.deadline && <p class="deadline">Deadline: {chore.deadline}</p>}
+                          <p class="skip-days">Skip days: {formatSkipDays(chore.skipDays)}</p>
+                        </div>
+                        <div class="item-actions">
+                          <button
+                            type="button"
+                            class="btn btn-secondary"
+                            onClick={() => openRotatingChoreModal(chore)}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            class="btn btn-danger btn-sm"
+                            onClick={() => handleDeleteChore(chore.id)}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  }}
+                </For>
+              </div>
+            </section>
+          </Show>
+
+          {/* System State Section */}
+          <section class="section">
+            <h2>System State</h2>
+            <div class="state-info">
+              <p>
+                <strong>Last Reset Date:</strong>{' '}
+                <span id="lastResetDate">{choreData()?.lastResetDate || 'Never'}</span>
+              </p>
+              <div class="button-with-tooltip">
+                <button
+                  type="button"
+                  class="btn btn-warning"
+                  id="resetDailyBtn"
+                  onClick={handleForceReset}
+                >
+                  Force Daily Reset
+                </button>
+                <span
+                  class="info-icon"
+                  data-tooltip="WARNING: This will un-check all chores and rotate assignment on rotating chores to the next person. It does respect skip days if today is a skip day. Useful for testing or immediately advancing chore assignments."
+                >
+                  ℹ️
+                </span>
+              </div>
             </div>
-          </div>
-        </section>
-      </main>
+          </section>
+        </main>
+      </Show>
 
       {/* Modals */}
       <Show when={personModalOpen()}>

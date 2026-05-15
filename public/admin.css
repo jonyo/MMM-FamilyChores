@@ -47,6 +47,50 @@ main {
   padding: 30px;
 }
 
+.loading-message {
+  padding: 60px 30px;
+  text-align: center;
+  color: #6c757d;
+  background: radial-gradient(circle, #1976d2 0%, #ffffff 100%);
+  background-size: 100% 100%;
+  background-position: center;
+  animation: loadingPulse 4s ease-in-out infinite;
+}
+
+@keyframes loadingPulse {
+  0% {
+    background-size: 100% 100%;
+  }
+  50% {
+    background-size: 300% 300%;
+  }
+  100% {
+    background-size: 100% 100%;
+  }
+}
+
+.loading-message-content {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.3);
+  padding: 30px 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.loading-message p {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.retry-info {
+  font-size: 0.9rem;
+  color: #666;
+  font-style: italic;
+  font-weight: 500;
+}
+
 .section {
   margin-bottom: 40px;
 }
