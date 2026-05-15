@@ -34,76 +34,19 @@ This is a standalone MagicMirror² module for family chore tracking, maintained 
 **Inline Comments:**
 
 - Place inline comments (`// comment`) **above** the code they describe, not on the same line
-- This improves readability and follows personal preference
-- **Use for**: Implementation details, "why" explanations, temporary notes, or non-essential context
-- **Avoid for**: API documentation or hover information about "what it is" - use JSDoc instead
-
-**Examples of good inline comments:**
-
-```typescript
-// we do it this way so XYZ doesn't break
-const config = { ... };
-
-// This is a temporary workaround for bug #123
-const tempValue = getWorkaround();
-
-// Use local date for comparison (implementation detail)
-const resetDate = getLocalDate();
-```
+- Use for implementation details, "why" explanations, temporary notes, or non-essential context
+- Avoid for API documentation or hover information - use JSDoc instead
 
 **JSDoc Comments:**
 
 - Use JSDoc format (`/** comment */`) for interfaces, types, properties, and functions
-- This enables hover information in IDEs and provides better documentation
-- **Use for**: API documentation, property descriptions, parameter/return types, or any information useful when hovering over a "thing"
-
-**Examples of when to use JSDoc:**
-
-```typescript
-export interface Config {
-  /**
-   * Format: "HH:mm" in 24-hour format, default "03:00"
-   */
-  dailyResetTime?: string;
-}
-
-/**
- * This is the id for XYZ that follows Foo Bar best practices
- */
-export const XYZ_ID = "xyz-123";
-```
+- Use for API documentation, property descriptions, parameter/return types, or any information useful when hovering over a "thing"
 
 **Decision Framework:**
 Ask yourself: "Is this information useful to know about this specific property/function/interface when I hover over it elsewhere?"
 
 - **YES** → Use JSDoc
 - **NO** (implementation detail) → Use inline comment
-
-**Examples:**
-
-✅ **CORRECT:**
-
-```typescript
-// Use local date for comparison
-const resetDate = getLocalDate();
-
-export interface Config {
-  /**
-   * Format: "HH:mm" in 24-hour format, default "03:00"
-   */
-  dailyResetTime?: string;
-}
-```
-
-❌ **WRONG:**
-
-```typescript
-const resetDate = getLocalDate(); // Use local date for comparison
-
-export interface Config {
-  dailyResetTime?: string; // Format: "HH:mm" in 24-hour format, default "03:00"
-}
-```
 
 ### Development Workflow
 
@@ -180,8 +123,6 @@ src/
 
 Note: These files are committed so that the module works out of the box without needing to run the build process. Be sure to run `pnpm build` before committing any changes to ensure the built files are up to date.
 
-**Security Practice**: The built JavaScript files are NOT minified. This is intentional to enable easier code review and diff tracking on pull requests, making it harder for malicious code to slip in through compromised contributor accounts or compromised upstream dependencies.
-
 ### TypeScript Requirements
 
 **CRITICAL: NEVER USE `any` TYPES - THIS INCLUDES TEST FILES**
@@ -253,8 +194,6 @@ src/api/
 3. Run `pnpm run lint` - Code must pass both Biome (primary) and ESLint (reactivity errors)
 4. Run `pnpm run build` - Verify build succeeds (maintainers will build and commit releases)
 
-**Security Practice**: Contributors should verify builds locally but not commit built files. Maintainers build trusted releases.
-
 **Test Coverage:**
 
 - State management logic (rotating index, daily reset, skip day visibility)
@@ -295,84 +234,10 @@ src/api/
 - **CRITICAL**: The browser project in vitest.config.ts MUST include `solidPlugin()` in the plugins array for JSX to work
 - Import CSS files in test files using relative path: `import '../../public/admin.css';`
 - **DO NOT use `fireEvent`** from testing libraries - it's meant for fake DOM and uses JS to dispatch events
-- Use `page` or `userEvent` for browser mode interactions - they work with Playwright/browser to mimic real user actions
+- Use `page` from `vitest/browser` for browser mode interactions - it works with Playwright to mimic real user actions
 - The testing library's render handles container creation and cleanup automatically
 - Remove manual DOM cleanup (`document.body.innerHTML = ''`) - testing library handles this
 - Remove manual `afterEach` with `vi.clearAllMocks()` - test configuration handles mock cleanup automatically
-
-**Required vitest.config.ts Setup for Browser Mode:**
-
-```typescript
-import solidPlugin from "vite-plugin-solid";
-import { playwright } from "@vitest/browser-playwright";
-import { defineConfig } from "vitest/config";
-
-export default defineConfig({
-  test: {
-    projects: [
-      {
-        test: {
-          name: "browser",
-          include: [
-            "src/admin/**/*.test.tsx",
-            // ... other browser tests
-          ],
-          css: {
-            include: /.+/,
-          },
-          browser: {
-            enabled: true,
-            headless: true,
-            provider: playwright(),
-            instances: [{ browser: "chromium" }],
-          },
-        },
-        plugins: [solidPlugin()], // CRITICAL: Required for JSX transformation in browser mode
-      },
-    ],
-  },
-});
-```
-
-**Example UI Testing Pattern:**
-
-````typescript
-import { render } from '@solidjs/testing-library';
-import { describe, expect, it, vi } from 'vitest';
-import '../../public/admin.css'; // Import CSS for styles
-import { MyComponent } from './my-component';
-
-describe('MyComponent', () => {
-  // No afterEach needed - testing library handles cleanup
-
-  it('should render correctly', () => {
-    const closeModal = vi.fn();
-
-    const { container } = render(() => (
-      <MyComponent closeModal={closeModal} />
-    ));
-
-    expect(container.querySelector('h3')?.textContent).toBe('Expected Title');
-  });
-});
-
-// BAD - mocking DOM properties
-vi.spyOn(element, "getBoundingClientRect").mockReturnValue({
-  width: 100,
-  height: 50,
-});
-
-// GOOD - set styles to produce the desired state
-element.style.width = "100px";
-element.style.height = "50px";
-
-// BAD - using fireEvent (fake DOM)
-fireEvent.click(button);
-
-// GOOD - using page or userEvent (real browser interaction)
-await page.getByRole("button").click();
-// or
-await userEvent.click(button);
 
 **API Testing:**
 
@@ -454,73 +319,6 @@ await userEvent.click(button);
 - Ensure touch targets are appropriately sized
 - Consider mirror-specific viewing conditions
 
-## Development Commands
-
-### Quick Development Cycle
-
-```bash
-pnpm run build          # Build all components
-pnpm run test           # Run tests
-pnpm run lint           # Check code quality
-````
-
-### Testing Commands
-
-```bash
-pnpm run test           # Run all tests
-pnpm run test:watch     # Watch mode for development
-pnpm run test:ci        # CI mode (single run) - same as test
-pnpm run test:browser   # Browser-based tests
-```
-
-### Code Quality
-
-```bash
-pnpm run typecheck      # TypeScript validation
-pnpm run lint           # Run Biome (primary) and ESLint (reactivity errors)
-pnpm run fix            # Auto-fix Biome linting issues and ESLint reactivity errors
-```
-
-**ESLint Configuration:**
-
-- ESLint is configured in `eslint.config.js` to only handle SolidJS reactivity linting
-- It runs the `solid/reactivity` rule on `src/admin/**/*.tsx` files
-- Biome handles all other linting (formatting, style, general code quality)
-- ESLint is configured with `noInlineConfig: true` to prevent disabling rules with comments - DO NOT CHANGE THIS - fix the reactivity issues instead
-- The solid/reactivity rule is sometimes fixable with `eslint --fix`
-
-## Common Tasks
-
-### Adding New Chore Features
-
-1. Update TypeScript interfaces in `src/types/chore-types.ts`
-2. Implement logic in `src/backend/node-helper.ts`
-3. Update frontend in `src/frontend/frontend.ts`
-4. Add tests for new functionality
-5. Update documentation
-
-### Working with UUID Utilities
-
-1. Use `generateUUID()` for creating new person/chore identifiers
-2. Use `isValidUUID()` to validate UUID strings from external sources
-3. Use `generateTestUUID()` only in tests for deterministic UUIDs
-4. All UUID utilities are located in `src/utils/uuid.ts`
-5. Tests for UUID utilities are in `src/utils/uuid.test.ts`
-
-### Modifying State Management
-
-1. Always test state changes with unit tests
-2. Ensure atomic updates to prevent race conditions
-3. Update data validation if structure changes
-4. Test with edge cases (empty data, corrupted files)
-
-### UI Changes
-
-1. Modify `getDom()` method in `src/frontend/frontend.ts`
-2. Update CSS in `css/main.css`
-3. Test with different data scenarios
-4. Ensure accessibility and usability
-
 ## Important Notes
 
 ### Data Privacy
@@ -529,35 +327,6 @@ pnpm run fix            # Auto-fix Biome linting issues and ESLint reactivity er
 - Real family names belong only in user's personal config
 - Never commit real personal data to the repository
 
-### MMPM Compatibility
+### Design Philosophy
 
-- This module is designed for MMPM community distribution
-- Follow MagicMirror module conventions
-- Maintain clear documentation and examples
-- Test with various MagicMirror versions
-
-### Performance Considerations
-
-- Minimize DOM updates in `getDom()`
-- Use efficient data structures for state management
-- Avoid unnecessary file I/O operations
-- Consider memory usage for large families
-
-## Troubleshooting
-
-### Common Issues
-
-- **Build failures**: Check TypeScript compilation first
-- **Test failures**: Verify data structure matches interfaces
-- **State corruption**: Check file permissions and disk space
-- **Display issues**: Verify CSS and DOM structure
-
-### Debugging Steps
-
-1. Check browser console for errors
-2. Verify `data.json` structure is valid
-3. Test with minimal configuration
-4. Check MagicMirror module loading
-5. Verify socket communication between frontend and backend
-
-This module prioritizes simplicity and reliability over complex features. When in doubt, choose the simplest solution that meets the requirements.
+This module prioritizes simplicity and reliability over complex features. When in doubt, ask the user.
