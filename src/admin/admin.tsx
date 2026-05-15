@@ -35,6 +35,7 @@ export const Admin: Component<Record<string, never>> = () => {
   const [rotatingChoreModalOpen, setRotatingChoreModalOpen] = createSignal(false);
   const [editingPerson, setEditingPerson] = createSignal<Person | null>(null);
   const [editingChore, setEditingChore] = createSignal<Chore | null>(null);
+  const [editingChorePerson, setEditingChorePerson] = createSignal<Person | null>(null);
   const [loading, setLoading] = createSignal(true);
   const [retryCount, setRetryCount] = createSignal(0);
 
@@ -73,14 +74,16 @@ export const Admin: Component<Record<string, never>> = () => {
   };
 
   // Chore modal handlers
-  const openPersonalChoreModal = (_person: Person, chore: PersonalChore | null = null) => {
+  const openPersonalChoreModal = (person: Person, chore: PersonalChore | null = null) => {
     setEditingChore(chore);
+    setEditingChorePerson(person);
     setPersonalChoreModalOpen(true);
   };
 
   const closePersonalChoreModal = async () => {
     setPersonalChoreModalOpen(false);
     setEditingChore(null);
+    setEditingChorePerson(null);
     await loadData();
   };
 
@@ -500,13 +503,9 @@ export const Admin: Component<Record<string, never>> = () => {
       <Show when={personModalOpen()}>
         <PersonModal initialPerson={editingPerson() ?? undefined} closeModal={closePersonModal} />
       </Show>
-      <Show when={personalChoreModalOpen() && choreData()}>
+      <Show when={personalChoreModalOpen()}>
         <PersonalChoreModal
-          person={
-            choreData()?.people.find(
-              (p) => p.id === (editingChore() as PersonalChore)?.assignedTo
-            ) ?? null
-          }
+          person={editingChorePerson()}
           initialChore={editingChore() as PersonalChore | undefined}
           closeModal={closePersonalChoreModal}
         />

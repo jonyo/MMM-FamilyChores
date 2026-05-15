@@ -1263,6 +1263,7 @@
 		const [rotatingChoreModalOpen, setRotatingChoreModalOpen] = createSignal(false);
 		const [editingPerson, setEditingPerson] = createSignal(null);
 		const [editingChore, setEditingChore] = createSignal(null);
+		const [editingChorePerson, setEditingChorePerson] = createSignal(null);
 		const [loading, setLoading] = createSignal(true);
 		const [retryCount, setRetryCount] = createSignal(0);
 		const loadData = async () => {
@@ -1291,13 +1292,15 @@
 			setEditingPerson(null);
 			await loadData();
 		};
-		const openPersonalChoreModal = (_person, chore = null) => {
+		const openPersonalChoreModal = (person, chore = null) => {
 			setEditingChore(chore);
+			setEditingChorePerson(person);
 			setPersonalChoreModalOpen(true);
 		};
 		const closePersonalChoreModal = async () => {
 			setPersonalChoreModalOpen(false);
 			setEditingChore(null);
+			setEditingChorePerson(null);
 			await loadData();
 		};
 		const openRotatingChoreModal = (chore = null) => {
@@ -1567,12 +1570,12 @@
 			}), null);
 			insert(_el$, createComponent(Show, {
 				get when() {
-					return memo(() => !!personalChoreModalOpen())() && choreData();
+					return personalChoreModalOpen();
 				},
 				get children() {
 					return createComponent(PersonalChoreModal, {
 						get person() {
-							return choreData()?.people.find((p) => p.id === editingChore()?.assignedTo) ?? null;
+							return editingChorePerson();
 						},
 						get initialChore() {
 							return editingChore();
