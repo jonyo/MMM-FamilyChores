@@ -30,12 +30,11 @@ function formatSkipDays(skipDays: DayOfWeek[]): string {
 export function Admin() {
   const [choreData, setChoreData] = createSignal<FamilyChoresData | null>(null);
   const [_personModalOpen, setPersonModalOpen] = createSignal(false);
-  const [_choreModalOpen, setChoreModalOpen] = createSignal(false);
+  const [_personalChoreModalOpen, setPersonalChoreModalOpen] = createSignal(false);
+  const [_rotatingChoreModalOpen, setRotatingChoreModalOpen] = createSignal(false);
   const [_copyModalOpen, setCopyModalOpen] = createSignal(false);
   const [_editingPerson, setEditingPerson] = createSignal<Person | null>(null);
   const [_editingChore, setEditingChore] = createSignal<Chore | null>(null);
-  const [_choreType, setChoreType] = createSignal<'personal' | 'rotating' | null>(null);
-  const [_personForChore, setPersonForChore] = createSignal<string | null>(null);
 
   // Load data from API
   async function loadData() {
@@ -72,45 +71,49 @@ export function Admin() {
   }
 
   // Chore modal handlers
-  function openChoreModal(
-    type: 'personal' | 'rotating',
-    personId: string | null = null,
-    chore: Chore | null = null
+  function openPersonalChoreModal(
+    _personId: string | null = null,
+    chore: PersonalChore | null = null
   ) {
     setEditingChore(chore);
-    setChoreType(type);
-    setPersonForChore(personId);
-    setChoreModalOpen(true);
+    setPersonalChoreModalOpen(true);
   }
 
-  function _closeChoreModal() {
-    setChoreModalOpen(false);
+  function _closePersonalChoreModal() {
+    setPersonalChoreModalOpen(false);
     setEditingChore(null);
-    setChoreType(null);
-    setPersonForChore(null);
+  }
+
+  function openRotatingChoreModal(chore: RotatingChore | null = null) {
+    setEditingChore(chore);
+    setRotatingChoreModalOpen(true);
+  }
+
+  function _closeRotatingChoreModal() {
+    setRotatingChoreModalOpen(false);
+    setEditingChore(null);
   }
 
   function handleSavePersonalChore(chore: Omit<PersonalChore, 'id'>) {
     // TODO: Implement save personal chore API call
     console.log('Saving personal chore:', chore);
-    _closeChoreModal();
+    _closePersonalChoreModal();
   }
 
   function handleSaveRotatingChore(chore: Omit<RotatingChore, 'id'>) {
     // TODO: Implement save rotating chore API call
     console.log('Saving rotating chore:', chore);
-    _closeChoreModal();
+    _closeRotatingChoreModal();
   }
 
   // Copy modal handlers
   function openCopyModal(fromPersonId: string) {
-    setPersonForChore(fromPersonId);
-    setCopyModalOpen(true);
+    // TODO: Implement copy chore functionality
+    console.log('Copy chores from person:', fromPersonId);
   }
 
   function _closeCopyModal() {
     setCopyModalOpen(false);
-    setPersonForChore(null);
   }
 
   // Get personal chores for a person
@@ -210,7 +213,7 @@ export function Admin() {
                     <button
                       type="button"
                       class="btn btn-primary btn-sm"
-                      onClick={() => openChoreModal('personal', person.id)}
+                      onClick={() => openPersonalChoreModal(person.id)}
                     >
                       Add Chore
                     </button>
@@ -238,7 +241,7 @@ export function Admin() {
                           <button
                             type="button"
                             class="btn btn-secondary btn-sm"
-                            onClick={() => openChoreModal('personal', null, chore)}
+                            onClick={() => openPersonalChoreModal(null, chore)}
                           >
                             Edit
                           </button>
@@ -279,7 +282,7 @@ export function Admin() {
               type="button"
               class="btn btn-primary"
               id="addRotatingChoreBtn"
-              onClick={() => openChoreModal('rotating')}
+              onClick={() => openRotatingChoreModal()}
             >
               Add Rotating Chore
             </button>
@@ -325,7 +328,7 @@ export function Admin() {
                     <button
                       type="button"
                       class="btn btn-secondary"
-                      onClick={() => openChoreModal('rotating', null, chore)}
+                      onClick={() => openRotatingChoreModal(chore)}
                     >
                       Edit
                     </button>
@@ -390,24 +393,20 @@ export function Admin() {
         person={_editingPerson()}
         onSave={handleSavePerson}
       />
-      {_choreType() === 'personal' && (
-        <PersonalChoreModal
-          isOpen={_choreModalOpen()}
-          onClose={_closeChoreModal}
-          chore={_editingChore() as PersonalChore | null}
-          people={choreData()?.people ?? []}
-          onSave={handleSavePersonalChore}
-        />
-      )}
-      {_choreType() === 'rotating' && (
-        <RotatingChoreModal
-          isOpen={_choreModalOpen()}
-          onClose={_closeChoreModal}
-          chore={_editingChore() as RotatingChore | null}
-          people={choreData()?.people ?? []}
-          onSave={handleSaveRotatingChore}
-        />
-      )}
+      <PersonalChoreModal
+        isOpen={_personalChoreModalOpen()}
+        onClose={_closePersonalChoreModal}
+        chore={_editingChore() as PersonalChore | null}
+        people={choreData()?.people ?? []}
+        onSave={handleSavePersonalChore}
+      />
+      <RotatingChoreModal
+        isOpen={_rotatingChoreModalOpen()}
+        onClose={_closeRotatingChoreModal}
+        chore={_editingChore() as RotatingChore | null}
+        people={choreData()?.people ?? []}
+        onSave={handleSaveRotatingChore}
+      />
     </div>
   );
 }
