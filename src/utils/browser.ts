@@ -1,4 +1,11 @@
 /**
+ * Client-Side Only Utilities
+ *
+ * This file contains utilities that require browser/DOM APIs and can only run in a browser environment.
+ * These utilities are excluded from Node.js tests in the vitest configuration.
+ */
+
+/**
  * Generate a random pastel color (light, soft colors suitable for dark backgrounds)
  * Returns a hex color string in #RRGGBB format
  */
@@ -15,4 +22,17 @@ export const generatePastelColor = (): string => {
   };
 
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+};
+
+/**
+ * Escape HTML special characters to prevent XSS attacks
+ * Uses the browser's DOM API to properly escape HTML entities
+ *
+ * @param raw - The raw string to escape
+ * @returns The escaped HTML string
+ */
+export const escapeHtml = (raw: string): string => {
+  const div = document.createElement('div');
+  div.textContent = raw;
+  return div.innerHTML;
 };

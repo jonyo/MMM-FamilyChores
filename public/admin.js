@@ -1001,7 +1001,13 @@
 		return ChoreType;
 	}({});
 	//#endregion
-	//#region src/utils/color.ts
+	//#region src/utils/browser.ts
+	/**
+	* Client-Side Only Utilities
+	*
+	* This file contains utilities that require browser/DOM APIs and can only run in a browser environment.
+	* These utilities are excluded from Node.js tests in the vitest configuration.
+	*/
 	/**
 	* Generate a random pastel color (light, soft colors suitable for dark backgrounds)
 	* Returns a hex color string in #RRGGBB format
@@ -1015,6 +1021,18 @@
 			return hex.length === 1 ? `0${hex}` : hex;
 		};
 		return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+	};
+	/**
+	* Escape HTML special characters to prevent XSS attacks
+	* Uses the browser's DOM API to properly escape HTML entities
+	*
+	* @param raw - The raw string to escape
+	* @returns The escaped HTML string
+	*/
+	var escapeHtml = (raw) => {
+		const div = document.createElement("div");
+		div.textContent = raw;
+		return div.innerHTML;
 	};
 	//#endregion
 	//#region src/admin/person-modal.tsx
@@ -1247,11 +1265,6 @@
 	//#region src/admin/admin.tsx
 	var _tmpl$ = /* @__PURE__ */ template(`<p class=retry-info>Retrying... (attempt <!>)`), _tmpl$2 = /* @__PURE__ */ template(`<div class=loading-message><div class=loading-message-content><p>Magic Mirror is starting up, please wait...`), _tmpl$3 = /* @__PURE__ */ template(`<span id=addPersonInfo class=info-icon data-tooltip="Add at least one person before you can create chores">ℹ️`), _tmpl$4 = /* @__PURE__ */ template(`<section class=section id=rotatingChoresSection><div class=section-header><h2>Rotating Chores</h2><button type=button class="btn btn-primary"id=addRotatingChoreBtn>Add Rotating Chore</button></div><div id=rotatingChoresList class=item-list>`), _tmpl$5 = /* @__PURE__ */ template(`<main><section class=section><div class=section-header><h2>People</h2><div class=button-with-tooltip><button type=button class="btn btn-primary"id=addPersonBtn>Add Person</button></div></div><div id=peopleList class=item-list></div></section><section class=section><h2>System State</h2><div class=state-info><p><strong>Last Reset Date:</strong> <span id=lastResetDate></span></p><div class=button-with-tooltip><button type=button class="btn btn-warning"id=resetDailyBtn>Force Daily Reset</button><span class=info-icon data-tooltip="WARNING: This will un-check all chores and rotate assignment on rotating chores to the next person. It does respect skip days if today is a skip day. Useful for testing or immediately advancing chore assignments.">ℹ️`), _tmpl$6 = /* @__PURE__ */ template(`<div class=container><header><h1>Family Chores Admin</h1><div class=backup-section><button type=button class="btn btn-secondary"id=backupBtn>Download Backup</button><label for=restoreFile class="btn btn-secondary">Restore Backup</label><input type=file id=restoreFile accept=.json hidden>`), _tmpl$7 = /* @__PURE__ */ template(`<div class=person-chores>`), _tmpl$8 = /* @__PURE__ */ template(`<div class=item-card><div class=person-header><div class=item-info><h3> <span class=color-badge></span></h3><p>ID: </p></div><div class=item-actions><button type=button class="btn btn-secondary btn-sm">Edit</button><button type=button class="btn btn-danger btn-sm">Delete</button></div></div><div class=person-chores-header><h4>'s Personal Chores</h4><div class=person-chores-actions><button type=button class="btn btn-primary btn-sm">Add Chore`), _tmpl$9 = /* @__PURE__ */ template(`<div class=person-chores><p class=empty-message>No personal chores yet.`), _tmpl$0 = /* @__PURE__ */ template(`<div class=chore-item><div class=chore-info><h4></h4><p class=skip-days>Skip days: </p></div><div class=chore-actions><button type=button class="btn btn-secondary btn-sm">Edit</button><button type=button class="btn btn-danger btn-sm">Delete`), _tmpl$1 = /* @__PURE__ */ template(`<p class=deadline>Deadline: `), _tmpl$10 = /* @__PURE__ */ template(`<div class=item-card><div class=item-info><h3> <span class="chore-type-badge rotating">Rotating</span></h3><p>Current: </p><p>Rotation: </p><p class=skip-days>Skip days: </p></div><div class=item-actions><button type=button class="btn btn-secondary">Edit</button><button type=button class="btn btn-danger btn-sm">Delete`);
 	var API_BASE = "/MMM-FamilyChores";
-	var escapeHtml = (raw) => {
-		const div = document.createElement("div");
-		div.textContent = raw;
-		return div.innerHTML;
-	};
 	var formatSkipDays = (skipDays) => {
 		if (!skipDays || skipDays.length === 0) return "None";
 		return skipDays.map((d) => d.charAt(0).toUpperCase() + d.slice(1)).join(", ");

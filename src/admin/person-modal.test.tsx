@@ -13,7 +13,7 @@ vi.mock('../api', () => ({
 }));
 
 // Mock color utility
-vi.mock('../utils/color', () => ({
+vi.mock('../utils/browser', () => ({
   generatePastelColor: vi.fn(() => '#FF6B6B'),
 }));
 

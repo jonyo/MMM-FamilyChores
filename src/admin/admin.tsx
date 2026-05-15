@@ -8,19 +8,13 @@ import type {
 import { type Component, createSignal, For, onMount, Show } from 'solid-js';
 import { deleteChore, deletePerson } from '../api';
 import { ChoreType, type DayOfWeek } from '../types/chore-types';
+import { escapeHtml } from '../utils/browser';
 import { PersonModal } from './person-modal';
 import { PersonalChoreModal } from './personal-chore-modal';
 import { RotatingChoreModal } from './rotating-chore-modal';
 
 // API base URL
 const API_BASE = '/MMM-FamilyChores';
-
-// Helper function to escape HTML
-const escapeHtml = (raw: string): string => {
-  const div = document.createElement('div');
-  div.textContent = raw;
-  return div.innerHTML;
-};
 
 // Format skip days for display
 const formatSkipDays = (skipDays: DayOfWeek[]): string => {

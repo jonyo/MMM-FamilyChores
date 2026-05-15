@@ -2,7 +2,7 @@ import type { Person } from '../types/chore-types';
 import type { CreatePersonRequest, UpdatePersonRequest } from '../types/request-types';
 import { type Component, createSignal } from 'solid-js';
 import { createPerson, updatePerson } from '../api';
-import { generatePastelColor } from '../utils/color';
+import { generatePastelColor } from '../utils/browser';
 
 interface PersonModalProps {
   initialPerson?: Person;
