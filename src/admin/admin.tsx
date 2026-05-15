@@ -7,6 +7,9 @@ import type {
   RotatingChore,
 } from '../types/chore-types';
 import { ChoreType, type DayOfWeek } from '../types/chore-types';
+import { PersonModal } from './person-modal';
+import { PersonalChoreModal } from './personal-chore-modal';
+import { RotatingChoreModal } from './rotating-chore-modal';
 
 // API base URL
 const API_BASE = '/MMM-FamilyChores';
@@ -62,6 +65,12 @@ export function Admin() {
     setEditingPerson(null);
   }
 
+  function handleSavePerson(person: Omit<Person, 'id'>) {
+    // TODO: Implement save person API call
+    console.log('Saving person:', person);
+    _closePersonModal();
+  }
+
   // Chore modal handlers
   function openChoreModal(
     type: 'personal' | 'rotating',
@@ -79,6 +88,18 @@ export function Admin() {
     setEditingChore(null);
     setChoreType(null);
     setPersonForChore(null);
+  }
+
+  function handleSavePersonalChore(chore: Omit<PersonalChore, 'id'>) {
+    // TODO: Implement save personal chore API call
+    console.log('Saving personal chore:', chore);
+    _closeChoreModal();
+  }
+
+  function handleSaveRotatingChore(chore: Omit<RotatingChore, 'id'>) {
+    // TODO: Implement save rotating chore API call
+    console.log('Saving rotating chore:', chore);
+    _closeChoreModal();
   }
 
   // Copy modal handlers
@@ -361,6 +382,32 @@ export function Admin() {
           </div>
         </section>
       </main>
+
+      {/* Modals */}
+      <PersonModal
+        isOpen={_personModalOpen()}
+        onClose={_closePersonModal}
+        person={_editingPerson()}
+        onSave={handleSavePerson}
+      />
+      {_choreType() === 'personal' && (
+        <PersonalChoreModal
+          isOpen={_choreModalOpen()}
+          onClose={_closeChoreModal}
+          chore={_editingChore() as PersonalChore | null}
+          people={choreData()?.people ?? []}
+          onSave={handleSavePersonalChore}
+        />
+      )}
+      {_choreType() === 'rotating' && (
+        <RotatingChoreModal
+          isOpen={_choreModalOpen()}
+          onClose={_closeChoreModal}
+          chore={_editingChore() as RotatingChore | null}
+          people={choreData()?.people ?? []}
+          onSave={handleSaveRotatingChore}
+        />
+      )}
     </div>
   );
 }

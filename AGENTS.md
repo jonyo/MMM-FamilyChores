@@ -151,12 +151,21 @@ pnpm run build:node     # Build backend without copying to root
 
 ### File Structure Rules
 
+**Naming Conventions:**
+
+- **ALL filenames must use kebab-case** (e.g., `person-modal.tsx`, NOT `PersonModal.tsx`)
+- This applies to component files, utility files, and any new source files
+- Biome linter will enforce this - violations will cause lint errors
+- Examples: `personal-chore-modal.tsx`, `rotating-chore-modal.tsx`, `admin-helper.ts`
+- ONLY exception: files needing to be uppercase for technical reasons, like the built files used by Magic Mirror
+
 **Source Organization:**
 
 ```
 src/
 ├── frontend/           # Client-side MagicMirror module
 ├── backend/            # Node.js helper for data persistence
+├── admin/              # SolidJS admin interface (kebab-case filenames)
 ├── types/              # TypeScript types (`chore-types`, `config`, `module`, `request-types`, `response-types`, `socket-payload-types`)
 ├── constants/          # Socket notification constants
 └── utils/              # Utility functions (date, uuid, HTML escaping for display)
