@@ -178,7 +178,9 @@ src/
 - `node_helper.js` - Compiled backend
 - `*.js.map` - Source maps
 
-Note: These files are committed so that the module works out of the box without needing to run the build process.
+Note: These files are committed so that the module works out of the box without needing to run the build process. Be sure to run `pnpm build` before committing any changes to ensure the built files are up to date.
+
+**Security Practice**: The built JavaScript files are NOT minified. This is intentional to enable easier code review and diff tracking on pull requests, making it harder for malicious code to slip in through compromised contributor accounts or compromised upstream dependencies.
 
 ### TypeScript Requirements
 

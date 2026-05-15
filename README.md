@@ -292,6 +292,8 @@ At midnight, all `completedToday` entries are cleared, making personal chores av
 
 **Note for end users**: The module includes pre-built JavaScript bundles in the repository, so you don't need to install any dependencies or build tools. Simply clone and use. The following section is only for contributors who want to modify the module.
 
+**Security Note**: The built JavaScript files are not minified. This is intentional to enable easier code review and diff tracking on pull requests, making it harder for malicious code to slip in through compromised contributor accounts or compromised upstream dependencies.
+
 ### Tech Stack (Development Only)
 
 - **TypeScript**: Strong typing for all data structures and components
