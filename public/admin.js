@@ -334,7 +334,7 @@ function openChoreModal(type = null, personId = null, chore = null) {
     document.getElementById('choreType').value = chore.type;
     document.getElementById('choreDeadline').value = chore.deadline || '';
     document.getElementById('skipDayVisibility').value =
-      chore.skipDayVisibility || 'show_if_overdue';
+      chore.skipDayVisibility || 'show-if-overdue';
 
     // Skip days
     document.querySelectorAll('.skipDay').forEach((checkbox) => {
@@ -359,7 +359,7 @@ function openChoreModal(type = null, personId = null, chore = null) {
     form.reset();
     document.getElementById('choreId').value = '';
     document.getElementById('choreType').value = type;
-    document.getElementById('skipDayVisibility').value = 'show_if_overdue';
+    document.getElementById('skipDayVisibility').value = 'show-if-overdue';
 
     // Show/hide fields based on locked type
     if (type === 'personal') {
@@ -427,7 +427,8 @@ async function handleChoreSubmit(e) {
   const id = document.getElementById('choreId').value;
   const name = document.getElementById('choreName').value;
   const type = document.getElementById('choreType').value;
-  const deadline = document.getElementById('choreDeadline').value;
+  const deadlineRaw = document.getElementById('choreDeadline').value;
+  const deadline = deadlineRaw.trim() || undefined;
   const skipDayVisibility = document.getElementById('skipDayVisibility').value;
 
   // Skip days
@@ -482,13 +483,23 @@ async function handleChoreSubmit(e) {
       });
     }
 
-    if (!response.ok) throw new Error('Failed to save chore');
+    if (!response.ok) {
+      const errorData = await response.json();
+      if (errorData?.error) {
+        // specific message like a field validation error
+        alert(`Problem saving chore: ${errorData.error}`);
+        // early exit to avoid showing 2 error messages (one from API and one generic)
+        return;
+      }
+      throw new Error('Failed to save chore');
+    }
 
     closeModals();
     await loadData();
   } catch (error) {
+    // Error could be a network error or JSON parsing error
     console.error('Error saving chore:', error);
-    alert('Failed to save chore. Please try again.');
+    alert(`Failed to save chore. Please try again.`);
   }
 }
 
