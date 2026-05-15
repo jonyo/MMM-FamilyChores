@@ -1,7 +1,9 @@
 import { render } from '@solidjs/testing-library';
 import { describe, expect, it, vi } from 'vitest';
+import { page } from 'vitest/browser';
 import '../../public/admin.css';
 import type { Person, PersonalChore } from '../types/chore-types';
+import { createChore, updateChore } from '../api';
 import { ChoreType, DayOfWeek, SkipDayVisibility } from '../types/chore-types';
 import { PersonalChoreModal } from './personal-chore-modal';
 
@@ -41,6 +43,40 @@ describe('PersonalChoreModal', () => {
       const colorBadge = container.querySelector('.color-badge') as HTMLElement;
       expect(colorBadge?.style.backgroundColor).toBe('rgb(255, 107, 107)');
     });
+
+    it('should click cancel button', async () => {
+      const closeModal = vi.fn();
+
+      render(() => (
+        <PersonalChoreModal person={mockPerson} initialChore={undefined} closeModal={closeModal} />
+      ));
+
+      const cancelButton = page.getByRole('button', { name: 'Cancel' });
+      expect(cancelButton.element()).toBeVisible();
+      await cancelButton.click();
+
+      expect(closeModal).toHaveBeenCalled();
+      expect(createChore).not.toHaveBeenCalled();
+    });
+
+    it('should click add button', async () => {
+      const closeModal = vi.fn();
+
+      render(() => (
+        <PersonalChoreModal person={mockPerson} initialChore={undefined} closeModal={closeModal} />
+      ));
+
+      // Fill in the chore name
+      const nameInput = document.querySelector('#choreName') as HTMLInputElement;
+      nameInput.value = 'Test Chore';
+
+      const addButton = page.getByRole('button', { name: 'Add' });
+      expect(addButton.element()).toBeVisible();
+      await addButton.click();
+
+      expect(closeModal).toHaveBeenCalled();
+      expect(createChore).toHaveBeenCalled();
+    });
   });
 
   describe('Edit Chore Mode', () => {
@@ -77,6 +113,36 @@ describe('PersonalChoreModal', () => {
       expect(nameInput?.value).toBe('Take out trash');
       expect(deadlineInput?.value).toBe('21:00');
       expect(skipDayVisibilitySelect?.value).toBe('show-if-overdue');
+    });
+
+    it('should click save button in edit mode', async () => {
+      const closeModal = vi.fn();
+      const initialChore: PersonalChore = {
+        id: 'c1',
+        name: 'Take out trash',
+        type: ChoreType.PERSONAL,
+        assignedTo: 'p1',
+        skipDays: [DayOfWeek.SUNDAY],
+        skipDayVisibility: SkipDayVisibility.SHOW_IF_OVERDUE,
+        caughtUp: true,
+        completedToday: false,
+        deadline: '21:00',
+      };
+
+      render(() => (
+        <PersonalChoreModal
+          person={mockPerson}
+          initialChore={initialChore}
+          closeModal={closeModal}
+        />
+      ));
+
+      const saveButton = page.getByRole('button', { name: 'Save' });
+      expect(saveButton.element()).toBeVisible();
+      await saveButton.click();
+
+      expect(closeModal).toHaveBeenCalled();
+      expect(updateChore).toHaveBeenCalled();
     });
   });
 });

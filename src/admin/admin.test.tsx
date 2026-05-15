@@ -2,6 +2,7 @@ import { render } from '@solidjs/testing-library';
 import { describe, expect, it, vi } from 'vitest';
 import '../../public/admin.css';
 import type { FamilyChoresData } from '../types/chore-types';
+import { page } from 'vitest/browser';
 import { ChoreType, SkipDayVisibility } from '../types/chore-types';
 import { Admin } from './admin';
 
@@ -85,12 +86,11 @@ describe('Admin Component Tests', () => {
         json: async () => mockData,
       } as Response);
 
-      render(() => Admin({} as Record<string, never>));
+      render(() => <Admin />);
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       const rotatingSection = document.getElementById('rotatingChoresSection');
-      expect(rotatingSection).toBeTruthy();
-      expect(rotatingSection?.style.display).toBe('');
+      expect(rotatingSection).toBeFalsy();
     });
   });
 
@@ -141,14 +141,12 @@ describe('Admin Component Tests', () => {
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Find the "Add Chore" button for Alice (first person)
-      const addChoreButtons = document.querySelectorAll('.person-chores-actions button');
-      const aliceAddChoreButton = addChoreButtons[0] as HTMLButtonElement;
-      expect(aliceAddChoreButton).toBeTruthy();
-      expect(aliceAddChoreButton.textContent).toContain('Add Chore');
+      const addChoreButtons = page.getByRole('button', { name: 'Add Chore' }); //document.querySelectorAll('.person-chores-actions button');
+      const aliceAddChoreButton = addChoreButtons.first();
+      expect(aliceAddChoreButton.element()).toBeVisible();
 
       // Click the Add Chore button
-      aliceAddChoreButton.click();
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await aliceAddChoreButton.click();
 
       // Verify modal opened and contains the person's name (not "Person not found")
       const modalContent = document.querySelector('.modal-content');

@@ -23,6 +23,7 @@ export default defineConfig({
             'src/utils/**/*.test.ts',
             'src/admin/**/*.test.tsx',
           ],
+          setupFiles: ['./src/admin/browser-setup.ts'],
           css: {
             include: /.+/,
           },
