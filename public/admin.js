@@ -1,724 +1,1004 @@
-// API base URL
-const API_BASE = '/MMM-FamilyChores';
-
-function escapeHtml(raw) {
-  const div = document.createElement('div');
-  div.textContent = raw;
-  return div.innerHTML;
-}
-
-// Generate a random light/pastel color suitable for display on a dark background
-function generateRandomLightColor() {
-  const hue = Math.floor(Math.random() * 360);
-  const saturation = 55 + Math.floor(Math.random() * 20);
-  const lightness = 60 + Math.floor(Math.random() * 15);
-
-  // Convert HSL to hex
-  const h = hue / 360;
-  const s = saturation / 100;
-  const l = lightness / 100;
-
-  const hue2rgb = (p, q, t) => {
-    let tVal = t;
-    if (tVal < 0) tVal += 1;
-    if (tVal > 1) tVal -= 1;
-    if (tVal < 1 / 6) return p + (q - p) * 6 * tVal;
-    if (tVal < 1 / 2) return q;
-    if (tVal < 2 / 3) return p + (q - p) * (2 / 3 - tVal) * 6;
-    return p;
-  };
-
-  const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-  const p = 2 * l - q;
-  const r = hue2rgb(p, q, h + 1 / 3);
-  const g = hue2rgb(p, q, h);
-  const b = hue2rgb(p, q, h - 1 / 3);
-
-  const toHex = (x) => {
-    const hex = Math.round(x * 255).toString(16);
-    return hex.length === 1 ? `0${hex}` : hex;
-  };
-
-  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-}
-
-// State
-let choreData = null;
-
-// Initialize
-document.addEventListener('DOMContentLoaded', () => {
-  loadData();
-  setupEventListeners();
-});
-
-// Load data from API
-async function loadData() {
-  try {
-    const response = await fetch(`${API_BASE}/data`);
-    if (!response.ok) throw new Error('Failed to load data');
-    choreData = await response.json();
-    renderPeople();
-    renderRotatingChores();
-    renderSystemState();
-  } catch (error) {
-    console.error('Error loading data:', error);
-    alert('Failed to load data. Please refresh the page.');
-  }
-}
-
-// Setup event listeners
-function setupEventListeners() {
-  // Add person
-  document.getElementById('addPersonBtn').addEventListener('click', () => {
-    openPersonModal();
-  });
-
-  // Add rotating chore
-  document.getElementById('addRotatingChoreBtn').addEventListener('click', () => {
-    openChoreModal('rotating');
-  });
-
-  // Person form
-  document.getElementById('personForm').addEventListener('submit', handlePersonSubmit);
-
-  // Chore form
-  document.getElementById('choreForm').addEventListener('submit', handleChoreSubmit);
-
-  // Copy form
-  document.getElementById('copyForm').addEventListener('submit', handleCopySubmit);
-
-  // Randomize color button
-  document.getElementById('randomizeColorBtn').addEventListener('click', () => {
-    document.getElementById('personColor').value = generateRandomLightColor();
-  });
-
-  // Cancel buttons
-  document.querySelectorAll('.cancel-btn').forEach((btn) => {
-    btn.addEventListener('click', closeModals);
-  });
-
-  // Modal close on outside click
-  document.querySelectorAll('.modal').forEach((modal) => {
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) closeModals();
-    });
-  });
-
-  // Backup
-  document.getElementById('backupBtn').addEventListener('click', downloadBackup);
-
-  // Restore
-  document.getElementById('restoreFile').addEventListener('change', handleRestore);
-
-  // Force daily reset
-  document.getElementById('resetDailyBtn').addEventListener('click', handleForceReset);
-
-  // Info icon tooltips
-  document.querySelectorAll('.info-icon').forEach((icon) => {
-    icon.addEventListener('click', (e) => {
-      e.stopPropagation();
-      // Toggle visibility on click
-      const isVisible = icon.style.getPropertyValue('--tooltip-visible') === 'true';
-      icon.style.setProperty('--tooltip-visible', isVisible ? 'false' : 'true');
-    });
-  });
-
-  // Close tooltips when clicking elsewhere
-  document.addEventListener('click', () => {
-    document.querySelectorAll('.info-icon').forEach((icon) => {
-      icon.style.setProperty('--tooltip-visible', 'false');
-    });
-  });
-}
-
-// Render people list
-function renderPeople() {
-  const container = document.getElementById('peopleList');
-  container.innerHTML = '';
-
-  // Show info icon if no people exist
-  const addPersonInfo = document.getElementById('addPersonInfo');
-  if (addPersonInfo) {
-    addPersonInfo.style.display = choreData.people.length === 0 ? 'inline' : 'none';
-  }
-
-  // Show rotating chores section if people exist
-  const rotatingChoresSection = document.getElementById('rotatingChoresSection');
-  if (rotatingChoresSection) {
-    rotatingChoresSection.style.display = choreData.people.length > 0 ? 'block' : 'none';
-  }
-
-  choreData.people.forEach((person) => {
-    const card = document.createElement('div');
-    card.className = 'item-card';
-
-    // Get personal chores for this person
-    const personalChores = choreData.chores.filter(
-      (chore) => chore.type === 'personal' && chore.assignedTo === person.id
-    );
-
-    let choresHtml = '';
-    choresHtml += `
-      <div class="person-chores-header">
-        <h4>${escapeHtml(person.name)}'s Personal Chores</h4>
-        <div class="person-chores-actions">
-          <button type="button" class="btn btn-primary btn-sm" onclick="openChoreModal('personal', '${person.id}')">Add Chore</button>
-          ${
-            personalChores.length > 0
-              ? `
-            <button type="button" class="btn btn-secondary btn-sm" onclick="openCopyModal('${person.id}')">Copy Chores</button>
-          `
-              : ''
-          }
-        </div>
-      </div>
-    `;
-
-    if (personalChores.length > 0) {
-      choresHtml += '<div class="person-chores">';
-      personalChores.forEach((chore) => {
-        const skipDays =
-          chore.skipDays && chore.skipDays.length > 0
-            ? chore.skipDays.map((d) => d.charAt(0).toUpperCase() + d.slice(1)).join(', ')
-            : 'None';
-        choresHtml += `
-          <div class="chore-item">
-            <div class="chore-info">
-              <h4>${escapeHtml(chore.name)}</h4>
-              ${chore.deadline ? `<p class="deadline">Deadline: ${chore.deadline}</p>` : ''}
-              <p class="skip-days">Skip days: ${skipDays}</p>
-            </div>
-            <div class="chore-actions">
-              <button type="button" class="btn btn-secondary btn-sm" onclick="editChore('${chore.id}')">Edit</button>
-              <button type="button" class="btn btn-danger btn-sm" onclick="deleteChore('${chore.id}')">Delete</button>
-            </div>
-          </div>
-        `;
-      });
-      choresHtml += '</div>';
-    } else {
-      choresHtml +=
-        '<div class="person-chores"><p class="empty-message">No personal chores yet.</p></div>';
-    }
-
-    card.innerHTML = `
-      <div class="person-header">
-        <div class="item-info">
-          <h3>${escapeHtml(person.name)} <span class="color-badge" style="background-color: ${person.color}"></span></h3>
-          <p>ID: ${person.id}</p>
-        </div>
-        <div class="item-actions">
-          <button type="button" class="btn btn-secondary btn-sm" onclick="editPerson('${person.id}')">Edit</button>
-          <button type="button" class="btn btn-danger btn-sm" onclick="deletePerson('${person.id}')">Delete</button>
-        </div>
-      </div>
-      ${choresHtml}
-    `;
-    container.appendChild(card);
-  });
-}
-
-// Render rotating chores list
-function renderRotatingChores() {
-  const container = document.getElementById('rotatingChoresList');
-  if (!container) return;
-  container.innerHTML = '';
-
-  const rotatingChores = choreData.chores.filter((chore) => chore.type === 'rotating');
-
-  rotatingChores.forEach((chore) => {
-    const card = document.createElement('div');
-    card.className = 'item-card';
-
-    // Get rotation list names
-    const rotationNames = chore.rotation
-      .map((personId) => {
-        const person = choreData.people.find((p) => p.id === personId);
-        return person ? escapeHtml(person.name) : 'Unknown';
-      })
-      .join(', ');
-
-    // Check if rotation includes everyone
-    const includesEveryone =
-      chore.rotation.length === choreData.people.length &&
-      chore.rotation.every((personId) => choreData.people.some((p) => p.id === personId));
-
-    const rotationText = includesEveryone ? 'Everyone' : rotationNames;
-
-    // Get current assignee
-    const currentPersonId = chore.rotation[chore.rotatingIndex ?? 0];
-    const currentPerson = choreData.people.find((p) => p.id === currentPersonId);
-    const currentAssignee = currentPerson ? escapeHtml(currentPerson.name) : 'Unassigned';
-
-    const skipDays =
-      chore.skipDays && chore.skipDays.length > 0
-        ? chore.skipDays.map((d) => d.charAt(0).toUpperCase() + d.slice(1)).join(', ')
-        : 'None';
-
-    card.innerHTML = `
-      <div class="item-info">
-        <h3>${escapeHtml(chore.name)} <span class="chore-type-badge rotating">Rotating</span></h3>
-        <p>Current: ${currentAssignee}</p>
-        <p>Rotation: ${rotationText}</p>
-        ${chore.deadline ? `<p class="deadline">Deadline: ${chore.deadline}</p>` : ''}
-        <p class="skip-days">Skip days: ${skipDays}</p>
-      </div>
-      <div class="item-actions">
-        <button type="button" class="btn btn-secondary" onclick="editChore('${chore.id}')">Edit</button>
-        <button type="button" class="btn btn-danger" onclick="deleteChore('${chore.id}')">Delete</button>
-      </div>
-    `;
-    container.appendChild(card);
-  });
-}
-
-// Render system state
-function renderSystemState() {
-  document.getElementById('lastResetDate').textContent = choreData.lastResetDate || 'Never';
-}
-
-// Person modal
-function openPersonModal(person = null) {
-  const modal = document.getElementById('personModal');
-  const title = document.getElementById('personModalTitle');
-  const form = document.getElementById('personForm');
-
-  if (person) {
-    title.textContent = 'Edit Person';
-    document.getElementById('personId').value = person.id;
-    document.getElementById('personName').value = person.name;
-    document.getElementById('personColor').value = person.color;
-  } else {
-    title.textContent = 'Add Person';
-    form.reset();
-    document.getElementById('personId').value = '';
-    document.getElementById('personColor').value = generateRandomLightColor();
-  }
-
-  modal.classList.add('active');
-}
-
-// Chore modal
-function openChoreModal(type = null, personId = null, chore = null) {
-  const modal = document.getElementById('choreModal');
-  const title = document.getElementById('choreModalTitle');
-  const form = document.getElementById('choreForm');
-
-  // Populate people dropdowns
-  const assignedToSelect = document.getElementById('assignedTo');
-  assignedToSelect.innerHTML = '';
-  choreData.people.forEach((person) => {
-    const option = document.createElement('option');
-    option.value = person.id;
-    option.textContent = person.name;
-    assignedToSelect.appendChild(option);
-  });
-
-  // Populate rotation checkboxes
-  const rotationList = document.getElementById('rotationList');
-  rotationList.innerHTML = '';
-  choreData.people.forEach((person) => {
-    const label = document.createElement('label');
-    label.innerHTML = `<input type="checkbox" value="${person.id}" class="rotation-checkbox"> ${escapeHtml(person.name)}`;
-    rotationList.appendChild(label);
-  });
-
-  const assignedToGroup = document.getElementById('assignedToGroup');
-  const rotationGroup = document.getElementById('rotationGroup');
-
-  if (chore) {
-    // Editing existing chore
-    title.textContent = 'Edit Chore';
-    document.getElementById('choreId').value = chore.id;
-    document.getElementById('choreName').value = chore.name;
-    document.getElementById('choreType').value = chore.type;
-    document.getElementById('choreDeadline').value = chore.deadline || '';
-    document.getElementById('skipDayVisibility').value =
-      chore.skipDayVisibility || 'show-if-overdue';
-
-    // Skip days
-    document.querySelectorAll('.skipDay').forEach((checkbox) => {
-      checkbox.checked = chore.skipDays?.includes(checkbox.value);
-    });
-
-    // Show/hide fields based on type
-    if (chore.type === 'personal') {
-      assignedToGroup.style.display = 'block';
-      rotationGroup.style.display = 'none';
-      document.getElementById('assignedTo').value = chore.assignedTo;
-    } else if (chore.type === 'rotating') {
-      assignedToGroup.style.display = 'none';
-      rotationGroup.style.display = 'block';
-      document.querySelectorAll('.rotation-checkbox').forEach((checkbox) => {
-        checkbox.checked = chore.rotation?.includes(checkbox.value);
-      });
-    }
-  } else {
-    // Adding new chore with type locked
-    title.textContent = type === 'personal' ? 'Add Personal Chore' : 'Add Rotating Chore';
-    form.reset();
-    document.getElementById('choreId').value = '';
-    document.getElementById('choreType').value = type;
-    document.getElementById('skipDayVisibility').value = 'show-if-overdue';
-
-    // Show/hide fields based on locked type
-    if (type === 'personal') {
-      assignedToGroup.style.display = 'block';
-      rotationGroup.style.display = 'none';
-      if (personId) {
-        document.getElementById('assignedTo').value = personId;
-      }
-    } else if (type === 'rotating') {
-      assignedToGroup.style.display = 'none';
-      rotationGroup.style.display = 'block';
-    }
-  }
-
-  modal.classList.add('active');
-}
-
-// Close modals
-function closeModals() {
-  document.querySelectorAll('.modal').forEach((modal) => {
-    modal.classList.remove('active');
-  });
-}
-
-// Handle person form submit
-async function handlePersonSubmit(e) {
-  e.preventDefault();
-
-  const id = document.getElementById('personId').value;
-  const name = document.getElementById('personName').value;
-  const color = document.getElementById('personColor').value;
-
-  try {
-    let response;
-    if (id) {
-      // Update
-      response = await fetch(`${API_BASE}/people/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, color }),
-      });
-    } else {
-      // Create
-      response = await fetch(`${API_BASE}/people`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, color }),
-      });
-    }
-
-    if (!response.ok) throw new Error('Failed to save person');
-
-    closeModals();
-    await loadData();
-  } catch (error) {
-    console.error('Error saving person:', error);
-    alert('Failed to save person. Please try again.');
-  }
-}
-
-// Handle chore form submit
-async function handleChoreSubmit(e) {
-  e.preventDefault();
-
-  const id = document.getElementById('choreId').value;
-  const name = document.getElementById('choreName').value;
-  const type = document.getElementById('choreType').value;
-  const deadlineRaw = document.getElementById('choreDeadline').value;
-  const deadline = deadlineRaw.trim() || undefined;
-  const skipDayVisibility = document.getElementById('skipDayVisibility').value;
-
-  // Skip days
-  const skipDays = [];
-  document.querySelectorAll('.skipDay:checked').forEach((checkbox) => {
-    skipDays.push(checkbox.value);
-  });
-
-  let assignedTo = null;
-  let rotation = null;
-
-  if (type === 'personal') {
-    assignedTo = document.getElementById('assignedTo').value;
-  } else {
-    rotation = [];
-    document.querySelectorAll('.rotation-checkbox:checked').forEach((checkbox) => {
-      rotation.push(checkbox.value);
-    });
-  }
-
-  try {
-    let response;
-    if (id) {
-      // Update
-      response = await fetch(`${API_BASE}/chores/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          type,
-          assignedTo,
-          rotation,
-          deadline,
-          skipDays,
-          skipDayVisibility,
-        }),
-      });
-    } else {
-      // Create
-      response = await fetch(`${API_BASE}/chores`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          type,
-          assignedTo,
-          rotation,
-          deadline,
-          skipDays,
-          skipDayVisibility,
-        }),
-      });
-    }
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      if (errorData?.error) {
-        // specific message like a field validation error
-        alert(`Problem saving chore: ${errorData.error}`);
-        // early exit to avoid showing 2 error messages (one from API and one generic)
-        return;
-      }
-      throw new Error('Failed to save chore');
-    }
-
-    closeModals();
-    await loadData();
-  } catch (error) {
-    // Error could be a network error or JSON parsing error
-    console.error('Error saving chore:', error);
-    alert(`Failed to save chore. Please try again.`);
-  }
-}
-
-// Edit person (global function for onclick)
-window.editPerson = (id) => {
-  const person = choreData.people.find((p) => p.id === id);
-  if (person) openPersonModal(person);
-};
-
-// Delete person (global function for onclick)
-window.deletePerson = async (id) => {
-  if (
-    !confirm(
-      'Are you sure you want to delete this person? This will also remove all their assigned chores.'
-    )
-  ) {
-    return;
-  }
-
-  try {
-    const response = await fetch(`${API_BASE}/people/${id}`, {
-      method: 'DELETE',
-    });
-
-    if (!response.ok) throw new Error('Failed to delete person');
-
-    await loadData();
-  } catch (error) {
-    console.error('Error deleting person:', error);
-    alert('Failed to delete person. Please try again.');
-  }
-};
-
-// Edit chore (global function for onclick)
-window.editChore = (id) => {
-  const chore = choreData.chores.find((c) => c.id === id);
-  if (chore) openChoreModal(null, null, chore);
-};
-
-// Delete chore (global function for onclick)
-window.deleteChore = async (id) => {
-  if (!confirm('Are you sure you want to delete this chore?')) {
-    return;
-  }
-
-  try {
-    const response = await fetch(`${API_BASE}/chores/${id}`, {
-      method: 'DELETE',
-    });
-
-    if (!response.ok) throw new Error('Failed to delete chore');
-
-    await loadData();
-  } catch (error) {
-    console.error('Error deleting chore:', error);
-    alert('Failed to delete chore. Please try again.');
-  }
-};
-
-// Download backup
-async function downloadBackup() {
-  try {
-    const response = await fetch(`${API_BASE}/backup`);
-    if (!response.ok) throw new Error('Failed to create backup');
-
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download =
-      response.headers.get('Content-Disposition')?.match(/filename="(.+)"/)?.[1] ||
-      'family-chores-backup.json';
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
-  } catch (error) {
-    console.error('Error downloading backup:', error);
-    alert('Failed to download backup. Please try again.');
-  }
-}
-
-// Handle restore
-async function handleRestore(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  try {
-    const text = await file.text();
-    const data = JSON.parse(text);
-
-    const response = await fetch(`${API_BASE}/restore`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) throw new Error('Failed to restore data');
-
-    alert('Data restored successfully!');
-    await loadData();
-  } catch (error) {
-    console.error('Error restoring data:', error);
-    alert('Failed to restore data. Please check the file format and try again.');
-  }
-
-  // Reset file input
-  e.target.value = '';
-}
-
-// Handle force daily reset
-async function handleForceReset() {
-  if (
-    !confirm(
-      'Are you sure you want to force a daily reset? This will reset all chore states for the new day.'
-    )
-  ) {
-    return;
-  }
-
-  try {
-    // Update lastResetDate to yesterday to trigger reset
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
-
-    choreData.lastResetDate = yesterdayStr;
-
-    const response = await fetch(`${API_BASE}/restore`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(choreData),
-    });
-
-    if (!response.ok) throw new Error('Failed to force reset');
-
-    alert('Daily reset triggered successfully! The data will be updated on the next sync.');
-    await loadData();
-  } catch (error) {
-    console.error('Error forcing reset:', error);
-    alert('Failed to force reset. Please try again.');
-  }
-}
-
-// Copy modal
-window.openCopyModal = (fromPersonId) => {
-  const modal = document.getElementById('copyModal');
-  const fromPerson = choreData.people.find((p) => p.id === fromPersonId);
-
-  if (!fromPerson) return;
-
-  // Set from person info
-  document.getElementById('copyFromPersonId').value = fromPersonId;
-  document.getElementById('copyFromPersonName').textContent = fromPerson.name;
-
-  // Populate "to" dropdown (exclude from person)
-  const toSelect = document.getElementById('copyToPersonId');
-  toSelect.innerHTML = '';
-  choreData.people
-    .filter((p) => p.id !== fromPersonId)
-    .forEach((person) => {
-      const option = document.createElement('option');
-      option.value = person.id;
-      option.textContent = person.name;
-      toSelect.appendChild(option);
-    });
-
-  // Get personal chores for from person
-  const personalChores = choreData.chores.filter(
-    (chore) => chore.type === 'personal' && chore.assignedTo === fromPersonId
-  );
-
-  // Populate chores list with checkboxes (all checked by default)
-  const choresList = document.getElementById('copyChoresList');
-  choresList.innerHTML = '';
-  personalChores.forEach((chore) => {
-    const label = document.createElement('label');
-    label.innerHTML = `<input type="checkbox" value="${chore.id}" class="copy-chore-checkbox" checked> ${escapeHtml(chore.name)}`;
-    choresList.appendChild(label);
-  });
-
-  modal.classList.add('active');
-};
-
-// Handle copy form submit
-async function handleCopySubmit(e) {
-  e.preventDefault();
-
-  const fromPersonId = document.getElementById('copyFromPersonId').value;
-  const toPersonId = document.getElementById('copyToPersonId').value;
-
-  // Get selected chore IDs
-  const selectedChoreIds = [];
-  document.querySelectorAll('.copy-chore-checkbox:checked').forEach((checkbox) => {
-    selectedChoreIds.push(checkbox.value);
-  });
-
-  if (selectedChoreIds.length === 0) {
-    alert('Please select at least one chore to copy.');
-    return;
-  }
-
-  try {
-    const response = await fetch(`${API_BASE}/copy-chores`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        fromPersonId,
-        toPersonId,
-        choreIds: selectedChoreIds,
-      }),
-    });
-
-    if (!response.ok) throw new Error('Failed to copy chores');
-
-    closeModals();
-    await loadData();
-  } catch (error) {
-    console.error('Error copying chores:', error);
-    alert('Failed to copy chores. Please try again.');
-  }
-}
+// Automatically built — do not edit directly. Edit src/admin/admin.tsx and run pnpm build:admin.
+(function() {
+	//#region node_modules/.pnpm/solid-js@1.9.12/node_modules/solid-js/dist/solid.js
+	var sharedConfig = {
+		context: void 0,
+		registry: void 0,
+		effects: void 0,
+		done: false,
+		getContextId() {
+			return getContextId(this.context.count);
+		},
+		getNextContextId() {
+			return getContextId(this.context.count++);
+		}
+	};
+	function getContextId(count) {
+		const num = String(count), len = num.length - 1;
+		return sharedConfig.context.id + (len ? String.fromCharCode(96 + len) : "") + num;
+	}
+	function setHydrateContext(context) {
+		sharedConfig.context = context;
+	}
+	function nextHydrateContext() {
+		return {
+			...sharedConfig.context,
+			id: sharedConfig.getNextContextId(),
+			count: 0
+		};
+	}
+	var equalFn = (a, b) => a === b;
+	var signalOptions = { equals: equalFn };
+	var ERROR = null;
+	var runEffects = runQueue;
+	var STALE = 1;
+	var PENDING = 2;
+	var UNOWNED = {
+		owned: null,
+		cleanups: null,
+		context: null,
+		owner: null
+	};
+	var Owner = null;
+	var Transition = null;
+	var Scheduler = null;
+	var ExternalSourceConfig = null;
+	var Listener = null;
+	var Updates = null;
+	var Effects = null;
+	var ExecCount = 0;
+	function createRoot(fn, detachedOwner) {
+		const listener = Listener, owner = Owner, unowned = fn.length === 0, current = detachedOwner === void 0 ? owner : detachedOwner, root = unowned ? UNOWNED : {
+			owned: null,
+			cleanups: null,
+			context: current ? current.context : null,
+			owner: current
+		}, updateFn = unowned ? fn : () => fn(() => untrack(() => cleanNode(root)));
+		Owner = root;
+		Listener = null;
+		try {
+			return runUpdates(updateFn, true);
+		} finally {
+			Listener = listener;
+			Owner = owner;
+		}
+	}
+	function createSignal(value, options) {
+		options = options ? Object.assign({}, signalOptions, options) : signalOptions;
+		const s = {
+			value,
+			observers: null,
+			observerSlots: null,
+			comparator: options.equals || void 0
+		};
+		const setter = (value) => {
+			if (typeof value === "function") if (Transition && Transition.running && Transition.sources.has(s)) value = value(s.tValue);
+			else value = value(s.value);
+			return writeSignal(s, value);
+		};
+		return [readSignal.bind(s), setter];
+	}
+	function createRenderEffect(fn, value, options) {
+		const c = createComputation(fn, value, false, STALE);
+		if (Scheduler && Transition && Transition.running) Updates.push(c);
+		else updateComputation(c);
+	}
+	function createEffect(fn, value, options) {
+		runEffects = runUserEffects;
+		const c = createComputation(fn, value, false, STALE), s = SuspenseContext && useContext(SuspenseContext);
+		if (s) c.suspense = s;
+		if (!options || !options.render) c.user = true;
+		Effects ? Effects.push(c) : updateComputation(c);
+	}
+	function createMemo(fn, value, options) {
+		options = options ? Object.assign({}, signalOptions, options) : signalOptions;
+		const c = createComputation(fn, value, true, 0);
+		c.observers = null;
+		c.observerSlots = null;
+		c.comparator = options.equals || void 0;
+		if (Scheduler && Transition && Transition.running) {
+			c.tState = STALE;
+			Updates.push(c);
+		} else updateComputation(c);
+		return readSignal.bind(c);
+	}
+	function untrack(fn) {
+		if (!ExternalSourceConfig && Listener === null) return fn();
+		const listener = Listener;
+		Listener = null;
+		try {
+			if (ExternalSourceConfig) return ExternalSourceConfig.untrack(fn);
+			return fn();
+		} finally {
+			Listener = listener;
+		}
+	}
+	function onMount(fn) {
+		createEffect(() => untrack(fn));
+	}
+	function onCleanup(fn) {
+		if (Owner === null);
+		else if (Owner.cleanups === null) Owner.cleanups = [fn];
+		else Owner.cleanups.push(fn);
+		return fn;
+	}
+	function startTransition(fn) {
+		if (Transition && Transition.running) {
+			fn();
+			return Transition.done;
+		}
+		const l = Listener;
+		const o = Owner;
+		return Promise.resolve().then(() => {
+			Listener = l;
+			Owner = o;
+			let t;
+			if (Scheduler || SuspenseContext) {
+				t = Transition || (Transition = {
+					sources: /* @__PURE__ */ new Set(),
+					effects: [],
+					promises: /* @__PURE__ */ new Set(),
+					disposed: /* @__PURE__ */ new Set(),
+					queue: /* @__PURE__ */ new Set(),
+					running: true
+				});
+				t.done || (t.done = new Promise((res) => t.resolve = res));
+				t.running = true;
+			}
+			runUpdates(fn, false);
+			Listener = Owner = null;
+			return t ? t.done : void 0;
+		});
+	}
+	var [transPending, setTransPending] = /* @__PURE__ */ createSignal(false);
+	function useContext(context) {
+		let value;
+		return Owner && Owner.context && (value = Owner.context[context.id]) !== void 0 ? value : context.defaultValue;
+	}
+	var SuspenseContext;
+	function readSignal() {
+		const runningTransition = Transition && Transition.running;
+		if (this.sources && (runningTransition ? this.tState : this.state)) if ((runningTransition ? this.tState : this.state) === STALE) updateComputation(this);
+		else {
+			const updates = Updates;
+			Updates = null;
+			runUpdates(() => lookUpstream(this), false);
+			Updates = updates;
+		}
+		if (Listener) {
+			const sSlot = this.observers ? this.observers.length : 0;
+			if (!Listener.sources) {
+				Listener.sources = [this];
+				Listener.sourceSlots = [sSlot];
+			} else {
+				Listener.sources.push(this);
+				Listener.sourceSlots.push(sSlot);
+			}
+			if (!this.observers) {
+				this.observers = [Listener];
+				this.observerSlots = [Listener.sources.length - 1];
+			} else {
+				this.observers.push(Listener);
+				this.observerSlots.push(Listener.sources.length - 1);
+			}
+		}
+		if (runningTransition && Transition.sources.has(this)) return this.tValue;
+		return this.value;
+	}
+	function writeSignal(node, value, isComp) {
+		let current = Transition && Transition.running && Transition.sources.has(node) ? node.tValue : node.value;
+		if (!node.comparator || !node.comparator(current, value)) {
+			if (Transition) {
+				const TransitionRunning = Transition.running;
+				if (TransitionRunning || !isComp && Transition.sources.has(node)) {
+					Transition.sources.add(node);
+					node.tValue = value;
+				}
+				if (!TransitionRunning) node.value = value;
+			} else node.value = value;
+			if (node.observers && node.observers.length) runUpdates(() => {
+				for (let i = 0; i < node.observers.length; i += 1) {
+					const o = node.observers[i];
+					const TransitionRunning = Transition && Transition.running;
+					if (TransitionRunning && Transition.disposed.has(o)) continue;
+					if (TransitionRunning ? !o.tState : !o.state) {
+						if (o.pure) Updates.push(o);
+						else Effects.push(o);
+						if (o.observers) markDownstream(o);
+					}
+					if (!TransitionRunning) o.state = STALE;
+					else o.tState = STALE;
+				}
+				if (Updates.length > 1e6) {
+					Updates = [];
+					throw new Error();
+				}
+			}, false);
+		}
+		return value;
+	}
+	function updateComputation(node) {
+		if (!node.fn) return;
+		cleanNode(node);
+		const time = ExecCount;
+		runComputation(node, Transition && Transition.running && Transition.sources.has(node) ? node.tValue : node.value, time);
+		if (Transition && !Transition.running && Transition.sources.has(node)) queueMicrotask(() => {
+			runUpdates(() => {
+				Transition && (Transition.running = true);
+				Listener = Owner = node;
+				runComputation(node, node.tValue, time);
+				Listener = Owner = null;
+			}, false);
+		});
+	}
+	function runComputation(node, value, time) {
+		let nextValue;
+		const owner = Owner, listener = Listener;
+		Listener = Owner = node;
+		try {
+			nextValue = node.fn(value);
+		} catch (err) {
+			if (node.pure) if (Transition && Transition.running) {
+				node.tState = STALE;
+				node.tOwned && node.tOwned.forEach(cleanNode);
+				node.tOwned = void 0;
+			} else {
+				node.state = STALE;
+				node.owned && node.owned.forEach(cleanNode);
+				node.owned = null;
+			}
+			node.updatedAt = time + 1;
+			return handleError(err);
+		} finally {
+			Listener = listener;
+			Owner = owner;
+		}
+		if (!node.updatedAt || node.updatedAt <= time) {
+			if (node.updatedAt != null && "observers" in node) writeSignal(node, nextValue, true);
+			else if (Transition && Transition.running && node.pure) {
+				if (!Transition.sources.has(node)) node.value = nextValue;
+				Transition.sources.add(node);
+				node.tValue = nextValue;
+			} else node.value = nextValue;
+			node.updatedAt = time;
+		}
+	}
+	function createComputation(fn, init, pure, state = STALE, options) {
+		const c = {
+			fn,
+			state,
+			updatedAt: null,
+			owned: null,
+			sources: null,
+			sourceSlots: null,
+			cleanups: null,
+			value: init,
+			owner: Owner,
+			context: Owner ? Owner.context : null,
+			pure
+		};
+		if (Transition && Transition.running) {
+			c.state = 0;
+			c.tState = state;
+		}
+		if (Owner === null);
+		else if (Owner !== UNOWNED) if (Transition && Transition.running && Owner.pure) if (!Owner.tOwned) Owner.tOwned = [c];
+		else Owner.tOwned.push(c);
+		else if (!Owner.owned) Owner.owned = [c];
+		else Owner.owned.push(c);
+		if (ExternalSourceConfig && c.fn) {
+			const sourceFn = c.fn;
+			const [track, trigger] = createSignal(void 0, { equals: false });
+			const ordinary = ExternalSourceConfig.factory(sourceFn, trigger);
+			onCleanup(() => ordinary.dispose());
+			let inTransition;
+			const triggerInTransition = () => startTransition(trigger).then(() => {
+				if (inTransition) {
+					inTransition.dispose();
+					inTransition = void 0;
+				}
+			});
+			c.fn = (x) => {
+				track();
+				if (Transition && Transition.running) {
+					if (!inTransition) inTransition = ExternalSourceConfig.factory(sourceFn, triggerInTransition);
+					return inTransition.track(x);
+				}
+				return ordinary.track(x);
+			};
+		}
+		return c;
+	}
+	function runTop(node) {
+		const runningTransition = Transition && Transition.running;
+		if ((runningTransition ? node.tState : node.state) === 0) return;
+		if ((runningTransition ? node.tState : node.state) === PENDING) return lookUpstream(node);
+		if (node.suspense && untrack(node.suspense.inFallback)) return node.suspense.effects.push(node);
+		const ancestors = [node];
+		while ((node = node.owner) && (!node.updatedAt || node.updatedAt < ExecCount)) {
+			if (runningTransition && Transition.disposed.has(node)) return;
+			if (runningTransition ? node.tState : node.state) ancestors.push(node);
+		}
+		for (let i = ancestors.length - 1; i >= 0; i--) {
+			node = ancestors[i];
+			if (runningTransition) {
+				let top = node, prev = ancestors[i + 1];
+				while ((top = top.owner) && top !== prev) if (Transition.disposed.has(top)) return;
+			}
+			if ((runningTransition ? node.tState : node.state) === STALE) updateComputation(node);
+			else if ((runningTransition ? node.tState : node.state) === PENDING) {
+				const updates = Updates;
+				Updates = null;
+				runUpdates(() => lookUpstream(node, ancestors[0]), false);
+				Updates = updates;
+			}
+		}
+	}
+	function runUpdates(fn, init) {
+		if (Updates) return fn();
+		let wait = false;
+		if (!init) Updates = [];
+		if (Effects) wait = true;
+		else Effects = [];
+		ExecCount++;
+		try {
+			const res = fn();
+			completeUpdates(wait);
+			return res;
+		} catch (err) {
+			if (!wait) Effects = null;
+			Updates = null;
+			handleError(err);
+		}
+	}
+	function completeUpdates(wait) {
+		if (Updates) {
+			if (Scheduler && Transition && Transition.running) scheduleQueue(Updates);
+			else runQueue(Updates);
+			Updates = null;
+		}
+		if (wait) return;
+		let res;
+		if (Transition) {
+			if (!Transition.promises.size && !Transition.queue.size) {
+				const sources = Transition.sources;
+				const disposed = Transition.disposed;
+				Effects.push.apply(Effects, Transition.effects);
+				res = Transition.resolve;
+				for (const e of Effects) {
+					"tState" in e && (e.state = e.tState);
+					delete e.tState;
+				}
+				Transition = null;
+				runUpdates(() => {
+					for (const d of disposed) cleanNode(d);
+					for (const v of sources) {
+						v.value = v.tValue;
+						if (v.owned) for (let i = 0, len = v.owned.length; i < len; i++) cleanNode(v.owned[i]);
+						if (v.tOwned) v.owned = v.tOwned;
+						delete v.tValue;
+						delete v.tOwned;
+						v.tState = 0;
+					}
+					setTransPending(false);
+				}, false);
+			} else if (Transition.running) {
+				Transition.running = false;
+				Transition.effects.push.apply(Transition.effects, Effects);
+				Effects = null;
+				setTransPending(true);
+				return;
+			}
+		}
+		const e = Effects;
+		Effects = null;
+		if (e.length) runUpdates(() => runEffects(e), false);
+		if (res) res();
+	}
+	function runQueue(queue) {
+		for (let i = 0; i < queue.length; i++) runTop(queue[i]);
+	}
+	function scheduleQueue(queue) {
+		for (let i = 0; i < queue.length; i++) {
+			const item = queue[i];
+			const tasks = Transition.queue;
+			if (!tasks.has(item)) {
+				tasks.add(item);
+				Scheduler(() => {
+					tasks.delete(item);
+					runUpdates(() => {
+						Transition.running = true;
+						runTop(item);
+					}, false);
+					Transition && (Transition.running = false);
+				});
+			}
+		}
+	}
+	function runUserEffects(queue) {
+		let i, userLength = 0;
+		for (i = 0; i < queue.length; i++) {
+			const e = queue[i];
+			if (!e.user) runTop(e);
+			else queue[userLength++] = e;
+		}
+		if (sharedConfig.context) {
+			if (sharedConfig.count) {
+				sharedConfig.effects || (sharedConfig.effects = []);
+				sharedConfig.effects.push(...queue.slice(0, userLength));
+				return;
+			}
+			setHydrateContext();
+		}
+		if (sharedConfig.effects && (sharedConfig.done || !sharedConfig.count)) {
+			queue = [...sharedConfig.effects, ...queue];
+			userLength += sharedConfig.effects.length;
+			delete sharedConfig.effects;
+		}
+		for (i = 0; i < userLength; i++) runTop(queue[i]);
+	}
+	function lookUpstream(node, ignore) {
+		const runningTransition = Transition && Transition.running;
+		if (runningTransition) node.tState = 0;
+		else node.state = 0;
+		for (let i = 0; i < node.sources.length; i += 1) {
+			const source = node.sources[i];
+			if (source.sources) {
+				const state = runningTransition ? source.tState : source.state;
+				if (state === STALE) {
+					if (source !== ignore && (!source.updatedAt || source.updatedAt < ExecCount)) runTop(source);
+				} else if (state === PENDING) lookUpstream(source, ignore);
+			}
+		}
+	}
+	function markDownstream(node) {
+		const runningTransition = Transition && Transition.running;
+		for (let i = 0; i < node.observers.length; i += 1) {
+			const o = node.observers[i];
+			if (runningTransition ? !o.tState : !o.state) {
+				if (runningTransition) o.tState = PENDING;
+				else o.state = PENDING;
+				if (o.pure) Updates.push(o);
+				else Effects.push(o);
+				o.observers && markDownstream(o);
+			}
+		}
+	}
+	function cleanNode(node) {
+		let i;
+		if (node.sources) while (node.sources.length) {
+			const source = node.sources.pop(), index = node.sourceSlots.pop(), obs = source.observers;
+			if (obs && obs.length) {
+				const n = obs.pop(), s = source.observerSlots.pop();
+				if (index < obs.length) {
+					n.sourceSlots[s] = index;
+					obs[index] = n;
+					source.observerSlots[index] = s;
+				}
+			}
+		}
+		if (node.tOwned) {
+			for (i = node.tOwned.length - 1; i >= 0; i--) cleanNode(node.tOwned[i]);
+			delete node.tOwned;
+		}
+		if (Transition && Transition.running && node.pure) reset(node, true);
+		else if (node.owned) {
+			for (i = node.owned.length - 1; i >= 0; i--) cleanNode(node.owned[i]);
+			node.owned = null;
+		}
+		if (node.cleanups) {
+			for (i = node.cleanups.length - 1; i >= 0; i--) node.cleanups[i]();
+			node.cleanups = null;
+		}
+		if (Transition && Transition.running) node.tState = 0;
+		else node.state = 0;
+	}
+	function reset(node, top) {
+		if (!top) {
+			node.tState = 0;
+			Transition.disposed.add(node);
+		}
+		if (node.owned) for (let i = 0; i < node.owned.length; i++) reset(node.owned[i]);
+	}
+	function castError(err) {
+		if (err instanceof Error) return err;
+		return new Error(typeof err === "string" ? err : "Unknown error", { cause: err });
+	}
+	function runErrors(err, fns, owner) {
+		try {
+			for (const f of fns) f(err);
+		} catch (e) {
+			handleError(e, owner && owner.owner || null);
+		}
+	}
+	function handleError(err, owner = Owner) {
+		const fns = ERROR && owner && owner.context && owner.context[ERROR];
+		const error = castError(err);
+		if (!fns) throw error;
+		if (Effects) Effects.push({
+			fn() {
+				runErrors(error, fns, owner);
+			},
+			state: STALE
+		});
+		else runErrors(error, fns, owner);
+	}
+	var hydrationEnabled = false;
+	function createComponent(Comp, props) {
+		if (hydrationEnabled) {
+			if (sharedConfig.context) {
+				const c = sharedConfig.context;
+				setHydrateContext(nextHydrateContext());
+				const r = untrack(() => Comp(props || {}));
+				setHydrateContext(c);
+				return r;
+			}
+		}
+		return untrack(() => Comp(props || {}));
+	}
+	//#endregion
+	//#region node_modules/.pnpm/solid-js@1.9.12/node_modules/solid-js/web/dist/web.js
+	var memo = (fn) => createMemo(() => fn());
+	function reconcileArrays(parentNode, a, b) {
+		let bLength = b.length, aEnd = a.length, bEnd = bLength, aStart = 0, bStart = 0, after = a[aEnd - 1].nextSibling, map = null;
+		while (aStart < aEnd || bStart < bEnd) {
+			if (a[aStart] === b[bStart]) {
+				aStart++;
+				bStart++;
+				continue;
+			}
+			while (a[aEnd - 1] === b[bEnd - 1]) {
+				aEnd--;
+				bEnd--;
+			}
+			if (aEnd === aStart) {
+				const node = bEnd < bLength ? bStart ? b[bStart - 1].nextSibling : b[bEnd - bStart] : after;
+				while (bStart < bEnd) parentNode.insertBefore(b[bStart++], node);
+			} else if (bEnd === bStart) while (aStart < aEnd) {
+				if (!map || !map.has(a[aStart])) a[aStart].remove();
+				aStart++;
+			}
+			else if (a[aStart] === b[bEnd - 1] && b[bStart] === a[aEnd - 1]) {
+				const node = a[--aEnd].nextSibling;
+				parentNode.insertBefore(b[bStart++], a[aStart++].nextSibling);
+				parentNode.insertBefore(b[--bEnd], node);
+				a[aEnd] = b[bEnd];
+			} else {
+				if (!map) {
+					map = /* @__PURE__ */ new Map();
+					let i = bStart;
+					while (i < bEnd) map.set(b[i], i++);
+				}
+				const index = map.get(a[aStart]);
+				if (index != null) if (bStart < index && index < bEnd) {
+					let i = aStart, sequence = 1, t;
+					while (++i < aEnd && i < bEnd) {
+						if ((t = map.get(a[i])) == null || t !== index + sequence) break;
+						sequence++;
+					}
+					if (sequence > index - bStart) {
+						const node = a[aStart];
+						while (bStart < index) parentNode.insertBefore(b[bStart++], node);
+					} else parentNode.replaceChild(b[bStart++], a[aStart++]);
+				} else aStart++;
+				else a[aStart++].remove();
+			}
+		}
+	}
+	var $$EVENTS = "_$DX_DELEGATE";
+	function render(code, element, init, options = {}) {
+		let disposer;
+		createRoot((dispose) => {
+			disposer = dispose;
+			element === document ? code() : insert(element, code(), element.firstChild ? null : void 0, init);
+		}, options.owner);
+		return () => {
+			disposer();
+			element.textContent = "";
+		};
+	}
+	function template(html, isImportNode, isSVG, isMathML) {
+		let node;
+		const create = () => {
+			const t = isMathML ? document.createElementNS("http://www.w3.org/1998/Math/MathML", "template") : document.createElement("template");
+			t.innerHTML = html;
+			return isSVG ? t.content.firstChild.firstChild : isMathML ? t.firstChild : t.content.firstChild;
+		};
+		const fn = isImportNode ? () => untrack(() => document.importNode(node || (node = create()), true)) : () => (node || (node = create())).cloneNode(true);
+		fn.cloneNode = fn;
+		return fn;
+	}
+	function delegateEvents(eventNames, document = window.document) {
+		const e = document[$$EVENTS] || (document[$$EVENTS] = /* @__PURE__ */ new Set());
+		for (let i = 0, l = eventNames.length; i < l; i++) {
+			const name = eventNames[i];
+			if (!e.has(name)) {
+				e.add(name);
+				document.addEventListener(name, eventHandler);
+			}
+		}
+	}
+	function setAttribute(node, name, value) {
+		if (isHydrating(node)) return;
+		if (value == null) node.removeAttribute(name);
+		else node.setAttribute(name, value);
+	}
+	function style(node, value, prev) {
+		if (!value) return prev ? setAttribute(node, "style") : value;
+		const nodeStyle = node.style;
+		if (typeof value === "string") return nodeStyle.cssText = value;
+		typeof prev === "string" && (nodeStyle.cssText = prev = void 0);
+		prev || (prev = {});
+		value || (value = {});
+		let v, s;
+		for (s in prev) {
+			value[s] ?? nodeStyle.removeProperty(s);
+			delete prev[s];
+		}
+		for (s in value) {
+			v = value[s];
+			if (v !== prev[s]) {
+				nodeStyle.setProperty(s, v);
+				prev[s] = v;
+			}
+		}
+		return prev;
+	}
+	function insert(parent, accessor, marker, initial) {
+		if (marker !== void 0 && !initial) initial = [];
+		if (typeof accessor !== "function") return insertExpression(parent, accessor, initial, marker);
+		createRenderEffect((current) => insertExpression(parent, accessor(), current, marker), initial);
+	}
+	function isHydrating(node) {
+		return !!sharedConfig.context && !sharedConfig.done && (!node || node.isConnected);
+	}
+	function eventHandler(e) {
+		if (sharedConfig.registry && sharedConfig.events) {
+			if (sharedConfig.events.find(([el, ev]) => ev === e)) return;
+		}
+		let node = e.target;
+		const key = `$$${e.type}`;
+		const oriTarget = e.target;
+		const oriCurrentTarget = e.currentTarget;
+		const retarget = (value) => Object.defineProperty(e, "target", {
+			configurable: true,
+			value
+		});
+		const handleNode = () => {
+			const handler = node[key];
+			if (handler && !node.disabled) {
+				const data = node[`${key}Data`];
+				data !== void 0 ? handler.call(node, data, e) : handler.call(node, e);
+				if (e.cancelBubble) return;
+			}
+			node.host && typeof node.host !== "string" && !node.host._$host && node.contains(e.target) && retarget(node.host);
+			return true;
+		};
+		const walkUpTree = () => {
+			while (handleNode() && (node = node._$host || node.parentNode || node.host));
+		};
+		Object.defineProperty(e, "currentTarget", {
+			configurable: true,
+			get() {
+				return node || document;
+			}
+		});
+		if (sharedConfig.registry && !sharedConfig.done) sharedConfig.done = _$HY.done = true;
+		if (e.composedPath) {
+			const path = e.composedPath();
+			retarget(path[0]);
+			for (let i = 0; i < path.length - 2; i++) {
+				node = path[i];
+				if (!handleNode()) break;
+				if (node._$host) {
+					node = node._$host;
+					walkUpTree();
+					break;
+				}
+				if (node.parentNode === oriCurrentTarget) break;
+			}
+		} else walkUpTree();
+		retarget(oriTarget);
+	}
+	function insertExpression(parent, value, current, marker, unwrapArray) {
+		const hydrating = isHydrating(parent);
+		if (hydrating) {
+			!current && (current = [...parent.childNodes]);
+			let cleaned = [];
+			for (let i = 0; i < current.length; i++) {
+				const node = current[i];
+				if (node.nodeType === 8 && node.data.slice(0, 2) === "!$") node.remove();
+				else cleaned.push(node);
+			}
+			current = cleaned;
+		}
+		while (typeof current === "function") current = current();
+		if (value === current) return current;
+		const t = typeof value, multi = marker !== void 0;
+		parent = multi && current[0] && current[0].parentNode || parent;
+		if (t === "string" || t === "number") {
+			if (hydrating) return current;
+			if (t === "number") {
+				value = value.toString();
+				if (value === current) return current;
+			}
+			if (multi) {
+				let node = current[0];
+				if (node && node.nodeType === 3) node.data !== value && (node.data = value);
+				else node = document.createTextNode(value);
+				current = cleanChildren(parent, current, marker, node);
+			} else if (current !== "" && typeof current === "string") current = parent.firstChild.data = value;
+			else current = parent.textContent = value;
+		} else if (value == null || t === "boolean") {
+			if (hydrating) return current;
+			current = cleanChildren(parent, current, marker);
+		} else if (t === "function") {
+			createRenderEffect(() => {
+				let v = value();
+				while (typeof v === "function") v = v();
+				current = insertExpression(parent, v, current, marker);
+			});
+			return () => current;
+		} else if (Array.isArray(value)) {
+			const array = [];
+			const currentArray = current && Array.isArray(current);
+			if (normalizeIncomingArray(array, value, current, unwrapArray)) {
+				createRenderEffect(() => current = insertExpression(parent, array, current, marker, true));
+				return () => current;
+			}
+			if (hydrating) {
+				if (!array.length) return current;
+				if (marker === void 0) return current = [...parent.childNodes];
+				let node = array[0];
+				if (node.parentNode !== parent) return current;
+				const nodes = [node];
+				while ((node = node.nextSibling) !== marker) nodes.push(node);
+				return current = nodes;
+			}
+			if (array.length === 0) {
+				current = cleanChildren(parent, current, marker);
+				if (multi) return current;
+			} else if (currentArray) if (current.length === 0) appendNodes(parent, array, marker);
+			else reconcileArrays(parent, current, array);
+			else {
+				current && cleanChildren(parent);
+				appendNodes(parent, array);
+			}
+			current = array;
+		} else if (value.nodeType) {
+			if (hydrating && value.parentNode) return current = multi ? [value] : value;
+			if (Array.isArray(current)) {
+				if (multi) return current = cleanChildren(parent, current, marker, value);
+				cleanChildren(parent, current, null, value);
+			} else if (current == null || current === "" || !parent.firstChild) parent.appendChild(value);
+			else parent.replaceChild(value, parent.firstChild);
+			current = value;
+		}
+		return current;
+	}
+	function normalizeIncomingArray(normalized, array, current, unwrap) {
+		let dynamic = false;
+		for (let i = 0, len = array.length; i < len; i++) {
+			let item = array[i], prev = current && current[normalized.length], t;
+			if (item == null || item === true || item === false);
+			else if ((t = typeof item) === "object" && item.nodeType) normalized.push(item);
+			else if (Array.isArray(item)) dynamic = normalizeIncomingArray(normalized, item, prev) || dynamic;
+			else if (t === "function") if (unwrap) {
+				while (typeof item === "function") item = item();
+				dynamic = normalizeIncomingArray(normalized, Array.isArray(item) ? item : [item], Array.isArray(prev) ? prev : [prev]) || dynamic;
+			} else {
+				normalized.push(item);
+				dynamic = true;
+			}
+			else {
+				const value = String(item);
+				if (prev && prev.nodeType === 3 && prev.data === value) normalized.push(prev);
+				else normalized.push(document.createTextNode(value));
+			}
+		}
+		return dynamic;
+	}
+	function appendNodes(parent, array, marker = null) {
+		for (let i = 0, len = array.length; i < len; i++) parent.insertBefore(array[i], marker);
+	}
+	function cleanChildren(parent, current, marker, replacement) {
+		if (marker === void 0) return parent.textContent = "";
+		const node = replacement || document.createTextNode("");
+		if (current.length) {
+			let inserted = false;
+			for (let i = current.length - 1; i >= 0; i--) {
+				const el = current[i];
+				if (node !== el) {
+					const isParent = el.parentNode === parent;
+					if (!inserted && !i) isParent ? parent.replaceChild(node, el) : parent.insertBefore(node, marker);
+					else isParent && el.remove();
+				} else inserted = true;
+			}
+		} else parent.insertBefore(node, marker);
+		return [node];
+	}
+	//#endregion
+	//#region src/types/chore-types.ts
+	var ChoreType = /* @__PURE__ */ function(ChoreType) {
+		ChoreType["PERSONAL"] = "personal";
+		ChoreType["ROTATING"] = "rotating";
+		return ChoreType;
+	}({});
+	//#endregion
+	//#region src/admin/admin.tsx
+	var _tmpl$ = /* @__PURE__ */ template(`<div class=container><header><h1>Family Chores Admin</h1><div class=backup-section><button type=button class="btn btn-secondary"id=backupBtn>Download Backup</button><label for=restoreFile class="btn btn-secondary">Restore Backup</label><input type=file id=restoreFile accept=.json hidden></div></header><main><section class=section><div class=section-header><h2>People</h2><div class=button-with-tooltip><button type=button class="btn btn-primary"id=addPersonBtn>Add Person</button><span id=addPersonInfo class=info-icon data-tooltip="Add at least one person before you can create chores">ℹ️</span></div></div><div id=peopleList class=item-list></div></section><section class=section id=rotatingChoresSection><div class=section-header><h2>Rotating Chores</h2><button type=button class="btn btn-primary"id=addRotatingChoreBtn>Add Rotating Chore</button></div><div id=rotatingChoresList class=item-list></div></section><section class=section><h2>System State</h2><div class=state-info><p><strong>Last Reset Date:</strong> <span id=lastResetDate></span></p><div class=button-with-tooltip><button type=button class="btn btn-warning"id=resetDailyBtn>Force Daily Reset</button><span class=info-icon data-tooltip="WARNING: This will un-check all chores and rotate assignment on rotating chores to the next person. It does respect skip days if today is a skip day. Useful for testing or immediately advancing chore assignments.">ℹ️`), _tmpl$2 = /* @__PURE__ */ template(`<div class=item-card><div class=person-header><div class=item-info><h3> <span class=color-badge></span></h3><p>ID: </p></div><div class=item-actions><button type=button class="btn btn-secondary btn-sm">Edit</button><button type=button class="btn btn-danger btn-sm">Delete</button></div></div><div class=person-chores-header><h4>'s Personal Chores</h4><div class=person-chores-actions><button type=button class="btn btn-primary btn-sm">Add Chore`), _tmpl$3 = /* @__PURE__ */ template(`<button type=button class="btn btn-secondary btn-sm">Copy Chores`), _tmpl$4 = /* @__PURE__ */ template(`<div class=person-chores>`), _tmpl$5 = /* @__PURE__ */ template(`<div class=chore-item><div class=chore-info><h4></h4><p class=skip-days>Skip days: </p></div><div class=chore-actions><button type=button class="btn btn-secondary btn-sm">Edit</button><button type=button class="btn btn-danger btn-sm">Delete`), _tmpl$6 = /* @__PURE__ */ template(`<p class=deadline>Deadline: `), _tmpl$7 = /* @__PURE__ */ template(`<div class=person-chores><p class=empty-message>No personal chores yet.`), _tmpl$8 = /* @__PURE__ */ template(`<div class=item-card><div class=item-info><h3> <span class="chore-type-badge rotating">Rotating</span></h3><p>Current: </p><p>Rotation: </p><p class=skip-days>Skip days: </p></div><div class=item-actions><button type=button class="btn btn-secondary">Edit</button><button type=button class="btn btn-danger">Delete`);
+	var API_BASE = "/MMM-FamilyChores";
+	function escapeHtml(raw) {
+		const div = document.createElement("div");
+		div.textContent = raw;
+		return div.innerHTML;
+	}
+	function formatSkipDays(skipDays) {
+		if (!skipDays || skipDays.length === 0) return "None";
+		return skipDays.map((d) => d.charAt(0).toUpperCase() + d.slice(1)).join(", ");
+	}
+	function Admin() {
+		const [choreData, setChoreData] = createSignal(null);
+		const [_personModalOpen, setPersonModalOpen] = createSignal(false);
+		const [_choreModalOpen, setChoreModalOpen] = createSignal(false);
+		const [_copyModalOpen, setCopyModalOpen] = createSignal(false);
+		const [_editingPerson, setEditingPerson] = createSignal(null);
+		const [_editingChore, setEditingChore] = createSignal(null);
+		const [_choreType, setChoreType] = createSignal(null);
+		const [_personForChore, setPersonForChore] = createSignal(null);
+		async function loadData() {
+			try {
+				const response = await fetch(`${API_BASE}/data`);
+				if (!response.ok) throw new Error("Failed to load data");
+				setChoreData(await response.json());
+			} catch (error) {
+				console.error("Error loading data:", error);
+				alert("Failed to load data. Please refresh the page.");
+			}
+		}
+		onMount(() => {
+			loadData();
+		});
+		function openPersonModal(person = null) {
+			setEditingPerson(person);
+			setPersonModalOpen(true);
+		}
+		function openChoreModal(type, personId = null, chore = null) {
+			setEditingChore(chore);
+			setChoreType(type);
+			setPersonForChore(personId);
+			setChoreModalOpen(true);
+		}
+		function openCopyModal(fromPersonId) {
+			setPersonForChore(fromPersonId);
+			setCopyModalOpen(true);
+		}
+		function getPersonalChores(personId) {
+			const data = choreData();
+			if (!data) return [];
+			return data.chores.filter((chore) => chore.type === ChoreType.PERSONAL && chore.assignedTo === personId);
+		}
+		function getRotatingChores() {
+			const data = choreData();
+			if (!data) return [];
+			return data.chores.filter((chore) => chore.type === ChoreType.ROTATING);
+		}
+		return (() => {
+			var _el$ = _tmpl$(), _el$4 = _el$.firstChild.nextSibling.firstChild, _el$5 = _el$4.firstChild, _el$8 = _el$5.firstChild.nextSibling.firstChild, _el$9 = _el$8.nextSibling, _el$0 = _el$5.nextSibling, _el$1 = _el$4.nextSibling, _el$10 = _el$1.firstChild, _el$12 = _el$10.firstChild.nextSibling, _el$13 = _el$10.nextSibling, _el$17 = _el$1.nextSibling.firstChild.nextSibling.firstChild, _el$20 = _el$17.firstChild.nextSibling.nextSibling, _el$22 = _el$17.nextSibling.firstChild;
+			_el$8.$$click = () => openPersonModal();
+			insert(_el$0, () => choreData()?.people.map((person) => (() => {
+				var _el$23 = _tmpl$2(), _el$24 = _el$23.firstChild, _el$25 = _el$24.firstChild, _el$26 = _el$25.firstChild, _el$27 = _el$26.firstChild, _el$28 = _el$27.nextSibling, _el$29 = _el$26.nextSibling;
+				_el$29.firstChild;
+				var _el$32 = _el$25.nextSibling.firstChild, _el$33 = _el$32.nextSibling, _el$35 = _el$24.nextSibling.firstChild, _el$36 = _el$35.firstChild, _el$37 = _el$35.nextSibling, _el$38 = _el$37.firstChild;
+				insert(_el$26, () => escapeHtml(person.name), _el$27);
+				insert(_el$29, () => person.id, null);
+				_el$32.$$click = () => openPersonModal(person);
+				_el$33.$$click = () => {
+					if (confirm("Are you sure you want to delete this person? This will also remove all their assigned chores.")) {}
+				};
+				insert(_el$35, () => escapeHtml(person.name), _el$36);
+				_el$38.$$click = () => openChoreModal("personal", person.id);
+				insert(_el$37, (() => {
+					var _c$ = memo(() => getPersonalChores(person.id).length > 0);
+					return () => _c$() && (() => {
+						var _el$39 = _tmpl$3();
+						_el$39.$$click = () => openCopyModal(person.id);
+						return _el$39;
+					})();
+				})(), null);
+				insert(_el$23, (() => {
+					var _c$2 = memo(() => getPersonalChores(person.id).length > 0);
+					return () => _c$2() ? (() => {
+						var _el$40 = _tmpl$4();
+						insert(_el$40, () => getPersonalChores(person.id).map((chore) => (() => {
+							var _el$41 = _tmpl$5(), _el$42 = _el$41.firstChild, _el$43 = _el$42.firstChild, _el$44 = _el$43.nextSibling;
+							_el$44.firstChild;
+							var _el$47 = _el$42.nextSibling.firstChild, _el$48 = _el$47.nextSibling;
+							insert(_el$43, () => escapeHtml(chore.name));
+							insert(_el$42, (() => {
+								var _c$3 = memo(() => !!chore.deadline);
+								return () => _c$3() && (() => {
+									var _el$49 = _tmpl$6();
+									_el$49.firstChild;
+									insert(_el$49, () => chore.deadline, null);
+									return _el$49;
+								})();
+							})(), _el$44);
+							insert(_el$44, () => formatSkipDays(chore.skipDays), null);
+							_el$47.$$click = () => openChoreModal("personal", null, chore);
+							_el$48.$$click = () => {
+								if (confirm("Are you sure you want to delete this chore?")) {}
+							};
+							return _el$41;
+						})()));
+						return _el$40;
+					})() : _tmpl$7();
+				})(), null);
+				createRenderEffect((_$p) => style(_el$28, `background-color: ${person.color}`, _$p));
+				return _el$23;
+			})()));
+			_el$12.$$click = () => openChoreModal("rotating");
+			insert(_el$13, () => getRotatingChores().map((chore) => {
+				const rotationNames = chore.rotation.map((personId) => {
+					const person = choreData()?.people.find((p) => p.id === personId);
+					return person ? escapeHtml(person.name) : "Unknown";
+				}).join(", ");
+				const peopleLength = choreData()?.people.length ?? 0;
+				const rotationText = chore.rotation.length === peopleLength && chore.rotation.every((personId) => choreData()?.people.some((p) => p.id === personId)) ? "Everyone" : rotationNames;
+				const currentPersonId = chore.rotation[chore.rotatingIndex ?? 0];
+				const currentPerson = choreData()?.people.find((p) => p.id === currentPersonId);
+				const currentAssignee = currentPerson ? escapeHtml(currentPerson.name) : "Unassigned";
+				return (() => {
+					var _el$52 = _tmpl$8(), _el$53 = _el$52.firstChild, _el$54 = _el$53.firstChild, _el$55 = _el$54.firstChild, _el$56 = _el$54.nextSibling;
+					_el$56.firstChild;
+					var _el$58 = _el$56.nextSibling;
+					_el$58.firstChild;
+					var _el$60 = _el$58.nextSibling;
+					_el$60.firstChild;
+					var _el$63 = _el$53.nextSibling.firstChild, _el$64 = _el$63.nextSibling;
+					insert(_el$54, () => escapeHtml(chore.name), _el$55);
+					insert(_el$56, currentAssignee, null);
+					insert(_el$58, rotationText, null);
+					insert(_el$53, (() => {
+						var _c$4 = memo(() => !!chore.deadline);
+						return () => _c$4() && (() => {
+							var _el$65 = _tmpl$6();
+							_el$65.firstChild;
+							insert(_el$65, () => chore.deadline, null);
+							return _el$65;
+						})();
+					})(), _el$60);
+					insert(_el$60, () => formatSkipDays(chore.skipDays), null);
+					_el$63.$$click = () => openChoreModal("rotating", null, chore);
+					_el$64.$$click = () => {
+						if (confirm("Are you sure you want to delete this chore?")) {}
+					};
+					return _el$52;
+				})();
+			}));
+			insert(_el$20, () => choreData()?.lastResetDate || "Never");
+			_el$22.$$click = () => {
+				if (confirm("Are you sure you want to force a daily reset? This will reset all chore states for the new day.")) {}
+			};
+			createRenderEffect((_p$) => {
+				var _v$ = choreData()?.people.length === 0 ? "display: inline" : "display: none", _v$2 = (choreData()?.people?.length ?? 0) > 0 ? "display: block" : "display: none";
+				_p$.e = style(_el$9, _v$, _p$.e);
+				_p$.t = style(_el$1, _v$2, _p$.t);
+				return _p$;
+			}, {
+				e: void 0,
+				t: void 0
+			});
+			return _el$;
+		})();
+	}
+	delegateEvents(["click"]);
+	//#endregion
+	//#region src/admin/app.tsx
+	var appElement = document.getElementById("app");
+	if (appElement) render(() => createComponent(Admin, {}), appElement);
+	else console.error("Failed to find #app element");
+	//#endregion
+})();
+
+//# sourceMappingURL=admin.js.map

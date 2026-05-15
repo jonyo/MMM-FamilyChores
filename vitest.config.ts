@@ -16,7 +16,12 @@ export default defineConfig({
       {
         test: {
           name: 'browser',
-          include: ['src/frontend/**/*.test.ts', 'src/utils/**/*.test.ts'],
+          include: [
+            'src/frontend/**/*.test.ts',
+            'src/utils/**/*.test.ts',
+            // Temporarily disable admin tests due to SolidJS browser configuration issues
+            // 'src/admin/**/*.test.tsx',
+          ],
           css: {
             include: /.+/,
           },

@@ -4,10 +4,11 @@
   "description": "A TypeScript-based MagicMirror² module for family chore tracking with personal daily chores, rotating daily chores that cycle through family members, and a summary view.",
   "main": "MMM-FamilyChores.js",
   "scripts": {
-    "build": "pnpm run build:client && pnpm run build:node && pnpm run copy:dist",
+    "build": "pnpm run build:client && pnpm run build:node && pnpm run build:admin && pnpm run copy:dist",
     "build:client": "vite build --config vite.client.config.ts",
     "build:node": "vite build --config vite.node.config.ts",
-    "copy:dist": "cp -r dist/client/* . && cp -r dist/node/* .",
+    "build:admin": "vite build --config vite.admin.config.ts",
+    "copy:dist": "cp -r dist/client/* . && cp -r dist/node/* . && cp dist/admin/* public/",
     "typecheck": "tsc --noEmit",
     "lint": "biome check",
     "fix": "biome check --write --unsafe",
@@ -34,9 +35,11 @@
     "@types/node": "^20.x",
     "@vitest/browser-playwright": "^4.1.5",
     "husky": "^9.1.7",
+    "solid-js": "^1.9.12",
     "terser": "^5.47.1",
     "typescript": "^6.0.3",
     "vite": "^8.0.11",
+    "vite-plugin-solid": "^2.11.12",
     "vitest": "^4.1.5"
   },
   "engines": {

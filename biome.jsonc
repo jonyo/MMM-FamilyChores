@@ -7,7 +7,15 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["**", "!node_modules", "!dist", "!node_helper.js", "!MMM-FamilyChores.js"]
+    "includes": [
+      "**",
+      "!node_modules",
+      "!dist",
+      // Ignore generated files
+      "!node_helper.js",
+      "!MMM-FamilyChores.js",
+      "!public/admin.js"
+    ]
   },
   "formatter": {
     "enabled": true,
