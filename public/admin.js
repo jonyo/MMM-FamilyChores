@@ -1480,8 +1480,7 @@
 							_el$45.$$click = () => handleDeletePerson(person.id);
 							insert(_el$47, () => escapeHtml(person.name), _el$48);
 							_el$50.$$click = () => {
-								const foundPerson = choreData()?.people.find((p) => p.id === person.id);
-								if (foundPerson) openPersonalChoreModal(foundPerson, null);
+								openPersonalChoreModal(person, null);
 							};
 							insert(_el$35, createComponent(Show, {
 								get when() {
@@ -1512,8 +1511,7 @@
 											})(), _el$56);
 											insert(_el$56, () => formatSkipDays(chore.skipDays), null);
 											_el$59.$$click = () => {
-												const foundPerson = choreData()?.people.find((p) => p.id === chore.assignedTo);
-												if (foundPerson) openPersonalChoreModal(foundPerson, chore);
+												openPersonalChoreModal(person, chore);
 											};
 											_el$60.$$click = () => handleDeleteChore(chore.id);
 											return _el$53;

@@ -324,8 +324,7 @@ export const Admin: Component<Record<string, never>> = () => {
                           type="button"
                           class="btn btn-primary btn-sm"
                           onClick={() => {
-                            const foundPerson = choreData()?.people.find((p) => p.id === person.id);
-                            if (foundPerson) openPersonalChoreModal(foundPerson, null);
+                            openPersonalChoreModal(person, null);
                           }}
                         >
                           Add Chore
@@ -359,10 +358,7 @@ export const Admin: Component<Record<string, never>> = () => {
                                     type="button"
                                     class="btn btn-secondary btn-sm"
                                     onClick={() => {
-                                      const foundPerson = choreData()?.people.find(
-                                        (p) => p.id === chore.assignedTo
-                                      );
-                                      if (foundPerson) openPersonalChoreModal(foundPerson, chore);
+                                      openPersonalChoreModal(person, chore);
                                     }}
                                   >
                                     Edit
