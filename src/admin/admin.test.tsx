@@ -133,7 +133,7 @@ describe('Admin Component Tests', () => {
       render(() => <Admin />);
 
       // Find the "Add Chore" button for Alice (first person)
-      const addChoreButtons = page.getByRole('button', { name: 'Add Chore' }); //document.querySelectorAll('.person-chores-actions button');
+      const addChoreButtons = page.getByRole('button', { name: 'Add Chore' });
       const aliceAddChoreButton = addChoreButtons.first();
       await expect.element(aliceAddChoreButton).toBeVisible();
 
