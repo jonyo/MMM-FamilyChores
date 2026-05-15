@@ -290,9 +290,21 @@ At midnight, all `completedToday` entries are cleared, making personal chores av
 
 ## Development
 
+**Note for end users**: The module includes pre-built JavaScript bundles in the repository, so you don't need to install any dependencies or build tools. Simply clone and use. The following section is only for contributors who want to modify the module.
+
+### Tech Stack (Development Only)
+
+- **TypeScript**: Strong typing for all data structures and components
+- **Vite**: Fast build system for both frontend and backend
+- **SolidJS**: Reactive UI framework for the admin interface
+- **Vitest**: Testing framework with browser mode support for UI components
+- **Biome**: Primary linting and formatting tool
+- **ESLint**: Reactivity error detection for SolidJS components
+- **UUID v4**: Stable identifiers for people and chores
+
 This module is written in TypeScript and uses Vite for building.
 
-### Prerequisites
+### Prerequisites (Development Only)
 
 - Node.js 24+ (for development)
 - pnpm (for dependency management) - see https://pnpm.io/installation
@@ -323,21 +335,33 @@ pnpm run test:ci        # Run tests for CI
 
 ```
 src/
-├── frontend/
+├── frontend/                   # Client-side MagicMirror module
 │   ├── frontend.ts             # Module definition
 │   └── frontend.test.ts        # Frontend tests
-├── backend/
-│   ├── node-helper.ts          # Node helper for data persistence
-│   └── node-helper.test.ts     # Backend tests
-├── types/
+├── backend/                    # Node.js helper for data persistence
+│   ├── node-helper.ts          # Node helper
+│   ├── admin-routes.ts         # Admin API routes
+│   └── *.test.ts               # Backend tests
+├── admin/                      # SolidJS admin interface
+│   ├── admin.tsx               # Main admin component
+│   ├── app.tsx                 # App root
+│   └── *.tsx                   # Admin UI components
+├── api/                        # API client functions
+│   ├── client.ts               # Base client and response handling
+│   ├── people.ts               # Person API operations
+│   ├── chores.ts               # Chore API operations
+│   └── *.test.ts               # API client tests
+├── types/                      # TypeScript type definitions
 │   ├── module.ts               # MagicMirror module types
 │   ├── config.ts               # Configuration types
-│   └── chore-types.ts          # Data structure types
+│   ├── chore-types.ts          # Data structure types
+│   └── *.ts                    # Additional type definitions
 ├── constants/
 │   └── socket-notifications.ts # Socket notification constants
-└── utils/
+└── utils/                      # Utility functions
     ├── uuid.ts                 # UUID v4 generation and validation
-    └── uuid.test.ts            # UUID utilities tests
+    ├── date.ts                 # Date utilities
+    └── *.test.ts               # Utility tests
 ```
 
 ## Contributing
