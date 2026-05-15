@@ -37,14 +37,10 @@ describe('Admin Component Tests', () => {
         json: async () => mockData,
       } as Response);
 
-      render(() => Admin({} as Record<string, never>));
-
-      // Wait for data to load
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      render(() => <Admin />);
 
       // Verify people are displayed
-      const peopleSection = document.querySelector('#peopleList');
-      expect(peopleSection).toBeTruthy();
+      await expect.element(page.getByText('People')).toBeVisible();
 
       const personCards = document.querySelectorAll('.item-card');
       expect(personCards.length).toBe(2);
@@ -66,12 +62,8 @@ describe('Admin Component Tests', () => {
         json: async () => mockData,
       } as Response);
 
-      render(() => Admin({} as Record<string, never>));
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      const addPersonInfo = document.getElementById('addPersonInfo');
-      expect(addPersonInfo).toBeTruthy();
-      expect(addPersonInfo?.style.display).toBe('');
+      render(() => <Admin />);
+      await expect.element(page.getByRole('button', { name: 'Add Person' })).toBeVisible();
     });
 
     it('should hide rotating chores section when no people exist', async () => {
@@ -87,8 +79,9 @@ describe('Admin Component Tests', () => {
       } as Response);
 
       render(() => <Admin />);
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await expect.element(page.getByText('Family Chores Admin')).toBeVisible();
 
+      // Verify rotating chores section is not present when no people exist
       const rotatingSection = document.getElementById('rotatingChoresSection');
       expect(rotatingSection).toBeFalsy();
     });
@@ -107,8 +100,8 @@ describe('Admin Component Tests', () => {
         json: async () => mockData,
       } as Response);
 
-      render(() => Admin({} as Record<string, never>));
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      render(() => <Admin />);
+      await expect.element(page.getByText('Family Chores Admin')).toBeVisible();
 
       const container = document.querySelector('.container');
       expect(container).toBeTruthy();
@@ -137,13 +130,12 @@ describe('Admin Component Tests', () => {
         json: async () => mockData,
       } as Response);
 
-      render(() => Admin({} as Record<string, never>));
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      render(() => <Admin />);
 
       // Find the "Add Chore" button for Alice (first person)
       const addChoreButtons = page.getByRole('button', { name: 'Add Chore' }); //document.querySelectorAll('.person-chores-actions button');
       const aliceAddChoreButton = addChoreButtons.first();
-      expect(aliceAddChoreButton.element()).toBeVisible();
+      await expect.element(aliceAddChoreButton).toBeVisible();
 
       // Click the Add Chore button
       await aliceAddChoreButton.click();
