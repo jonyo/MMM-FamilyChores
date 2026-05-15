@@ -1,7 +1,7 @@
-import { SocketNotifications } from '../constants/socket-notifications';
-import { ChoreType, type FamilyChoresData, SkipDayVisibility } from '../types/chore-types';
 import type { Config } from '../types/config';
 import type { FamilyChoresModule } from '../types/module';
+import { SocketNotifications } from '../constants/socket-notifications';
+import { ChoreType, type FamilyChoresData, SkipDayVisibility } from '../types/chore-types';
 import { DeadlineStatus, getDeadlineStatus, getLocalDayName } from '../utils/date';
 
 declare global {

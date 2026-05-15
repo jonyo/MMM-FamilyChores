@@ -1,68 +1,86 @@
-import { createSignal, type JSX, Show } from 'solid-js';
 import type { Person } from '../types/chore-types';
+import type { CreatePersonRequest, UpdatePersonRequest } from '../types/request-types';
+import { type Component, createSignal } from 'solid-js';
+import { createPerson, updatePerson } from '../api';
+import { generatePastelColor } from '../utils/color';
 
 interface PersonModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  person: Person | null;
-  onSave: (person: Omit<Person, 'id'>) => void;
+  initialPerson?: Person;
+  closeModal: () => void;
 }
 
-export function PersonModal(props: PersonModalProps): JSX.Element {
-  const [name, setName] = createSignal(props.person?.name ?? '');
-  const [color, setColor] = createSignal(props.person?.color ?? '#FF6B6B');
+export const PersonModal: Component<PersonModalProps> = (props) => {
+  const [name, setName] = createSignal(props.initialPerson?.name ?? '');
+  const [color, setColor] = createSignal(props.initialPerson?.color ?? generatePastelColor());
 
-  function handleSubmit(event: Event) {
+  const handleSubmit = async (event: Event) => {
     event.preventDefault();
-    props.onSave({ name: name(), color: color() });
-    props.onClose();
-  }
+    try {
+      if (props.initialPerson?.id) {
+        const body: UpdatePersonRequest = {
+          name: name(),
+          color: color(),
+        };
+        await updatePerson(props.initialPerson.id, body);
+      } else {
+        const body: CreatePersonRequest = {
+          name: name(),
+          color: color(),
+        };
+        await createPerson(body);
+      }
 
-  if (!props.isOpen) return null;
+      props.closeModal();
+    } catch (error) {
+      console.error('Error saving person:', error);
+      alert(`Failed to save person: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
 
   return (
-    <Show when={props.isOpen}>
-      <div class="modal-overlay">
-        <div class="modal">
-          <div class="modal-header">
-            <h2>{props.person ? 'Edit Person' : 'Add Person'}</h2>
-            <button type="button" class="modal-close" onClick={props.onClose}>
-              ×
+    <div class="modal active">
+      <div class="modal-content">
+        <h3>{props.initialPerson ? 'Edit Person' : 'Add Person'}</h3>
+        <form onSubmit={handleSubmit}>
+          <div class="form-group">
+            <label for="personName">Name</label>
+            <input
+              type="text"
+              id="personName"
+              value={name()}
+              onInput={(e) => setName(e.currentTarget.value)}
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="personColor">Color</label>
+            <div class="color-input-group">
+              <input
+                type="color"
+                id="personColor"
+                value={color()}
+                onInput={(e) => setColor(e.currentTarget.value)}
+                required
+              />
+              <button
+                type="button"
+                class="btn btn-secondary btn-sm"
+                onClick={() => setColor(generatePastelColor())}
+              >
+                Randomize
+              </button>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onClick={() => props.closeModal()}>
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary">
+              {props.initialPerson ? 'Save' : 'Add'}
             </button>
           </div>
-          <form onSubmit={handleSubmit}>
-            <div class="modal-body">
-              <div class="form-group">
-                <label for="personName">Name</label>
-                <input
-                  type="text"
-                  id="personName"
-                  value={name()}
-                  onInput={(e) => setName(e.currentTarget.value)}
-                  required
-                />
-              </div>
-              <div class="form-group">
-                <label for="personColor">Color</label>
-                <input
-                  type="color"
-                  id="personColor"
-                  value={color()}
-                  onInput={(e) => setColor(e.currentTarget.value)}
-                />
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" onClick={props.onClose}>
-                Cancel
-              </button>
-              <button type="submit" class="btn btn-primary">
-                {props.person ? 'Save' : 'Add'}
-              </button>
-            </div>
-          </form>
-        </div>
+        </form>
       </div>
-    </Show>
+    </div>
   );
-}
+};

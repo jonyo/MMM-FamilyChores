@@ -21,7 +21,8 @@ This is a standalone MagicMirror² module for family chore tracking, maintained 
 - **TypeScript**: Strong typing for all data structures
 - **Vite**: Fast build system for both frontend and backend
 - **Vitest**: Testing framework with browser support
-- **Biome**: Linting and formatting
+- **Biome**: Primary linting and formatting
+- **ESLint**: Reactivity error detection only
 - **UUID v4**: Stable identifiers for people and chores
 
 ## AI Agent Rules
@@ -110,7 +111,7 @@ export interface Config {
 
 ```bash
 pnpm run typecheck    # Verify TypeScript compiles
-pnpm run lint         # Check for linting issues
+pnpm run lint         # Run Biome (primary) and ESLint (reactivity errors)
 pnpm run test         # Run tests
 ```
 
@@ -199,13 +200,55 @@ Note: These files are committed so that the module works out of the box without 
 - Use `unknown` instead of `any` when you must handle values of uncertain types - requires type narrowing before use
 - Consider `never` for impossible states, unreachable code paths, or functions that never return
 
+### SolidJS Best Practices
+
+**Component Pattern:**
+
+- Use the arrow function Component pattern for all SolidJS components:
+  ```typescript
+  export const MyComponent: Component<MyComponentProps> = (props) => {
+    // component logic
+    return <div>{...}</div>;
+  };
+  ```
+- Define props interfaces explicitly with proper TypeScript types
+- Use `Component<Record<string, never>>` for components with no props (not `Component = () => {}`)
+- Import `Component` as a type from solid-js: `import type { Component } from 'solid-js';`
+
+**Reactive Primitives:**
+
+- Use `createSignal` for reactive state
+- Use `createMemo` for computed values that derive from signals
+- Use `For` for lists instead of array.map for proper reactivity
+- Use `Show` with `keyed={true}` when rendering conditional content that might be null
+- Avoid non-null assertions (`!`) - use optional chaining or proper type guards instead
+
+**API Client Pattern:**
+
+- Extract API calls into separate TypeScript files using arrow functions
+- Split API client into multiple files by domain (e.g., `client.ts`, `people.ts`, `chores.ts`)
+- Use barrel export pattern in `index.ts` to re-export from domain files
+- Centralize fetch response handling in a shared `handleResponse` function
+- Use proper TypeScript request/response types from `src/types/request-types.ts`
+- Import enums as values (not types) when used in request bodies
+
+**Example API Structure:**
+
+```
+src/api/
+├── client.ts      # Base URL and handleResponse
+├── people.ts      # Person CRUD operations
+├── chores.ts      # Chore CRUD operations
+└── index.ts       # Barrel exports
+```
+
 ### Testing Requirements
 
 **Before committing:**
 
 1. Run `pnpm run test` - All tests must pass
 2. Run `pnpm run typecheck` - TypeScript must compile without errors
-3. Run `pnpm run lint` - Code must pass linting
+3. Run `pnpm run lint` - Code must pass both Biome (primary) and ESLint (reactivity errors)
 4. Run `pnpm run build` - Verify build succeeds (maintainers will build and commit releases)
 
 **Security Practice**: Contributors should verify builds locally but not commit built files. Maintainers build trusted releases.
@@ -218,6 +261,8 @@ Note: These files are committed so that the module works out of the box without 
 - Config validation and error handling
 - Skip day visibility behavior for all enum values
 - UUID generation and validation utilities
+- API client functions (people.ts, chores.ts)
+- Modal components (person-modal, personal-chore-modal, rotating-chore-modal)
 - Goal of as close to 100% coverage as possible
 
 **Mock Management:**
@@ -225,6 +270,122 @@ Note: These files are committed so that the module works out of the box without 
 - Test configuration automatically clears all mocks between tests
 - Do **NOT** manually call `vi.clearAllMocks()` or similar in `beforeEach`/`afterEach`
 - Focus on test setup and assertions rather than mock cleanup
+
+**Test File Organization:**
+
+- Each source file should have its own test file: `file.ts` → `file.test.ts` or `file.test.tsx`
+- Test files should focus only on testing the corresponding source file
+- Do not test multiple components in a single test file unless they are tightly coupled
+- Keep tests co-located with the code they test for easier maintenance
+
+**UI Testing with Browser Mode:**
+
+- UI components should be tested using browser mode (real browser via Playwright)
+- **DO NOT mock DOM properties or browser APIs unnecessarily** - use the real browser
+- Instead of mocking element dimensions, set styles directly on rendered elements to achieve the desired state
+- Instead of mocking scroll positions, render content that produces the scrollable state you need to test
+- Test the actual rendered output, not mocked abstractions
+- This approach catches real integration issues that mocking would hide
+
+**SolidJS Testing Library for Admin/Modal Tests:**
+
+- Use `render` from `@solidjs/testing-library` for SolidJS component testing in browser mode
+- **CRITICAL**: The browser project in vitest.config.ts MUST include `solidPlugin()` in the plugins array for JSX to work
+- Import CSS files in test files using relative path: `import '../../public/admin.css';`
+- **DO NOT use `fireEvent`** from testing libraries - it's meant for fake DOM and uses JS to dispatch events
+- Use `page` or `userEvent` for browser mode interactions - they work with Playwright/browser to mimic real user actions
+- The testing library's render handles container creation and cleanup automatically
+- Remove manual DOM cleanup (`document.body.innerHTML = ''`) - testing library handles this
+- Remove manual `afterEach` with `vi.clearAllMocks()` - test configuration handles mock cleanup automatically
+
+**Required vitest.config.ts Setup for Browser Mode:**
+
+```typescript
+import solidPlugin from "vite-plugin-solid";
+import { playwright } from "@vitest/browser-playwright";
+import { defineConfig } from "vitest/config";
+
+export default defineConfig({
+  test: {
+    projects: [
+      {
+        test: {
+          name: "browser",
+          include: [
+            "src/admin/**/*.test.tsx",
+            // ... other browser tests
+          ],
+          css: {
+            include: /.+/,
+          },
+          browser: {
+            enabled: true,
+            headless: true,
+            provider: playwright(),
+            instances: [{ browser: "chromium" }],
+          },
+        },
+        plugins: [solidPlugin()], // CRITICAL: Required for JSX transformation in browser mode
+      },
+    ],
+  },
+});
+```
+
+**Example UI Testing Pattern:**
+
+````typescript
+import { render } from '@solidjs/testing-library';
+import { describe, expect, it, vi } from 'vitest';
+import '../../public/admin.css'; // Import CSS for styles
+import { MyComponent } from './my-component';
+
+describe('MyComponent', () => {
+  // No afterEach needed - testing library handles cleanup
+
+  it('should render correctly', () => {
+    const closeModal = vi.fn();
+
+    const { container } = render(() => (
+      <MyComponent closeModal={closeModal} />
+    ));
+
+    expect(container.querySelector('h3')?.textContent).toBe('Expected Title');
+  });
+});
+
+// BAD - mocking DOM properties
+vi.spyOn(element, "getBoundingClientRect").mockReturnValue({
+  width: 100,
+  height: 50,
+});
+
+// GOOD - set styles to produce the desired state
+element.style.width = "100px";
+element.style.height = "50px";
+
+// BAD - using fireEvent (fake DOM)
+fireEvent.click(button);
+
+// GOOD - using page or userEvent (real browser interaction)
+await page.getByRole("button").click();
+// or
+await userEvent.click(button);
+
+**API Testing:**
+
+- API functions should be tested in node environment (not browser)
+- Mock `globalThis.fetch` to test HTTP requests without real network calls
+- Test success paths, error responses, and network failures
+- Verify request bodies and URLs are constructed correctly
+- Test with proper TypeScript request/response types
+
+**Vitest Configuration:**
+
+- Node tests: Backend logic, utilities, API functions
+- Browser tests: Frontend components, UI interactions, modal components
+- Admin tests currently disabled due to browser import issues (CSS imports)
+- Test files are automatically included based on pattern matching in vitest.config.ts
 
 ### Configuration Patterns
 
@@ -299,7 +460,7 @@ Note: These files are committed so that the module works out of the box without 
 pnpm run build          # Build all components
 pnpm run test           # Run tests
 pnpm run lint           # Check code quality
-```
+````
 
 ### Testing Commands
 
@@ -314,9 +475,17 @@ pnpm run test:browser   # Browser-based tests
 
 ```bash
 pnpm run typecheck      # TypeScript validation
-pnpm run lint           # Biome linting
-pnpm run fix            # Auto-fix linting issues
+pnpm run lint           # Run Biome (primary) and ESLint (reactivity errors)
+pnpm run fix            # Auto-fix Biome linting issues and ESLint reactivity errors
 ```
+
+**ESLint Configuration:**
+
+- ESLint is configured in `eslint.config.js` to only handle SolidJS reactivity linting
+- It runs the `solid/reactivity` rule on `src/admin/**/*.tsx` files
+- Biome handles all other linting (formatting, style, general code quality)
+- ESLint is configured with `noInlineConfig: true` to prevent disabling rules with comments - DO NOT CHANGE THIS - fix the reactivity issues instead
+- The solid/reactivity rule is sometimes fixable with `eslint --fix`
 
 ## Common Tasks
 

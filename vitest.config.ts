@@ -1,4 +1,5 @@
 import { playwright } from '@vitest/browser-playwright';
+import solidPlugin from 'vite-plugin-solid';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
@@ -9,18 +10,18 @@ export default defineConfig({
         test: {
           name: 'node',
           environment: 'node',
-          include: ['src/backend/**/*.test.ts', 'src/utils/**/*.test.ts'],
+          include: ['src/backend/**/*.test.ts', 'src/utils/**/*.test.ts', 'src/api/**/*.test.ts'],
         },
       },
       // Browser project for frontend tests
       {
+        plugins: [solidPlugin()],
         test: {
           name: 'browser',
           include: [
             'src/frontend/**/*.test.ts',
             'src/utils/**/*.test.ts',
-            // Temporarily disable admin tests due to SolidJS browser configuration issues
-            // 'src/admin/**/*.test.tsx',
+            'src/admin/**/*.test.tsx',
           ],
           css: {
             include: /.+/,

@@ -1,5 +1,7 @@
-import { createSignal, For, type JSX, Show } from 'solid-js';
-import type { Person, RotatingChore, SkipDayVisibility } from '../types/chore-types';
+import type { FamilyChoresData, RotatingChore, SkipDayVisibility } from '../types/chore-types';
+import type { CreateChoreRequest, UpdateChoreRequest } from '../types/request-types';
+import { type Component, createSignal, For } from 'solid-js';
+import { createChore, updateChore } from '../api';
 import {
   ChoreType,
   DayOfWeek,
@@ -7,173 +9,165 @@ import {
 } from '../types/chore-types';
 
 interface RotatingChoreModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  chore: RotatingChore | null;
-  people: Person[];
-  onSave: (chore: Omit<RotatingChore, 'id'>) => void;
+  initialChore?: RotatingChore;
+  choreData: FamilyChoresData;
+  closeModal: () => void;
 }
 
-export function RotatingChoreModal(props: RotatingChoreModalProps): JSX.Element {
-  const [name, setName] = createSignal(props.chore?.name ?? '');
-  const [deadline, setDeadline] = createSignal(props.chore?.deadline ?? '');
+export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) => {
+  const [name, setName] = createSignal(props.initialChore?.name ?? '');
+  const [deadline, setDeadline] = createSignal(props.initialChore?.deadline ?? '');
   const [skipDayVisibility, setSkipDayVisibility] = createSignal<SkipDayVisibility>(
-    props.chore?.skipDayVisibility ?? SkipDayVisibilityEnum.HIDE
+    props.initialChore?.skipDayVisibility ?? SkipDayVisibilityEnum.HIDE
   );
-  const [skipDays, setSkipDays] = createSignal<DayOfWeek[]>(props.chore?.skipDays ?? []);
-  const [rotation, setRotation] = createSignal<string[]>(props.chore?.rotation ?? []);
-  const [rotatingIndex, setRotatingIndex] = createSignal(props.chore?.rotatingIndex ?? 0);
+  const [skipDays, setSkipDays] = createSignal<DayOfWeek[]>(props.initialChore?.skipDays ?? []);
+  const [rotation, setRotation] = createSignal<string[]>(props.initialChore?.rotation ?? []);
 
-  function handleSkipDayChange(day: DayOfWeek, checked: boolean) {
+  const handleSkipDayChange = (day: DayOfWeek, checked: boolean) => {
     if (checked) {
       setSkipDays([...skipDays(), day]);
     } else {
       setSkipDays(skipDays().filter((d) => d !== day));
     }
-  }
+  };
 
-  function handleRotationChange(personId: string, checked: boolean) {
+  const handleRotationChange = (personId: string, checked: boolean) => {
     if (checked) {
       setRotation([...rotation(), personId]);
     } else {
       setRotation(rotation().filter((id) => id !== personId));
     }
-  }
+  };
 
-  function handleSubmit(event: Event) {
+  const handleSubmit = async (event: Event) => {
     event.preventDefault();
-    if (rotation().length === 0) {
-      alert('Please select at least one person for rotation.');
-      return;
-    }
-    props.onSave({
-      name: name(),
-      type: ChoreType.ROTATING,
-      rotation: rotation(),
-      rotatingIndex: rotatingIndex(),
-      deadline: deadline() || undefined,
-      skipDays: skipDays(),
-      skipDayVisibility: skipDayVisibility(),
-      caughtUp: props.chore?.caughtUp ?? true,
-      completedToday: props.chore?.completedToday ?? false,
-    });
-    props.onClose();
-  }
+    try {
+      if (props.initialChore?.id) {
+        const body: UpdateChoreRequest = {
+          name: name(),
+          type: ChoreType.ROTATING,
+          rotation: rotation(),
+          deadline: deadline() || undefined,
+          skipDays: skipDays(),
+          skipDayVisibility: skipDayVisibility(),
+        };
+        await updateChore(props.initialChore.id, body);
+      } else {
+        const body: CreateChoreRequest = {
+          name: name(),
+          type: ChoreType.ROTATING,
+          rotation: rotation(),
+          deadline: deadline() || undefined,
+          skipDays: skipDays(),
+          skipDayVisibility: skipDayVisibility(),
+        };
+        await createChore(body);
+      }
 
-  if (!props.isOpen) return null;
+      props.closeModal();
+    } catch (error) {
+      console.error('Error saving chore:', error);
+      alert(`Failed to save chore: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
 
   return (
-    <Show when={props.isOpen}>
-      <div class="modal-overlay">
-        <div class="modal">
-          <div class="modal-header">
-            <h2>{props.chore ? 'Edit Rotating Chore' : 'Add Rotating Chore'}</h2>
-            <button type="button" class="modal-close" onClick={props.onClose}>
-              ×
+    <div class="modal active">
+      <div class="modal-content">
+        <h3>{props.initialChore ? 'Edit Rotating Chore' : 'Add Rotating Chore'}</h3>
+        <form onSubmit={handleSubmit}>
+          <div class="form-group">
+            <label for="choreName">Chore Name</label>
+            <input
+              type="text"
+              id="choreName"
+              value={name()}
+              onInput={(e) => setName(e.currentTarget.value)}
+              required
+            />
+          </div>
+          <div class="form-group">
+            <div class="form-label">Rotation (select people)</div>
+            <div class="checkbox-list">
+              <For each={props.choreData.people}>
+                {(person) => (
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={rotation().includes(person.id)}
+                      onInput={(e) => handleRotationChange(person.id, e.currentTarget.checked)}
+                    />
+                    {person.name}
+                  </label>
+                )}
+              </For>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="rotatingIndex">Starting Index (current person)</label>
+            <select
+              id="rotatingIndex"
+              value={props.initialChore?.rotatingIndex ?? 0}
+              onInput={(_e) => {
+                // Store the value but don't track it in state since it's not sent to API
+                // The backend calculates this based on the rotation order
+              }}
+            >
+              {rotation().map((personId, index) => {
+                const person = props.choreData.people.find((p) => p.id === personId);
+                return <option value={index}>{person ? person.name : 'Unknown'}</option>;
+              })}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="deadline">Deadline (optional)</label>
+            <input
+              type="time"
+              id="deadline"
+              value={deadline()}
+              onInput={(e) => setDeadline(e.currentTarget.value)}
+            />
+          </div>
+          <div class="form-group">
+            <div class="form-label">Skip Days</div>
+            <div class="checkbox-list">
+              <For each={Object.values(DayOfWeek)}>
+                {(day) => (
+                  <label>
+                    <input
+                      type="checkbox"
+                      value={day}
+                      checked={skipDays().includes(day)}
+                      onInput={(e) => handleSkipDayChange(day, e.currentTarget.checked)}
+                    />
+                    {day.charAt(0).toUpperCase() + day.slice(1)}
+                  </label>
+                )}
+              </For>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="skipDayVisibility">Skip Day Visibility</label>
+            <select
+              id="skipDayVisibility"
+              value={skipDayVisibility()}
+              onInput={(e) => setSkipDayVisibility(e.currentTarget.value as SkipDayVisibility)}
+            >
+              <option value={SkipDayVisibilityEnum.HIDE}>Hide</option>
+              <option value={SkipDayVisibilityEnum.SHOW_ALWAYS}>Show Always</option>
+              <option value={SkipDayVisibilityEnum.SHOW_IF_OVERDUE}>Show If Overdue</option>
+            </select>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onClick={() => props.closeModal()}>
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary">
+              {props.initialChore ? 'Save' : 'Add'}
             </button>
           </div>
-          <form onSubmit={handleSubmit}>
-            <div class="modal-body">
-              <div class="form-group">
-                <label for="choreName">Chore Name</label>
-                <input
-                  type="text"
-                  id="choreName"
-                  value={name()}
-                  onInput={(e) => setName(e.currentTarget.value)}
-                  required
-                />
-              </div>
-              <div class="form-group">
-                <div class="form-label">Rotation (select people)</div>
-                <div class="checkbox-group">
-                  <For each={props.people}>
-                    {(person) => (
-                      <label>
-                        <input
-                          type="checkbox"
-                          checked={rotation().includes(person.id)}
-                          onInput={(e) => handleRotationChange(person.id, e.currentTarget.checked)}
-                        />
-                        {person.name}
-                      </label>
-                    )}
-                  </For>
-                </div>
-              </div>
-              <div class="form-group">
-                <label for="rotatingIndex">Starting Index (current person)</label>
-                <select
-                  id="rotatingIndex"
-                  value={rotatingIndex()}
-                  onInput={(e) => setRotatingIndex(Number(e.currentTarget.value))}
-                >
-                  {rotation().map((personId, index) => {
-                    const person = props.people.find((p) => p.id === personId);
-                    return <option value={index}>{person ? person.name : 'Unknown'}</option>;
-                  })}
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="deadline">Deadline (optional)</label>
-                <input
-                  type="time"
-                  id="deadline"
-                  value={deadline()}
-                  onInput={(e) => setDeadline(e.currentTarget.value)}
-                />
-              </div>
-              <div class="form-group">
-                <div class="form-label">Skip Days</div>
-                <div class="checkbox-group">
-                  <For
-                    each={[
-                      DayOfWeek.MONDAY,
-                      DayOfWeek.TUESDAY,
-                      DayOfWeek.WEDNESDAY,
-                      DayOfWeek.THURSDAY,
-                      DayOfWeek.FRIDAY,
-                      DayOfWeek.SATURDAY,
-                      DayOfWeek.SUNDAY,
-                    ]}
-                  >
-                    {(day) => (
-                      <label>
-                        <input
-                          type="checkbox"
-                          checked={skipDays().includes(day)}
-                          onInput={(e) => handleSkipDayChange(day, e.currentTarget.checked)}
-                        />
-                        {day.charAt(0).toUpperCase() + day.slice(1)}
-                      </label>
-                    )}
-                  </For>
-                </div>
-              </div>
-              <div class="form-group">
-                <label for="skipDayVisibility">Skip Day Visibility</label>
-                <select
-                  id="skipDayVisibility"
-                  value={skipDayVisibility()}
-                  onInput={(e) => setSkipDayVisibility(e.currentTarget.value as SkipDayVisibility)}
-                >
-                  <option value={SkipDayVisibilityEnum.HIDE}>Hide</option>
-                  <option value={SkipDayVisibilityEnum.SHOW_ALWAYS}>Show Always</option>
-                  <option value={SkipDayVisibilityEnum.SHOW_IF_OVERDUE}>Show If Overdue</option>
-                </select>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" onClick={props.onClose}>
-                Cancel
-              </button>
-              <button type="submit" class="btn btn-primary">
-                {props.chore ? 'Save' : 'Add'}
-              </button>
-            </div>
-          </form>
-        </div>
+        </form>
       </div>
-    </Show>
+    </div>
   );
-}
+};

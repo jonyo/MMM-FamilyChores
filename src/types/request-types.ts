@@ -1,4 +1,4 @@
-import type { Chore, Person, SkipDayVisibility, UUID } from './chore-types';
+import type { Chore, ChoreType, DayOfWeek, Person, SkipDayVisibility, UUID } from './chore-types';
 
 /**
  * JSON **request** bodies for the Express admin routes in `setupAdminRoutes`
@@ -27,11 +27,11 @@ export interface UpdatePersonRequest {
  */
 export interface CreateChoreRequest {
   name: string;
-  type: 'personal' | 'rotating';
+  type: ChoreType;
   assignedTo?: UUID;
   rotation?: UUID[];
   deadline?: string;
-  skipDays?: string[];
+  skipDays?: DayOfWeek[];
   skipDayVisibility?: SkipDayVisibility;
 }
 

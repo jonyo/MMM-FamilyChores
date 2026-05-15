@@ -1,5 +1,7 @@
-import { createSignal, For, type JSX } from 'solid-js';
 import type { Person, PersonalChore, SkipDayVisibility } from '../types/chore-types';
+import type { CreateChoreRequest, UpdateChoreRequest } from '../types/request-types';
+import { type Component, createSignal, For, Show } from 'solid-js';
+import { createChore, updateChore } from '../api';
 import {
   ChoreType,
   DayOfWeek,
@@ -7,141 +9,145 @@ import {
 } from '../types/chore-types';
 
 interface PersonalChoreModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  chore: PersonalChore | null;
-  people: Person[];
-  onSave: (chore: Omit<PersonalChore, 'id'>) => void;
+  person: Person | null;
+  initialChore?: PersonalChore;
+  closeModal: () => void;
 }
 
-export function PersonalChoreModal(props: PersonalChoreModalProps): JSX.Element {
-  const [name, setName] = createSignal(props.chore?.name ?? '');
-  const [assignedTo, setAssignedTo] = createSignal(props.chore?.assignedTo ?? '');
-  const [deadline, setDeadline] = createSignal(props.chore?.deadline ?? '');
+export const PersonalChoreModal: Component<PersonalChoreModalProps> = (props) => {
+  const [name, setName] = createSignal(props.initialChore?.name ?? '');
+  const [deadline, setDeadline] = createSignal(props.initialChore?.deadline ?? '');
   const [skipDayVisibility, setSkipDayVisibility] = createSignal<SkipDayVisibility>(
-    props.chore?.skipDayVisibility ?? SkipDayVisibilityEnum.HIDE
+    props.initialChore?.skipDayVisibility ?? SkipDayVisibilityEnum.HIDE
   );
-  const [skipDays, setSkipDays] = createSignal<DayOfWeek[]>(props.chore?.skipDays ?? []);
+  const [skipDays, setSkipDays] = createSignal<DayOfWeek[]>(props.initialChore?.skipDays ?? []);
 
-  function handleSkipDayChange(day: DayOfWeek, checked: boolean) {
+  const handleSkipDayChange = (day: DayOfWeek, checked: boolean) => {
     if (checked) {
       setSkipDays([...skipDays(), day]);
     } else {
       setSkipDays(skipDays().filter((d) => d !== day));
     }
-  }
+  };
 
-  function handleSubmit(event: Event) {
+  const handleSubmit = async (event: Event) => {
     event.preventDefault();
-    props.onSave({
-      name: name(),
-      type: ChoreType.PERSONAL,
-      assignedTo: assignedTo(),
-      deadline: deadline() || undefined,
-      skipDays: skipDays(),
-      skipDayVisibility: skipDayVisibility(),
-      caughtUp: props.chore?.caughtUp ?? true,
-      completedToday: props.chore?.completedToday ?? false,
-    });
-    props.onClose();
-  }
+    try {
+      if (props.initialChore?.id) {
+        const body: UpdateChoreRequest = {
+          name: name(),
+          type: ChoreType.PERSONAL,
+          assignedTo: props.person?.id ?? '',
+          deadline: deadline() || undefined,
+          skipDays: skipDays(),
+          skipDayVisibility: skipDayVisibility(),
+        };
+        await updateChore(props.initialChore.id, body);
+      } else {
+        const body: CreateChoreRequest = {
+          name: name(),
+          type: ChoreType.PERSONAL,
+          assignedTo: props.person?.id ?? '',
+          deadline: deadline() || undefined,
+          skipDays: skipDays(),
+          skipDayVisibility: skipDayVisibility(),
+        };
+        await createChore(body);
+      }
 
-  if (!props.isOpen) return null;
+      props.closeModal();
+    } catch (error) {
+      console.error('Error saving chore:', error);
+      alert(`Failed to save chore: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
 
   return (
-    <div class="modal-overlay">
-      <div class="modal">
-        <div class="modal-header">
-          <h2>{props.chore ? 'Edit Personal Chore' : 'Add Personal Chore'}</h2>
-          <button type="button" class="modal-close" onClick={props.onClose}>
-            ×
-          </button>
+    <Show
+      when={props.person}
+      keyed={true}
+      fallback={
+        <div class="modal active">
+          <div class="modal-content">
+            <h3>Error</h3>
+            <p>Person not found. Please refresh the page.</p>
+            <button type="button" class="btn btn-secondary" onClick={() => props.closeModal()}>
+              Close
+            </button>
+          </div>
         </div>
-        <form onSubmit={handleSubmit}>
-          <div class="modal-body">
-            <div class="form-group">
-              <label for="choreName">Chore Name</label>
-              <input
-                type="text"
-                id="choreName"
-                value={name()}
-                onInput={(e) => setName(e.currentTarget.value)}
-                required
-              />
+      }
+    >
+      {(person: Person) => (
+        <div class="modal active">
+          <div class="modal-content">
+            <h3>{props.initialChore ? 'Edit Personal Chore' : 'Add Personal Chore'}</h3>
+            <div class="assigned-person-display">
+              <span class="color-badge" style={`background-color: ${person.color}`}></span>
+              <strong>Assigned to:</strong> {person.name}
             </div>
-            <div class="form-group">
-              <label for="assignedTo">Assigned To</label>
-              <select
-                id="assignedTo"
-                value={assignedTo()}
-                onInput={(e) => setAssignedTo(e.currentTarget.value)}
-                required
-              >
-                <option value="">Select a person</option>
-                <For each={props.people}>
-                  {(person) => <option value={person.id}>{person.name}</option>}
-                </For>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="deadline">Deadline (optional)</label>
-              <input
-                type="time"
-                id="deadline"
-                value={deadline()}
-                onInput={(e) => setDeadline(e.currentTarget.value)}
-              />
-            </div>
-            <div class="form-group">
-              <div class="form-label">Skip Days</div>
-              <div class="checkbox-group">
-                <For
-                  each={[
-                    DayOfWeek.MONDAY,
-                    DayOfWeek.TUESDAY,
-                    DayOfWeek.WEDNESDAY,
-                    DayOfWeek.THURSDAY,
-                    DayOfWeek.FRIDAY,
-                    DayOfWeek.SATURDAY,
-                    DayOfWeek.SUNDAY,
-                  ]}
-                >
-                  {(day) => (
-                    <label>
-                      <input
-                        type="checkbox"
-                        checked={skipDays().includes(day)}
-                        onInput={(e) => handleSkipDayChange(day, e.currentTarget.checked)}
-                      />
-                      {day.charAt(0).toUpperCase() + day.slice(1)}
-                    </label>
-                  )}
-                </For>
+            <form onSubmit={handleSubmit}>
+              <div class="form-group">
+                <label for="choreName">Chore Name</label>
+                <input
+                  type="text"
+                  id="choreName"
+                  value={name()}
+                  onInput={(e) => setName(e.currentTarget.value)}
+                  required
+                />
               </div>
-            </div>
-            <div class="form-group">
-              <label for="skipDayVisibility">Skip Day Visibility</label>
-              <select
-                id="skipDayVisibility"
-                value={skipDayVisibility()}
-                onInput={(e) => setSkipDayVisibility(e.currentTarget.value as SkipDayVisibility)}
-              >
-                <option value={SkipDayVisibilityEnum.HIDE}>Hide</option>
-                <option value={SkipDayVisibilityEnum.SHOW_ALWAYS}>Show Always</option>
-                <option value={SkipDayVisibilityEnum.SHOW_IF_OVERDUE}>Show If Overdue</option>
-              </select>
-            </div>
+              <div class="form-group">
+                <label for="deadline">Deadline (optional)</label>
+                <input
+                  type="time"
+                  id="deadline"
+                  value={deadline()}
+                  onInput={(e) => setDeadline(e.currentTarget.value)}
+                />
+              </div>
+              <div class="form-group">
+                <div class="form-label">Skip Days</div>
+                <div class="checkbox-list">
+                  <For each={Object.values(DayOfWeek)}>
+                    {(day) => (
+                      <label>
+                        <input
+                          type="checkbox"
+                          value={day}
+                          checked={skipDays().includes(day)}
+                          onInput={(e) => handleSkipDayChange(day, e.currentTarget.checked)}
+                        />
+                        {day.charAt(0).toUpperCase() + day.slice(1)}
+                      </label>
+                    )}
+                  </For>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="skipDayVisibility">Skip Day Visibility</label>
+                <select
+                  id="skipDayVisibility"
+                  value={skipDayVisibility()}
+                  onInput={(e) => setSkipDayVisibility(e.currentTarget.value as SkipDayVisibility)}
+                >
+                  <option value={SkipDayVisibilityEnum.HIDE}>Hide</option>
+                  <option value={SkipDayVisibilityEnum.SHOW_ALWAYS}>Show Always</option>
+                  <option value={SkipDayVisibilityEnum.SHOW_IF_OVERDUE}>Show If Overdue</option>
+                </select>
+              </div>
+              <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onClick={() => props.closeModal()}>
+                  Cancel
+                </button>
+                <button type="submit" class="btn btn-primary">
+                  {props.initialChore ? 'Save' : 'Add'}
+                </button>
+              </div>
+            </form>
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" onClick={props.onClose}>
-              Cancel
-            </button>
-            <button type="submit" class="btn btn-primary">
-              {props.chore ? 'Save' : 'Add'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        </div>
+      )}
+    </Show>
   );
-}
+};

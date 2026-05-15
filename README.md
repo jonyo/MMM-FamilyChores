@@ -312,8 +312,8 @@ pnpm run build          # Build TypeScript to JavaScript
 pnpm run build:client   # Build frontend module
 pnpm run build:node     # Build node helper
 pnpm run typecheck      # Type checking without emitting
-pnpm run lint           # Run Biome linter
-pnpm run fix            # Auto-fix linting issues
+pnpm run lint           # Run Biome (primary) and ESLint (reactivity errors)
+pnpm run fix            # Auto-fix Biome linting issues and ESLint reactivity errors
 pnpm run test           # Run tests
 pnpm run test:watch     # Run tests in watch mode
 pnpm run test:ci        # Run tests for CI

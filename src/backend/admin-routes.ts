@@ -1,12 +1,3 @@
-import * as Log from 'logger';
-import { SocketNotifications } from '../constants/socket-notifications';
-import {
-  type Chore,
-  ChoreType,
-  type FamilyChoresData,
-  type Person,
-  SkipDayVisibility,
-} from '../types/chore-types';
 import type {
   CopyChoresRequest,
   CreateChoreRequest,
@@ -16,6 +7,15 @@ import type {
   UpdatePersonRequest,
 } from '../types/request-types';
 import type { ApiErrorBody } from '../types/response-types';
+import * as Log from 'logger';
+import { SocketNotifications } from '../constants/socket-notifications';
+import {
+  type Chore,
+  ChoreType,
+  type FamilyChoresData,
+  type Person,
+  SkipDayVisibility,
+} from '../types/chore-types';
 import { generateUUID } from '../utils/uuid';
 import { validateChore, validatePerson } from './validator';
 
