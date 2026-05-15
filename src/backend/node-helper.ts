@@ -3,7 +3,12 @@ import * as path from 'node:path';
 import * as Log from 'logger';
 import * as NodeHelper from 'node_helper';
 import { SocketNotifications } from '../constants/socket-notifications';
-import { type Chore, type FamilyChoresData, SkipDayVisibility } from '../types/chore-types';
+import {
+  type Chore,
+  type FamilyChoresData,
+  type Person,
+  SkipDayVisibility,
+} from '../types/chore-types';
 import type { Config } from '../types/config';
 import type {
   CaughtUpResetPayload,
@@ -17,6 +22,7 @@ import type {
 } from '../types/socket-payload-types';
 import { getLocalDateString, getLocalDayName, getLocalTimeString } from '../utils/date';
 import { createAdminHandlers } from './admin-routes';
+import { validateChore, validatePerson } from './validator';
 
 interface FamilyChoresNodeHelper extends Partial<NodeHelper.NodeHelperModule> {
   // Module state
@@ -90,7 +96,38 @@ const nodeHelper: FamilyChoresNodeHelper = {
     try {
       if (fs.existsSync(dataPath)) {
         const fileContent = fs.readFileSync(dataPath, 'utf8');
-        this.choreData = JSON.parse(fileContent) as FamilyChoresData;
+        const rawData = JSON.parse(fileContent) as Record<string, unknown>;
+
+        // Validate and filter people, skipping any with invalid data
+        const rawPeople = Array.isArray(rawData.people) ? rawData.people : [];
+        const validPeople: Person[] = [];
+        for (const person of rawPeople) {
+          const result = validatePerson(person);
+          if (result.valid) {
+            validPeople.push(person as Person);
+          } else {
+            Log.warn(`Skipping invalid person in data file: ${result.error}`);
+          }
+        }
+
+        // Validate and filter chores against valid people, skipping any with invalid data
+        const rawChores = Array.isArray(rawData.chores) ? rawData.chores : [];
+        const validChores: Chore[] = [];
+        for (const chore of rawChores) {
+          const result = validateChore(chore, validPeople);
+          if (result.valid) {
+            validChores.push(chore as Chore);
+          } else {
+            Log.warn(`Skipping invalid chore in data file: ${result.error}`);
+          }
+        }
+
+        this.choreData = {
+          people: validPeople,
+          chores: validChores,
+          lastResetDate:
+            typeof rawData.lastResetDate === 'string' ? rawData.lastResetDate : undefined,
+        };
         Log.info(`Loaded chore data from ${dataPath}`);
       } else {
         // Create default data structure

@@ -1,3 +1,4 @@
+import * as fs from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   type Chore,
@@ -15,6 +16,7 @@ import type {
   NodeHelperIncomingSocketPayload,
 } from '../types/socket-payload-types';
 import { getLocalDateString, getLocalDayName } from '../utils/date';
+import { generateTestUUID } from '../utils/uuid';
 import './node-helper';
 
 // Create node helper instance variable in hoisted scope
@@ -51,6 +53,12 @@ const { nodeHelperInstance, setNodeHelperInstance } = vi.hoisted(() => {
 });
 
 // Mock node_helper to capture the actual instance
+vi.mock('node:fs', () => ({
+  existsSync: vi.fn(),
+  readFileSync: vi.fn(),
+  writeFileSync: vi.fn(),
+}));
+
 vi.mock('node_helper', () => ({
   create: (localNodeHelper: ReturnType<typeof nodeHelperInstance>) => {
     setNodeHelperInstance(localNodeHelper);
@@ -976,6 +984,170 @@ describe('Node Helper Tests', () => {
       // Should use local date for comparison, not UTC date
       // The exact date depends on timezone, so check it's not to old value
       expect(nodeHelper.choreData?.lastResetDate).not.toBe('2024-05-11');
+    });
+  });
+
+  describe('loadChoreData', () => {
+    const pid1 = generateTestUUID(1);
+    const pid2 = generateTestUUID(2);
+    const cid1 = generateTestUUID(101);
+    const cid2 = generateTestUUID(102);
+
+    const validPerson1 = { id: pid1, name: 'Alice', color: '#FF6B6B' };
+    const validPerson2 = { id: pid2, name: 'Bob', color: '#4ECDC4' };
+    const validPersonalChore = {
+      id: cid1,
+      name: 'Dishes',
+      type: 'personal',
+      assignedTo: pid1,
+      deadline: undefined,
+      skipDays: [],
+      skipDayVisibility: 'hide',
+      caughtUp: false,
+      completedToday: false,
+    };
+    const validRotatingChore = {
+      id: cid2,
+      name: 'Vacuuming',
+      type: 'rotating',
+      rotation: [pid1, pid2],
+      rotatingIndex: 0,
+      deadline: undefined,
+      skipDays: [],
+      skipDayVisibility: 'hide',
+      caughtUp: false,
+      completedToday: false,
+    };
+
+    beforeEach(() => {
+      nodeHelper.config = { dataFile: 'data.json', adminPin: null };
+      // Stub out checkAndPerformDailyReset so it doesn't overwrite lastResetDate
+      nodeHelper.checkAndPerformDailyReset = vi.fn();
+      // Default: file exists with valid data
+      vi.mocked(fs.existsSync).mockReturnValue(true);
+      vi.mocked(fs.readFileSync).mockReturnValue(
+        JSON.stringify({
+          people: [validPerson1, validPerson2],
+          chores: [validPersonalChore, validRotatingChore],
+          lastResetDate: '2024-01-01',
+        })
+      );
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('loads valid data into choreData', () => {
+      nodeHelper.loadChoreData();
+
+      expect(nodeHelper.choreData?.people).toHaveLength(2);
+      expect(nodeHelper.choreData?.chores).toHaveLength(2);
+      expect(nodeHelper.choreData?.lastResetDate).toBe('2024-01-01');
+      expect(nodeHelper.checkAndPerformDailyReset).toHaveBeenCalled();
+    });
+
+    it('skips an invalid person and warns', () => {
+      const invalidPerson = { id: 'not-a-uuid', name: 'Bad', color: '#FF0000' };
+      vi.mocked(fs.readFileSync).mockReturnValue(
+        JSON.stringify({
+          people: [validPerson1, invalidPerson],
+          chores: [validPersonalChore],
+          lastResetDate: '2024-01-01',
+        })
+      );
+
+      nodeHelper.loadChoreData();
+
+      expect(nodeHelper.choreData?.people).toHaveLength(1);
+      expect(nodeHelper.choreData?.people[0].id).toBe(pid1);
+    });
+
+    it('skips an invalid chore and warns', () => {
+      const invalidChore = { id: cid1, name: '', type: 'personal', assignedTo: pid1 };
+      vi.mocked(fs.readFileSync).mockReturnValue(
+        JSON.stringify({
+          people: [validPerson1],
+          chores: [invalidChore],
+          lastResetDate: '2024-01-01',
+        })
+      );
+
+      nodeHelper.loadChoreData();
+
+      expect(nodeHelper.choreData?.chores).toHaveLength(0);
+    });
+
+    it('skips a chore whose assigned person was itself skipped', () => {
+      const invalidPerson = { id: 'not-a-uuid', name: 'Bad', color: '#FF0000' };
+      const choreForInvalidPerson = {
+        ...validPersonalChore,
+        id: generateTestUUID(999),
+        assignedTo: 'not-a-uuid',
+      };
+      vi.mocked(fs.readFileSync).mockReturnValue(
+        JSON.stringify({
+          people: [validPerson1, invalidPerson],
+          chores: [choreForInvalidPerson],
+          lastResetDate: '2024-01-01',
+        })
+      );
+
+      nodeHelper.loadChoreData();
+
+      // invalidPerson was removed, so the chore referencing it should also be skipped
+      expect(nodeHelper.choreData?.chores).toHaveLength(0);
+    });
+
+    it('handles non-array people gracefully', () => {
+      vi.mocked(fs.readFileSync).mockReturnValue(
+        JSON.stringify({ people: null, chores: [], lastResetDate: '2024-01-01' })
+      );
+
+      nodeHelper.loadChoreData();
+
+      expect(nodeHelper.choreData?.people).toHaveLength(0);
+      expect(nodeHelper.choreData?.chores).toHaveLength(0);
+    });
+
+    it('handles non-array chores gracefully', () => {
+      vi.mocked(fs.readFileSync).mockReturnValue(
+        JSON.stringify({ people: [validPerson1], chores: null, lastResetDate: '2024-01-01' })
+      );
+
+      nodeHelper.loadChoreData();
+
+      expect(nodeHelper.choreData?.chores).toHaveLength(0);
+    });
+
+    it('stores undefined when lastResetDate is not a string', () => {
+      vi.mocked(fs.readFileSync).mockReturnValue(
+        JSON.stringify({ people: [validPerson1], chores: [], lastResetDate: 42 })
+      );
+
+      nodeHelper.loadChoreData();
+
+      expect(nodeHelper.choreData?.lastResetDate).toBeUndefined();
+    });
+
+    it('creates default data when file does not exist', () => {
+      vi.mocked(fs.existsSync).mockReturnValue(false);
+
+      nodeHelper.loadChoreData();
+
+      expect(nodeHelper.choreData?.people).toHaveLength(0);
+      expect(nodeHelper.choreData?.chores).toHaveLength(0);
+      // saveChoreData is mocked in the outer beforeEach; verify it was called to persist defaults
+      expect(mockSaveChoreData).toHaveBeenCalled();
+    });
+
+    it('falls back to default data on parse error', () => {
+      vi.mocked(fs.readFileSync).mockReturnValue('not valid json{{{');
+
+      nodeHelper.loadChoreData();
+
+      expect(nodeHelper.choreData?.people).toHaveLength(0);
+      expect(nodeHelper.choreData?.chores).toHaveLength(0);
     });
   });
 
