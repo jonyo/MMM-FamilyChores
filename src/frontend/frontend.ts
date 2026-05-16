@@ -29,7 +29,7 @@ const familyChoresModule: FamilyChoresModule = {
       showRotating: true,
       showOverdue: true,
       incompleteTitle: 'Incomplete Chores',
-      rotatingTitle: 'Current Rotating Assignments',
+      rotatingTitle: "Today's Rotation",
       overdueTitle: 'Overdue',
     },
     dailyResetTime: '03:00',
@@ -45,7 +45,7 @@ const familyChoresModule: FamilyChoresModule = {
       showRotating: true,
       showOverdue: true,
       incompleteTitle: 'Incomplete Chores',
-      rotatingTitle: 'Current Rotating Assignments',
+      rotatingTitle: "Today's Rotation",
       overdueTitle: 'Overdue',
     },
     dailyResetTime: '03:00',
@@ -285,6 +285,32 @@ const familyChoresModule: FamilyChoresModule = {
     return html;
   },
 
+  // Custom function: render rotating chore in compact inline style
+  renderRotatingChoreInline(
+    chore: FamilyChoresData['chores'][0],
+    choreData: FamilyChoresData
+  ): string {
+    const currentRotationPerson =
+      chore.type === ChoreType.ROTATING && chore.rotation && chore.rotatingIndex !== undefined
+        ? choreData.people.find(
+            (p: FamilyChoresData['people'][0]) =>
+              p.id === chore.rotation?.[chore.rotatingIndex ?? -1]
+          )
+        : null;
+
+    const personName = currentRotationPerson ? currentRotationPerson.name : 'Unassigned';
+    const personColor = currentRotationPerson ? currentRotationPerson.color : '#ccc';
+    const checkedAttr = chore.completedToday ? 'checked' : '';
+
+    let html = `<div class="rotating-inline" data-chore-id="${chore.id}">`;
+    html += `<span class="chore-name">${escapeHtml(chore.name)}</span>`;
+    html += `<span class="person-name" style="color: ${personColor}">${escapeHtml(personName)}</span>`;
+    html += `<input type="checkbox" class="inline-checkbox" ${checkedAttr} />`;
+    html += '</div>';
+
+    return html;
+  },
+
   // Custom function: render summary view with sections
   renderSummaryView(wrapper: HTMLElement): HTMLElement {
     if (!this.choreData) {
@@ -301,7 +327,7 @@ const familyChoresModule: FamilyChoresModule = {
       showRotating: true,
       showOverdue: true,
       incompleteTitle: 'Incomplete Chores',
-      rotatingTitle: 'Current Rotating Assignments',
+      rotatingTitle: "Today's Rotation",
       overdueTitle: 'Overdue',
       ...this.config.summary,
     };
@@ -342,7 +368,9 @@ const familyChoresModule: FamilyChoresModule = {
       html += `<h3 class="section-title rotating-title">${summaryConfig.rotatingTitle}</h3>`;
       html += '<div class="chore-list">';
       html += rotatingChores
-        .map((chore: FamilyChoresData['chores'][0]) => this.renderChoreItem(chore, choreData))
+        .map((chore: FamilyChoresData['chores'][0]) =>
+          this.renderRotatingChoreInline(chore, choreData)
+        )
         .join('');
       html += '</div>';
       html += '</div>';
