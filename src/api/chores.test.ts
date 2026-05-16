@@ -1,6 +1,6 @@
-import type { CreateChoreRequest, UpdateChoreRequest } from '../types/request-types';
 import { describe, expect, it, vi } from 'vitest';
 import { ChoreType, DayOfWeek, SkipDayVisibility } from '../types/chore-types';
+import type { CreateChoreRequest, UpdateChoreRequest } from '../types/request-types';
 import { createChore, deleteChore, updateChore } from './chores';
 
 // Mock fetch

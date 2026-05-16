@@ -2,8 +2,8 @@ import { render } from '@solidjs/testing-library';
 import { describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import '../../public/admin.css';
-import type { Person } from '../types/chore-types';
 import { createPerson, updatePerson } from '../api';
+import type { Person } from '../types/chore-types';
 import { PersonModal } from './person-modal';
 
 // Mock API functions

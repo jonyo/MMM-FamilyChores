@@ -1,12 +1,13 @@
-import type { Person, PersonalChore, SkipDayVisibility } from '../types/chore-types';
-import type { CreateChoreRequest, UpdateChoreRequest } from '../types/request-types';
-import { type Component, createSignal, For, Show } from 'solid-js';
+import type { Component } from 'solid-js';
+import { createSignal, For, Show } from 'solid-js';
 import { createChore, updateChore } from '../api';
+import type { Person, PersonalChore, SkipDayVisibility } from '../types/chore-types';
 import {
   ChoreType,
   DayOfWeek,
   SkipDayVisibility as SkipDayVisibilityEnum,
 } from '../types/chore-types';
+import type { CreateChoreRequest, UpdateChoreRequest } from '../types/request-types';
 
 interface PersonalChoreModalProps {
   person: Person | null;

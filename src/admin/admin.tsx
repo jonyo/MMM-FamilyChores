@@ -1,13 +1,15 @@
+import type { Component } from 'solid-js';
+import { createSignal, For, onMount, Show } from 'solid-js';
+import { deleteChore, deletePerson } from '../api';
 import type {
   Chore,
+  DayOfWeek,
   FamilyChoresData,
   Person,
   PersonalChore,
   RotatingChore,
 } from '../types/chore-types';
-import { type Component, createSignal, For, onMount, Show } from 'solid-js';
-import { deleteChore, deletePerson } from '../api';
-import { ChoreType, type DayOfWeek } from '../types/chore-types';
+import { ChoreType } from '../types/chore-types';
 import { escapeHtml } from '../utils/browser';
 import { getLocalDateString } from '../utils/date';
 import { PersonModal } from './person-modal';

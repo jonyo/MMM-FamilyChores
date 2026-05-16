@@ -1,7 +1,8 @@
+import { SocketNotifications } from '../constants/socket-notifications';
+import type { Chore, FamilyChoresData } from '../types/chore-types';
+import { ChoreType, SkipDayVisibility } from '../types/chore-types';
 import type { Config } from '../types/config';
 import type { FamilyChoresModule } from '../types/module';
-import { SocketNotifications } from '../constants/socket-notifications';
-import { ChoreType, type FamilyChoresData, SkipDayVisibility } from '../types/chore-types';
 import { escapeHtml } from '../utils/browser';
 import { DeadlineStatus, getDeadlineStatus, getLocalDayName } from '../utils/date';
 
@@ -286,10 +287,7 @@ const familyChoresModule: FamilyChoresModule = {
   },
 
   // Custom function: render rotating chore in compact inline style
-  renderRotatingChoreInline(
-    chore: FamilyChoresData['chores'][0],
-    choreData: FamilyChoresData
-  ): string {
+  renderRotatingChoreInline(chore: Chore, choreData: FamilyChoresData): string {
     const currentRotationPerson =
       chore.type === ChoreType.ROTATING && chore.rotation && chore.rotatingIndex !== undefined
         ? choreData.people.find(
@@ -333,10 +331,8 @@ const familyChoresModule: FamilyChoresModule = {
     };
 
     // Separate chores into categories
-    const incompleteChores = visibleChores.filter(
-      (chore: FamilyChoresData['chores'][0]) => !chore.completedToday
-    );
-    const overdueChores = visibleChores.filter((chore: FamilyChoresData['chores'][0]) => {
+    const incompleteChores = visibleChores.filter((chore: Chore) => !chore.completedToday);
+    const overdueChores = visibleChores.filter((chore: Chore) => {
       const deadlineStatus = getDeadlineStatus(
         chore.deadline,
         chore.completedToday,
@@ -344,9 +340,7 @@ const familyChoresModule: FamilyChoresModule = {
       );
       return deadlineStatus === DeadlineStatus.OVERDUE;
     });
-    const rotatingChores = visibleChores.filter(
-      (chore: FamilyChoresData['chores'][0]) => chore.type === 'rotating'
-    );
+    const rotatingChores = visibleChores.filter((chore: Chore) => chore.type === 'rotating');
 
     let html = '<div class="module-content summary-view">';
 
@@ -356,7 +350,7 @@ const familyChoresModule: FamilyChoresModule = {
       html += `<h3 class="section-title incomplete-title">${summaryConfig.incompleteTitle}</h3>`;
       html += '<div class="chore-list">';
       html += incompleteChores
-        .map((chore: FamilyChoresData['chores'][0]) => this.renderChoreItem(chore, choreData))
+        .map((chore: Chore) => this.renderChoreItem(chore, choreData))
         .join('');
       html += '</div>';
       html += '</div>';
@@ -368,9 +362,7 @@ const familyChoresModule: FamilyChoresModule = {
       html += `<h3 class="section-title rotating-title">${summaryConfig.rotatingTitle}</h3>`;
       html += '<div class="chore-list">';
       html += rotatingChores
-        .map((chore: FamilyChoresData['chores'][0]) =>
-          this.renderRotatingChoreInline(chore, choreData)
-        )
+        .map((chore: Chore) => this.renderRotatingChoreInline(chore, choreData))
         .join('');
       html += '</div>';
       html += '</div>';
@@ -381,9 +373,7 @@ const familyChoresModule: FamilyChoresModule = {
       html += '<div class="summary-section overdue-section">';
       html += `<h3 class="section-title overdue-title">${summaryConfig.overdueTitle}</h3>`;
       html += '<div class="chore-list">';
-      html += overdueChores
-        .map((chore: FamilyChoresData['chores'][0]) => this.renderChoreItem(chore, choreData))
-        .join('');
+      html += overdueChores.map((chore: Chore) => this.renderChoreItem(chore, choreData)).join('');
       html += '</div>';
       html += '</div>';
     }

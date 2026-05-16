@@ -1,15 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import '../../css/main.css';
+import type { Chore, PersonalChore, RotatingChore } from '../types/chore-types';
+import { ChoreType, DayOfWeek, SkipDayVisibility } from '../types/chore-types';
 import type { FamilyChoresModule } from '../types/module';
-import {
-  type Chore,
-  ChoreType,
-  DayOfWeek,
-  type PersonalChore,
-  type RotatingChore,
-  SkipDayVisibility,
-} from '../types/chore-types';
 import './frontend';
 
 const { capturedModule } = vi.hoisted(() => {

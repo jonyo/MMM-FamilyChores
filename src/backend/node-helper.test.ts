@@ -1,3 +1,7 @@
+import * as fs from 'node:fs';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { Chore, FamilyChoresData, PersonalChore, RotatingChore } from '../types/chore-types';
+import { ChoreType, SkipDayVisibility } from '../types/chore-types';
 import type { Config } from '../types/config';
 import type {
   CaughtUpResetPayload,
@@ -5,16 +9,6 @@ import type {
   ChoreTogglePayload,
   NodeHelperIncomingSocketPayload,
 } from '../types/socket-payload-types';
-import * as fs from 'node:fs';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-  type Chore,
-  ChoreType,
-  type FamilyChoresData,
-  type PersonalChore,
-  type RotatingChore,
-  SkipDayVisibility,
-} from '../types/chore-types';
 import { getLocalDateString, getLocalDayName } from '../utils/date';
 import { generateTestUUID } from '../utils/uuid';
 import './node-helper';

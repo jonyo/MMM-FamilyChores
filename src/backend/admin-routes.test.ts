@@ -1,15 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import { SocketNotifications } from '../constants/socket-notifications';
-import {
-  ChoreType,
-  DayOfWeek,
-  type FamilyChoresData,
-  type RotatingChore,
-  SkipDayVisibility,
-} from '../types/chore-types';
+import type { FamilyChoresData, RotatingChore } from '../types/chore-types';
+import { ChoreType, DayOfWeek, SkipDayVisibility } from '../types/chore-types';
 import { getLocalDateString } from '../utils/date';
 import { generateTestUUID } from '../utils/uuid';
-import { type AdminHandlerContext, createAdminHandlers } from './admin-routes';
+import type { AdminHandlerContext } from './admin-routes';
+import { createAdminHandlers } from './admin-routes';
 
 vi.mock('logger', () => ({
   info: vi.fn(),

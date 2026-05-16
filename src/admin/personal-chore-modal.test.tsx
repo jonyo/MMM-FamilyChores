@@ -2,8 +2,8 @@ import { render } from '@solidjs/testing-library';
 import { describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import '../../public/admin.css';
-import type { Person, PersonalChore } from '../types/chore-types';
 import { createChore, updateChore } from '../api';
+import type { Person, PersonalChore } from '../types/chore-types';
 import { ChoreType, DayOfWeek, SkipDayVisibility } from '../types/chore-types';
 import { PersonalChoreModal } from './personal-chore-modal';
 

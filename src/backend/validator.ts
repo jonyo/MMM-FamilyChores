@@ -1,10 +1,5 @@
-import {
-  type Chore,
-  ChoreType,
-  DayOfWeek,
-  type Person,
-  SkipDayVisibility,
-} from '../types/chore-types';
+import type { Chore, Person } from '../types/chore-types';
+import { ChoreType, DayOfWeek, SkipDayVisibility } from '../types/chore-types';
 import { isValidUUID } from '../utils/uuid';
 
 type ValidatedResult = { valid: true } | { valid: false; error: string };

@@ -1,6 +1,6 @@
 import type { Component } from 'solid-js';
-import type { Person, RotatingChore } from '../types/chore-types';
 import { createMemo, Show } from 'solid-js';
+import type { Person, RotatingChore } from '../types/chore-types';
 import { escapeHtml } from '../utils/browser';
 
 /** Props for the RotatingChoreCard component */
