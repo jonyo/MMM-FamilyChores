@@ -12,6 +12,7 @@ import { escapeHtml } from '../utils/browser';
 import { getLocalDateString } from '../utils/date';
 import { PersonModal } from './person-modal';
 import { PersonalChoreModal } from './personal-chore-modal';
+import { RotatingChoreCard } from './rotating-chore';
 import { RotatingChoreModal } from './rotating-chore-modal';
 
 // API base URL
@@ -399,63 +400,14 @@ export const Admin: Component<Record<string, never>> = () => {
               </div>
               <div id="rotatingChoresList" class="item-list">
                 <For each={getRotatingChores()}>
-                  {(chore) => {
-                    // Get rotation list names
-                    const rotationNames = chore.rotation
-                      .map((personId) => {
-                        const person = choreData()?.people.find((p) => p.id === personId);
-                        return person ? escapeHtml(person.name) : 'Unknown';
-                      })
-                      .join(', ');
-
-                    // Check if rotation includes everyone
-                    const peopleLength = choreData()?.people.length ?? 0;
-                    const includesEveryone =
-                      chore.rotation.length === peopleLength &&
-                      chore.rotation.every((personId) =>
-                        choreData()?.people.some((p) => p.id === personId)
-                      );
-
-                    const rotationText = includesEveryone ? 'Everyone' : rotationNames;
-
-                    // Get current assignee
-                    const currentPersonId = chore.rotation[chore.rotatingIndex ?? 0];
-                    const currentPerson = choreData()?.people.find((p) => p.id === currentPersonId);
-                    const currentAssignee = currentPerson
-                      ? escapeHtml(currentPerson.name)
-                      : 'Unassigned';
-
-                    return (
-                      <div class="item-card">
-                        <div class="item-info">
-                          <h3>
-                            {escapeHtml(chore.name)}{' '}
-                            <span class="chore-type-badge rotating">Rotating</span>
-                          </h3>
-                          <p>Current: {currentAssignee}</p>
-                          <p>Rotation: {rotationText}</p>
-                          {chore.deadline && <p class="deadline">Deadline: {chore.deadline}</p>}
-                          <p class="skip-days">Skip days: {formatSkipDays(chore.skipDays)}</p>
-                        </div>
-                        <div class="item-actions">
-                          <button
-                            type="button"
-                            class="btn btn-secondary"
-                            onClick={() => openRotatingChoreModal(chore)}
-                          >
-                            Edit
-                          </button>
-                          <button
-                            type="button"
-                            class="btn btn-danger btn-sm"
-                            onClick={() => handleDeleteChore(chore.id)}
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  }}
+                  {(chore) => (
+                    <RotatingChoreCard
+                      chore={chore}
+                      people={choreData()?.people ?? []}
+                      onEdit={openRotatingChoreModal}
+                      onDelete={handleDeleteChore}
+                    />
+                  )}
                 </For>
               </div>
             </section>
