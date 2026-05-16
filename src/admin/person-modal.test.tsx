@@ -95,8 +95,7 @@ describe('PersonModal', () => {
       render(() => <PersonModal initialPerson={undefined} closeModal={closeModal} />);
 
       // Fill in the name field
-      const nameInput = document.querySelector('#personName') as HTMLInputElement;
-      nameInput.value = 'Test Person';
+      await page.getByLabelText('Name').fill('Test Person');
 
       const addButton = page.getByRole('button', { name: 'Add' });
       expect(addButton.element()).toBeVisible();

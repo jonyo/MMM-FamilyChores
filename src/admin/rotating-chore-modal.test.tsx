@@ -71,8 +71,7 @@ describe('RotatingChoreModal', () => {
       ));
 
       // Fill in the chore name
-      const nameInput = document.querySelector('#choreName') as HTMLInputElement;
-      nameInput.value = 'Test Rotating Chore';
+      await page.getByLabelText('Chore Name').fill('Test Rotating Chore');
 
       const addButton = page.getByRole('button', { name: 'Add' });
       expect(addButton.element()).toBeVisible();

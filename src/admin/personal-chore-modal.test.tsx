@@ -67,8 +67,7 @@ describe('PersonalChoreModal', () => {
       ));
 
       // Fill in the chore name
-      const nameInput = document.querySelector('#choreName') as HTMLInputElement;
-      nameInput.value = 'Test Chore';
+      await page.getByLabelText('Chore Name').fill('Test Chore');
 
       const addButton = page.getByRole('button', { name: 'Add' });
       expect(addButton.element()).toBeVisible();
