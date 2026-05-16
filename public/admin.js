@@ -957,7 +957,7 @@
 		if (!response.ok) {
 			const errorData = await response.json().catch(() => ({}));
 			if (errorData?.error) throw new Error(errorData.error);
-			throw new Error("Request failed");
+			throw new Error(`Request failed with status ${response.status}`);
 		}
 		return response.json();
 	};
@@ -981,6 +981,18 @@
 	var deleteChore = async (id) => {
 		validateId(id);
 		await handleResponse(await fetch(`${API_BASE_URL}/chores/${id}`, { method: "DELETE" }));
+	};
+	var copyChores = async (data) => {
+		try {
+			await handleResponse(await fetch(`${API_BASE_URL}/copy-chores`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(data)
+			}));
+		} catch (error) {
+			if (error instanceof TypeError && error.message === "Failed to fetch") throw new Error("Network error: Could not connect to the server. Is the admin server running?");
+			throw error;
+		}
 	};
 	//#endregion
 	//#region src/api/people.ts
@@ -1074,6 +1086,127 @@
 			day: "2-digit"
 		}).format(date);
 	};
+	//#endregion
+	//#region src/admin/copy-chores-modal.tsx
+	var _tmpl$$5 = /* @__PURE__ */ template(`<div class=empty-message><p>No other people available to copy chores to.</p><button type=button class="btn btn-secondary">Close`), _tmpl$2$4 = /* @__PURE__ */ template(`<form><div class=form-group><div class=form-label>Select Person to Copy To</div><select id=toPerson required><option value>-- Select a person --</option></select></div><div class=form-group><div class=form-label>Select Chores to Copy</div><div class=checkbox-list></div></div><div class=form-actions><button type=button class="btn btn-secondary">Cancel</button><button type=submit class="btn btn-primary">`), _tmpl$3$3 = /* @__PURE__ */ template(`<div class="modal active"><div class=modal-content><h3>Copy Chores</h3><div class=copy-from-display><span class=color-badge></span><strong>From:</strong> `), _tmpl$4$1 = /* @__PURE__ */ template(`<div class=empty-message><p>No personal chores to copy for <!>.</p><button type=button class="btn btn-secondary">Close`), _tmpl$5$1 = /* @__PURE__ */ template(`<option>`), _tmpl$6$1 = /* @__PURE__ */ template(`<label><input type=checkbox>`);
+	var CopyChoresModal = (props) => {
+		const personalChores = createMemo(() => {
+			return props.choreData.chores.filter((chore) => chore.type === ChoreType.PERSONAL && chore.assignedTo === props.fromPerson.id);
+		});
+		const availablePeople = createMemo(() => {
+			return props.choreData.people.filter((person) => person.id !== props.fromPerson.id);
+		});
+		const [selectedChoreIds, setSelectedChoreIds] = createSignal([]);
+		const [toPersonId, setToPersonId] = createSignal("");
+		const [loading, setLoading] = createSignal(false);
+		onMount(() => {
+			setSelectedChoreIds(personalChores().map((chore) => chore.id));
+		});
+		const handleChoreToggle = (choreId, checked) => {
+			if (checked) setSelectedChoreIds([...selectedChoreIds(), choreId]);
+			else setSelectedChoreIds(selectedChoreIds().filter((id) => id !== choreId));
+		};
+		const handleSubmit = async (event) => {
+			event.preventDefault();
+			if (!toPersonId()) {
+				alert("Please select a person to copy chores to.");
+				return;
+			}
+			if (selectedChoreIds().length === 0) {
+				alert("Please select at least one chore to copy.");
+				return;
+			}
+			setLoading(true);
+			try {
+				await copyChores({
+					fromPersonId: props.fromPerson.id,
+					toPersonId: toPersonId(),
+					choreIds: selectedChoreIds()
+				});
+				props.closeModal();
+			} catch (error) {
+				console.error("Error copying chores:", error);
+				alert(`Failed to copy chores: ${error instanceof Error ? error.message : "Unknown error"}`);
+			} finally {
+				setLoading(false);
+			}
+		};
+		return (() => {
+			var _el$ = _tmpl$3$3(), _el$2 = _el$.firstChild, _el$4 = _el$2.firstChild.nextSibling, _el$5 = _el$4.firstChild;
+			_el$5.nextSibling.nextSibling;
+			insert(_el$4, () => escapeHtml(props.fromPerson.name), null);
+			insert(_el$2, createComponent(Show, {
+				get when() {
+					return personalChores().length > 0;
+				},
+				get fallback() {
+					return (() => {
+						var _el$20 = _tmpl$4$1(), _el$21 = _el$20.firstChild, _el$24 = _el$21.firstChild.nextSibling;
+						_el$24.nextSibling;
+						var _el$25 = _el$21.nextSibling;
+						insert(_el$21, () => escapeHtml(props.fromPerson.name), _el$24);
+						_el$25.$$click = () => props.closeModal();
+						return _el$20;
+					})();
+				},
+				get children() {
+					return [createComponent(Show, {
+						get when() {
+							return availablePeople().length === 0;
+						},
+						get children() {
+							var _el$8 = _tmpl$$5(), _el$0 = _el$8.firstChild.nextSibling;
+							_el$0.$$click = () => props.closeModal();
+							return _el$8;
+						}
+					}), createComponent(Show, {
+						get when() {
+							return availablePeople().length > 0;
+						},
+						get children() {
+							var _el$1 = _tmpl$2$4(), _el$10 = _el$1.firstChild, _el$12 = _el$10.firstChild.nextSibling;
+							_el$12.firstChild;
+							var _el$14 = _el$10.nextSibling, _el$16 = _el$14.firstChild.nextSibling, _el$18 = _el$14.nextSibling.firstChild, _el$19 = _el$18.nextSibling;
+							_el$1.addEventListener("submit", handleSubmit);
+							_el$12.$$input = (e) => setToPersonId(e.currentTarget.value);
+							insert(_el$12, createComponent(For, {
+								get each() {
+									return availablePeople();
+								},
+								children: (person) => (() => {
+									var _el$26 = _tmpl$5$1();
+									insert(_el$26, () => escapeHtml(person.name));
+									createRenderEffect(() => _el$26.value = person.id);
+									return _el$26;
+								})()
+							}), null);
+							insert(_el$16, createComponent(For, {
+								get each() {
+									return personalChores();
+								},
+								children: (chore) => (() => {
+									var _el$27 = _tmpl$6$1(), _el$28 = _el$27.firstChild;
+									_el$28.$$input = (e) => handleChoreToggle(chore.id, e.currentTarget.checked);
+									insert(_el$27, () => escapeHtml(chore.name), null);
+									createRenderEffect(() => _el$28.value = chore.id);
+									createRenderEffect(() => _el$28.checked = selectedChoreIds().includes(chore.id));
+									return _el$27;
+								})()
+							}));
+							_el$18.$$click = () => props.closeModal();
+							insert(_el$19, () => loading() ? "Copying..." : "Copy");
+							createRenderEffect(() => _el$19.disabled = loading());
+							createRenderEffect(() => _el$12.value = toPersonId());
+							return _el$1;
+						}
+					})];
+				}
+			}), null);
+			createRenderEffect((_$p) => style(_el$5, `background-color: ${props.fromPerson.color}`, _$p));
+			return _el$;
+		})();
+	};
+	delegateEvents(["click", "input"]);
 	//#endregion
 	//#region src/admin/person-modal.tsx
 	var _tmpl$$4 = /* @__PURE__ */ template(`<div class="modal active"><div class=modal-content><h3></h3><form><div class=form-group><label for=personName>Name</label><input type=text id=personName required></div><div class=form-group><label for=personColor>Color</label><div class=color-input-group><input type=color id=personColor required><button type=button class="btn btn-secondary btn-sm">Randomize</button></div></div><div class=form-actions><button type=button class="btn btn-secondary">Cancel</button><button type=submit class="btn btn-primary">`);
@@ -1366,7 +1499,7 @@
 	delegateEvents(["input", "click"]);
 	//#endregion
 	//#region src/admin/admin.tsx
-	var _tmpl$ = /* @__PURE__ */ template(`<p class=retry-info>Retrying... (attempt <!>)`), _tmpl$2 = /* @__PURE__ */ template(`<div class=loading-message><div class=loading-message-content><p>Magic Mirror is starting up, please wait...`), _tmpl$3 = /* @__PURE__ */ template(`<span id=addPersonInfo class=info-icon data-tooltip="Add at least one person before you can create chores">ℹ️`), _tmpl$4 = /* @__PURE__ */ template(`<section class=section id=rotatingChoresSection><div class=section-header><h2>Rotating Chores</h2><button type=button class="btn btn-primary"id=addRotatingChoreBtn>Add Rotating Chore</button></div><div id=rotatingChoresList class=item-list>`), _tmpl$5 = /* @__PURE__ */ template(`<main><section class=section><div class=section-header><h2>People</h2><div class=button-with-tooltip><button type=button class="btn btn-primary"id=addPersonBtn>Add Person</button></div></div><div id=peopleList class=item-list></div></section><section class=section><h2>System State</h2><div class=state-info><p><strong>Last Reset Date:</strong> <span id=lastResetDate></span></p><div class=button-with-tooltip><button type=button class="btn btn-warning"id=resetDailyBtn>Force Daily Reset</button><span class=info-icon data-tooltip="WARNING: This will un-check all chores and rotate assignment on rotating chores to the next person. It does respect skip days if today is a skip day. Useful for testing or immediately advancing chore assignments.">ℹ️`), _tmpl$6 = /* @__PURE__ */ template(`<div class=container><header><h1>Family Chores Admin</h1><div class=backup-section><button type=button class="btn btn-secondary"id=backupBtn>Download Backup</button><label for=restoreFile class="btn btn-secondary">Restore Backup</label><input type=file id=restoreFile accept=.json hidden>`), _tmpl$7 = /* @__PURE__ */ template(`<div class=person-chores>`), _tmpl$8 = /* @__PURE__ */ template(`<div class=item-card><div class=person-header><div class=item-info><h3> <span class=color-badge></span></h3><p>ID: </p></div><div class=item-actions><button type=button class="btn btn-secondary btn-sm">Edit</button><button type=button class="btn btn-danger btn-sm">Delete</button></div></div><div class=person-chores-header><h4>'s Personal Chores</h4><div class=person-chores-actions><button type=button class="btn btn-primary btn-sm">Add Chore`), _tmpl$9 = /* @__PURE__ */ template(`<div class=person-chores><p class=empty-message>No personal chores yet.`), _tmpl$0 = /* @__PURE__ */ template(`<p class=deadline>Deadline: `), _tmpl$1 = /* @__PURE__ */ template(`<div class=chore-item><div class=chore-info><h4></h4><p class=skip-days>Skip days: </p></div><div class=chore-actions><button type=button class="btn btn-secondary btn-sm">Edit</button><button type=button class="btn btn-danger btn-sm">Delete`);
+	var _tmpl$ = /* @__PURE__ */ template(`<p class=retry-info>Retrying... (attempt <!>)`), _tmpl$2 = /* @__PURE__ */ template(`<div class=loading-message><div class=loading-message-content><p>Magic Mirror is starting up, please wait...`), _tmpl$3 = /* @__PURE__ */ template(`<span id=addPersonInfo class=info-icon data-tooltip="Add at least one person before you can create chores">ℹ️`), _tmpl$4 = /* @__PURE__ */ template(`<section class=section id=rotatingChoresSection><div class=section-header><h2>Rotating Chores</h2><button type=button class="btn btn-primary"id=addRotatingChoreBtn>Add Rotating Chore</button></div><div id=rotatingChoresList class=item-list>`), _tmpl$5 = /* @__PURE__ */ template(`<main><section class=section><div class=section-header><h2>People</h2><div class=button-with-tooltip><button type=button class="btn btn-primary"id=addPersonBtn>Add Person</button></div></div><div id=peopleList class=item-list></div></section><section class=section><h2>System State</h2><div class=state-info><p><strong>Last Reset Date:</strong> <span id=lastResetDate></span></p><div class=button-with-tooltip><button type=button class="btn btn-warning"id=resetDailyBtn>Force Daily Reset</button><span class=info-icon data-tooltip="WARNING: This will un-check all chores and rotate assignment on rotating chores to the next person. It does respect skip days if today is a skip day. Useful for testing or immediately advancing chore assignments.">ℹ️`), _tmpl$6 = /* @__PURE__ */ template(`<div class=container><header><h1>Family Chores Admin</h1><div class=backup-section><button type=button class="btn btn-secondary"id=backupBtn>Download Backup</button><label for=restoreFile class="btn btn-secondary">Restore Backup</label><input type=file id=restoreFile accept=.json hidden>`), _tmpl$7 = /* @__PURE__ */ template(`<button type=button class="btn btn-secondary btn-sm">Copy Chores`), _tmpl$8 = /* @__PURE__ */ template(`<div class=person-chores>`), _tmpl$9 = /* @__PURE__ */ template(`<div class=item-card><div class=person-header><div class=item-info><h3> <span class=color-badge></span></h3><p>ID: </p></div><div class=item-actions><button type=button class="btn btn-secondary btn-sm">Edit</button><button type=button class="btn btn-danger btn-sm">Delete</button></div></div><div class=person-chores-header><h4>'s Personal Chores</h4><div class=person-chores-actions><button type=button class="btn btn-primary btn-sm">Add Chore`), _tmpl$0 = /* @__PURE__ */ template(`<div class=person-chores><p class=empty-message>No personal chores yet.`), _tmpl$1 = /* @__PURE__ */ template(`<p class=deadline>Deadline: `), _tmpl$10 = /* @__PURE__ */ template(`<div class=chore-item><div class=chore-info><h4></h4><p class=skip-days>Skip days: </p></div><div class=chore-actions><button type=button class="btn btn-secondary btn-sm">Edit</button><button type=button class="btn btn-danger btn-sm">Delete`);
 	var API_BASE = "/MMM-FamilyChores";
 	var formatSkipDays = (skipDays) => {
 		if (!skipDays || skipDays.length === 0) return "None";
@@ -1377,9 +1510,11 @@
 		const [personModalOpen, setPersonModalOpen] = createSignal(false);
 		const [personalChoreModalOpen, setPersonalChoreModalOpen] = createSignal(false);
 		const [rotatingChoreModalOpen, setRotatingChoreModalOpen] = createSignal(false);
+		const [copyChoresModalOpen, setCopyChoresModalOpen] = createSignal(false);
 		const [editingPerson, setEditingPerson] = createSignal(null);
 		const [editingChore, setEditingChore] = createSignal(null);
 		const [editingChorePerson, setEditingChorePerson] = createSignal(null);
+		const [copyChoresFromPerson, setCopyChoresFromPerson] = createSignal(null);
 		const [loading, setLoading] = createSignal(true);
 		const [retryCount, setRetryCount] = createSignal(0);
 		const loadData = async () => {
@@ -1426,6 +1561,15 @@
 		const closeRotatingChoreModal = async () => {
 			setRotatingChoreModalOpen(false);
 			setEditingChore(null);
+			await loadData();
+		};
+		const openCopyChoresModal = (person) => {
+			setCopyChoresFromPerson(person);
+			setCopyChoresModalOpen(true);
+		};
+		const closeCopyChoresModal = async () => {
+			setCopyChoresModalOpen(false);
+			setCopyChoresFromPerson(null);
 			await loadData();
 		};
 		const handleDeletePerson = async (personId) => {
@@ -1560,9 +1704,9 @@
 							return choreData()?.people ?? [];
 						},
 						children: (person) => (() => {
-							var _el$35 = _tmpl$8(), _el$36 = _el$35.firstChild, _el$37 = _el$36.firstChild, _el$38 = _el$37.firstChild, _el$39 = _el$38.firstChild, _el$40 = _el$39.nextSibling, _el$41 = _el$38.nextSibling;
+							var _el$35 = _tmpl$9(), _el$36 = _el$35.firstChild, _el$37 = _el$36.firstChild, _el$38 = _el$37.firstChild, _el$39 = _el$38.firstChild, _el$40 = _el$39.nextSibling, _el$41 = _el$38.nextSibling;
 							_el$41.firstChild;
-							var _el$44 = _el$37.nextSibling.firstChild, _el$45 = _el$44.nextSibling, _el$47 = _el$36.nextSibling.firstChild, _el$48 = _el$47.firstChild, _el$50 = _el$47.nextSibling.firstChild;
+							var _el$44 = _el$37.nextSibling.firstChild, _el$45 = _el$44.nextSibling, _el$47 = _el$36.nextSibling.firstChild, _el$48 = _el$47.firstChild, _el$49 = _el$47.nextSibling, _el$50 = _el$49.firstChild;
 							insert(_el$38, () => escapeHtml(person.name), _el$39);
 							insert(_el$41, () => person.id, null);
 							_el$44.$$click = () => openPersonModal(person);
@@ -1571,44 +1715,56 @@
 							_el$50.$$click = () => {
 								openPersonalChoreModal(person, null);
 							};
+							insert(_el$49, createComponent(Show, {
+								get when() {
+									return memo(() => getPersonalChores(person.id).length > 0)() && (choreData()?.people.length ?? 0) > 1;
+								},
+								get children() {
+									var _el$51 = _tmpl$7();
+									_el$51.$$click = () => {
+										openCopyChoresModal(person);
+									};
+									return _el$51;
+								}
+							}), null);
 							insert(_el$35, createComponent(Show, {
 								get when() {
 									return getPersonalChores(person.id).length > 0;
 								},
 								get fallback() {
-									return _tmpl$9();
+									return _tmpl$0();
 								},
 								get children() {
-									var _el$51 = _tmpl$7();
-									insert(_el$51, createComponent(For, {
+									var _el$52 = _tmpl$8();
+									insert(_el$52, createComponent(For, {
 										get each() {
 											return getPersonalChores(person.id);
 										},
 										children: (chore) => (() => {
-											var _el$53 = _tmpl$1(), _el$54 = _el$53.firstChild, _el$55 = _el$54.firstChild, _el$58 = _el$55.nextSibling;
-											_el$58.firstChild;
-											var _el$61 = _el$54.nextSibling.firstChild, _el$62 = _el$61.nextSibling;
-											insert(_el$55, () => escapeHtml(chore.name));
-											insert(_el$54, createComponent(Show, {
+											var _el$54 = _tmpl$10(), _el$55 = _el$54.firstChild, _el$56 = _el$55.firstChild, _el$59 = _el$56.nextSibling;
+											_el$59.firstChild;
+											var _el$62 = _el$55.nextSibling.firstChild, _el$63 = _el$62.nextSibling;
+											insert(_el$56, () => escapeHtml(chore.name));
+											insert(_el$55, createComponent(Show, {
 												get when() {
 													return chore.deadline;
 												},
 												get children() {
-													var _el$56 = _tmpl$0();
-													_el$56.firstChild;
-													insert(_el$56, () => chore.deadline, null);
-													return _el$56;
+													var _el$57 = _tmpl$1();
+													_el$57.firstChild;
+													insert(_el$57, () => chore.deadline, null);
+													return _el$57;
 												}
-											}), _el$58);
-											insert(_el$58, () => formatSkipDays(chore.skipDays), null);
-											_el$61.$$click = () => {
+											}), _el$59);
+											insert(_el$59, () => formatSkipDays(chore.skipDays), null);
+											_el$62.$$click = () => {
 												openPersonalChoreModal(person, chore);
 											};
-											_el$62.$$click = () => handleDeleteChore(chore.id);
-											return _el$53;
+											_el$63.$$click = () => handleDeleteChore(chore.id);
+											return _el$54;
 										})()
 									}));
-									return _el$51;
+									return _el$52;
 								}
 							}), null);
 							createRenderEffect((_$p) => style(_el$40, `background-color: ${person.color}`, _$p));
@@ -1688,6 +1844,22 @@
 							};
 						},
 						closeModal: closeRotatingChoreModal
+					});
+				}
+			}), null);
+			insert(_el$, createComponent(Show, {
+				get when() {
+					return memo(() => !!(copyChoresModalOpen() && copyChoresFromPerson()))() && choreData();
+				},
+				get children() {
+					return createComponent(CopyChoresModal, {
+						get fromPerson() {
+							return copyChoresFromPerson();
+						},
+						get choreData() {
+							return choreData();
+						},
+						closeModal: closeCopyChoresModal
 					});
 				}
 			}), null);

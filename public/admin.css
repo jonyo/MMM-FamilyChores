@@ -280,7 +280,6 @@ main {
   height: 24px;
   border-radius: 50%;
   vertical-align: middle;
-  margin-left: 10px;
   border: 2px solid rgba(0, 0, 0, 0.1);
 }
 
@@ -391,13 +390,26 @@ main {
   font-size: 1.5rem;
 }
 
+.assigned-person-display,
+.copy-from-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+  font-size: 1rem;
+}
+
 .form-group {
   margin-bottom: 20px;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   font-weight: 500;
   color: #333;
 }
@@ -411,6 +423,7 @@ main {
   border-radius: 6px;
   font-size: 1rem;
   transition: border-color 0.2s;
+  margin-bottom: 8px;
 }
 
 .form-group input[type="text"]:focus,
@@ -443,6 +456,10 @@ main {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding: 12px;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  background: #f8f9fa;
 }
 
 .checkbox-list label {
