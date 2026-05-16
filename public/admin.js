@@ -1178,7 +1178,7 @@
 	delegateEvents(["click", "input"]);
 	//#endregion
 	//#region src/admin/rotating-chore.tsx
-	var _tmpl$$2 = /* @__PURE__ */ template(`<div class=item-card><div class=item-info><h3> <span class="chore-type-badge rotating">Rotating</span></h3><p>Current: </p><p>Rotation: </p><p class=skip-days>Skip days: </p></div><div class=item-actions><button type=button class="btn btn-secondary">Edit</button><button type=button class="btn btn-danger btn-sm">Delete`), _tmpl$2$2 = /* @__PURE__ */ template(`<p class=deadline>Deadline: `);
+	var _tmpl$$2 = /* @__PURE__ */ template(`<p class=deadline>Deadline: `), _tmpl$2$2 = /* @__PURE__ */ template(`<div class=item-card><div class=item-info><h3> <span class="chore-type-badge rotating">Rotating</span></h3><p>Current: </p><p>Rotation: </p><p class=skip-days>Skip days: </p></div><div class=item-actions><button type=button class="btn btn-secondary">Edit</button><button type=button class="btn btn-danger btn-sm">Delete`);
 	/** Format skip days for display */
 	var formatSkipDays$1 = (skipDays) => {
 		if (!skipDays || skipDays.length === 0) return "None";
@@ -1201,28 +1201,30 @@
 			return currentPerson ? escapeHtml(currentPerson.name) : "Unassigned";
 		});
 		return (() => {
-			var _el$ = _tmpl$$2(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.firstChild, _el$5 = _el$3.nextSibling;
+			var _el$ = _tmpl$2$2(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.firstChild, _el$5 = _el$3.nextSibling;
 			_el$5.firstChild;
 			var _el$7 = _el$5.nextSibling;
 			_el$7.firstChild;
-			var _el$9 = _el$7.nextSibling;
-			_el$9.firstChild;
-			var _el$10 = _el$2.nextSibling.firstChild, _el$11 = _el$10.nextSibling;
+			var _el$1 = _el$7.nextSibling;
+			_el$1.firstChild;
+			var _el$12 = _el$2.nextSibling.firstChild, _el$13 = _el$12.nextSibling;
 			insert(_el$3, () => escapeHtml(props.chore.name), _el$4);
 			insert(_el$5, currentAssignee, null);
 			insert(_el$7, rotationText, null);
-			insert(_el$2, (() => {
-				var _c$ = memo(() => !!props.chore.deadline);
-				return () => _c$() && (() => {
-					var _el$12 = _tmpl$2$2();
-					_el$12.firstChild;
-					insert(_el$12, () => props.chore.deadline, null);
-					return _el$12;
-				})();
-			})(), _el$9);
-			insert(_el$9, () => formatSkipDays$1(props.chore.skipDays), null);
-			_el$10.$$click = () => props.onEdit(props.chore);
-			_el$11.$$click = () => props.onDelete(props.chore.id);
+			insert(_el$2, createComponent(Show, {
+				get when() {
+					return props.chore.deadline;
+				},
+				get children() {
+					var _el$9 = _tmpl$$2();
+					_el$9.firstChild;
+					insert(_el$9, () => props.chore.deadline, null);
+					return _el$9;
+				}
+			}), _el$1);
+			insert(_el$1, () => formatSkipDays$1(props.chore.skipDays), null);
+			_el$12.$$click = () => props.onEdit(props.chore);
+			_el$13.$$click = () => props.onDelete(props.chore.id);
 			return _el$;
 		})();
 	};
@@ -1328,7 +1330,7 @@
 	delegateEvents(["input", "click"]);
 	//#endregion
 	//#region src/admin/admin.tsx
-	var _tmpl$ = /* @__PURE__ */ template(`<p class=retry-info>Retrying... (attempt <!>)`), _tmpl$2 = /* @__PURE__ */ template(`<div class=loading-message><div class=loading-message-content><p>Magic Mirror is starting up, please wait...`), _tmpl$3 = /* @__PURE__ */ template(`<span id=addPersonInfo class=info-icon data-tooltip="Add at least one person before you can create chores">ℹ️`), _tmpl$4 = /* @__PURE__ */ template(`<section class=section id=rotatingChoresSection><div class=section-header><h2>Rotating Chores</h2><button type=button class="btn btn-primary"id=addRotatingChoreBtn>Add Rotating Chore</button></div><div id=rotatingChoresList class=item-list>`), _tmpl$5 = /* @__PURE__ */ template(`<main><section class=section><div class=section-header><h2>People</h2><div class=button-with-tooltip><button type=button class="btn btn-primary"id=addPersonBtn>Add Person</button></div></div><div id=peopleList class=item-list></div></section><section class=section><h2>System State</h2><div class=state-info><p><strong>Last Reset Date:</strong> <span id=lastResetDate></span></p><div class=button-with-tooltip><button type=button class="btn btn-warning"id=resetDailyBtn>Force Daily Reset</button><span class=info-icon data-tooltip="WARNING: This will un-check all chores and rotate assignment on rotating chores to the next person. It does respect skip days if today is a skip day. Useful for testing or immediately advancing chore assignments.">ℹ️`), _tmpl$6 = /* @__PURE__ */ template(`<div class=container><header><h1>Family Chores Admin</h1><div class=backup-section><button type=button class="btn btn-secondary"id=backupBtn>Download Backup</button><label for=restoreFile class="btn btn-secondary">Restore Backup</label><input type=file id=restoreFile accept=.json hidden>`), _tmpl$7 = /* @__PURE__ */ template(`<div class=person-chores>`), _tmpl$8 = /* @__PURE__ */ template(`<div class=item-card><div class=person-header><div class=item-info><h3> <span class=color-badge></span></h3><p>ID: </p></div><div class=item-actions><button type=button class="btn btn-secondary btn-sm">Edit</button><button type=button class="btn btn-danger btn-sm">Delete</button></div></div><div class=person-chores-header><h4>'s Personal Chores</h4><div class=person-chores-actions><button type=button class="btn btn-primary btn-sm">Add Chore`), _tmpl$9 = /* @__PURE__ */ template(`<div class=person-chores><p class=empty-message>No personal chores yet.`), _tmpl$0 = /* @__PURE__ */ template(`<div class=chore-item><div class=chore-info><h4></h4><p class=skip-days>Skip days: </p></div><div class=chore-actions><button type=button class="btn btn-secondary btn-sm">Edit</button><button type=button class="btn btn-danger btn-sm">Delete`), _tmpl$1 = /* @__PURE__ */ template(`<p class=deadline>Deadline: `);
+	var _tmpl$ = /* @__PURE__ */ template(`<p class=retry-info>Retrying... (attempt <!>)`), _tmpl$2 = /* @__PURE__ */ template(`<div class=loading-message><div class=loading-message-content><p>Magic Mirror is starting up, please wait...`), _tmpl$3 = /* @__PURE__ */ template(`<span id=addPersonInfo class=info-icon data-tooltip="Add at least one person before you can create chores">ℹ️`), _tmpl$4 = /* @__PURE__ */ template(`<section class=section id=rotatingChoresSection><div class=section-header><h2>Rotating Chores</h2><button type=button class="btn btn-primary"id=addRotatingChoreBtn>Add Rotating Chore</button></div><div id=rotatingChoresList class=item-list>`), _tmpl$5 = /* @__PURE__ */ template(`<main><section class=section><div class=section-header><h2>People</h2><div class=button-with-tooltip><button type=button class="btn btn-primary"id=addPersonBtn>Add Person</button></div></div><div id=peopleList class=item-list></div></section><section class=section><h2>System State</h2><div class=state-info><p><strong>Last Reset Date:</strong> <span id=lastResetDate></span></p><div class=button-with-tooltip><button type=button class="btn btn-warning"id=resetDailyBtn>Force Daily Reset</button><span class=info-icon data-tooltip="WARNING: This will un-check all chores and rotate assignment on rotating chores to the next person. It does respect skip days if today is a skip day. Useful for testing or immediately advancing chore assignments.">ℹ️`), _tmpl$6 = /* @__PURE__ */ template(`<div class=container><header><h1>Family Chores Admin</h1><div class=backup-section><button type=button class="btn btn-secondary"id=backupBtn>Download Backup</button><label for=restoreFile class="btn btn-secondary">Restore Backup</label><input type=file id=restoreFile accept=.json hidden>`), _tmpl$7 = /* @__PURE__ */ template(`<div class=person-chores>`), _tmpl$8 = /* @__PURE__ */ template(`<div class=item-card><div class=person-header><div class=item-info><h3> <span class=color-badge></span></h3><p>ID: </p></div><div class=item-actions><button type=button class="btn btn-secondary btn-sm">Edit</button><button type=button class="btn btn-danger btn-sm">Delete</button></div></div><div class=person-chores-header><h4>'s Personal Chores</h4><div class=person-chores-actions><button type=button class="btn btn-primary btn-sm">Add Chore`), _tmpl$9 = /* @__PURE__ */ template(`<div class=person-chores><p class=empty-message>No personal chores yet.`), _tmpl$0 = /* @__PURE__ */ template(`<p class=deadline>Deadline: `), _tmpl$1 = /* @__PURE__ */ template(`<div class=chore-item><div class=chore-info><h4></h4><p class=skip-days>Skip days: </p></div><div class=chore-actions><button type=button class="btn btn-secondary btn-sm">Edit</button><button type=button class="btn btn-danger btn-sm">Delete`);
 	var API_BASE = "/MMM-FamilyChores";
 	var formatSkipDays = (skipDays) => {
 		if (!skipDays || skipDays.length === 0) return "None";
@@ -1547,24 +1549,26 @@
 											return getPersonalChores(person.id);
 										},
 										children: (chore) => (() => {
-											var _el$53 = _tmpl$0(), _el$54 = _el$53.firstChild, _el$55 = _el$54.firstChild, _el$56 = _el$55.nextSibling;
-											_el$56.firstChild;
-											var _el$59 = _el$54.nextSibling.firstChild, _el$60 = _el$59.nextSibling;
+											var _el$53 = _tmpl$1(), _el$54 = _el$53.firstChild, _el$55 = _el$54.firstChild, _el$58 = _el$55.nextSibling;
+											_el$58.firstChild;
+											var _el$61 = _el$54.nextSibling.firstChild, _el$62 = _el$61.nextSibling;
 											insert(_el$55, () => escapeHtml(chore.name));
-											insert(_el$54, (() => {
-												var _c$ = memo(() => !!chore.deadline);
-												return () => _c$() && (() => {
-													var _el$61 = _tmpl$1();
-													_el$61.firstChild;
-													insert(_el$61, () => chore.deadline, null);
-													return _el$61;
-												})();
-											})(), _el$56);
-											insert(_el$56, () => formatSkipDays(chore.skipDays), null);
-											_el$59.$$click = () => {
+											insert(_el$54, createComponent(Show, {
+												get when() {
+													return chore.deadline;
+												},
+												get children() {
+													var _el$56 = _tmpl$0();
+													_el$56.firstChild;
+													insert(_el$56, () => chore.deadline, null);
+													return _el$56;
+												}
+											}), _el$58);
+											insert(_el$58, () => formatSkipDays(chore.skipDays), null);
+											_el$61.$$click = () => {
 												openPersonalChoreModal(person, chore);
 											};
-											_el$60.$$click = () => handleDeleteChore(chore.id);
+											_el$62.$$click = () => handleDeleteChore(chore.id);
 											return _el$53;
 										})()
 									}));

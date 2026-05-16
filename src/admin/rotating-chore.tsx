@@ -1,6 +1,6 @@
 import type { Component } from 'solid-js';
 import type { Person, RotatingChore } from '../types/chore-types';
-import { createMemo } from 'solid-js';
+import { createMemo, Show } from 'solid-js';
 import { escapeHtml } from '../utils/browser';
 
 /** Props for the RotatingChoreCard component */
@@ -59,7 +59,9 @@ export const RotatingChoreCard: Component<RotatingChoreCardProps> = (props) => {
         </h3>
         <p>Current: {currentAssignee()}</p>
         <p>Rotation: {rotationText()}</p>
-        {props.chore.deadline && <p class="deadline">Deadline: {props.chore.deadline}</p>}
+        <Show when={props.chore.deadline}>
+          <p class="deadline">Deadline: {props.chore.deadline}</p>
+        </Show>
         <p class="skip-days">Skip days: {formatSkipDays(props.chore.skipDays)}</p>
       </div>
       <div class="item-actions">

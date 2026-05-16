@@ -347,9 +347,9 @@ export const Admin: Component<Record<string, never>> = () => {
                               <div class="chore-item">
                                 <div class="chore-info">
                                   <h4>{escapeHtml(chore.name)}</h4>
-                                  {chore.deadline && (
+                                  <Show when={chore.deadline}>
                                     <p class="deadline">Deadline: {chore.deadline}</p>
-                                  )}
+                                  </Show>
                                   <p class="skip-days">
                                     Skip days: {formatSkipDays(chore.skipDays)}
                                   </p>
