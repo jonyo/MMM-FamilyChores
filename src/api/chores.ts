@@ -1,4 +1,8 @@
-import type { CreateChoreRequest, UpdateChoreRequest } from '../types/request-types';
+import type {
+  CopyChoresRequest,
+  CreateChoreRequest,
+  UpdateChoreRequest,
+} from '../types/request-types';
 import { validateId } from '../utils/validation';
 import { API_BASE_URL, handleResponse } from './client';
 
@@ -27,4 +31,23 @@ export const deleteChore = async (id: string): Promise<void> => {
     method: 'DELETE',
   });
   await handleResponse(response);
+};
+
+export const copyChores = async (data: CopyChoresRequest): Promise<void> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/copy-chores`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    await handleResponse(response);
+  } catch (error) {
+    // Re-throw network errors with more context
+    if (error instanceof TypeError && error.message === 'Failed to fetch') {
+      throw new Error(
+        'Network error: Could not connect to the server. Is the admin server running?'
+      );
+    }
+    throw error;
+  }
 };

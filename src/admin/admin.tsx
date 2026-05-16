@@ -12,6 +12,7 @@ import type {
 import { ChoreType } from '../types/chore-types';
 import { escapeHtml } from '../utils/browser';
 import { getLocalDateString } from '../utils/date';
+import { CopyChoresModal } from './copy-chores-modal';
 import { PersonModal } from './person-modal';
 import { PersonalChoreModal } from './personal-chore-modal';
 import { RotatingChoreCard } from './rotating-chore';
@@ -31,9 +32,11 @@ export const Admin: Component<Record<string, never>> = () => {
   const [personModalOpen, setPersonModalOpen] = createSignal(false);
   const [personalChoreModalOpen, setPersonalChoreModalOpen] = createSignal(false);
   const [rotatingChoreModalOpen, setRotatingChoreModalOpen] = createSignal(false);
+  const [copyChoresModalOpen, setCopyChoresModalOpen] = createSignal(false);
   const [editingPerson, setEditingPerson] = createSignal<Person | null>(null);
   const [editingChore, setEditingChore] = createSignal<Chore | null>(null);
   const [editingChorePerson, setEditingChorePerson] = createSignal<Person | null>(null);
+  const [copyChoresFromPerson, setCopyChoresFromPerson] = createSignal<Person | null>(null);
   const [loading, setLoading] = createSignal(true);
   const [retryCount, setRetryCount] = createSignal(0);
 
@@ -93,6 +96,18 @@ export const Admin: Component<Record<string, never>> = () => {
   const closeRotatingChoreModal = async () => {
     setRotatingChoreModalOpen(false);
     setEditingChore(null);
+    await loadData();
+  };
+
+  // Copy chores modal handlers
+  const openCopyChoresModal = (person: Person) => {
+    setCopyChoresFromPerson(person);
+    setCopyChoresModalOpen(true);
+  };
+
+  const closeCopyChoresModal = async () => {
+    setCopyChoresModalOpen(false);
+    setCopyChoresFromPerson(null);
     await loadData();
   };
 
@@ -332,6 +347,22 @@ export const Admin: Component<Record<string, never>> = () => {
                         >
                           Add Chore
                         </button>
+                        <Show
+                          when={
+                            getPersonalChores(person.id).length > 0 &&
+                            (choreData()?.people.length ?? 0) > 1
+                          }
+                        >
+                          <button
+                            type="button"
+                            class="btn btn-secondary btn-sm"
+                            onClick={() => {
+                              openCopyChoresModal(person);
+                            }}
+                          >
+                            Copy Chores
+                          </button>
+                        </Show>
                       </div>
                     </div>
                     <Show
@@ -460,6 +491,13 @@ export const Admin: Component<Record<string, never>> = () => {
           initialChore={editingChore() as RotatingChore | undefined}
           choreData={choreData() ?? { people: [], chores: [] }}
           closeModal={closeRotatingChoreModal}
+        />
+      </Show>
+      <Show when={copyChoresModalOpen() && copyChoresFromPerson() && choreData()}>
+        <CopyChoresModal
+          fromPerson={copyChoresFromPerson() as Person}
+          choreData={choreData() as FamilyChoresData}
+          closeModal={closeCopyChoresModal}
         />
       </Show>
     </div>

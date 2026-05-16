@@ -6,7 +6,7 @@ export const handleResponse = async (response: Response): Promise<unknown> => {
     if (errorData?.error) {
       throw new Error(errorData.error);
     }
-    throw new Error('Request failed');
+    throw new Error(`Request failed with status ${response.status}`);
   }
   return response.json();
 };

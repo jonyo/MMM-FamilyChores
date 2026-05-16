@@ -1,7 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import { ChoreType, DayOfWeek, SkipDayVisibility } from '../types/chore-types';
-import type { CreateChoreRequest, UpdateChoreRequest } from '../types/request-types';
-import { createChore, deleteChore, updateChore } from './chores';
+import type {
+  CopyChoresRequest,
+  CreateChoreRequest,
+  UpdateChoreRequest,
+} from '../types/request-types';
+import { copyChores, createChore, deleteChore, updateChore } from './chores';
 
 // Mock fetch
 globalThis.fetch = vi.fn();
@@ -40,6 +44,35 @@ describe('chores API', () => {
         body: JSON.stringify(mockRequest),
       });
       expect(result).toEqual(mockChore);
+    });
+
+    it('should call the correct endpoint with correct method', async () => {
+      vi.mocked(globalThis.fetch).mockResolvedValueOnce(
+        new Response(JSON.stringify({ success: true }), { status: 200 })
+      );
+
+      await createChore({
+        name: 'Take out trash',
+        type: ChoreType.PERSONAL,
+        assignedTo: 'p1',
+        skipDays: [],
+        skipDayVisibility: SkipDayVisibility.HIDE,
+      });
+
+      expect(globalThis.fetch).toHaveBeenCalledWith(
+        '/MMM-FamilyChores/chores',
+        expect.objectContaining({
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: 'Take out trash',
+            type: ChoreType.PERSONAL,
+            assignedTo: 'p1',
+            skipDays: [],
+            skipDayVisibility: SkipDayVisibility.HIDE,
+          }),
+        })
+      );
     });
 
     it('should create a rotating chore successfully', async () => {
@@ -202,6 +235,78 @@ describe('chores API', () => {
       vi.mocked(fetch).mockRejectedValueOnce(new Error('Network error'));
 
       await expect(deleteChore('c1')).rejects.toThrow('Network error');
+    });
+  });
+
+  describe('copyChores', () => {
+    it('should copy chores successfully', async () => {
+      const mockRequest: CopyChoresRequest = {
+        fromPersonId: 'p1',
+        toPersonId: 'p2',
+        choreIds: ['c1', 'c2'],
+      };
+      const mockNewChores = [
+        {
+          id: 'c3',
+          name: 'Take out trash',
+          type: ChoreType.PERSONAL,
+          assignedTo: 'p2',
+          skipDays: [],
+          skipDayVisibility: SkipDayVisibility.HIDE,
+          caughtUp: true,
+          completedToday: false,
+        },
+        {
+          id: 'c4',
+          name: 'Do dishes',
+          type: ChoreType.PERSONAL,
+          assignedTo: 'p2',
+          skipDays: [],
+          skipDayVisibility: SkipDayVisibility.HIDE,
+          caughtUp: true,
+          completedToday: false,
+        },
+      ];
+
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockNewChores,
+      } as Response);
+
+      await expect(copyChores(mockRequest)).resolves.not.toThrow();
+
+      expect(fetch).toHaveBeenCalledWith('/MMM-FamilyChores/copy-chores', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(mockRequest),
+      });
+    });
+
+    it('should throw error when API returns error response', async () => {
+      const mockRequest: CopyChoresRequest = {
+        fromPersonId: 'p1',
+        toPersonId: 'p2',
+        choreIds: ['c1'],
+      };
+
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: false,
+        json: async () => ({ error: 'Chore not found' }),
+      } as Response);
+
+      await expect(copyChores(mockRequest)).rejects.toThrow('Chore not found');
+    });
+
+    it('should throw error when network fails', async () => {
+      const mockRequest: CopyChoresRequest = {
+        fromPersonId: 'p1',
+        toPersonId: 'p2',
+        choreIds: ['c1'],
+      };
+
+      vi.mocked(fetch).mockRejectedValueOnce(new Error('Network error'));
+
+      await expect(copyChores(mockRequest)).rejects.toThrow('Network error');
     });
   });
 });
