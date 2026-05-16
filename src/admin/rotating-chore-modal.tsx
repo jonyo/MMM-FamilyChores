@@ -113,10 +113,12 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
                 // The backend calculates this based on the rotation order
               }}
             >
-              {rotation().map((personId, index) => {
-                const person = props.choreData.people.find((p) => p.id === personId);
-                return <option value={index}>{person ? person.name : 'Unknown'}</option>;
-              })}
+              <For each={rotation()}>
+                {(personId, index) => {
+                  const person = props.choreData.people.find((p) => p.id === personId);
+                  return <option value={index()}>{person ? person.name : 'Unknown'}</option>;
+                }}
+              </For>
             </select>
           </div>
           <div class="form-group">

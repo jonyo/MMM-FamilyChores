@@ -1296,14 +1296,19 @@
 				})()
 			}));
 			_el$11.$$input = (_e) => {};
-			insert(_el$11, () => rotation().map((personId, index) => {
-				const person = props.choreData.people.find((p) => p.id === personId);
-				return (() => {
-					var _el$29 = _tmpl$3$1();
-					_el$29.value = index;
-					insert(_el$29, () => person ? person.name : "Unknown");
-					return _el$29;
-				})();
+			insert(_el$11, createComponent(For, {
+				get each() {
+					return rotation();
+				},
+				children: (personId, index) => {
+					const person = props.choreData.people.find((p) => p.id === personId);
+					return (() => {
+						var _el$29 = _tmpl$3$1();
+						insert(_el$29, () => person ? person.name : "Unknown");
+						createRenderEffect(() => _el$29.value = index());
+						return _el$29;
+					})();
+				}
 			}));
 			_el$14.$$input = (e) => setDeadline(e.currentTarget.value);
 			insert(_el$17, createComponent(For, {
