@@ -165,7 +165,6 @@ Note: These files are committed so that the module works out of the box without 
   };
   ```
 - Define props interfaces explicitly with proper TypeScript types
-- Use `Component<Record<string, never>>` for components with no props (not `Component = () => {}`)
 - Import `Component` as a type from solid-js: `import type { Component } from 'solid-js';`
 
 **Reactive Primitives:**
@@ -173,7 +172,7 @@ Note: These files are committed so that the module works out of the box without 
 - Use `createSignal` for reactive state
 - Use `createMemo` for computed values that derive from signals
 - Use `For` for lists instead of array.map for proper reactivity
-- Use `Show` with `keyed={true}` when rendering conditional content that might be null
+- Use `Show` for conditional rendering instead of `{condition && <Component />}` to ensure proper reactive lifecycle
 - Avoid non-null assertions (`!`) - use optional chaining or proper type guards instead
 
 **API Client Pattern:**
