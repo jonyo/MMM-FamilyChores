@@ -1,5 +1,6 @@
 import type { Person } from '../types/chore-types';
 import type { CreatePersonRequest, UpdatePersonRequest } from '../types/request-types';
+import { validateId } from '../utils/validation';
 import { API_BASE_URL, handleResponse } from './client';
 
 export const createPerson = async (data: CreatePersonRequest): Promise<Person> => {
@@ -12,6 +13,7 @@ export const createPerson = async (data: CreatePersonRequest): Promise<Person> =
 };
 
 export const updatePerson = async (id: string, data: UpdatePersonRequest): Promise<Person> => {
+  validateId(id);
   const response = await fetch(`${API_BASE_URL}/people/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
@@ -21,6 +23,7 @@ export const updatePerson = async (id: string, data: UpdatePersonRequest): Promi
 };
 
 export const deletePerson = async (id: string): Promise<void> => {
+  validateId(id);
   const response = await fetch(`${API_BASE_URL}/people/${id}`, {
     method: 'DELETE',
   });

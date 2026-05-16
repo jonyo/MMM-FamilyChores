@@ -1,4 +1,5 @@
 import type { CreateChoreRequest, UpdateChoreRequest } from '../types/request-types';
+import { validateId } from '../utils/validation';
 import { API_BASE_URL, handleResponse } from './client';
 
 export const createChore = async (data: CreateChoreRequest): Promise<unknown> => {
@@ -11,6 +12,7 @@ export const createChore = async (data: CreateChoreRequest): Promise<unknown> =>
 };
 
 export const updateChore = async (id: string, data: UpdateChoreRequest): Promise<unknown> => {
+  validateId(id);
   const response = await fetch(`${API_BASE_URL}/chores/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
@@ -20,6 +22,7 @@ export const updateChore = async (id: string, data: UpdateChoreRequest): Promise
 };
 
 export const deleteChore = async (id: string): Promise<void> => {
+  validateId(id);
   const response = await fetch(`${API_BASE_URL}/chores/${id}`, {
     method: 'DELETE',
   });

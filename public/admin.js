@@ -929,6 +929,28 @@
 		return [node];
 	}
 	//#endregion
+	//#region src/utils/validation.ts
+	/**
+	* Validates that an ID contains only safe characters (a-z, 0-9, hyphen)
+	* This is a simplified UUID-like validation to prevent injection attacks
+	* in URL paths where IDs are used directly.
+	*
+	* @param id - The ID to validate
+	* @returns true if the ID contains only safe characters, false otherwise
+	*/
+	var isValidId = (id) => {
+		return /^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/.test(id);
+	};
+	/**
+	* Validates an ID and throws an error if it contains unsafe characters
+	*
+	* @param id - The ID to validate
+	* @throws Error if the ID contains unsafe characters
+	*/
+	var validateId = (id) => {
+		if (!isValidId(id)) throw new Error(`Invalid ID: ${id}. ID must contain only lowercase letters, numbers, and hyphens.`);
+	};
+	//#endregion
 	//#region src/api/client.ts
 	var API_BASE_URL = "/MMM-FamilyChores";
 	var handleResponse = async (response) => {
@@ -949,6 +971,7 @@
 		}));
 	};
 	var updateChore = async (id, data) => {
+		validateId(id);
 		return handleResponse(await fetch(`${API_BASE_URL}/chores/${id}`, {
 			method: "PUT",
 			headers: { "Content-Type": "application/json" },
@@ -956,6 +979,7 @@
 		}));
 	};
 	var deleteChore = async (id) => {
+		validateId(id);
 		await handleResponse(await fetch(`${API_BASE_URL}/chores/${id}`, { method: "DELETE" }));
 	};
 	//#endregion
@@ -968,6 +992,7 @@
 		}));
 	};
 	var updatePerson = async (id, data) => {
+		validateId(id);
 		return handleResponse(await fetch(`${API_BASE_URL}/people/${id}`, {
 			method: "PUT",
 			headers: { "Content-Type": "application/json" },
@@ -975,6 +1000,7 @@
 		}));
 	};
 	var deletePerson = async (id) => {
+		validateId(id);
 		await handleResponse(await fetch(`${API_BASE_URL}/people/${id}`, { method: "DELETE" }));
 	};
 	//#endregion
