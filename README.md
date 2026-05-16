@@ -290,9 +290,23 @@ At midnight, all `completedToday` entries are cleared, making personal chores av
 
 ## Development
 
+**Note for end users**: The module includes pre-built JavaScript bundles in the repository, so you don't need to install any dependencies or build tools. Simply clone and use. The following section is only for contributors who want to modify the module.
+
+**Security Note**: The built JavaScript files are not minified. This is intentional to enable easier code review and diff tracking on pull requests, making it harder for malicious code to slip in through compromised contributor accounts or compromised upstream dependencies.
+
+### Tech Stack (Development Only)
+
+- **TypeScript**: Strong typing for all data structures and components
+- **Vite**: Fast build system for both frontend and backend
+- **SolidJS**: Reactive UI framework for the admin interface
+- **Vitest**: Testing framework with browser mode support for UI components
+- **Biome**: Primary linting and formatting tool
+- **ESLint**: Reactivity error detection for SolidJS components
+- **UUID v4**: Stable identifiers for people and chores
+
 This module is written in TypeScript and uses Vite for building.
 
-### Prerequisites
+### Prerequisites (Development Only)
 
 - Node.js 24+ (for development)
 - pnpm (for dependency management) - see https://pnpm.io/installation
@@ -312,8 +326,8 @@ pnpm run build          # Build TypeScript to JavaScript
 pnpm run build:client   # Build frontend module
 pnpm run build:node     # Build node helper
 pnpm run typecheck      # Type checking without emitting
-pnpm run lint           # Run Biome linter
-pnpm run fix            # Auto-fix linting issues
+pnpm run lint           # Run Biome (primary) and ESLint (reactivity errors)
+pnpm run fix            # Auto-fix Biome linting issues and ESLint reactivity errors
 pnpm run test           # Run tests
 pnpm run test:watch     # Run tests in watch mode
 pnpm run test:ci        # Run tests for CI
@@ -323,21 +337,33 @@ pnpm run test:ci        # Run tests for CI
 
 ```
 src/
-├── frontend/
+├── frontend/                   # Client-side MagicMirror module
 │   ├── frontend.ts             # Module definition
 │   └── frontend.test.ts        # Frontend tests
-├── backend/
-│   ├── node-helper.ts          # Node helper for data persistence
-│   └── node-helper.test.ts     # Backend tests
-├── types/
+├── backend/                    # Node.js helper for data persistence
+│   ├── node-helper.ts          # Node helper
+│   ├── admin-routes.ts         # Admin API routes
+│   └── *.test.ts               # Backend tests
+├── admin/                      # SolidJS admin interface
+│   ├── admin.tsx               # Main admin component
+│   ├── app.tsx                 # App root
+│   └── *.tsx                   # Admin UI components
+├── api/                        # API client functions
+│   ├── client.ts               # Base client and response handling
+│   ├── people.ts               # Person API operations
+│   ├── chores.ts               # Chore API operations
+│   └── *.test.ts               # API client tests
+├── types/                      # TypeScript type definitions
 │   ├── module.ts               # MagicMirror module types
 │   ├── config.ts               # Configuration types
-│   └── chore-types.ts          # Data structure types
+│   ├── chore-types.ts          # Data structure types
+│   └── *.ts                    # Additional type definitions
 ├── constants/
 │   └── socket-notifications.ts # Socket notification constants
-└── utils/
+└── utils/                      # Utility functions
     ├── uuid.ts                 # UUID v4 generation and validation
-    └── uuid.test.ts            # UUID utilities tests
+    ├── date.ts                 # Date utilities
+    └── *.test.ts               # Utility tests
 ```
 
 ## Contributing

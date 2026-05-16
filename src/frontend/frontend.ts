@@ -1,7 +1,8 @@
-import { SocketNotifications } from '../constants/socket-notifications';
-import { ChoreType, type FamilyChoresData, SkipDayVisibility } from '../types/chore-types';
 import type { Config } from '../types/config';
 import type { FamilyChoresModule } from '../types/module';
+import { SocketNotifications } from '../constants/socket-notifications';
+import { ChoreType, type FamilyChoresData, SkipDayVisibility } from '../types/chore-types';
+import { escapeHtml } from '../utils/browser';
 import { DeadlineStatus, getDeadlineStatus, getLocalDayName } from '../utils/date';
 
 declare global {
@@ -13,12 +14,6 @@ declare global {
     debug: (message: string) => void;
   };
 }
-
-const escapeHtml = (raw: string): string => {
-  const div = document.createElement('div');
-  div.textContent = raw;
-  return div.innerHTML;
-};
 
 // Register the module with MagicMirror
 const familyChoresModule: FamilyChoresModule = {

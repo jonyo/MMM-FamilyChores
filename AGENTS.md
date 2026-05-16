@@ -21,7 +21,8 @@ This is a standalone MagicMirror² module for family chore tracking, maintained 
 - **TypeScript**: Strong typing for all data structures
 - **Vite**: Fast build system for both frontend and backend
 - **Vitest**: Testing framework with browser support
-- **Biome**: Linting and formatting
+- **Biome**: Primary linting and formatting
+- **ESLint**: Reactivity error detection only
 - **UUID v4**: Stable identifiers for people and chores
 
 ## AI Agent Rules
@@ -33,44 +34,13 @@ This is a standalone MagicMirror² module for family chore tracking, maintained 
 **Inline Comments:**
 
 - Place inline comments (`// comment`) **above** the code they describe, not on the same line
-- This improves readability and follows personal preference
-- **Use for**: Implementation details, "why" explanations, temporary notes, or non-essential context
-- **Avoid for**: API documentation or hover information about "what it is" - use JSDoc instead
-
-**Examples of good inline comments:**
-
-```typescript
-// we do it this way so XYZ doesn't break
-const config = { ... };
-
-// This is a temporary workaround for bug #123
-const tempValue = getWorkaround();
-
-// Use local date for comparison (implementation detail)
-const resetDate = getLocalDate();
-```
+- Use for implementation details, "why" explanations, temporary notes, or non-essential context
+- Avoid for API documentation or hover information - use JSDoc instead
 
 **JSDoc Comments:**
 
 - Use JSDoc format (`/** comment */`) for interfaces, types, properties, and functions
-- This enables hover information in IDEs and provides better documentation
-- **Use for**: API documentation, property descriptions, parameter/return types, or any information useful when hovering over a "thing"
-
-**Examples of when to use JSDoc:**
-
-```typescript
-export interface Config {
-  /**
-   * Format: "HH:mm" in 24-hour format, default "03:00"
-   */
-  dailyResetTime?: string;
-}
-
-/**
- * This is the id for XYZ that follows Foo Bar best practices
- */
-export const XYZ_ID = "xyz-123";
-```
+- Use for API documentation, property descriptions, parameter/return types, or any information useful when hovering over a "thing"
 
 **Decision Framework:**
 Ask yourself: "Is this information useful to know about this specific property/function/interface when I hover over it elsewhere?"
@@ -78,41 +48,25 @@ Ask yourself: "Is this information useful to know about this specific property/f
 - **YES** → Use JSDoc
 - **NO** (implementation detail) → Use inline comment
 
-**Examples:**
-
-✅ **CORRECT:**
-
-```typescript
-// Use local date for comparison
-const resetDate = getLocalDate();
-
-export interface Config {
-  /**
-   * Format: "HH:mm" in 24-hour format, default "03:00"
-   */
-  dailyResetTime?: string;
-}
-```
-
-❌ **WRONG:**
-
-```typescript
-const resetDate = getLocalDate(); // Use local date for comparison
-
-export interface Config {
-  dailyResetTime?: string; // Format: "HH:mm" in 24-hour format, default "03:00"
-}
-```
-
 ### Development Workflow
 
 **ALWAYS run these commands before making changes:**
 
 ```bash
 pnpm run typecheck    # Verify TypeScript compiles
-pnpm run lint         # Check for linting issues
+pnpm run lint         # Run Biome (primary) and ESLint (reactivity errors)
 pnpm run test         # Run tests
 ```
+
+**CRITICAL: Before committing changes, you MUST:**
+
+```bash
+pnpm run build          # Build both client and node and copy to root
+git add .               # Add ALL changes including built files
+git commit -m "message" # Commit
+```
+
+**This is NON-NEGOTIABLE:** Built files (`MMM-FamilyChores.js`, `node_helper.js`, `public/admin.js`, and their source maps) MUST be committed. The module will not work for users without these built files. Never commit source changes without also committing the corresponding built files.
 
 **Build process:**
 
@@ -151,12 +105,21 @@ pnpm run build:node     # Build backend without copying to root
 
 ### File Structure Rules
 
+**Naming Conventions:**
+
+- **ALL filenames must use kebab-case** (e.g., `person-modal.tsx`, NOT `PersonModal.tsx`)
+- This applies to component files, utility files, and any new source files
+- Biome linter will enforce this - violations will cause lint errors
+- Examples: `personal-chore-modal.tsx`, `rotating-chore-modal.tsx`, `admin-helper.ts`
+- ONLY exception: files needing to be uppercase for technical reasons, like the built files used by Magic Mirror
+
 **Source Organization:**
 
 ```
 src/
 ├── frontend/           # Client-side MagicMirror module
 ├── backend/            # Node.js helper for data persistence
+├── admin/              # SolidJS admin interface (kebab-case filenames)
 ├── types/              # TypeScript types (`chore-types`, `config`, `module`, `request-types`, `response-types`, `socket-payload-types`)
 ├── constants/          # Socket notification constants
 └── utils/              # Utility functions (date, uuid, HTML escaping for display)
@@ -168,7 +131,7 @@ src/
 - `node_helper.js` - Compiled backend
 - `*.js.map` - Source maps
 
-Note: These files are committed so that the module works out of the box without needing to run the build process.
+Note: These files are committed so that the module works out of the box without needing to run the build process. Be sure to run `pnpm build` before committing any changes to ensure the built files are up to date.
 
 ### TypeScript Requirements
 
@@ -190,16 +153,55 @@ Note: These files are committed so that the module works out of the box without 
 - Use `unknown` instead of `any` when you must handle values of uncertain types - requires type narrowing before use
 - Consider `never` for impossible states, unreachable code paths, or functions that never return
 
+### SolidJS Best Practices
+
+**Component Pattern:**
+
+- Use the arrow function Component pattern for all SolidJS components:
+  ```typescript
+  export const MyComponent: Component<MyComponentProps> = (props) => {
+    // component logic
+    return <div>{...}</div>;
+  };
+  ```
+- Define props interfaces explicitly with proper TypeScript types
+- Import `Component` as a type from solid-js: `import type { Component } from 'solid-js';`
+
+**Reactive Primitives:**
+
+- Use `createSignal` for reactive state
+- Use `createMemo` for computed values that derive from signals
+- Use `For` for lists instead of array.map for proper reactivity
+- Use `Show` for conditional rendering instead of `{condition && <Component />}` to ensure proper reactive lifecycle
+- Avoid non-null assertions (`!`) - use optional chaining or proper type guards instead
+
+**API Client Pattern:**
+
+- Extract API calls into separate TypeScript files using arrow functions
+- Split API client into multiple files by domain (e.g., `client.ts`, `people.ts`, `chores.ts`)
+- Use barrel export pattern in `index.ts` to re-export from domain files
+- Centralize fetch response handling in a shared `handleResponse` function
+- Use proper TypeScript request/response types from `src/types/request-types.ts`
+- Import enums as values (not types) when used in request bodies
+
+**Example API Structure:**
+
+```
+src/api/
+├── client.ts      # Base URL and handleResponse
+├── people.ts      # Person CRUD operations
+├── chores.ts      # Chore CRUD operations
+└── index.ts       # Barrel exports
+```
+
 ### Testing Requirements
 
 **Before committing:**
 
 1. Run `pnpm run test` - All tests must pass
 2. Run `pnpm run typecheck` - TypeScript must compile without errors
-3. Run `pnpm run lint` - Code must pass linting
+3. Run `pnpm run lint` - Code must pass both Biome (primary) and ESLint (reactivity errors)
 4. Run `pnpm run build` - Verify build succeeds (maintainers will build and commit releases)
-
-**Security Practice**: Contributors should verify builds locally but not commit built files. Maintainers build trusted releases.
 
 **Test Coverage:**
 
@@ -209,6 +211,8 @@ Note: These files are committed so that the module works out of the box without 
 - Config validation and error handling
 - Skip day visibility behavior for all enum values
 - UUID generation and validation utilities
+- API client functions (people.ts, chores.ts)
+- Modal components (person-modal, personal-chore-modal, rotating-chore-modal)
 - Goal of as close to 100% coverage as possible
 
 **Mock Management:**
@@ -216,6 +220,48 @@ Note: These files are committed so that the module works out of the box without 
 - Test configuration automatically clears all mocks between tests
 - Do **NOT** manually call `vi.clearAllMocks()` or similar in `beforeEach`/`afterEach`
 - Focus on test setup and assertions rather than mock cleanup
+
+**Test File Organization:**
+
+- Each source file should have its own test file: `file.ts` → `file.test.ts` or `file.test.tsx`
+- Test files should focus only on testing the corresponding source file
+- Do not test multiple components in a single test file unless they are tightly coupled
+- Keep tests co-located with the code they test for easier maintenance
+
+**UI Testing with Browser Mode:**
+
+- UI components should be tested using browser mode (real browser via Playwright)
+- **DO NOT mock DOM properties or browser APIs unnecessarily** - use the real browser
+- Instead of mocking element dimensions, set styles directly on rendered elements to achieve the desired state
+- Instead of mocking scroll positions, render content that produces the scrollable state you need to test
+- Test the actual rendered output, not mocked abstractions
+- This approach catches real integration issues that mocking would hide
+
+**SolidJS Testing Library for Admin/Modal Tests:**
+
+- Use `render` from `@solidjs/testing-library` for SolidJS component testing in browser mode
+- **CRITICAL**: The browser project in vitest.config.ts MUST include `solidPlugin()` in the plugins array for JSX to work
+- Import CSS files in test files using relative path: `import '../../public/admin.css';`
+- **DO NOT use `fireEvent`** from testing libraries - it's meant for fake DOM and uses JS to dispatch events
+- Use `page` from `vitest/browser` for browser mode interactions - it works with Playwright to mimic real user actions
+- The testing library's render handles container creation and cleanup automatically
+- Remove manual DOM cleanup (`document.body.innerHTML = ''`) - testing library handles this
+- Remove manual `afterEach` with `vi.clearAllMocks()` - test configuration handles mock cleanup automatically
+
+**API Testing:**
+
+- API functions should be tested in node environment (not browser)
+- Mock `globalThis.fetch` to test HTTP requests without real network calls
+- Test success paths, error responses, and network failures
+- Verify request bodies and URLs are constructed correctly
+- Test with proper TypeScript request/response types
+
+**Vitest Configuration:**
+
+- Node tests: Backend logic, utilities, API functions
+- Browser tests: Frontend components, UI interactions, modal components
+- Admin tests currently disabled due to browser import issues (CSS imports)
+- Test files are automatically included based on pattern matching in vitest.config.ts
 
 ### Configuration Patterns
 
@@ -282,65 +328,6 @@ Note: These files are committed so that the module works out of the box without 
 - Ensure touch targets are appropriately sized
 - Consider mirror-specific viewing conditions
 
-## Development Commands
-
-### Quick Development Cycle
-
-```bash
-pnpm run build          # Build all components
-pnpm run test           # Run tests
-pnpm run lint           # Check code quality
-```
-
-### Testing Commands
-
-```bash
-pnpm run test           # Run all tests
-pnpm run test:watch     # Watch mode for development
-pnpm run test:ci        # CI mode (single run) - same as test
-pnpm run test:browser   # Browser-based tests
-```
-
-### Code Quality
-
-```bash
-pnpm run typecheck      # TypeScript validation
-pnpm run lint           # Biome linting
-pnpm run fix            # Auto-fix linting issues
-```
-
-## Common Tasks
-
-### Adding New Chore Features
-
-1. Update TypeScript interfaces in `src/types/chore-types.ts`
-2. Implement logic in `src/backend/node-helper.ts`
-3. Update frontend in `src/frontend/frontend.ts`
-4. Add tests for new functionality
-5. Update documentation
-
-### Working with UUID Utilities
-
-1. Use `generateUUID()` for creating new person/chore identifiers
-2. Use `isValidUUID()` to validate UUID strings from external sources
-3. Use `generateTestUUID()` only in tests for deterministic UUIDs
-4. All UUID utilities are located in `src/utils/uuid.ts`
-5. Tests for UUID utilities are in `src/utils/uuid.test.ts`
-
-### Modifying State Management
-
-1. Always test state changes with unit tests
-2. Ensure atomic updates to prevent race conditions
-3. Update data validation if structure changes
-4. Test with edge cases (empty data, corrupted files)
-
-### UI Changes
-
-1. Modify `getDom()` method in `src/frontend/frontend.ts`
-2. Update CSS in `css/main.css`
-3. Test with different data scenarios
-4. Ensure accessibility and usability
-
 ## Important Notes
 
 ### Data Privacy
@@ -349,35 +336,6 @@ pnpm run fix            # Auto-fix linting issues
 - Real family names belong only in user's personal config
 - Never commit real personal data to the repository
 
-### MMPM Compatibility
+### Design Philosophy
 
-- This module is designed for MMPM community distribution
-- Follow MagicMirror module conventions
-- Maintain clear documentation and examples
-- Test with various MagicMirror versions
-
-### Performance Considerations
-
-- Minimize DOM updates in `getDom()`
-- Use efficient data structures for state management
-- Avoid unnecessary file I/O operations
-- Consider memory usage for large families
-
-## Troubleshooting
-
-### Common Issues
-
-- **Build failures**: Check TypeScript compilation first
-- **Test failures**: Verify data structure matches interfaces
-- **State corruption**: Check file permissions and disk space
-- **Display issues**: Verify CSS and DOM structure
-
-### Debugging Steps
-
-1. Check browser console for errors
-2. Verify `data.json` structure is valid
-3. Test with minimal configuration
-4. Check MagicMirror module loading
-5. Verify socket communication between frontend and backend
-
-This module prioritizes simplicity and reliability over complex features. When in doubt, choose the simplest solution that meets the requirements.
+This module prioritizes simplicity and reliability over complex features. When in doubt, ask the user.

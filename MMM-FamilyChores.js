@@ -29,6 +29,20 @@
 		return ChoreType;
 	}({});
 	//#endregion
+	//#region src/utils/browser.ts
+	/**
+	* Escape HTML special characters to prevent XSS attacks
+	* Uses the browser's DOM API to properly escape HTML entities
+	*
+	* @param raw - The raw string to escape
+	* @returns The escaped HTML string
+	*/
+	var escapeHtml = (raw) => {
+		const div = document.createElement("div");
+		div.textContent = raw;
+		return div.innerHTML;
+	};
+	//#endregion
 	//#region src/utils/date.ts
 	/**
 	* Gets the local time string in HH:MM format
@@ -75,11 +89,6 @@
 	};
 	//#endregion
 	//#region src/frontend/frontend.ts
-	var escapeHtml = (raw) => {
-		const div = document.createElement("div");
-		div.textContent = raw;
-		return div.innerHTML;
-	};
 	Module.register("MMM-FamilyChores", {
 		name: "MMM-FamilyChores",
 		config: {

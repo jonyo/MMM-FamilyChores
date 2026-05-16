@@ -7,13 +7,38 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["**", "!node_modules", "!dist", "!node_helper.js", "!MMM-FamilyChores.js"]
+    "includes": [
+      "**",
+      "!node_modules",
+      "!dist",
+      // Ignore generated files
+      "!node_helper.js",
+      "!MMM-FamilyChores.js",
+      "!public/admin.js"
+    ]
   },
   "formatter": {
     "enabled": true,
     "indentStyle": "space",
     "indentWidth": 2,
     "lineWidth": 100
+  },
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": {
+          "level": "on",
+          "options": {
+            "groups": [
+              {
+                "type": true
+              }
+            ]
+          }
+        }
+      }
+    }
   },
   "linter": {
     "enabled": true,
