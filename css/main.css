@@ -179,11 +179,6 @@
   background: rgba(255, 255, 255, 0.08);
 }
 
-.MMM-FamilyChores .behind-section .chore-item.overdue {
-  background: rgba(255, 193, 7, 0.2);
-  border-left-color: #ffc107;
-}
-
 /* Compact Rotating Assignment Style - Inline */
 .MMM-FamilyChores .rotating-inline {
   display: flex;
