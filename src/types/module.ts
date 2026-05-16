@@ -1,6 +1,6 @@
 // MagicMirror Module Types - extending official @types/magicmirror-module
 
-import type { DayOfWeek, FamilyChoresData } from './chore-types';
+import type { Chore, DayOfWeek, FamilyChoresData } from './chore-types';
 import type { Config } from './config';
 
 // Base MagicMirror module interface from official types
@@ -41,10 +41,11 @@ export interface FamilyChoresModule extends Omit<MagicMirrorModule<Config>, 'get
   scheduleUpdate: () => void;
   addCheckboxListeners: (wrapper: HTMLElement) => void;
   toggleChoreCompletion: (choreId: string, completed: boolean) => void;
-  shouldShowChore: (chore: FamilyChoresData['chores'][0], todayDayName: DayOfWeek) => boolean;
-  getFilteredChores: () => FamilyChoresData['chores'];
-  getSummaryChores: () => FamilyChoresData['chores'];
-  renderChoreItem: (chore: FamilyChoresData['chores'][0], choreData: FamilyChoresData) => string;
+  shouldShowChore: (chore: Chore, todayDayName: DayOfWeek) => boolean;
+  getFilteredChores: () => Chore[];
+  getSummaryChores: () => Chore[];
+  renderChoreItem: (chore: Chore, choreData: FamilyChoresData) => string;
+  renderRotatingChoreInline: (chore: Chore, choreData: FamilyChoresData) => string;
   renderSummaryView: (wrapper: HTMLElement) => HTMLElement;
 }
 

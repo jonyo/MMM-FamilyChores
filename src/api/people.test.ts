@@ -1,5 +1,5 @@
-import type { CreatePersonRequest, UpdatePersonRequest } from '../types/request-types';
 import { describe, expect, it, vi } from 'vitest';
+import type { CreatePersonRequest, UpdatePersonRequest } from '../types/request-types';
 import { createPerson, deletePerson, updatePerson } from './people';
 
 // Mock fetch

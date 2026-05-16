@@ -179,7 +179,33 @@
   background: rgba(255, 255, 255, 0.08);
 }
 
-.MMM-FamilyChores .behind-section .chore-item.overdue {
-  background: rgba(255, 193, 7, 0.2);
-  border-left-color: #ffc107;
+/* Compact Rotating Assignment Style - Inline */
+.MMM-FamilyChores .rotating-inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.MMM-FamilyChores .rotating-inline .chore-name {
+  font-weight: 500;
+  color: #fff;
+  flex: 1;
+}
+
+.MMM-FamilyChores .rotating-inline .person-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.MMM-FamilyChores .rotating-inline .inline-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: #4caf50;
+  cursor: pointer;
+  flex-shrink: 0;
 }

@@ -1,12 +1,7 @@
 import { render, screen } from '@solidjs/testing-library';
 import { describe, expect, it, vi } from 'vitest';
-import {
-  ChoreType,
-  DayOfWeek,
-  type Person,
-  type RotatingChore,
-  SkipDayVisibility,
-} from '../types/chore-types';
+import type { Person, RotatingChore } from '../types/chore-types';
+import { ChoreType, DayOfWeek, SkipDayVisibility } from '../types/chore-types';
 import { RotatingChoreCard } from './rotating-chore';
 import '../../public/admin.css';
 

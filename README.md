@@ -70,7 +70,7 @@ When `viewMode` is set to `'summary'`, you can control which sections are displa
 | `showRotating`    | boolean | `true`                           | Show current rotating assignments section |
 | `showOverdue`     | boolean | `true`                           | Show overdue chores section               |
 | `incompleteTitle` | string  | `'Incomplete Chores'`            | Custom title for incomplete section       |
-| `rotatingTitle`   | string  | `'Current Rotating Assignments'` | Custom title for rotating section         |
+| `rotatingTitle`   | string  | `"Today's Rotation"`             | Custom title for rotating section         |
 | `overdueTitle`    | string  | `'Overdue'`                      | Custom title for overdue section          |
 
 #### Summary View Example
@@ -84,7 +84,7 @@ When `viewMode` is set to `'summary'`, you can control which sections are displa
     viewMode: 'summary',
     summary: {
       showIncomplete: true,    // Show "Incomplete Chores" section
-      showRotating: true,     // Show "Current Rotating Assignments" section
+      showRotating: true,     // Show "Today's Rotation" section
       showOverdue: true       // Show "Behind Schedule" section
     }
   }

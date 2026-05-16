@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ChoreType, DayOfWeek, type Person, SkipDayVisibility } from '../types/chore-types';
+import type { Person } from '../types/chore-types';
+import { ChoreType, DayOfWeek, SkipDayVisibility } from '../types/chore-types';
 import { generateTestUUID } from '../utils/uuid';
 import { validateChore, validatePerson } from './validator';
 

@@ -1,15 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import '../../css/main.css';
+import type { Chore, PersonalChore, RotatingChore } from '../types/chore-types';
+import { ChoreType, DayOfWeek, SkipDayVisibility } from '../types/chore-types';
 import type { FamilyChoresModule } from '../types/module';
-import {
-  type Chore,
-  ChoreType,
-  DayOfWeek,
-  type PersonalChore,
-  type RotatingChore,
-  SkipDayVisibility,
-} from '../types/chore-types';
 import './frontend';
 
 const { capturedModule } = vi.hoisted(() => {
@@ -1276,8 +1270,8 @@ describe('Frontend Tests', () => {
       expect(page.getByText('Take out trash').first()).toBeVisible();
       expect(page.getByText('Clean kitchen').first()).toBeVisible();
 
-      // Should show rotating assignments section
-      expect(page.getByText('Current Rotating Assignments')).toBeVisible();
+      // Should show Current Rotating Assignments section
+      expect(page.getByText("Today's Rotation")).toBeVisible();
       expect(page.getByText('Wash dishes')).toBeVisible();
 
       // Should show overdue section
@@ -1289,7 +1283,7 @@ describe('Frontend Tests', () => {
       expect(page.getByText('Vacuum living room').elements()).toHaveLength(0);
     });
 
-    it('should only show rotating assignments when showIncomplete and showOverdue are false', async () => {
+    it('should only show Current Rotating Assignments when showIncomplete and showOverdue are false', async () => {
       module.config.summary = {
         showIncomplete: false,
         showRotating: true,
@@ -1300,8 +1294,8 @@ describe('Frontend Tests', () => {
       const result = module.renderSummaryView(wrapper);
       document.body.appendChild(result);
 
-      // Should only show rotating assignments
-      expect(page.getByText('Current Rotating Assignments')).toBeVisible();
+      // Should only show Current Rotating Assignments
+      expect(page.getByText("Today's Rotation")).toBeVisible();
       expect(page.getByText('Take out trash')).toBeVisible();
       expect(page.getByText('Wash dishes')).toBeVisible();
 
@@ -1327,7 +1321,7 @@ describe('Frontend Tests', () => {
       expect(page.getByText('Clean kitchen')).toBeVisible();
 
       // Should not show other sections
-      expect(page.getByText('Current Rotating Assignments').elements()).toHaveLength(0);
+      expect(page.getByText("Today's Rotation").elements()).toHaveLength(0);
       expect(page.getByText('Overdue').elements()).toHaveLength(0);
     });
 
@@ -1348,7 +1342,7 @@ describe('Frontend Tests', () => {
 
       // Should not show other sections
       expect(page.getByText('Incomplete Chores').elements()).toHaveLength(0);
-      expect(page.getByText('Current Rotating Assignments').elements()).toHaveLength(0);
+      expect(page.getByText("Today's Rotation").elements()).toHaveLength(0);
     });
 
     it('should show empty summary view when all sections are disabled', async () => {
@@ -1364,7 +1358,7 @@ describe('Frontend Tests', () => {
 
       // Should not show any sections
       expect(page.getByText('Incomplete Chores').elements()).toHaveLength(0);
-      expect(page.getByText('Current Rotating Assignments').elements()).toHaveLength(0);
+      expect(page.getByText("Today's Rotation").elements()).toHaveLength(0);
       expect(page.getByText('Overdue').elements()).toHaveLength(0);
 
       // Should still have the summary-view container
@@ -1380,7 +1374,7 @@ describe('Frontend Tests', () => {
 
       // Should show all sections (default behavior)
       expect(page.getByText('Incomplete Chores')).toBeVisible();
-      expect(page.getByText('Current Rotating Assignments')).toBeVisible();
+      expect(page.getByText("Today's Rotation")).toBeVisible();
       expect(page.getByText('Overdue')).toBeVisible();
     });
 
@@ -1396,7 +1390,7 @@ describe('Frontend Tests', () => {
       document.body.appendChild(result);
 
       // Should show rotating and overdue sections (defaults)
-      expect(page.getByText('Current Rotating Assignments')).toBeVisible();
+      expect(page.getByText("Today's Rotation")).toBeVisible();
       expect(page.getByText('Overdue')).toBeVisible();
 
       // Should not show incomplete section (explicitly disabled)
@@ -1461,7 +1455,7 @@ describe('Frontend Tests', () => {
 
       // Should not show default titles
       expect(page.getByText('Incomplete Chores').elements()).toHaveLength(0);
-      expect(page.getByText('Current Rotating Assignments').elements()).toHaveLength(0);
+      expect(page.getByText("Today's Rotation").elements()).toHaveLength(0);
       expect(page.getByText('Overdue').elements()).toHaveLength(0);
     });
   });

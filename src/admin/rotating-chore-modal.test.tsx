@@ -2,8 +2,8 @@ import { render } from '@solidjs/testing-library';
 import { describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import '../../public/admin.css';
-import type { FamilyChoresData } from '../types/chore-types';
 import { createChore, updateChore } from '../api';
+import type { FamilyChoresData } from '../types/chore-types';
 import { DayOfWeek, SkipDayVisibility } from '../types/chore-types';
 import { RotatingChoreModal } from './rotating-chore-modal';
 

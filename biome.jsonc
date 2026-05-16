@@ -27,16 +27,7 @@
     "enabled": true,
     "actions": {
       "source": {
-        "organizeImports": {
-          "level": "on",
-          "options": {
-            "groups": [
-              {
-                "type": true
-              }
-            ]
-          }
-        }
+        "organizeImports": "on"
       }
     }
   },
@@ -49,7 +40,12 @@
       },
       "style": {
         "useBlockStatements": "off",
-        "useImportType": "error"
+        "useImportType": {
+          "level": "on",
+          "options": {
+            "style": "separatedType"
+          }
+        }
       }
     }
   },
