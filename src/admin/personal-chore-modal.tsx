@@ -32,12 +32,17 @@ export const PersonalChoreModal: Component<PersonalChoreModalProps> = (props) =>
 
   const handleSubmit = async (event: Event) => {
     event.preventDefault();
+    const person = props.person;
+    if (!person) {
+      console.error('No person selected');
+      return;
+    }
     try {
       if (props.initialChore?.id) {
         const body: UpdateChoreRequest = {
           name: name(),
           type: ChoreType.PERSONAL,
-          assignedTo: props.person?.id ?? '',
+          assignedTo: person.id,
           deadline: deadline() || undefined,
           skipDays: skipDays(),
           skipDayVisibility: skipDayVisibility(),
@@ -47,7 +52,7 @@ export const PersonalChoreModal: Component<PersonalChoreModalProps> = (props) =>
         const body: CreateChoreRequest = {
           name: name(),
           type: ChoreType.PERSONAL,
-          assignedTo: props.person?.id ?? '',
+          assignedTo: person.id,
           deadline: deadline() || undefined,
           skipDays: skipDays(),
           skipDayVisibility: skipDayVisibility(),

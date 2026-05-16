@@ -1102,12 +1102,17 @@
 		};
 		const handleSubmit = async (event) => {
 			event.preventDefault();
+			const person = props.person;
+			if (!person) {
+				console.error("No person selected");
+				return;
+			}
 			try {
 				if (props.initialChore?.id) {
 					const body = {
 						name: name(),
 						type: ChoreType.PERSONAL,
-						assignedTo: props.person?.id ?? "",
+						assignedTo: person.id,
 						deadline: deadline() || void 0,
 						skipDays: skipDays(),
 						skipDayVisibility: skipDayVisibility()
@@ -1116,7 +1121,7 @@
 				} else await createChore({
 					name: name(),
 					type: ChoreType.PERSONAL,
-					assignedTo: props.person?.id ?? "",
+					assignedTo: person.id,
 					deadline: deadline() || void 0,
 					skipDays: skipDays(),
 					skipDayVisibility: skipDayVisibility()
