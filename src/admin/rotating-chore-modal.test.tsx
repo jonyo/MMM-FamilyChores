@@ -21,6 +21,11 @@ describe('RotatingChoreModal', () => {
       { id: 'p3', name: 'Charlie', color: '#45B7D1' },
     ],
     chores: [],
+    dailyCompletions: [],
+    settings: {
+      dailyResetTime: '03:00',
+      historyEnabled: true,
+    },
   };
 
   describe('Create Chore Mode', () => {

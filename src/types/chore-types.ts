@@ -83,11 +83,75 @@ export type RotatingChore = ChoreBase & {
 
 export type Chore = PersonalChore | RotatingChore;
 
+/**
+ * Daily completion record for tracking chore completion status
+ */
+export interface DailyCompletion {
+  /**
+   * UUID v4
+   */
+  id: UUID;
+  /**
+   * Local date in YYYY-MM-DD format
+   */
+  date: string;
+  /**
+   * Person ID who completed (or was assigned) the chore
+   */
+  personId: UUID;
+  /**
+   * Chore ID
+   */
+  choreId: UUID;
+  /**
+   * Whether the chore was completed on this day
+   */
+  completed: boolean;
+  /**
+   * Local time in HH:mm format when the chore was completed (if completed)
+   */
+  completedAt?: string;
+  /**
+   * Whether the completion was late (after the deadline)
+   */
+  wasLate: boolean;
+  /**
+   * Whether this day was a skip day for the chore
+   */
+  wasSkipDay: boolean;
+  /**
+   * Whether this was the person's turn (for rotating chores)
+   */
+  wasMyTurn: boolean;
+}
+
+/**
+ * Global settings that apply across all module instances
+ */
+export interface Settings {
+  /**
+   * Format: "HH:mm" in 24-hour format, default "03:00"
+   */
+  dailyResetTime: string;
+  /**
+   * Enable/disable history tracking (default: true)
+   */
+  historyEnabled: boolean;
+}
+
 export interface FamilyChoresData {
   people: Person[];
   chores: Chore[];
   /**
+   * Global settings that apply across all module instances
+   */
+  settings: Settings;
+  /**
    * ISO date string when daily reset was last performed (YYYY-MM-DD)
    */
   lastResetDate?: string;
+  /**
+   * Daily completion records for tracking chore completion status
+   */
+  dailyCompletions: DailyCompletion[];
 }

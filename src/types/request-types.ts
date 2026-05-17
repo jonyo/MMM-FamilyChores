@@ -52,7 +52,12 @@ export interface UpdateChoreRequest extends Partial<CreateChoreRequest> {}
 export interface RestoreDataBody<TPerson = unknown, TChore = unknown> {
   people: TPerson[];
   chores: TChore[];
+  dailyCompletions?: unknown[];
   lastResetDate?: string;
+  settings?: {
+    dailyResetTime?: string;
+    historyEnabled?: boolean;
+  };
 }
 
 /**
@@ -73,4 +78,12 @@ export interface CopyChoresRequest {
   fromPersonId: UUID;
   toPersonId: UUID;
   choreIds: UUID[];
+}
+
+/**
+ * Request body for updating global settings
+ */
+export interface UpdateSettingsRequest {
+  dailyResetTime?: string;
+  historyEnabled?: boolean;
 }

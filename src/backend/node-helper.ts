@@ -3,7 +3,7 @@ import * as path from 'node:path';
 import * as Log from 'logger';
 import * as NodeHelper from 'node_helper';
 import { SocketNotifications } from '../constants/socket-notifications';
-import type { Chore, FamilyChoresData, Person } from '../types/chore-types';
+import type { Chore, DailyCompletion, FamilyChoresData, Person } from '../types/chore-types';
 import { SkipDayVisibility } from '../types/chore-types';
 import type { Config } from '../types/config';
 import type {
@@ -17,6 +17,7 @@ import type {
   PinErrorPayload,
 } from '../types/socket-payload-types';
 import { getLocalDateString, getLocalDayName, getLocalTimeString } from '../utils/date';
+import { generateUUID } from '../utils/uuid';
 import { createAdminHandlers } from './admin-routes';
 import { validateChore, validatePerson } from './validator';
 
@@ -35,6 +36,7 @@ interface FamilyChoresNodeHelper extends Partial<NodeHelper.NodeHelperModule> {
   handleChoreToggle(payload: ChoreTogglePayload): void;
   handleChoreReassign(payload: ChoreReassignPayload): void;
   handleCaughtUpReset(payload: CaughtUpResetPayload): void;
+  logIncompleteChore(chore: Chore, date: string): void;
 }
 
 const nodeHelper: FamilyChoresNodeHelper = {
@@ -121,8 +123,16 @@ const nodeHelper: FamilyChoresNodeHelper = {
         this.choreData = {
           people: validPeople,
           chores: validChores,
+          dailyCompletions: Array.isArray(rawData.dailyCompletions) ? rawData.dailyCompletions : [],
           lastResetDate:
             typeof rawData.lastResetDate === 'string' ? rawData.lastResetDate : undefined,
+          // Auto-spread defaults for settings
+          settings: {
+            dailyResetTime:
+              (rawData.settings as { dailyResetTime?: string })?.dailyResetTime ?? '03:00',
+            historyEnabled:
+              (rawData.settings as { historyEnabled?: boolean })?.historyEnabled ?? true,
+          },
         };
         Log.info(`Loaded chore data from ${dataPath}`);
       } else {
@@ -165,8 +175,13 @@ const nodeHelper: FamilyChoresNodeHelper = {
     return {
       people: [],
       chores: [],
+      dailyCompletions: [],
       // Initialize to today to prevent immediate rotation
       lastResetDate: getLocalDateString(),
+      settings: {
+        dailyResetTime: '03:00',
+        historyEnabled: true,
+      },
     };
   },
 
@@ -174,7 +189,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
    * Check if daily reset should be performed and execute if needed
    */
   checkAndPerformDailyReset(): void {
-    if (!this.choreData || !this.config) return;
+    if (!this.choreData) return;
 
     // Get current local date and time
     const todayDateString = getLocalDateString();
@@ -184,7 +199,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
       // already run today
       return;
     }
-    const dailyResetTime = this.config.dailyResetTime || '03:00';
+    const dailyResetTime = this.choreData.settings?.dailyResetTime || '03:00';
 
     if (currentTimeString < dailyResetTime) {
       // not time yet - NOTE: if we skipped an entire day, we still wait for the reset time to pass
@@ -194,6 +209,8 @@ const nodeHelper: FamilyChoresNodeHelper = {
       `Daily reset triggered for ${getLocalDateString()} at ${currentTimeString}, reset time: ${dailyResetTime}`
     );
     this.transitionChoresForNewDay();
+    // Cleanup daily completions older than 14 days
+    this.cleanupOldDailyCompletions();
     this.choreData.lastResetDate = getLocalDateString();
     this.saveChoreData();
   },
@@ -209,6 +226,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
     if (!this.choreData) return;
 
     const todayDayName = getLocalDayName();
+    const todayDateString = getLocalDateString();
 
     for (const chore of this.choreData.chores) {
       const skipDays = chore.skipDays ?? [];
@@ -226,6 +244,10 @@ const nodeHelper: FamilyChoresNodeHelper = {
         // skip day but possibly visible - don't reset completedToday or rotate
         continue;
       }
+      // Log incomplete chore to history if not completed today
+      if (!chore.completedToday) {
+        this.logIncompleteChore(chore, todayDateString);
+      }
       // reset completedToday for the new day
       chore.completedToday = false;
       // rotate if needed
@@ -237,9 +259,31 @@ const nodeHelper: FamilyChoresNodeHelper = {
     Log.info('Daily reset performed - completedToday cleared, caughtUp status updated');
   },
 
+  /**
+   * Clean up old daily completion records (older than 14 days)
+   */
+  cleanupOldDailyCompletions(): void {
+    if (!this.choreData?.dailyCompletions || !this.choreData.settings?.historyEnabled) return;
+
+    const retentionDays = 14;
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
+
+    const initialCount = this.choreData.dailyCompletions.length;
+    this.choreData.dailyCompletions = this.choreData.dailyCompletions.filter(
+      (dc) => new Date(dc.date) > cutoffDate
+    );
+
+    if (this.choreData.dailyCompletions.length < initialCount) {
+      Log.info(
+        `Cleaned up ${initialCount - this.choreData.dailyCompletions.length} old daily completion records (retention: ${retentionDays} days)`
+      );
+    }
+  },
+
   // Handle chore toggle
   handleChoreToggle(payload: ChoreTogglePayload): void {
-    if (!this.choreData || !this.config) return;
+    if (!this.choreData) return;
 
     const chore = this.choreData.chores.find((c: Chore) => c.id === payload.choreId);
     if (!chore) {
@@ -257,6 +301,52 @@ const nodeHelper: FamilyChoresNodeHelper = {
     chore.completedToday = payload.completed;
     // Note: we do NOT change caughtUp here - it stays as-is
 
+    // Track daily completion if history is enabled
+    if (this.choreData.settings?.historyEnabled) {
+      let personId: string | undefined;
+      if (chore.type === 'personal') {
+        personId = chore.assignedTo;
+      } else if (chore.type === 'rotating') {
+        personId = chore.rotation[chore.rotatingIndex ?? 0];
+      }
+
+      const todayDate = getLocalDateString();
+      const todayDayName = getLocalDayName();
+      const isSkipDay = (chore.skipDays ?? []).includes(todayDayName);
+
+      if (payload.completed && personId) {
+        // Create daily completion record
+        const currentTime = new Date();
+        const currentTimeString = getLocalTimeString();
+        const wasLate = Boolean(chore.deadline && currentTimeString > chore.deadline);
+        const wasMyTurn =
+          chore.type === 'personal' ||
+          (chore.type === 'rotating' && chore.rotation[chore.rotatingIndex ?? 0] === personId);
+
+        const dailyCompletion = {
+          id: generateUUID(),
+          date: todayDate,
+          personId,
+          choreId: chore.id,
+          completed: true,
+          completedAt: getLocalTimeString(currentTime),
+          wasLate,
+          wasSkipDay: isSkipDay,
+          wasMyTurn,
+        };
+
+        this.choreData.dailyCompletions.push(dailyCompletion);
+      } else if (!payload.completed && personId) {
+        // Delete daily completion record for this day/person/chore
+        const index = this.choreData.dailyCompletions.findIndex(
+          (dc) => dc.date === todayDate && dc.personId === personId && dc.choreId === chore.id
+        );
+        if (index !== -1) {
+          this.choreData.dailyCompletions.splice(index, 1);
+        }
+      }
+    }
+
     this.saveChoreData();
     const updateResult: ChoreUpdateResultPayload = {
       choreId: payload.choreId,
@@ -268,9 +358,9 @@ const nodeHelper: FamilyChoresNodeHelper = {
 
   // Handle chore reassignment
   handleChoreReassign(payload: ChoreReassignPayload): void {
-    if (!this.choreData || !this.config) return;
+    if (!this.choreData) return;
 
-    if (this.config.adminPin && payload.pin !== this.config.adminPin) {
+    if (this.config?.adminPin && payload.pin !== this.config.adminPin) {
       const pinError: PinErrorPayload = { message: 'Invalid PIN' };
       this.sendSocketNotification?.(SocketNotifications.PIN_ERROR, pinError);
       return;
@@ -318,9 +408,9 @@ const nodeHelper: FamilyChoresNodeHelper = {
 
   // Handle caughtUp reset for a person (admin only - PIN protected)
   handleCaughtUpReset(payload: CaughtUpResetPayload): void {
-    if (!this.choreData || !this.config) return;
+    if (!this.choreData) return;
 
-    if (this.config.adminPin && payload.pin !== this.config.adminPin) {
+    if (this.config?.adminPin && payload.pin !== this.config.adminPin) {
       const pinError: PinErrorPayload = { message: 'Invalid PIN' };
       this.sendSocketNotification?.(SocketNotifications.PIN_ERROR, pinError);
       return;
@@ -354,6 +444,42 @@ const nodeHelper: FamilyChoresNodeHelper = {
     this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
   },
 
+  /**
+   * Logs an incomplete chore to the daily completion history
+   */
+  logIncompleteChore(chore: Chore, date: string): void {
+    if (!this.choreData?.settings?.historyEnabled) return;
+
+    let personId: string;
+    let wasMyTurn = false;
+
+    if (chore.type === 'personal') {
+      personId = chore.assignedTo;
+      wasMyTurn = true;
+    } else {
+      // rotating chore
+      const rotation = chore.rotation ?? [];
+      const rotatingIndex = chore.rotatingIndex ?? 0;
+      personId = rotation[rotatingIndex] ?? '';
+      wasMyTurn = true;
+    }
+
+    if (!personId) return;
+
+    const completion: DailyCompletion = {
+      id: generateUUID(),
+      date,
+      personId,
+      choreId: chore.id,
+      completed: false,
+      wasLate: false,
+      wasSkipDay: false,
+      wasMyTurn,
+    };
+
+    this.choreData.dailyCompletions.push(completion);
+  },
+
   // Setup admin interface routes using official MagicMirror pattern
   setupAdminRoutes(): void {
     const handlers = createAdminHandlers({
@@ -376,6 +502,8 @@ const nodeHelper: FamilyChoresNodeHelper = {
     this.expressApp?.get('/MMM-FamilyChores/backup', handlers.getBackup);
     this.expressApp?.post('/MMM-FamilyChores/restore', handlers.postRestore);
     this.expressApp?.post('/MMM-FamilyChores/copy-chores', handlers.postCopyChores);
+    this.expressApp?.get('/MMM-FamilyChores/history', handlers.getHistory);
+    this.expressApp?.put('/MMM-FamilyChores/settings', handlers.putSettings);
 
     Log.info('Admin routes configured for MMM-FamilyChores');
   },

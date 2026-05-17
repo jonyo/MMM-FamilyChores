@@ -104,8 +104,7 @@
 				incompleteTitle: "Incomplete Chores",
 				rotatingTitle: "Today's Rotation",
 				overdueTitle: "Overdue"
-			},
-			dailyResetTime: "03:00"
+			}
 		},
 		defaults: {
 			updateInterval: 6e4,
@@ -120,8 +119,7 @@
 				incompleteTitle: "Incomplete Chores",
 				rotatingTitle: "Today's Rotation",
 				overdueTitle: "Overdue"
-			},
-			dailyResetTime: "03:00"
+			}
 		},
 		choreData: null,
 		start() {

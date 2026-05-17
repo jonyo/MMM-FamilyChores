@@ -33,7 +33,6 @@ const familyChoresModule: FamilyChoresModule = {
       rotatingTitle: "Today's Rotation",
       overdueTitle: 'Overdue',
     },
-    dailyResetTime: '03:00',
   },
   defaults: {
     updateInterval: 60000,
@@ -49,7 +48,6 @@ const familyChoresModule: FamilyChoresModule = {
       rotatingTitle: "Today's Rotation",
       overdueTitle: 'Overdue',
     },
-    dailyResetTime: '03:00',
   },
   choreData: null as FamilyChoresData | null,
 

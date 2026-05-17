@@ -375,11 +375,13 @@ function createAdminHandlers(context) {
 					res.status(404).json(apiErr("Person not found"));
 					return;
 				}
+				choreData.people[personIndex];
 				choreData.people.splice(personIndex, 1);
 				choreData.chores = choreData.chores.filter((chore) => {
 					if (chore.type === "personal") return chore.assignedTo !== id;
 					else if (chore.type === "rotating") {
 						chore.rotation = chore.rotation?.filter((personId) => personId !== id) || [];
+						if (chore.rotatingIndex !== void 0 && chore.rotatingIndex >= chore.rotation.length) chore.rotatingIndex = Math.max(0, chore.rotation.length - 1);
 						return chore.rotation.length > 0;
 					}
 					return true;
@@ -421,6 +423,7 @@ function createAdminHandlers(context) {
 					return;
 				}
 				choreData.chores.push(newChore);
+				if (type === "personal") {}
 				context.saveChoreData();
 				context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
 				res.json(newChore);
@@ -465,6 +468,7 @@ function createAdminHandlers(context) {
 					return;
 				}
 				Object.assign(chore, updatedChore);
+				if (chore.type === ChoreType.PERSONAL) chore.assignedTo;
 				context.saveChoreData();
 				context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
 				res.json(chore);
@@ -486,6 +490,8 @@ function createAdminHandlers(context) {
 					res.status(404).json(apiErr("Chore not found"));
 					return;
 				}
+				const chore = choreData.chores[choreIndex];
+				if (chore.type === ChoreType.PERSONAL) chore.assignedTo;
 				choreData.chores.splice(choreIndex, 1);
 				context.saveChoreData();
 				context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
@@ -543,7 +549,12 @@ function createAdminHandlers(context) {
 				context.setChoreData({
 					people: validPeople,
 					chores: validChores,
-					lastResetDate: restoredData.lastResetDate
+					dailyCompletions: Array.isArray(restoredData.dailyCompletions) ? restoredData.dailyCompletions : [],
+					lastResetDate: restoredData.lastResetDate,
+					settings: {
+						dailyResetTime: restoredData.settings?.dailyResetTime ?? "03:00",
+						historyEnabled: restoredData.settings?.historyEnabled ?? true
+					}
 				});
 				context.saveChoreData();
 				context.sendNotification(SocketNotifications.CHORE_DATA, context.getChoreData());
@@ -599,6 +610,51 @@ function createAdminHandlers(context) {
 			} catch (error) {
 				logger.error(`Error copying chores: ${error}`);
 				res.status(500).json(apiErr("Failed to copy chores"));
+			}
+		},
+		getHistory: (req, res) => {
+			const choreData = context.getChoreData();
+			if (!choreData) {
+				res.status(500).json(apiErr("No data available"));
+				return;
+			}
+			if (!choreData.settings?.historyEnabled) {
+				res.json([]);
+				return;
+			}
+			const personId = req.query?.personId;
+			const dailyCompletions = choreData.dailyCompletions || [];
+			const sortedCompletions = [...personId ? dailyCompletions.filter((dc) => dc.personId === personId) : dailyCompletions].sort((a, b) => {
+				return new Date(b.date).getTime() - new Date(a.date).getTime();
+			});
+			res.json(sortedCompletions);
+		},
+		putSettings: (req, res) => {
+			try {
+				const { dailyResetTime, historyEnabled } = req.body;
+				const choreData = context.getChoreData();
+				if (!choreData) {
+					res.status(500).json(apiErr("No data available"));
+					return;
+				}
+				if (!choreData.settings) choreData.settings = {
+					dailyResetTime: "03:00",
+					historyEnabled: true
+				};
+				if (dailyResetTime !== void 0) {
+					if (!/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(dailyResetTime)) {
+						res.status(400).json(apiErr("Invalid time format. Use HH:mm (24-hour format)"));
+						return;
+					}
+					choreData.settings.dailyResetTime = dailyResetTime;
+				}
+				if (historyEnabled !== void 0) choreData.settings.historyEnabled = historyEnabled;
+				context.saveChoreData();
+				context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
+				res.json(choreData.settings);
+			} catch (error) {
+				logger.error(`Error updating settings: ${error}`);
+				res.status(500).json(apiErr("Failed to update settings"));
 			}
 		}
 	};
@@ -665,7 +721,12 @@ var node_helper_default = node_helper.create({
 				this.choreData = {
 					people: validPeople,
 					chores: validChores,
-					lastResetDate: typeof rawData.lastResetDate === "string" ? rawData.lastResetDate : void 0
+					dailyCompletions: Array.isArray(rawData.dailyCompletions) ? rawData.dailyCompletions : [],
+					lastResetDate: typeof rawData.lastResetDate === "string" ? rawData.lastResetDate : void 0,
+					settings: {
+						dailyResetTime: rawData.settings?.dailyResetTime ?? "03:00",
+						historyEnabled: rawData.settings?.historyEnabled ?? true
+					}
 				};
 				logger.info(`Loaded chore data from ${dataPath}`);
 			} else {
@@ -701,21 +762,27 @@ var node_helper_default = node_helper.create({
 		return {
 			people: [],
 			chores: [],
-			lastResetDate: getLocalDateString()
+			dailyCompletions: [],
+			lastResetDate: getLocalDateString(),
+			settings: {
+				dailyResetTime: "03:00",
+				historyEnabled: true
+			}
 		};
 	},
 	/**
 	* Check if daily reset should be performed and execute if needed
 	*/
 	checkAndPerformDailyReset() {
-		if (!this.choreData || !this.config) return;
+		if (!this.choreData) return;
 		const todayDateString = getLocalDateString();
 		const currentTimeString = getLocalTimeString();
 		if (this.choreData.lastResetDate && todayDateString <= this.choreData.lastResetDate) return;
-		const dailyResetTime = this.config.dailyResetTime || "03:00";
+		const dailyResetTime = this.choreData.settings?.dailyResetTime || "03:00";
 		if (currentTimeString < dailyResetTime) return;
 		logger.info(`Daily reset triggered for ${getLocalDateString()} at ${currentTimeString}, reset time: ${dailyResetTime}`);
 		this.transitionChoresForNewDay();
+		this.cleanupOldDailyCompletions();
 		this.choreData.lastResetDate = getLocalDateString();
 		this.saveChoreData();
 	},
@@ -730,6 +797,7 @@ var node_helper_default = node_helper.create({
 	transitionChoresForNewDay() {
 		if (!this.choreData) return;
 		const todayDayName = getLocalDayName();
+		const todayDateString = getLocalDateString();
 		for (const chore of this.choreData.chores) {
 			const isSkipDay = (chore.skipDays ?? []).includes(todayDayName);
 			const skipDayVisibility = chore.skipDayVisibility ?? SkipDayVisibility.HIDE;
@@ -739,13 +807,26 @@ var node_helper_default = node_helper.create({
 			}
 			chore.caughtUp = chore.completedToday === true;
 			if (isSkipDay) continue;
+			if (!chore.completedToday) this.logIncompleteChore(chore, todayDateString);
 			chore.completedToday = false;
 			if (chore.caughtUp && chore.type === "rotating") chore.rotatingIndex = ((chore.rotatingIndex ?? 0) + 1) % (chore.rotation ?? []).length;
 		}
 		logger.info("Daily reset performed - completedToday cleared, caughtUp status updated");
 	},
+	/**
+	* Clean up old daily completion records (older than 14 days)
+	*/
+	cleanupOldDailyCompletions() {
+		if (!this.choreData?.dailyCompletions || !this.choreData.settings?.historyEnabled) return;
+		const retentionDays = 14;
+		const cutoffDate = /* @__PURE__ */ new Date();
+		cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
+		const initialCount = this.choreData.dailyCompletions.length;
+		this.choreData.dailyCompletions = this.choreData.dailyCompletions.filter((dc) => new Date(dc.date) > cutoffDate);
+		if (this.choreData.dailyCompletions.length < initialCount) logger.info(`Cleaned up ${initialCount - this.choreData.dailyCompletions.length} old daily completion records (retention: ${retentionDays} days)`);
+	},
 	handleChoreToggle(payload) {
-		if (!this.choreData || !this.config) return;
+		if (!this.choreData) return;
 		const chore = this.choreData.chores.find((c) => c.id === payload.choreId);
 		if (!chore) {
 			logger.error(`Chore not found: ${payload.choreId}`);
@@ -756,6 +837,35 @@ var node_helper_default = node_helper.create({
 			return;
 		}
 		chore.completedToday = payload.completed;
+		if (this.choreData.settings?.historyEnabled) {
+			let personId;
+			if (chore.type === "personal") personId = chore.assignedTo;
+			else if (chore.type === "rotating") personId = chore.rotation[chore.rotatingIndex ?? 0];
+			const todayDate = getLocalDateString();
+			const todayDayName = getLocalDayName();
+			const isSkipDay = (chore.skipDays ?? []).includes(todayDayName);
+			if (payload.completed && personId) {
+				const currentTime = /* @__PURE__ */ new Date();
+				const currentTimeString = getLocalTimeString();
+				const wasLate = Boolean(chore.deadline && currentTimeString > chore.deadline);
+				const wasMyTurn = chore.type === "personal" || chore.type === "rotating" && chore.rotation[chore.rotatingIndex ?? 0] === personId;
+				const dailyCompletion = {
+					id: generateUUID(),
+					date: todayDate,
+					personId,
+					choreId: chore.id,
+					completed: true,
+					completedAt: getLocalTimeString(currentTime),
+					wasLate,
+					wasSkipDay: isSkipDay,
+					wasMyTurn
+				};
+				this.choreData.dailyCompletions.push(dailyCompletion);
+			} else if (!payload.completed && personId) {
+				const index = this.choreData.dailyCompletions.findIndex((dc) => dc.date === todayDate && dc.personId === personId && dc.choreId === chore.id);
+				if (index !== -1) this.choreData.dailyCompletions.splice(index, 1);
+			}
+		}
 		this.saveChoreData();
 		const updateResult = {
 			choreId: payload.choreId,
@@ -765,8 +875,8 @@ var node_helper_default = node_helper.create({
 		this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
 	},
 	handleChoreReassign(payload) {
-		if (!this.choreData || !this.config) return;
-		if (this.config.adminPin && payload.pin !== this.config.adminPin) {
+		if (!this.choreData) return;
+		if (this.config?.adminPin && payload.pin !== this.config.adminPin) {
 			this.sendSocketNotification?.(SocketNotifications.PIN_ERROR, { message: "Invalid PIN" });
 			return;
 		}
@@ -799,8 +909,8 @@ var node_helper_default = node_helper.create({
 		this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
 	},
 	handleCaughtUpReset(payload) {
-		if (!this.choreData || !this.config) return;
-		if (this.config.adminPin && payload.pin !== this.config.adminPin) {
+		if (!this.choreData) return;
+		if (this.config?.adminPin && payload.pin !== this.config.adminPin) {
 			this.sendSocketNotification?.(SocketNotifications.PIN_ERROR, { message: "Invalid PIN" });
 			return;
 		}
@@ -826,6 +936,33 @@ var node_helper_default = node_helper.create({
 		this.sendSocketNotification?.(SocketNotifications.CAUGHTUP_RESET_RESULT, caughtUpResult);
 		this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
 	},
+	/**
+	* Logs an incomplete chore to the daily completion history
+	*/
+	logIncompleteChore(chore, date) {
+		if (!this.choreData?.settings?.historyEnabled) return;
+		let personId;
+		let wasMyTurn = false;
+		if (chore.type === "personal") {
+			personId = chore.assignedTo;
+			wasMyTurn = true;
+		} else {
+			personId = (chore.rotation ?? [])[chore.rotatingIndex ?? 0] ?? "";
+			wasMyTurn = true;
+		}
+		if (!personId) return;
+		const completion = {
+			id: generateUUID(),
+			date,
+			personId,
+			choreId: chore.id,
+			completed: false,
+			wasLate: false,
+			wasSkipDay: false,
+			wasMyTurn
+		};
+		this.choreData.dailyCompletions.push(completion);
+	},
 	setupAdminRoutes() {
 		const handlers = createAdminHandlers({
 			getChoreData: () => this.choreData,
@@ -845,6 +982,8 @@ var node_helper_default = node_helper.create({
 		this.expressApp?.get("/MMM-FamilyChores/backup", handlers.getBackup);
 		this.expressApp?.post("/MMM-FamilyChores/restore", handlers.postRestore);
 		this.expressApp?.post("/MMM-FamilyChores/copy-chores", handlers.postCopyChores);
+		this.expressApp?.get("/MMM-FamilyChores/history", handlers.getHistory);
+		this.expressApp?.put("/MMM-FamilyChores/settings", handlers.putSettings);
 		logger.info("Admin routes configured for MMM-FamilyChores");
 	}
 });

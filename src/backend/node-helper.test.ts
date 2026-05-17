@@ -145,6 +145,11 @@ describe('Node Helper Tests', () => {
         },
       ],
       lastResetDate: getLocalDateString(),
+      dailyCompletions: [],
+      settings: {
+        dailyResetTime: '03:00',
+        historyEnabled: true,
+      },
     };
   });
 
@@ -781,7 +786,12 @@ describe('Node Helper Tests', () => {
           skipDayVisibility: SkipDayVisibility.HIDE,
         },
       ],
+      dailyCompletions: [],
       lastResetDate: '2024-05-11',
+      settings: {
+        dailyResetTime: '03:00',
+        historyEnabled: true,
+      },
     });
 
     beforeEach(() => {
@@ -805,7 +815,6 @@ describe('Node Helper Tests', () => {
         updateInterval: 60000,
         dataFile: 'data.json',
         adminPin: null,
-        dailyResetTime: '03:00',
       };
 
       // Use proper typing instead of any
@@ -872,10 +881,13 @@ describe('Node Helper Tests', () => {
     });
 
     it('should handle custom reset time correctly', () => {
-      // Update config directly on node helper to ensure it persists
-      nodeHelper.config = {
-        ...mockConfig,
+      // Update settings in choreData to use custom reset time
+      if (!nodeHelper.choreData) {
+        throw new Error('choreData is null');
+      }
+      nodeHelper.choreData.settings = {
         dailyResetTime: '02:30',
+        historyEnabled: true,
       };
 
       // Mock time: 2024-05-12 at 03:00 America/New_York (after custom reset time)
