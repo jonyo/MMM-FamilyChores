@@ -4,7 +4,6 @@ import * as Log from 'logger';
 import * as NodeHelper from 'node_helper';
 import { SocketNotifications } from '../constants/socket-notifications';
 import type { Chore, DailyCompletion, FamilyChoresData, Person } from '../types/chore-types';
-import { SkipDayVisibility } from '../types/chore-types';
 import type { Config } from '../types/config';
 import type {
   CaughtUpResetPayload,
@@ -226,28 +225,37 @@ const nodeHelper: FamilyChoresNodeHelper = {
     if (!this.choreData) return;
 
     const todayDayName = getLocalDayName();
-    const todayDateString = getLocalDateString();
 
+    // Compute yesterday's date for logging incomplete chores (the day that's ending)
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayDateString = getLocalDateString(yesterday);
+    const yesterdayDayName = getLocalDayName(yesterday);
+
+    // Phase 1: Close out yesterday — log history and set caughtUp
     for (const chore of this.choreData.chores) {
       const skipDays = chore.skipDays ?? [];
-      const isSkipDay = skipDays.includes(todayDayName);
-      const skipDayVisibility = chore.skipDayVisibility ?? SkipDayVisibility.HIDE;
+      const isYesterdaySkipDay = skipDays.includes(yesterdayDayName);
 
-      if (isSkipDay && skipDayVisibility === SkipDayVisibility.HIDE) {
-        // Today is a skip day and visibility is HIDE - update caughtUp but skip rotation/completion reset
-        chore.caughtUp = chore.completedToday === true;
-        continue;
+      // Log incomplete chore to history if yesterday was not a skip day
+      if (!isYesterdaySkipDay && !chore.completedToday) {
+        this.logIncompleteChore(chore, yesterdayDateString);
       }
-      // for other states, update caughtUp status
+
+      // Transition from yesterday
       chore.caughtUp = chore.completedToday === true;
-      if (isSkipDay) {
-        // skip day but possibly visible - don't reset completedToday or rotate
+    }
+
+    // Phase 2: Set up today — handle skip days, reset completedToday, rotate
+    for (const chore of this.choreData.chores) {
+      const skipDays = chore.skipDays ?? [];
+      const isTodaySkipDay = skipDays.includes(todayDayName);
+
+      if (isTodaySkipDay) {
+        // skip day - don't reset completedToday or rotate
         continue;
       }
-      // Log incomplete chore to history if not completed today
-      if (!chore.completedToday) {
-        this.logIncompleteChore(chore, todayDateString);
-      }
+
       // reset completedToday for the new day
       chore.completedToday = false;
       // rotate if needed
@@ -268,10 +276,11 @@ const nodeHelper: FamilyChoresNodeHelper = {
     const retentionDays = 14;
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
+    const cutoffDateString = getLocalDateString(cutoffDate);
 
     const initialCount = this.choreData.dailyCompletions.length;
     this.choreData.dailyCompletions = this.choreData.dailyCompletions.filter(
-      (dc) => new Date(dc.date) > cutoffDate
+      (dc) => dc.date >= cutoffDateString
     );
 
     if (this.choreData.dailyCompletions.length < initialCount) {

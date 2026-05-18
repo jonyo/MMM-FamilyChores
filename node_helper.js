@@ -43,29 +43,6 @@ var SocketNotifications = {
 	PIN_ERROR: "PIN_ERROR"
 };
 //#endregion
-//#region src/types/chore-types.ts
-var SkipDayVisibility = /* @__PURE__ */ function(SkipDayVisibility) {
-	SkipDayVisibility["HIDE"] = "hide";
-	SkipDayVisibility["SHOW_IF_OVERDUE"] = "show-if-overdue";
-	SkipDayVisibility["SHOW_ALWAYS"] = "show-always";
-	return SkipDayVisibility;
-}({});
-var DayOfWeek = /* @__PURE__ */ function(DayOfWeek) {
-	DayOfWeek["SUNDAY"] = "sunday";
-	DayOfWeek["MONDAY"] = "monday";
-	DayOfWeek["TUESDAY"] = "tuesday";
-	DayOfWeek["WEDNESDAY"] = "wednesday";
-	DayOfWeek["THURSDAY"] = "thursday";
-	DayOfWeek["FRIDAY"] = "friday";
-	DayOfWeek["SATURDAY"] = "saturday";
-	return DayOfWeek;
-}({});
-var ChoreType = /* @__PURE__ */ function(ChoreType) {
-	ChoreType["PERSONAL"] = "personal";
-	ChoreType["ROTATING"] = "rotating";
-	return ChoreType;
-}({});
-//#endregion
 //#region src/utils/date.ts
 /**
 * Gets the local date string in YYYY-MM-DD format
@@ -159,6 +136,29 @@ function generateUUID() {
 function isValidUUID(uuid) {
 	return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(uuid);
 }
+//#endregion
+//#region src/types/chore-types.ts
+var SkipDayVisibility = /* @__PURE__ */ function(SkipDayVisibility) {
+	SkipDayVisibility["HIDE"] = "hide";
+	SkipDayVisibility["SHOW_IF_OVERDUE"] = "show-if-overdue";
+	SkipDayVisibility["SHOW_ALWAYS"] = "show-always";
+	return SkipDayVisibility;
+}({});
+var DayOfWeek = /* @__PURE__ */ function(DayOfWeek) {
+	DayOfWeek["SUNDAY"] = "sunday";
+	DayOfWeek["MONDAY"] = "monday";
+	DayOfWeek["TUESDAY"] = "tuesday";
+	DayOfWeek["WEDNESDAY"] = "wednesday";
+	DayOfWeek["THURSDAY"] = "thursday";
+	DayOfWeek["FRIDAY"] = "friday";
+	DayOfWeek["SATURDAY"] = "saturday";
+	return DayOfWeek;
+}({});
+var ChoreType = /* @__PURE__ */ function(ChoreType) {
+	ChoreType["PERSONAL"] = "personal";
+	ChoreType["ROTATING"] = "rotating";
+	return ChoreType;
+}({});
 //#endregion
 //#region src/backend/validator.ts
 var validatePerson = (person) => {
@@ -819,17 +819,16 @@ var node_helper_default = node_helper.create({
 	transitionChoresForNewDay() {
 		if (!this.choreData) return;
 		const todayDayName = getLocalDayName();
-		const todayDateString = getLocalDateString();
+		const yesterday = /* @__PURE__ */ new Date();
+		yesterday.setDate(yesterday.getDate() - 1);
+		const yesterdayDateString = getLocalDateString(yesterday);
+		const yesterdayDayName = getLocalDayName(yesterday);
 		for (const chore of this.choreData.chores) {
-			const isSkipDay = (chore.skipDays ?? []).includes(todayDayName);
-			const skipDayVisibility = chore.skipDayVisibility ?? SkipDayVisibility.HIDE;
-			if (isSkipDay && skipDayVisibility === SkipDayVisibility.HIDE) {
-				chore.caughtUp = chore.completedToday === true;
-				continue;
-			}
+			if (!(chore.skipDays ?? []).includes(yesterdayDayName) && !chore.completedToday) this.logIncompleteChore(chore, yesterdayDateString);
 			chore.caughtUp = chore.completedToday === true;
-			if (isSkipDay) continue;
-			if (!chore.completedToday) this.logIncompleteChore(chore, todayDateString);
+		}
+		for (const chore of this.choreData.chores) {
+			if ((chore.skipDays ?? []).includes(todayDayName)) continue;
 			chore.completedToday = false;
 			if (chore.caughtUp && chore.type === "rotating") chore.rotatingIndex = ((chore.rotatingIndex ?? 0) + 1) % (chore.rotation ?? []).length;
 		}
@@ -843,8 +842,9 @@ var node_helper_default = node_helper.create({
 		const retentionDays = 14;
 		const cutoffDate = /* @__PURE__ */ new Date();
 		cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
+		const cutoffDateString = getLocalDateString(cutoffDate);
 		const initialCount = this.choreData.dailyCompletions.length;
-		this.choreData.dailyCompletions = this.choreData.dailyCompletions.filter((dc) => new Date(dc.date) > cutoffDate);
+		this.choreData.dailyCompletions = this.choreData.dailyCompletions.filter((dc) => dc.date >= cutoffDateString);
 		if (this.choreData.dailyCompletions.length < initialCount) logger.info(`Cleaned up ${initialCount - this.choreData.dailyCompletions.length} old daily completion records (retention: ${retentionDays} days)`);
 	},
 	handleChoreToggle(payload) {

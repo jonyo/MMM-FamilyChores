@@ -646,6 +646,29 @@ describe('Node Helper Tests', () => {
         expect(chore.caughtUp).toBe(true);
         expect(chore.assignedTo).toBe('1');
       });
+
+      it('should log incomplete chores even when today is a skip day', () => {
+        expect(nodeHelper.choreData).not.toBeNull();
+        if (!nodeHelper.choreData) return;
+
+        // Set up: today is a skip day (yesterday was not)
+        const todayDayName = getLocalDayName();
+
+        const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1') as RotatingChore;
+        if (!chore) return;
+        // Yesterday was NOT a skip day, today IS a skip day
+        chore.skipDays = [todayDayName];
+        chore.completedToday = false;
+        chore.caughtUp = true;
+
+        nodeHelper.transitionChoresForNewDay();
+
+        // Should still log the incomplete chore from yesterday even though today is a skip day
+        const incompleteEntry = nodeHelper.choreData.dailyCompletions.find(
+          (dc) => dc.choreId === '1' && dc.completed === false
+        );
+        expect(incompleteEntry).toBeDefined();
+      });
     });
   });
 
@@ -863,6 +886,28 @@ describe('Node Helper Tests', () => {
       expect((nodeHelper.choreData?.chores[0] as RotatingChore).rotatingIndex).toBe(1); // rotated
       // Verify that lastResetDate was updated (check it's no longer old value)
       expect(nodeHelper.choreData?.lastResetDate).not.toBe('2024-05-11');
+    });
+
+    it("should log incomplete chores with yesterday's date, not today's date", () => {
+      if (!nodeHelper.choreData) {
+        throw new Error('choreData is null');
+      }
+      // Mark one chore as incomplete for the day that's ending
+      nodeHelper.choreData.chores[0].completedToday = false;
+
+      // Mock time: 2024-05-12 at 04:00 America/New_York (after reset time)
+      // Convert to UTC: America/New_York (UTC-4 in May) = 2024-05-12T08:00:00.000Z
+      const mockDate = new Date('2024-05-12T08:00:00.000Z');
+      vi.setSystemTime(mockDate);
+
+      nodeHelper.checkAndPerformDailyReset();
+
+      // The incomplete entry should be dated for the previous day (May 11), not the new day (May 12)
+      const incompleteEntry = nodeHelper.choreData.dailyCompletions.find(
+        (dc) => dc.choreId === '1' && dc.completed === false
+      );
+      expect(incompleteEntry).toBeDefined();
+      expect(incompleteEntry?.date).toBe('2024-05-11');
     });
 
     it('should not perform reset when current time is before reset time', () => {
