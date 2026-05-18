@@ -56,3 +56,6 @@ jobs:
 
     - name: Test
       run: pnpm run test:ci
+
+    - name: Audit dependencies
+      run: pnpm audit --audit-level=moderate
