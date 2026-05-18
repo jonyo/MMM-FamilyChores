@@ -1,5 +1,8 @@
 import type { Component } from 'solid-js';
 import { createSignal, For, onMount, Show } from 'solid-js';
+import './admin.css';
+import './buttons.css';
+import './forms.css';
 import { deleteChore, deletePerson } from '../api';
 import type {
   Chore,

@@ -1,4 +1,4 @@
-// Automatically built — do not edit directly. Edit src/admin/admin.tsx and run pnpm build:admin.
+// Automatically built — do not edit directly. Edit src/admin/.. files and run pnpm build
 (function() {
 	//#region node_modules/.pnpm/solid-js@1.9.12/node_modules/solid-js/dist/solid.js
 	var sharedConfig = {
@@ -1258,7 +1258,7 @@
 	* @param raw - The raw string to escape
 	* @returns The escaped HTML string
 	*/
-	var escapeHtml$1 = (raw) => {
+	var escapeHtml = (raw) => {
 		const div = document.createElement("div");
 		div.textContent = raw;
 		return div.innerHTML;
@@ -1541,11 +1541,6 @@
 			return _el$;
 		})();
 	};
-	function escapeHtml(text) {
-		const div = document.createElement("div");
-		div.textContent = text;
-		return div.innerHTML;
-	}
 	delegateEvents(["click"]);
 	//#endregion
 	//#region src/admin/copy-chores-modal.tsx
@@ -1595,7 +1590,7 @@
 		return (() => {
 			var _el$ = _tmpl$3$3(), _el$2 = _el$.firstChild, _el$4 = _el$2.firstChild.nextSibling, _el$5 = _el$4.firstChild;
 			_el$5.nextSibling.nextSibling;
-			insert(_el$4, () => escapeHtml$1(props.fromPerson.name), null);
+			insert(_el$4, () => escapeHtml(props.fromPerson.name), null);
 			insert(_el$2, createComponent(Show, {
 				get when() {
 					return personalChores().length > 0;
@@ -1605,7 +1600,7 @@
 						var _el$20 = _tmpl$4$1(), _el$21 = _el$20.firstChild, _el$24 = _el$21.firstChild.nextSibling;
 						_el$24.nextSibling;
 						var _el$25 = _el$21.nextSibling;
-						insert(_el$21, () => escapeHtml$1(props.fromPerson.name), _el$24);
+						insert(_el$21, () => escapeHtml(props.fromPerson.name), _el$24);
 						_el$25.$$click = () => props.closeModal();
 						return _el$20;
 					})();
@@ -1636,7 +1631,7 @@
 								},
 								children: (person) => (() => {
 									var _el$26 = _tmpl$5$1();
-									insert(_el$26, () => escapeHtml$1(person.name));
+									insert(_el$26, () => escapeHtml(person.name));
 									createRenderEffect(() => _el$26.value = person.id);
 									return _el$26;
 								})()
@@ -1648,7 +1643,7 @@
 								children: (chore) => (() => {
 									var _el$27 = _tmpl$6$1(), _el$28 = _el$27.firstChild;
 									_el$28.$$input = (e) => handleChoreToggle(chore.id, e.currentTarget.checked);
-									insert(_el$27, () => escapeHtml$1(chore.name), null);
+									insert(_el$27, () => escapeHtml(chore.name), null);
 									createRenderEffect(() => _el$28.value = chore.id);
 									createRenderEffect(() => _el$28.checked = selectedChoreIds().includes(chore.id));
 									return _el$27;
@@ -1813,7 +1808,7 @@
 	var RotatingChoreCard = (props) => {
 		const rotationNames = createMemo(() => props.chore.rotation.map((personId) => {
 			const person = props.people.find((p) => p.id === personId);
-			return person ? escapeHtml$1(person.name) : "Unknown";
+			return person ? escapeHtml(person.name) : "Unknown";
 		}).join(", "));
 		const includesEveryone = createMemo(() => {
 			const peopleLength = props.people.length ?? 0;
@@ -1823,7 +1818,7 @@
 		const currentAssignee = createMemo(() => {
 			const currentPersonId = props.chore.rotation[props.chore.rotatingIndex ?? 0];
 			const currentPerson = props.people.find((p) => p.id === currentPersonId);
-			return currentPerson ? escapeHtml$1(currentPerson.name) : "Unassigned";
+			return currentPerson ? escapeHtml(currentPerson.name) : "Unassigned";
 		});
 		return (() => {
 			var _el$ = _tmpl$2$2(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.firstChild, _el$5 = _el$3.nextSibling;
@@ -1833,7 +1828,7 @@
 			var _el$1 = _el$7.nextSibling;
 			_el$1.firstChild;
 			var _el$12 = _el$2.nextSibling.firstChild, _el$13 = _el$12.nextSibling;
-			insert(_el$3, () => escapeHtml$1(props.chore.name), _el$4);
+			insert(_el$3, () => escapeHtml(props.chore.name), _el$4);
 			insert(_el$5, currentAssignee, null);
 			insert(_el$7, rotationText, null);
 			insert(_el$2, createComponent(Show, {
@@ -2209,12 +2204,12 @@
 							var _el$37 = _tmpl$9(), _el$38 = _el$37.firstChild, _el$39 = _el$38.firstChild, _el$40 = _el$39.firstChild, _el$41 = _el$40.firstChild, _el$42 = _el$41.nextSibling, _el$43 = _el$40.nextSibling;
 							_el$43.firstChild;
 							var _el$46 = _el$39.nextSibling.firstChild, _el$47 = _el$46.nextSibling, _el$48 = _el$47.nextSibling, _el$50 = _el$38.nextSibling.firstChild, _el$51 = _el$50.firstChild, _el$52 = _el$50.nextSibling, _el$53 = _el$52.firstChild;
-							insert(_el$40, () => escapeHtml$1(person.name), _el$41);
+							insert(_el$40, () => escapeHtml(person.name), _el$41);
 							insert(_el$43, () => person.id, null);
 							_el$46.$$click = () => openPersonModal(person);
 							_el$47.$$click = () => setHistoryPerson(person);
 							_el$48.$$click = () => handleDeletePerson(person.id);
-							insert(_el$50, () => escapeHtml$1(person.name), _el$51);
+							insert(_el$50, () => escapeHtml(person.name), _el$51);
 							_el$53.$$click = () => {
 								openPersonalChoreModal(person, null);
 							};
@@ -2247,7 +2242,7 @@
 											var _el$57 = _tmpl$10(), _el$58 = _el$57.firstChild, _el$59 = _el$58.firstChild, _el$62 = _el$59.nextSibling;
 											_el$62.firstChild;
 											var _el$65 = _el$58.nextSibling.firstChild, _el$66 = _el$65.nextSibling;
-											insert(_el$59, () => escapeHtml$1(chore.name));
+											insert(_el$59, () => escapeHtml(chore.name));
 											insert(_el$58, createComponent(Show, {
 												get when() {
 													return chore.deadline;

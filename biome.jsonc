@@ -11,10 +11,13 @@
       "**",
       "!node_modules",
       "!dist",
-      // Ignore generated files
+      // Ignore built files in public/
+      "!public/*.js",
+      "!public/*.js.map",
+      "!public/*.css",
+      // Ignore top level built files
       "!node_helper.js",
-      "!MMM-FamilyChores.js",
-      "!public/admin.js"
+      "!MMM-FamilyChores.js"
     ]
   },
   "formatter": {

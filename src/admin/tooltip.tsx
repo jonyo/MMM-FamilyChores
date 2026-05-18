@@ -1,12 +1,12 @@
-import type { Component, JSX } from 'solid-js';
+import type { ParentComponent } from 'solid-js';
 import { mergeProps } from 'solid-js';
+import './tooltip.css';
 
 export type TooltipPosition = 'above' | 'below' | 'left' | 'right' | 'above-right' | 'below-right';
 
 export type TooltipAlign = 'left' | 'center' | 'right';
 
 export interface TooltipProps {
-  children: JSX.Element;
   text: string;
   position?: TooltipPosition;
   align?: TooltipAlign;
@@ -15,7 +15,7 @@ export interface TooltipProps {
   classList?: { [key: string]: boolean | undefined };
 }
 
-export const Tooltip: Component<TooltipProps> = (rawProps) => {
+export const Tooltip: ParentComponent<TooltipProps> = (rawProps) => {
   const props = mergeProps(
     {
       position: 'above' as TooltipPosition,

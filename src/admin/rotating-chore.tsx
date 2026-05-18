@@ -1,5 +1,7 @@
 import type { Component } from 'solid-js';
 import { createMemo, Show } from 'solid-js';
+import './rotating-chore.css';
+import './buttons.css';
 import type { Person, RotatingChore } from '../types/chore-types';
 import { escapeHtml } from '../utils/browser';
 

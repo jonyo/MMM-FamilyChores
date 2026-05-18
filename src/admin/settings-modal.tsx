@@ -1,5 +1,9 @@
 import type { Component } from 'solid-js';
 import { createSignal } from 'solid-js';
+import './settings-modal.css';
+import './buttons.css';
+import './forms.css';
+import './modals.css';
 import { updateSettings } from '../api';
 import type { Settings } from '../types/chore-types';
 import type { UpdateSettingsRequest } from '../types/request-types';

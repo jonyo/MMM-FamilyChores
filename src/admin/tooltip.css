@@ -1,0 +1,95 @@
+/* Generic tooltip classes */
+.tooltip {
+  position: relative;
+  cursor: help;
+}
+
+.tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  background: #333;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.2s,
+    visibility 0.2s;
+  z-index: 10000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+}
+
+.tooltip:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Tooltip positions */
+.tooltip-above::after {
+  bottom: 100%;
+  transform: translateY(-8px);
+}
+
+.tooltip-below::after {
+  top: 100%;
+  transform: translateY(8px);
+}
+
+.tooltip-left::after {
+  right: 100%;
+  transform: translateX(-8px);
+}
+
+.tooltip-right::after {
+  left: 100%;
+  transform: translateX(8px);
+}
+
+.tooltip-above-right::after {
+  left: 100%;
+  bottom: 100%;
+  transform: translateX(8px) translateY(-8px);
+}
+
+.tooltip-below-right::after {
+  left: 100%;
+  top: 100%;
+  transform: translateX(8px) translateY(8px);
+}
+
+/* Tooltip alignment for above/below */
+.tooltip-align-left::after {
+  left: 0;
+}
+
+.tooltip-align-center::after {
+  left: 50%;
+  transform: translateX(-50%) translateY(-8px);
+}
+
+.tooltip-align-right::after {
+  right: 0;
+}
+
+/* Multiline tooltip support */
+.tooltip-multiline::after {
+  white-space: normal;
+  max-width: 300px;
+  width: max-content;
+  line-height: 1.3;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+}
+
+/* Override transform for multiline centered tooltips */
+.tooltip-above.tooltip-align-center.tooltip-multiline::after {
+  transform: translateX(-50%) translateY(-8px);
+}
+
+.tooltip-below.tooltip-align-center.tooltip-multiline::after {
+  transform: translateX(-50%) translateY(8px);
+}

@@ -1,5 +1,8 @@
 import type { Component } from 'solid-js';
 import { createSignal, For } from 'solid-js';
+import './buttons.css';
+import './forms.css';
+import './modals.css';
 import { createChore, updateChore } from '../api';
 import type { FamilyChoresData, RotatingChore, SkipDayVisibility } from '../types/chore-types';
 import {

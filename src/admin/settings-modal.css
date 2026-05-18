@@ -1,0 +1,15 @@
+.state-info {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.state-info p {
+  margin-bottom: 15px;
+  font-size: 1.1rem;
+}
+
+.state-info strong {
+  color: #667eea;
+}

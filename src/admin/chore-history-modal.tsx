@@ -1,5 +1,9 @@
 import type { Component } from 'solid-js';
-import { createSignal, For, Match, onMount, Show, Switch } from 'solid-js';
+import { createSignal, For, Show } from 'solid-js';
+import './chore-history-modal.css';
+import './buttons.css';
+import './modals.css';
+import { Match, onMount, Switch } from 'solid-js';
 import { getHistory } from '../api';
 import type {
   Chore,
@@ -8,6 +12,7 @@ import type {
   FamilyChoresData,
   Person,
 } from '../types/chore-types';
+import { escapeHtml } from '../utils/browser';
 import {
   getLocalDateString,
   getLocalDayNameShort,
@@ -234,9 +239,3 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
     </div>
   );
 };
-
-function escapeHtml(text: string): string {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
