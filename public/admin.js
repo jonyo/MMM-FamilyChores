@@ -1104,6 +1104,31 @@
 			day: "2-digit"
 		}).format(date);
 	};
+	/**
+	* Gets the local day name in abbreviated format (Sun, Mon, Tue, etc.)
+	* Uses Intl.DateTimeFormat for proper timezone and DST handling
+	* @param date - Optional date to convert (defaults to current time)
+	*/
+	var getLocalDayNameShort = (date = /* @__PURE__ */ new Date()) => {
+		return new Intl.DateTimeFormat("en-US", { weekday: "short" }).format(date);
+	};
+	/**
+	* Gets the local month name in abbreviated format (Jan, Feb, Mar, etc.)
+	* Uses Intl.DateTimeFormat for proper timezone and DST handling
+	* @param date - Optional date to convert (defaults to current time)
+	*/
+	var getLocalMonthNameShort = (date = /* @__PURE__ */ new Date()) => {
+		return new Intl.DateTimeFormat("en-US", { month: "short" }).format(date);
+	};
+	/**
+	* Gets the local day of month as a number
+	* Uses Intl.DateTimeFormat for proper timezone and DST handling
+	* @param date - Optional date to convert (defaults to current time)
+	*/
+	var getLocalDayOfMonth = (date = /* @__PURE__ */ new Date()) => {
+		const formatter = new Intl.DateTimeFormat("en-US", { day: "numeric" });
+		return parseInt(formatter.format(date), 10);
+	};
 	//#endregion
 	//#region src/admin/chore-history-modal.tsx
 	var _tmpl$$7 = /* @__PURE__ */ template(`<div class=loading>Loading history...`), _tmpl$2$5 = /* @__PURE__ */ template(`<div class=error>Error: `), _tmpl$3$4 = /* @__PURE__ */ template(`<div class=history-grid><table class=history-table><thead><tr><th>Chore</th></tr></thead><tbody>`), _tmpl$4$2 = /* @__PURE__ */ template(`<div class="modal active"><div class="modal-content modal-content-large"><h3>'s Chore History<span class=info-icon data-tooltip="Shows daily chore completions for the last 14 days. Green = completed on time, Yellow = completed late, Gray = skip day.">ℹ️</span></h3><div class=form-actions><button type=button class="btn btn-secondary">Close`), _tmpl$5$2 = /* @__PURE__ */ template(`<th class=date><span class=vertical-text>`), _tmpl$6$2 = /* @__PURE__ */ template(`<span class=rotating-icon data-tooltip="Rotating chore: Blank cells mean it was likely someone else's turn, Magic Mirror wasn't running, or the chore is newer than this date.">🔄`), _tmpl$7$1 = /* @__PURE__ */ template(`<tr><td class=chore-name>`), _tmpl$8$1 = /* @__PURE__ */ template(`<span class=completion-badge>✓`), _tmpl$9$1 = /* @__PURE__ */ template(`<span class="completion-badge completion-missed"data-tooltip="Not completed">✗`), _tmpl$0$1 = /* @__PURE__ */ template(`<td class=history-cell>`);
@@ -1125,7 +1150,7 @@
 			for (let i = 13; i >= 0; i--) {
 				const date = /* @__PURE__ */ new Date();
 				date.setDate(date.getDate() - i);
-				days.push(date.toISOString().split("T")[0]);
+				days.push(getLocalDateString(date));
 			}
 			return days;
 		};
@@ -1140,11 +1165,8 @@
 			return history().find((dc) => dc.choreId === choreId && dc.date === date);
 		};
 		const formatDate = (dateStr) => {
-			return new Date(dateStr).toLocaleDateString("en-US", {
-				weekday: "short",
-				month: "short",
-				day: "numeric"
-			});
+			const date = new Date(dateStr);
+			return `${getLocalDayNameShort(date)} ${getLocalMonthNameShort(date)} ${getLocalDayOfMonth(date)}`;
 		};
 		const isSkipDay = (chore, dateStr) => {
 			if (!chore.skipDays || chore.skipDays.length === 0) return false;

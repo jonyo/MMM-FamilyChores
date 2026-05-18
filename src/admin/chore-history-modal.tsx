@@ -8,6 +8,12 @@ import type {
   FamilyChoresData,
   Person,
 } from '../types/chore-types';
+import {
+  getLocalDateString,
+  getLocalDayNameShort,
+  getLocalDayOfMonth,
+  getLocalMonthNameShort,
+} from '../utils/date';
 
 interface ChoreHistoryModalProps {
   person: Person;
@@ -37,7 +43,7 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
     for (let i = 13; i >= 0; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);
-      days.push(date.toISOString().split('T')[0]);
+      days.push(getLocalDateString(date));
     }
     return days;
   };
@@ -68,7 +74,10 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
   // Format date for display
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    const dayName = getLocalDayNameShort(date);
+    const month = getLocalMonthNameShort(date);
+    const day = getLocalDayOfMonth(date);
+    return `${dayName} ${month} ${day}`;
   };
 
   // Check if a date is a skip day for a chore

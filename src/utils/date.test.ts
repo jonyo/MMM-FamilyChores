@@ -4,6 +4,9 @@ import {
   getDeadlineStatus,
   getLocalDateString,
   getLocalDayName,
+  getLocalDayNameShort,
+  getLocalDayOfMonth,
+  getLocalMonthNameShort,
   getLocalTimeString,
 } from './date';
 
@@ -133,6 +136,95 @@ describe('Date Utilities', () => {
 
       const result = getLocalDayName();
       expect(result).toBe('monday');
+    });
+  });
+
+  describe('getLocalDayNameShort', () => {
+    it('should return abbreviated day name', () => {
+      // Mock current time: 2024-05-12T15:30:00.000Z (UTC)
+      // In America/New_York (UTC-4 in May), this is Sunday at 11:30
+      const mockDate = new Date('2024-05-12T15:30:00.000Z');
+      vi.setSystemTime(mockDate);
+
+      const result = getLocalDayNameShort();
+      expect(result).toBe('Sun');
+    });
+
+    it('should handle date boundary crossing with timezone offset', () => {
+      // Mock current time: 2024-01-01T02:30:00.000Z (UTC)
+      // In America/New_York (UTC-5 in January), this is Sunday at 21:30 (previous day)
+      const mockDate = new Date('2024-01-01T02:30:00.000Z');
+      vi.setSystemTime(mockDate);
+
+      const result = getLocalDayNameShort();
+      expect(result).toBe('Sun');
+    });
+
+    it('should accept optional date parameter', () => {
+      // Test with specific date: 2024-07-04T12:00:00.000Z (UTC)
+      // In America/New_York (UTC-4 in July), this is Thursday at 08:00
+      const testDate = new Date('2024-07-04T12:00:00.000Z');
+
+      const result = getLocalDayNameShort(testDate);
+      expect(result).toBe('Thu');
+    });
+  });
+
+  describe('getLocalMonthNameShort', () => {
+    it('should return abbreviated month name', () => {
+      // Mock current time: 2024-05-12T15:30:00.000Z (UTC)
+      // In America/New_York (UTC-4 in May), this is May at 11:30
+      const mockDate = new Date('2024-05-12T15:30:00.000Z');
+      vi.setSystemTime(mockDate);
+
+      const result = getLocalMonthNameShort();
+      expect(result).toBe('May');
+    });
+
+    it('should handle different months correctly', () => {
+      const testDate = new Date('2024-12-15T12:00:00.000Z');
+      const result = getLocalMonthNameShort(testDate);
+      expect(result).toBe('Dec');
+    });
+
+    it('should handle January correctly', () => {
+      const testDate = new Date('2024-01-15T12:00:00.000Z');
+      const result = getLocalMonthNameShort(testDate);
+      expect(result).toBe('Jan');
+    });
+  });
+
+  describe('getLocalDayOfMonth', () => {
+    it('should return day of month as number', () => {
+      // Mock current time: 2024-05-12T15:30:00.000Z (UTC)
+      // In America/New_York (UTC-4 in May), this is May 12 at 11:30
+      const mockDate = new Date('2024-05-12T15:30:00.000Z');
+      vi.setSystemTime(mockDate);
+
+      const result = getLocalDayOfMonth();
+      expect(result).toBe(12);
+    });
+
+    it('should handle date boundary crossing with timezone offset', () => {
+      // Mock current time: 2024-01-01T02:30:00.000Z (UTC)
+      // In America/New_York (UTC-5 in January), this is December 31 at 21:30 (previous day)
+      const mockDate = new Date('2024-01-01T02:30:00.000Z');
+      vi.setSystemTime(mockDate);
+
+      const result = getLocalDayOfMonth();
+      expect(result).toBe(31);
+    });
+
+    it('should handle single digit days correctly', () => {
+      const testDate = new Date('2024-05-05T12:00:00.000Z');
+      const result = getLocalDayOfMonth(testDate);
+      expect(result).toBe(5);
+    });
+
+    it('should handle end of month correctly', () => {
+      const testDate = new Date('2024-01-31T12:00:00.000Z');
+      const result = getLocalDayOfMonth(testDate);
+      expect(result).toBe(31);
     });
   });
 

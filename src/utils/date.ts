@@ -48,6 +48,45 @@ export const getLocalDayName = (date = new Date()): DayOfWeek => {
 };
 
 /**
+ * Gets the local day name in abbreviated format (Sun, Mon, Tue, etc.)
+ * Uses Intl.DateTimeFormat for proper timezone and DST handling
+ * @param date - Optional date to convert (defaults to current time)
+ */
+export const getLocalDayNameShort = (date = new Date()): string => {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    weekday: 'short',
+  });
+
+  return formatter.format(date);
+};
+
+/**
+ * Gets the local month name in abbreviated format (Jan, Feb, Mar, etc.)
+ * Uses Intl.DateTimeFormat for proper timezone and DST handling
+ * @param date - Optional date to convert (defaults to current time)
+ */
+export const getLocalMonthNameShort = (date = new Date()): string => {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+  });
+
+  return formatter.format(date);
+};
+
+/**
+ * Gets the local day of month as a number
+ * Uses Intl.DateTimeFormat for proper timezone and DST handling
+ * @param date - Optional date to convert (defaults to current time)
+ */
+export const getLocalDayOfMonth = (date = new Date()): number => {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    day: 'numeric',
+  });
+
+  return parseInt(formatter.format(date), 10);
+};
+
+/**
  * Deadline status enum for visual indicators
  */
 export enum DeadlineStatus {
