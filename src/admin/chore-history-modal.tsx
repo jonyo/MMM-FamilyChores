@@ -107,7 +107,13 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
               <thead>
                 <tr>
                   <th>Chore</th>
-                  <For each={getDays()}>{(day) => <th>{formatDate(day)}</th>}</For>
+                  <For each={getDays()}>
+                    {(day) => (
+                      <th class="date">
+                        <span class="vertical-text">{formatDate(day)}</span>
+                      </th>
+                    )}
+                  </For>
                 </tr>
               </thead>
               <tbody>
@@ -158,7 +164,7 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
                                   class="completion-badge completion-missed"
                                   data-tooltip="Not completed"
                                 >
-                                  ○
+                                  ✗
                                 </span>
                               </Show>
                             </td>

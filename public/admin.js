@@ -1106,7 +1106,7 @@
 	};
 	//#endregion
 	//#region src/admin/chore-history-modal.tsx
-	var _tmpl$$7 = /* @__PURE__ */ template(`<div class=loading>Loading history...`), _tmpl$2$5 = /* @__PURE__ */ template(`<div class=error>Error: `), _tmpl$3$4 = /* @__PURE__ */ template(`<div class=history-grid><table class=history-table><thead><tr><th>Chore</th></tr></thead><tbody>`), _tmpl$4$2 = /* @__PURE__ */ template(`<div class="modal active"><div class="modal-content modal-content-large"><h3>'s Chore History<span class=info-icon data-tooltip="Shows daily chore completions for the last 14 days. Green = completed on time, Yellow = completed late, Gray = skip day.">ℹ️</span></h3><div class=form-actions><button type=button class="btn btn-secondary">Close`), _tmpl$5$2 = /* @__PURE__ */ template(`<th>`), _tmpl$6$2 = /* @__PURE__ */ template(`<span class=rotating-icon data-tooltip="Rotating chore: Blank cells mean it was likely someone else's turn, Magic Mirror wasn't running, or the chore is newer than this date.">🔄`), _tmpl$7$1 = /* @__PURE__ */ template(`<tr><td class=chore-name>`), _tmpl$8$1 = /* @__PURE__ */ template(`<span class=completion-badge>✓`), _tmpl$9$1 = /* @__PURE__ */ template(`<span class="completion-badge completion-missed"data-tooltip="Not completed">○`), _tmpl$0$1 = /* @__PURE__ */ template(`<td class=history-cell>`);
+	var _tmpl$$7 = /* @__PURE__ */ template(`<div class=loading>Loading history...`), _tmpl$2$5 = /* @__PURE__ */ template(`<div class=error>Error: `), _tmpl$3$4 = /* @__PURE__ */ template(`<div class=history-grid><table class=history-table><thead><tr><th>Chore</th></tr></thead><tbody>`), _tmpl$4$2 = /* @__PURE__ */ template(`<div class="modal active"><div class="modal-content modal-content-large"><h3>'s Chore History<span class=info-icon data-tooltip="Shows daily chore completions for the last 14 days. Green = completed on time, Yellow = completed late, Gray = skip day.">ℹ️</span></h3><div class=form-actions><button type=button class="btn btn-secondary">Close`), _tmpl$5$2 = /* @__PURE__ */ template(`<th class=date><span class=vertical-text>`), _tmpl$6$2 = /* @__PURE__ */ template(`<span class=rotating-icon data-tooltip="Rotating chore: Blank cells mean it was likely someone else's turn, Magic Mirror wasn't running, or the chore is newer than this date.">🔄`), _tmpl$7$1 = /* @__PURE__ */ template(`<tr><td class=chore-name>`), _tmpl$8$1 = /* @__PURE__ */ template(`<span class=completion-badge>✓`), _tmpl$9$1 = /* @__PURE__ */ template(`<span class="completion-badge completion-missed"data-tooltip="Not completed">✗`), _tmpl$0$1 = /* @__PURE__ */ template(`<td class=history-cell>`);
 	var ChoreHistoryModal = (props) => {
 		const [history, setHistory] = createSignal([]);
 		const [loading, setLoading] = createSignal(true);
@@ -1186,8 +1186,8 @@
 							return getDays();
 						},
 						children: (day) => (() => {
-							var _el$14 = _tmpl$5$2();
-							insert(_el$14, () => formatDate(day));
+							var _el$14 = _tmpl$5$2(), _el$15 = _el$14.firstChild;
+							insert(_el$15, () => formatDate(day));
 							return _el$14;
 						})()
 					}), null);
@@ -1196,9 +1196,9 @@
 							return getPersonChores();
 						},
 						children: (chore) => (() => {
-							var _el$15 = _tmpl$7$1(), _el$16 = _el$15.firstChild;
-							insert(_el$16, () => escapeHtml(chore.name), null);
-							insert(_el$16, createComponent(Show, {
+							var _el$16 = _tmpl$7$1(), _el$17 = _el$16.firstChild;
+							insert(_el$17, () => escapeHtml(chore.name), null);
+							insert(_el$17, createComponent(Show, {
 								get when() {
 									return chore.type === "rotating";
 								},
@@ -1206,7 +1206,7 @@
 									return _tmpl$6$2();
 								}
 							}), null);
-							insert(_el$15, createComponent(For, {
+							insert(_el$16, createComponent(For, {
 								get each() {
 									return getDays();
 								},
@@ -1214,30 +1214,30 @@
 									const completion = getCompletionDetails(chore.id, day);
 									const skipDay = isSkipDay(chore, day);
 									return (() => {
-										var _el$18 = _tmpl$0$1();
-										_el$18.classList.toggle("history-skip-day", !!skipDay);
-										setAttribute(_el$18, "data-tooltip", skipDay ? "Skip day" : "");
-										insert(_el$18, createComponent(Show, {
+										var _el$19 = _tmpl$0$1();
+										_el$19.classList.toggle("history-skip-day", !!skipDay);
+										setAttribute(_el$19, "data-tooltip", skipDay ? "Skip day" : "");
+										insert(_el$19, createComponent(Show, {
 											get when() {
 												return completion?.completed;
 											},
 											get children() {
-												var _el$19 = _tmpl$8$1();
+												var _el$20 = _tmpl$8$1();
 												createRenderEffect((_p$) => {
 													var _v$ = !!completion?.wasLate, _v$2 = !completion?.wasLate, _v$3 = completion?.completedAt ? `Completed at ${completion.completedAt} (24h)` : "";
-													_v$ !== _p$.e && _el$19.classList.toggle("completion-late", _p$.e = _v$);
-													_v$2 !== _p$.t && _el$19.classList.toggle("completion-ontime", _p$.t = _v$2);
-													_v$3 !== _p$.a && setAttribute(_el$19, "data-tooltip", _p$.a = _v$3);
+													_v$ !== _p$.e && _el$20.classList.toggle("completion-late", _p$.e = _v$);
+													_v$2 !== _p$.t && _el$20.classList.toggle("completion-ontime", _p$.t = _v$2);
+													_v$3 !== _p$.a && setAttribute(_el$20, "data-tooltip", _p$.a = _v$3);
 													return _p$;
 												}, {
 													e: void 0,
 													t: void 0,
 													a: void 0
 												});
-												return _el$19;
+												return _el$20;
 											}
 										}), null);
-										insert(_el$18, createComponent(Show, {
+										insert(_el$19, createComponent(Show, {
 											get when() {
 												return completion && !completion.completed;
 											},
@@ -1245,11 +1245,11 @@
 												return _tmpl$9$1();
 											}
 										}), null);
-										return _el$18;
+										return _el$19;
 									})();
 								}
 							}), null);
-							return _el$15;
+							return _el$16;
 						})()
 					}));
 					return _el$8;
