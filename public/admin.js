@@ -1268,6 +1268,15 @@
 	/**
 	* Gets the local date string in YYYY-MM-DD format
 	* Uses Intl.DateTimeFormat for proper timezone and DST handling
+	*
+	* @warning Do not pass a Date object created from a YYYY-MM-DD string (e.g., new Date('2026-05-17'))
+	* as it parses as UTC midnight and will produce incorrect results when formatted back to local timezone.
+	* Only pass Date objects created from real time values (e.g., new Date(), new Date(timestamp)).
+	*
+	* Avoid:
+	* - Date objects created from YYYY-MM-DD strings (parsed as UTC midnight)
+	* - Double local correction (UTC → local timezone → back into helper)
+	*
 	* @param date - Optional date to convert (defaults to current time)
 	*/
 	var getLocalDateString = (date = /* @__PURE__ */ new Date()) => {
@@ -1280,6 +1289,15 @@
 	/**
 	* Gets the local day name in lowercase (sunday, monday, etc.)
 	* Uses Intl.DateTimeFormat for proper timezone and DST handling
+	*
+	* @warning Do not pass a Date object created from a YYYY-MM-DD string (e.g., new Date('2026-05-17'))
+	* as it parses as UTC midnight and will produce incorrect results when formatted back to local timezone.
+	* Only pass Date objects created from real time values (e.g., new Date(), new Date(timestamp)).
+	*
+	* Avoid:
+	* - Date objects created from YYYY-MM-DD strings (parsed as UTC midnight)
+	* - Double local correction (UTC → local timezone → back into helper)
+	*
 	* @param date - Optional date to convert (defaults to current time)
 	*/
 	var getLocalDayName = (date = /* @__PURE__ */ new Date()) => {
@@ -1288,6 +1306,15 @@
 	/**
 	* Gets the local day name in abbreviated format (Sun, Mon, Tue, etc.)
 	* Uses Intl.DateTimeFormat for proper timezone and DST handling
+	*
+	* @warning Do not pass a Date object created from a YYYY-MM-DD string (e.g., new Date('2026-05-17'))
+	* as it parses as UTC midnight and will produce incorrect results when formatted back to local timezone.
+	* Only pass Date objects created from real time values (e.g., new Date(), new Date(timestamp)).
+	*
+	* Avoid:
+	* - Date objects created from YYYY-MM-DD strings (parsed as UTC midnight)
+	* - Double local correction (UTC → local timezone → back into helper)
+	*
 	* @param date - Optional date to convert (defaults to current time)
 	*/
 	var getLocalDayNameShort = (date = /* @__PURE__ */ new Date()) => {
@@ -1296,6 +1323,15 @@
 	/**
 	* Gets the local month name in abbreviated format (Jan, Feb, Mar, etc.)
 	* Uses Intl.DateTimeFormat for proper timezone and DST handling
+	*
+	* @warning Do not pass a Date object created from a YYYY-MM-DD string (e.g., new Date('2026-05-17'))
+	* as it parses as UTC midnight and will produce incorrect results when formatted back to local timezone.
+	* Only pass Date objects created from real time values (e.g., new Date(), new Date(timestamp)).
+	*
+	* Avoid:
+	* - Date objects created from YYYY-MM-DD strings (parsed as UTC midnight)
+	* - Double local correction (UTC → local timezone → back into helper)
+	*
 	* @param date - Optional date to convert (defaults to current time)
 	*/
 	var getLocalMonthNameShort = (date = /* @__PURE__ */ new Date()) => {
@@ -1304,6 +1340,15 @@
 	/**
 	* Gets the local day of month as a number
 	* Uses Intl.DateTimeFormat for proper timezone and DST handling
+	*
+	* @warning Do not pass a Date object created from a YYYY-MM-DD string (e.g., new Date('2026-05-17'))
+	* as it parses as UTC midnight and will produce incorrect results when formatted back to local timezone.
+	* Only pass Date objects created from real time values (e.g., new Date(), new Date(timestamp)).
+	*
+	* Avoid:
+	* - Date objects created from YYYY-MM-DD strings (parsed as UTC midnight)
+	* - Double local correction (UTC → local timezone → back into helper)
+	*
 	* @param date - Optional date to convert (defaults to current time)
 	*/
 	var getLocalDayOfMonth = (date = /* @__PURE__ */ new Date()) => {
@@ -1364,7 +1409,14 @@
 			for (let i = 13; i >= 0; i--) {
 				const date = /* @__PURE__ */ new Date();
 				date.setDate(date.getDate() - i);
-				days.push(getLocalDateString(date));
+				const dayNameShort = getLocalDayNameShort(date);
+				const monthShort = getLocalMonthNameShort(date);
+				const dayOfMonth = getLocalDayOfMonth(date);
+				days.push({
+					date: getLocalDateString(date),
+					dayName: getLocalDayName(date),
+					display: `${dayNameShort} ${monthShort} ${dayOfMonth}`
+				});
 			}
 			return days;
 		};
@@ -1378,14 +1430,9 @@
 		const getCompletionDetails = (choreId, date) => {
 			return history().find((dc) => dc.choreId === choreId && dc.date === date);
 		};
-		const formatDate = (dateStr) => {
-			const date = new Date(dateStr);
-			return `${getLocalDayNameShort(date)} ${getLocalMonthNameShort(date)} ${getLocalDayOfMonth(date)}`;
-		};
-		const isSkipDay = (chore, dateStr) => {
+		const isSkipDay = (chore, day) => {
 			if (!chore.skipDays || chore.skipDays.length === 0) return false;
-			const dayName = getLocalDayName(new Date(dateStr));
-			return chore.skipDays.includes(dayName);
+			return chore.skipDays.includes(day.dayName);
 		};
 		return (() => {
 			var _el$ = _tmpl$5$2(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.firstChild, _el$13 = _el$3.nextSibling, _el$14 = _el$13.firstChild;
@@ -1432,7 +1479,7 @@
 						},
 						children: (day) => (() => {
 							var _el$15 = _tmpl$6$2(), _el$16 = _el$15.firstChild;
-							insert(_el$16, () => formatDate(day));
+							insert(_el$16, () => day.display);
 							return _el$15;
 						})()
 					}), null);
@@ -1464,7 +1511,7 @@
 									return getDays();
 								},
 								children: (day) => {
-									const completion = getCompletionDetails(chore.id, day);
+									const completion = getCompletionDetails(chore.id, day.date);
 									const skipDay = isSkipDay(chore, day);
 									const emptyDay = !skipDay && !completion;
 									const getEmptyTooltip = () => {

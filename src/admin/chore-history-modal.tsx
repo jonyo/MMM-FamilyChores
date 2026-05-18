@@ -5,7 +5,13 @@ import './buttons.css';
 import './modals.css';
 import { Match, onMount, Switch } from 'solid-js';
 import { getHistory } from '../api';
-import type { Chore, DailyCompletion, FamilyChoresData, Person } from '../types/chore-types';
+import type {
+  Chore,
+  DailyCompletion,
+  DayOfWeek,
+  FamilyChoresData,
+  Person,
+} from '../types/chore-types';
 import { escapeHtml } from '../utils/browser';
 import {
   getLocalDateString,
@@ -20,6 +26,19 @@ interface ChoreHistoryModalProps {
   person: Person;
   choreData: FamilyChoresData;
   closeModal: () => void;
+}
+
+/**
+ * Pre-computed day information for history grid
+ * All values derived from a single local Date object to avoid timezone issues
+ */
+interface DayInfo {
+  /** Local date string in YYYY-MM-DD format - for completion lookup */
+  date: string;
+  /** Full day name (sunday, monday, etc.) - for skip day checks */
+  dayName: string;
+  /** Display string for header (e.g., "Sun May 17") */
+  display: string;
 }
 
 export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
@@ -38,13 +57,25 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
     }
   });
 
-  // Get last 14 days
-  const getDays = () => {
-    const days: string[] = [];
+  // Get last 14 days with pre-computed display data
+  // IMPORTANT: We compute all localized values (date string, day name, display) from the
+  // same local Date object before serialization. This avoids the timezone double-correction bug:
+  // new Date('2026-05-17') parses as UTC midnight, and when formatted back to local timezone
+  // via getLocalDayName(), it can shift to the previous day for timezones west of UTC.
+  // By computing all values from a single Date object, we ensure consistency.
+  const getDays = (): DayInfo[] => {
+    const days: DayInfo[] = [];
     for (let i = 13; i >= 0; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);
-      days.push(getLocalDateString(date));
+      const dayNameShort = getLocalDayNameShort(date);
+      const monthShort = getLocalMonthNameShort(date);
+      const dayOfMonth = getLocalDayOfMonth(date);
+      days.push({
+        date: getLocalDateString(date),
+        dayName: getLocalDayName(date),
+        display: `${dayNameShort} ${monthShort} ${dayOfMonth}`,
+      });
     }
     return days;
   };
@@ -67,23 +98,12 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
     return history().find((dc) => dc.choreId === choreId && dc.date === date);
   };
 
-  // Format date for display
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    const dayName = getLocalDayNameShort(date);
-    const month = getLocalMonthNameShort(date);
-    const day = getLocalDayOfMonth(date);
-    return `${dayName} ${month} ${day}`;
-  };
-
   // Check if a date is a skip day for a chore
-  const isSkipDay = (chore: Chore, dateStr: string) => {
+  const isSkipDay = (chore: Chore, day: DayInfo) => {
     if (!chore.skipDays || chore.skipDays.length === 0) {
       return false;
     }
-    const date = new Date(dateStr);
-    const dayName = getLocalDayName(date);
-    return chore.skipDays.includes(dayName);
+    return chore.skipDays.includes(day.dayName as DayOfWeek);
   };
 
   return (
@@ -115,7 +135,7 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
                   <For each={getDays()}>
                     {(day) => (
                       <th class="date">
-                        <span class="vertical-text">{formatDate(day)}</span>
+                        <span class="vertical-text">{day.display}</span>
                       </th>
                     )}
                   </For>
@@ -141,7 +161,7 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
                       </td>
                       <For each={getDays()}>
                         {(day) => {
-                          const completion = getCompletionDetails(chore.id, day);
+                          const completion = getCompletionDetails(chore.id, day.date);
                           const skipDay = isSkipDay(chore, day);
                           const emptyDay = !skipDay && !completion;
 
