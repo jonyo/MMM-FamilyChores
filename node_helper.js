@@ -869,7 +869,7 @@ var node_helper_default = node_helper.create({
 			if (payload.completed && personId) {
 				const currentTime = /* @__PURE__ */ new Date();
 				const currentTimeString = getLocalTimeString();
-				const wasLate = Boolean(chore.deadline && currentTimeString > chore.deadline);
+				const wasLate = !!chore.deadline && currentTimeString > chore.deadline;
 				const wasMyTurn = chore.type === "personal" || chore.type === "rotating" && chore.rotation[chore.rotatingIndex ?? 0] === personId;
 				const dailyCompletion = {
 					id: generateUUID(),
