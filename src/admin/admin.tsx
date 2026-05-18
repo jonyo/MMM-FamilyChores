@@ -322,13 +322,12 @@ export const Admin: Component<Record<string, never>> = () => {
                   Add Person
                 </button>
                 <Show when={choreData()?.people.length === 0}>
-                  <span
-                    id="addPersonInfo"
+                  <Tooltip
+                    text="Add at least one person before you can create chores"
                     class="info-icon"
-                    data-tooltip="Add at least one person before you can create chores"
                   >
                     ℹ️
-                  </span>
+                  </Tooltip>
                 </Show>
               </div>
             </div>

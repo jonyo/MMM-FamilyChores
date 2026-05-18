@@ -116,8 +116,9 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
             position="below"
             align="center"
             multiline
+            class="info-icon"
           >
-            <span class="info-icon">ℹ️</span>
+            ℹ️
           </Tooltip>
         </h3>
         <Show when={loading()}>

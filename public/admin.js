@@ -1390,7 +1390,7 @@
 	};
 	//#endregion
 	//#region src/admin/chore-history-modal.tsx
-	var _tmpl$$7 = /* @__PURE__ */ template(`<span class=info-icon>ℹ️`), _tmpl$2$5 = /* @__PURE__ */ template(`<div class=loading>Loading history...`), _tmpl$3$4 = /* @__PURE__ */ template(`<div class=error>Error: `), _tmpl$4$2 = /* @__PURE__ */ template(`<div class=history-grid><table class=history-table><thead><tr><th>Chore</th></tr></thead><tbody>`), _tmpl$5$2 = /* @__PURE__ */ template(`<div class="modal active"><div class="modal-content modal-content-large"><h3>'s Chore History</h3><div class=form-actions><button type=button class="btn btn-secondary">Close`), _tmpl$6$2 = /* @__PURE__ */ template(`<th class=date><span class=vertical-text>`), _tmpl$7$1 = /* @__PURE__ */ template(`<tr><td class=chore-name>`), _tmpl$8$1 = /* @__PURE__ */ template(`<td class=history-cell>`), _tmpl$9$1 = /* @__PURE__ */ template(`<span style=opacity:0;width:32px;height:32px;display:inline-block>`);
+	var _tmpl$$7 = /* @__PURE__ */ template(`<div class=loading>Loading history...`), _tmpl$2$5 = /* @__PURE__ */ template(`<div class=error>Error: `), _tmpl$3$4 = /* @__PURE__ */ template(`<div class=history-grid><table class=history-table><thead><tr><th>Chore</th></tr></thead><tbody>`), _tmpl$4$2 = /* @__PURE__ */ template(`<div class="modal active"><div class="modal-content modal-content-large"><h3>'s Chore History</h3><div class=form-actions><button type=button class="btn btn-secondary">Close`), _tmpl$5$2 = /* @__PURE__ */ template(`<th class=date><span class=vertical-text>`), _tmpl$6$2 = /* @__PURE__ */ template(`<tr><td class=chore-name>`), _tmpl$7$1 = /* @__PURE__ */ template(`<td class=history-cell>`), _tmpl$8$1 = /* @__PURE__ */ template(`<span style=opacity:0;width:32px;height:32px;display:inline-block>`);
 	var ChoreHistoryModal = (props) => {
 		const [history, setHistory] = createSignal([]);
 		const [loading, setLoading] = createSignal(true);
@@ -1435,62 +1435,61 @@
 			return chore.skipDays.includes(day.dayName);
 		};
 		return (() => {
-			var _el$ = _tmpl$5$2(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.firstChild, _el$13 = _el$3.nextSibling, _el$14 = _el$13.firstChild;
+			var _el$ = _tmpl$4$2(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.firstChild, _el$12 = _el$3.nextSibling, _el$13 = _el$12.firstChild;
 			insert(_el$3, () => escapeHtml(props.person.name), _el$4);
 			insert(_el$3, createComponent(Tooltip, {
 				text: "Shows daily chore completions for the last 14 days. Green = completed on time, Yellow = completed late, Gray = skip day.",
 				position: "below",
 				align: "center",
 				multiline: true,
-				get children() {
-					return _tmpl$$7();
-				}
+				"class": "info-icon",
+				children: "ℹ️"
 			}), null);
 			insert(_el$2, createComponent(Show, {
 				get when() {
 					return loading();
 				},
 				get children() {
-					return _tmpl$2$5();
+					return _tmpl$$7();
 				}
-			}), _el$13);
+			}), _el$12);
 			insert(_el$2, createComponent(Show, {
 				get when() {
 					return error();
 				},
 				get children() {
-					var _el$7 = _tmpl$3$4();
-					_el$7.firstChild;
-					insert(_el$7, () => escapeHtml(error() ?? "Unknown error"), null);
-					return _el$7;
+					var _el$6 = _tmpl$2$5();
+					_el$6.firstChild;
+					insert(_el$6, () => escapeHtml(error() ?? "Unknown error"), null);
+					return _el$6;
 				}
-			}), _el$13);
+			}), _el$12);
 			insert(_el$2, createComponent(Show, {
 				get when() {
 					return memo(() => !!!loading())() && !error();
 				},
 				get children() {
-					var _el$9 = _tmpl$4$2(), _el$1 = _el$9.firstChild.firstChild, _el$10 = _el$1.firstChild;
-					_el$10.firstChild;
-					var _el$12 = _el$1.nextSibling;
-					insert(_el$10, createComponent(For, {
+					var _el$8 = _tmpl$3$4(), _el$0 = _el$8.firstChild.firstChild, _el$1 = _el$0.firstChild;
+					_el$1.firstChild;
+					var _el$11 = _el$0.nextSibling;
+					insert(_el$1, createComponent(For, {
 						get each() {
 							return getDays();
 						},
 						children: (day) => (() => {
-							var _el$15 = _tmpl$6$2(), _el$16 = _el$15.firstChild;
-							insert(_el$16, () => day.display);
-							return _el$15;
+							var _el$14 = _tmpl$5$2(), _el$15 = _el$14.firstChild;
+							insert(_el$15, () => day.display);
+							return _el$14;
 						})()
 					}), null);
-					insert(_el$12, createComponent(For, {
+					insert(_el$11, createComponent(For, {
 						get each() {
 							return getPersonChores();
 						},
 						children: (chore) => (() => {
-							var _el$17 = _tmpl$7$1(), _el$18 = _el$17.firstChild;
-							insert(_el$18, () => escapeHtml(chore.name), null);
-							insert(_el$18, createComponent(Show, {
+							var _el$16 = _tmpl$6$2(), _el$17 = _el$16.firstChild;
+							insert(_el$17, () => escapeHtml(chore.name), null);
+							insert(_el$17, createComponent(Show, {
 								get when() {
 									return chore.type === "rotating";
 								},
@@ -1506,7 +1505,7 @@
 									})];
 								}
 							}), null);
-							insert(_el$17, createComponent(For, {
+							insert(_el$16, createComponent(For, {
 								get each() {
 									return getDays();
 								},
@@ -1526,9 +1525,9 @@
 										return "";
 									};
 									return (() => {
-										var _el$19 = _tmpl$8$1();
-										_el$19.classList.toggle("history-skip-day", !!skipDay);
-										insert(_el$19, createComponent(Switch, {
+										var _el$18 = _tmpl$7$1();
+										_el$18.classList.toggle("history-skip-day", !!skipDay);
+										insert(_el$18, createComponent(Switch, {
 											get fallback() {
 												return createComponent(Tooltip, {
 													get text() {
@@ -1538,7 +1537,7 @@
 													align: "right",
 													multiline: emptyDay,
 													get children() {
-														return _tmpl$9$1();
+														return _tmpl$8$1();
 													}
 												});
 											},
@@ -1582,17 +1581,17 @@
 												})];
 											}
 										}));
-										return _el$19;
+										return _el$18;
 									})();
 								}
 							}), null);
-							return _el$17;
+							return _el$16;
 						})()
 					}));
-					return _el$9;
+					return _el$8;
 				}
-			}), _el$13);
-			_el$14.$$click = () => props.closeModal();
+			}), _el$12);
+			_el$13.$$click = () => props.closeModal();
 			return _el$;
 		})();
 	};
@@ -2041,7 +2040,7 @@
 	delegateEvents(["input", "click"]);
 	//#endregion
 	//#region src/admin/admin.tsx
-	var _tmpl$ = /* @__PURE__ */ template(`<p class=retry-info>Retrying... (attempt <!>)`), _tmpl$2 = /* @__PURE__ */ template(`<div class=loading-message><div class=loading-message-content><p>Magic Mirror is starting up, please wait...`), _tmpl$3 = /* @__PURE__ */ template(`<span id=addPersonInfo class=info-icon data-tooltip="Add at least one person before you can create chores">ℹ️`), _tmpl$4 = /* @__PURE__ */ template(`<section class=section id=rotatingChoresSection><div class=section-header><h2>Rotating Chores</h2><button type=button class="btn btn-primary"id=addRotatingChoreBtn>Add Rotating Chore</button></div><div id=rotatingChoresList class=item-list>`), _tmpl$5 = /* @__PURE__ */ template(`<main><section class=section><div class=section-header><h2>People</h2><div class=button-with-tooltip><button type=button class="btn btn-primary"id=addPersonBtn>Add Person</button></div></div><div id=peopleList class=item-list></div></section><section class=section><h2>System State</h2><div class=state-info><p><strong>Last Reset Date:</strong> <span id=lastResetDate></span></p><div class=button-group><div class=button-with-tooltip><button type=button class="btn btn-warning"id=resetDailyBtn>Force Daily Reset`), _tmpl$6 = /* @__PURE__ */ template(`<div class=container><header><h1>Family Chores Admin</h1><div class=backup-section><button type=button class="btn btn-secondary"id=backupBtn>Download Backup</button><label for=restoreFile class="btn btn-secondary">Restore Backup</label><input type=file id=restoreFile accept=.json hidden><button type=button class="btn btn-secondary"id=settingsBtn>⚙️ Settings`), _tmpl$7 = /* @__PURE__ */ template(`<button type=button class="btn btn-secondary btn-sm">Copy Chores`), _tmpl$8 = /* @__PURE__ */ template(`<div class=person-chores>`), _tmpl$9 = /* @__PURE__ */ template(`<div class=item-card><div class=person-header><div class=item-info><h3> <span class=color-badge></span></h3><p>ID: </p></div><div class=item-actions><button type=button class="btn btn-secondary btn-sm">Edit</button><button type=button class="btn btn-secondary btn-sm">History</button><button type=button class="btn btn-danger btn-sm">Delete</button></div></div><div class=person-chores-header><h4>'s Personal Chores</h4><div class=person-chores-actions><button type=button class="btn btn-primary btn-sm">Add Chore`), _tmpl$0 = /* @__PURE__ */ template(`<div class=person-chores><p class=empty-message>No personal chores yet.`), _tmpl$1 = /* @__PURE__ */ template(`<p class=deadline>Deadline: `), _tmpl$10 = /* @__PURE__ */ template(`<div class=chore-item><div class=chore-info><h4></h4><p class=skip-days>Skip days: </p></div><div class=chore-actions><button type=button class="btn btn-secondary btn-sm">Edit</button><button type=button class="btn btn-danger btn-sm">Delete`);
+	var _tmpl$ = /* @__PURE__ */ template(`<p class=retry-info>Retrying... (attempt <!>)`), _tmpl$2 = /* @__PURE__ */ template(`<div class=loading-message><div class=loading-message-content><p>Magic Mirror is starting up, please wait...`), _tmpl$3 = /* @__PURE__ */ template(`<section class=section id=rotatingChoresSection><div class=section-header><h2>Rotating Chores</h2><button type=button class="btn btn-primary"id=addRotatingChoreBtn>Add Rotating Chore</button></div><div id=rotatingChoresList class=item-list>`), _tmpl$4 = /* @__PURE__ */ template(`<main><section class=section><div class=section-header><h2>People</h2><div class=button-with-tooltip><button type=button class="btn btn-primary"id=addPersonBtn>Add Person</button></div></div><div id=peopleList class=item-list></div></section><section class=section><h2>System State</h2><div class=state-info><p><strong>Last Reset Date:</strong> <span id=lastResetDate></span></p><div class=button-group><div class=button-with-tooltip><button type=button class="btn btn-warning"id=resetDailyBtn>Force Daily Reset`), _tmpl$5 = /* @__PURE__ */ template(`<div class=container><header><h1>Family Chores Admin</h1><div class=backup-section><button type=button class="btn btn-secondary"id=backupBtn>Download Backup</button><label for=restoreFile class="btn btn-secondary">Restore Backup</label><input type=file id=restoreFile accept=.json hidden><button type=button class="btn btn-secondary"id=settingsBtn>⚙️ Settings`), _tmpl$6 = /* @__PURE__ */ template(`<button type=button class="btn btn-secondary btn-sm">Copy Chores`), _tmpl$7 = /* @__PURE__ */ template(`<div class=person-chores>`), _tmpl$8 = /* @__PURE__ */ template(`<div class=item-card><div class=person-header><div class=item-info><h3> <span class=color-badge></span></h3><p>ID: </p></div><div class=item-actions><button type=button class="btn btn-secondary btn-sm">Edit</button><button type=button class="btn btn-secondary btn-sm">History</button><button type=button class="btn btn-danger btn-sm">Delete</button></div></div><div class=person-chores-header><h4>'s Personal Chores</h4><div class=person-chores-actions><button type=button class="btn btn-primary btn-sm">Add Chore`), _tmpl$9 = /* @__PURE__ */ template(`<div class=person-chores><p class=empty-message>No personal chores yet.`), _tmpl$0 = /* @__PURE__ */ template(`<p class=deadline>Deadline: `), _tmpl$1 = /* @__PURE__ */ template(`<div class=chore-item><div class=chore-info><h4></h4><p class=skip-days>Skip days: </p></div><div class=chore-actions><button type=button class="btn btn-secondary btn-sm">Edit</button><button type=button class="btn btn-danger btn-sm">Delete`);
 	var API_BASE = "/MMM-FamilyChores";
 	var formatSkipDays = (skipDays) => {
 		if (!skipDays || skipDays.length === 0) return "None";
@@ -2211,7 +2210,7 @@
 			return data.chores.filter((chore) => chore.type === ChoreType.ROTATING);
 		};
 		return (() => {
-			var _el$ = _tmpl$6(), _el$5 = _el$.firstChild.firstChild.nextSibling.firstChild, _el$7 = _el$5.nextSibling.nextSibling, _el$8 = _el$7.nextSibling;
+			var _el$ = _tmpl$5(), _el$5 = _el$.firstChild.firstChild.nextSibling.firstChild, _el$7 = _el$5.nextSibling.nextSibling, _el$8 = _el$7.nextSibling;
 			_el$5.$$click = handleDownloadBackup;
 			_el$7.$$input = handleRestore;
 			_el$8.$$click = openSettingsModal;
@@ -2241,87 +2240,91 @@
 					return choreData();
 				},
 				get children() {
-					var _el$14 = _tmpl$5(), _el$15 = _el$14.firstChild, _el$16 = _el$15.firstChild, _el$18 = _el$16.firstChild.nextSibling, _el$19 = _el$18.firstChild, _el$21 = _el$16.nextSibling, _el$27 = _el$15.nextSibling, _el$30 = _el$27.firstChild.nextSibling.firstChild, _el$33 = _el$30.firstChild.nextSibling.nextSibling, _el$35 = _el$30.nextSibling.firstChild, _el$36 = _el$35.firstChild;
+					var _el$14 = _tmpl$4(), _el$15 = _el$14.firstChild, _el$16 = _el$15.firstChild, _el$18 = _el$16.firstChild.nextSibling, _el$19 = _el$18.firstChild, _el$20 = _el$16.nextSibling, _el$26 = _el$15.nextSibling, _el$29 = _el$26.firstChild.nextSibling.firstChild, _el$32 = _el$29.firstChild.nextSibling.nextSibling, _el$34 = _el$29.nextSibling.firstChild, _el$35 = _el$34.firstChild;
 					_el$19.$$click = () => openPersonModal();
 					insert(_el$18, createComponent(Show, {
 						get when() {
 							return choreData()?.people.length === 0;
 						},
 						get children() {
-							return _tmpl$3();
+							return createComponent(Tooltip, {
+								text: "Add at least one person before you can create chores",
+								"class": "info-icon",
+								children: "ℹ️"
+							});
 						}
 					}), null);
-					insert(_el$21, createComponent(For, {
+					insert(_el$20, createComponent(For, {
 						get each() {
 							return choreData()?.people ?? [];
 						},
 						children: (person) => (() => {
-							var _el$37 = _tmpl$9(), _el$38 = _el$37.firstChild, _el$39 = _el$38.firstChild, _el$40 = _el$39.firstChild, _el$41 = _el$40.firstChild, _el$42 = _el$41.nextSibling, _el$43 = _el$40.nextSibling;
-							_el$43.firstChild;
-							var _el$46 = _el$39.nextSibling.firstChild, _el$47 = _el$46.nextSibling, _el$48 = _el$47.nextSibling, _el$50 = _el$38.nextSibling.firstChild, _el$51 = _el$50.firstChild, _el$52 = _el$50.nextSibling, _el$53 = _el$52.firstChild;
-							insert(_el$40, () => escapeHtml(person.name), _el$41);
-							insert(_el$43, () => person.id, null);
-							_el$46.$$click = () => openPersonModal(person);
-							_el$47.$$click = () => setHistoryPerson(person);
-							_el$48.$$click = () => handleDeletePerson(person.id);
-							insert(_el$50, () => escapeHtml(person.name), _el$51);
-							_el$53.$$click = () => {
+							var _el$36 = _tmpl$8(), _el$37 = _el$36.firstChild, _el$38 = _el$37.firstChild, _el$39 = _el$38.firstChild, _el$40 = _el$39.firstChild, _el$41 = _el$40.nextSibling, _el$42 = _el$39.nextSibling;
+							_el$42.firstChild;
+							var _el$45 = _el$38.nextSibling.firstChild, _el$46 = _el$45.nextSibling, _el$47 = _el$46.nextSibling, _el$49 = _el$37.nextSibling.firstChild, _el$50 = _el$49.firstChild, _el$51 = _el$49.nextSibling, _el$52 = _el$51.firstChild;
+							insert(_el$39, () => escapeHtml(person.name), _el$40);
+							insert(_el$42, () => person.id, null);
+							_el$45.$$click = () => openPersonModal(person);
+							_el$46.$$click = () => setHistoryPerson(person);
+							_el$47.$$click = () => handleDeletePerson(person.id);
+							insert(_el$49, () => escapeHtml(person.name), _el$50);
+							_el$52.$$click = () => {
 								openPersonalChoreModal(person, null);
 							};
-							insert(_el$52, createComponent(Show, {
+							insert(_el$51, createComponent(Show, {
 								get when() {
 									return memo(() => getPersonalChores(person.id).length > 0)() && (choreData()?.people.length ?? 0) > 1;
 								},
 								get children() {
-									var _el$54 = _tmpl$7();
-									_el$54.$$click = () => {
+									var _el$53 = _tmpl$6();
+									_el$53.$$click = () => {
 										openCopyChoresModal(person);
 									};
-									return _el$54;
+									return _el$53;
 								}
 							}), null);
-							insert(_el$37, createComponent(Show, {
+							insert(_el$36, createComponent(Show, {
 								get when() {
 									return getPersonalChores(person.id).length > 0;
 								},
 								get fallback() {
-									return _tmpl$0();
+									return _tmpl$9();
 								},
 								get children() {
-									var _el$55 = _tmpl$8();
-									insert(_el$55, createComponent(For, {
+									var _el$54 = _tmpl$7();
+									insert(_el$54, createComponent(For, {
 										get each() {
 											return getPersonalChores(person.id);
 										},
 										children: (chore) => (() => {
-											var _el$57 = _tmpl$10(), _el$58 = _el$57.firstChild, _el$59 = _el$58.firstChild, _el$62 = _el$59.nextSibling;
-											_el$62.firstChild;
-											var _el$65 = _el$58.nextSibling.firstChild, _el$66 = _el$65.nextSibling;
-											insert(_el$59, () => escapeHtml(chore.name));
-											insert(_el$58, createComponent(Show, {
+											var _el$56 = _tmpl$1(), _el$57 = _el$56.firstChild, _el$58 = _el$57.firstChild, _el$61 = _el$58.nextSibling;
+											_el$61.firstChild;
+											var _el$64 = _el$57.nextSibling.firstChild, _el$65 = _el$64.nextSibling;
+											insert(_el$58, () => escapeHtml(chore.name));
+											insert(_el$57, createComponent(Show, {
 												get when() {
 													return chore.deadline;
 												},
 												get children() {
-													var _el$60 = _tmpl$1();
-													_el$60.firstChild;
-													insert(_el$60, () => chore.deadline, null);
-													return _el$60;
+													var _el$59 = _tmpl$0();
+													_el$59.firstChild;
+													insert(_el$59, () => chore.deadline, null);
+													return _el$59;
 												}
-											}), _el$62);
-											insert(_el$62, () => formatSkipDays(chore.skipDays), null);
-											_el$65.$$click = () => {
+											}), _el$61);
+											insert(_el$61, () => formatSkipDays(chore.skipDays), null);
+											_el$64.$$click = () => {
 												openPersonalChoreModal(person, chore);
 											};
-											_el$66.$$click = () => handleDeleteChore(chore.id);
-											return _el$57;
+											_el$65.$$click = () => handleDeleteChore(chore.id);
+											return _el$56;
 										})()
 									}));
-									return _el$55;
+									return _el$54;
 								}
 							}), null);
-							createRenderEffect((_$p) => style(_el$42, `background-color: ${person.color}`, _$p));
-							return _el$37;
+							createRenderEffect((_$p) => style(_el$41, `background-color: ${person.color}`, _$p));
+							return _el$36;
 						})()
 					}));
 					insert(_el$14, createComponent(Show, {
@@ -2329,9 +2332,9 @@
 							return (choreData()?.people?.length ?? 0) > 0;
 						},
 						get children() {
-							var _el$22 = _tmpl$4(), _el$23 = _el$22.firstChild, _el$25 = _el$23.firstChild.nextSibling, _el$26 = _el$23.nextSibling;
-							_el$25.$$click = () => openRotatingChoreModal();
-							insert(_el$26, createComponent(For, {
+							var _el$21 = _tmpl$3(), _el$22 = _el$21.firstChild, _el$24 = _el$22.firstChild.nextSibling, _el$25 = _el$22.nextSibling;
+							_el$24.$$click = () => openRotatingChoreModal();
+							insert(_el$25, createComponent(For, {
 								get each() {
 									return getRotatingChores();
 								},
@@ -2344,12 +2347,12 @@
 									onDelete: handleDeleteChore
 								})
 							}));
-							return _el$22;
+							return _el$21;
 						}
-					}), _el$27);
-					insert(_el$33, () => choreData()?.lastResetDate || "Never");
-					_el$36.$$click = handleForceReset;
-					insert(_el$35, createComponent(Tooltip, {
+					}), _el$26);
+					insert(_el$32, () => choreData()?.lastResetDate || "Never");
+					_el$35.$$click = handleForceReset;
+					insert(_el$34, createComponent(Tooltip, {
 						text: "WARNING: This will un-check all chores and rotate assignment on rotating chores to the next person. It does respect skip days if today is a skip day. Useful for testing or immediately advancing chore assignments.",
 						position: "above",
 						align: "center",
