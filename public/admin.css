@@ -419,32 +419,6 @@ main {
   color: #dc3545;
 }
 
-.history-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.history-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px;
-  background: #f8f9fa;
-  border-radius: 6px;
-  border: 1px solid #e9ecef;
-}
-
-.history-item-label {
-  font-weight: 500;
-  color: #333;
-}
-
-.history-item-time {
-  font-size: 0.85rem;
-  color: #666;
-}
-
 .history-grid {
   margin: 20px 0;
   overflow-x: auto;
