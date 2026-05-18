@@ -140,7 +140,7 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
                         <Show when={chore.type === 'rotating'}>
                           {' '}
                           <Tooltip
-                            text={chore.type === 'rotating' ? 'Rotating chore' : ''}
+                            text="Rotating chore"
                             position="above-right"
                             multiline
                             class="rotating-icon"

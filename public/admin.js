@@ -1487,9 +1487,7 @@
 								},
 								get children() {
 									return [" ", createComponent(Tooltip, {
-										get text() {
-											return chore.type === "rotating" ? "Rotating chore" : "";
-										},
+										text: "Rotating chore",
 										position: "above-right",
 										multiline: true,
 										"class": "rotating-icon",
