@@ -175,35 +175,6 @@ main {
   gap: 8px;
 }
 
-.item-info {
-  flex: 1;
-}
-
-.item-info h3 {
-  font-size: 1.2rem;
-  margin-bottom: 5px;
-  color: #333;
-}
-
-.item-info p {
-  color: #6c757d;
-  font-size: 0.9rem;
-}
-
-.item-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.color-badge {
-  display: inline-block;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  vertical-align: middle;
-  border: 2px solid rgba(0, 0, 0, 0.1);
-}
-
 .state-info {
   background: #f8f9fa;
   padding: 20px;
@@ -234,18 +205,6 @@ main {
   align-items: flex-start;
 }
 
-.empty-state {
-  text-align: center;
-  padding: 20px;
-  color: #666;
-}
-
-.empty-state .hint {
-  font-size: 0.9rem;
-  color: #888;
-  margin-top: 8px;
-}
-
 .info-icon {
   margin-left: 8px;
   font-size: 1rem;
@@ -260,16 +219,5 @@ main {
   .backup-section {
     width: 100%;
     justify-content: center;
-  }
-
-  .item-card {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
-  }
-
-  .item-actions {
-    width: 100%;
-    justify-content: flex-end;
   }
 }

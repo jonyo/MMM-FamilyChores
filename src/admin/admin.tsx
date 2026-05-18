@@ -3,6 +3,9 @@ import { createSignal, For, onMount, Show } from 'solid-js';
 import './admin.css';
 import './buttons.css';
 import './forms.css';
+import './person.css';
+import './card.css';
+import './chore.css';
 import { deleteChore, deletePerson } from '../api';
 import type {
   Chore,

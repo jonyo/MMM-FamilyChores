@@ -2,6 +2,8 @@ import type { Component } from 'solid-js';
 import { createMemo, Show } from 'solid-js';
 import './rotating-chore.css';
 import './buttons.css';
+import './card.css';
+import './chore.css';
 import type { Person, RotatingChore } from '../types/chore-types';
 import { escapeHtml } from '../utils/browser';
 

@@ -182,35 +182,6 @@ main {
   gap: 8px;
 }
 
-.item-info {
-  flex: 1;
-}
-
-.item-info h3 {
-  font-size: 1.2rem;
-  margin-bottom: 5px;
-  color: #333;
-}
-
-.item-info p {
-  color: #6c757d;
-  font-size: 0.9rem;
-}
-
-.item-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.color-badge {
-  display: inline-block;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  vertical-align: middle;
-  border: 2px solid rgba(0, 0, 0, 0.1);
-}
-
 .state-info {
   background: #f8f9fa;
   padding: 20px;
@@ -241,18 +212,6 @@ main {
   align-items: flex-start;
 }
 
-.empty-state {
-  text-align: center;
-  padding: 20px;
-  color: #666;
-}
-
-.empty-state .hint {
-  font-size: 0.9rem;
-  color: #888;
-  margin-top: 8px;
-}
-
 .info-icon {
   margin-left: 8px;
   font-size: 1rem;
@@ -267,17 +226,6 @@ main {
   .backup-section {
     width: 100%;
     justify-content: center;
-  }
-
-  .item-card {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
-  }
-
-  .item-actions {
-    width: 100%;
-    justify-content: flex-end;
   }
 }
 /*
@@ -362,6 +310,20 @@ This file was automatically generated:
   margin-bottom: 20px;
 }
 
+.form-label {
+  display: block;
+  margin-bottom: 12px;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-help {
+  display: block;
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin-top: 5px;
+}
+
 .form-group label {
   display: block;
   margin-bottom: 12px;
@@ -431,6 +393,97 @@ This file was automatically generated:
   gap: 10px;
   justify-content: flex-end;
   margin-top: 25px;
+}
+/*
+This file was automatically generated:
+ - edit the CSS files in src/admin/
+ - run "pnpm build" to regenerate this file
+
+- section source: src/admin/person.css
+*/
+.color-badge {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  vertical-align: middle;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+}
+/*
+This file was automatically generated:
+ - edit the CSS files in src/admin/
+ - run "pnpm build" to regenerate this file
+
+- section source: src/admin/card.css
+*/
+.item-card {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 20px;
+  transition: all 0.2s;
+}
+
+.item-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: #667eea;
+}
+
+.item-info {
+  flex: 1;
+}
+
+.item-info h3 {
+  font-size: 1.2rem;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.item-info p {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.item-actions {
+  display: flex;
+  gap: 10px;
+}
+/*
+This file was automatically generated:
+ - edit the CSS files in src/admin/
+ - run "pnpm build" to regenerate this file
+
+- section source: src/admin/chore.css
+*/
+.chore-type-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-left: 10px;
+}
+
+.chore-type-badge.personal {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.chore-type-badge.rotating {
+  background: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.skip-days {
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin-top: 5px;
+}
+
+.deadline {
+  font-size: 0.85rem;
+  color: #667eea;
+  margin-top: 5px;
 }
 /*
 This file was automatically generated:
@@ -738,14 +791,6 @@ This file was automatically generated:
 
 - section source: src/admin/person-modal.css
 */
-.color-badge {
-  display: inline-block;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  vertical-align: middle;
-  border: 2px solid rgba(0, 0, 0, 0.1);
-}
 /*
 This file was automatically generated:
  - edit the CSS files in src/admin/
@@ -764,32 +809,6 @@ This file was automatically generated:
   border: 1px solid #e9ecef;
   font-size: 1rem;
 }
-
-.chore-type-badge {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  margin-left: 10px;
-}
-
-.chore-type-badge.personal {
-  background: #e3f2fd;
-  color: #1976d2;
-}
-
-.skip-days {
-  font-size: 0.85rem;
-  color: #6c757d;
-  margin-top: 5px;
-}
-
-.deadline {
-  font-size: 0.85rem;
-  color: #667eea;
-  margin-top: 5px;
-}
 /*
 This file was automatically generated:
  - edit the CSS files in src/admin/
@@ -797,64 +816,6 @@ This file was automatically generated:
 
 - section source: src/admin/rotating-chore.css
 */
-.item-card {
-  background: #f8f9fa;
-  border: 1px solid #e9ecef;
-  border-radius: 8px;
-  padding: 20px;
-  transition: all 0.2s;
-}
-
-.item-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border-color: #667eea;
-}
-
-.item-info {
-  flex: 1;
-}
-
-.item-info h3 {
-  font-size: 1.2rem;
-  margin-bottom: 5px;
-  color: #333;
-}
-
-.item-info p {
-  color: #6c757d;
-  font-size: 0.9rem;
-}
-
-.item-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.chore-type-badge {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  margin-left: 10px;
-}
-
-.chore-type-badge.rotating {
-  background: #f3e5f5;
-  color: #7b1fa2;
-}
-
-.skip-days {
-  font-size: 0.85rem;
-  color: #6c757d;
-  margin-top: 5px;
-}
-
-.deadline {
-  font-size: 0.85rem;
-  color: #667eea;
-  margin-top: 5px;
-}
 /*
 This file was automatically generated:
  - edit the CSS files in src/admin/
@@ -862,19 +823,4 @@ This file was automatically generated:
 
 - section source: src/admin/settings-modal.css
 */
-.state-info {
-  background: #f8f9fa;
-  padding: 20px;
-  border-radius: 8px;
-  border: 1px solid #e9ecef;
-}
-
-.state-info p {
-  margin-bottom: 15px;
-  font-size: 1.1rem;
-}
-
-.state-info strong {
-  color: #667eea;
-}
 /*$vite$:1*/
