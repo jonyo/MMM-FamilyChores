@@ -89,7 +89,12 @@ function makeBaseData(): FamilyChoresData {
         completedToday: false,
       },
     ],
+    dailyCompletions: [],
     lastResetDate: getLocalDateString(),
+    settings: {
+      dailyResetTime: '03:00',
+      historyEnabled: true,
+    },
   };
 }
 

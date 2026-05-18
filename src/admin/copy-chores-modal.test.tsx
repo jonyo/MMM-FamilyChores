@@ -40,7 +40,12 @@ describe('CopyChoresModal', () => {
         completedToday: false,
       },
     ],
+    dailyCompletions: [],
     lastResetDate: '2024-01-01',
+    settings: {
+      dailyResetTime: '03:00',
+      historyEnabled: true,
+    },
   };
 
   describe('Rendering', () => {
@@ -82,7 +87,12 @@ describe('CopyChoresModal', () => {
       const emptyChoreData: FamilyChoresData = {
         people: [mockFromPerson, mockToPerson],
         chores: [],
+        dailyCompletions: [],
         lastResetDate: '2024-01-01',
+        settings: {
+          dailyResetTime: '03:00',
+          historyEnabled: true,
+        },
       };
 
       const { container } = render(() => (
@@ -103,7 +113,12 @@ describe('CopyChoresModal', () => {
       const singlePersonChoreData: FamilyChoresData = {
         people: [mockFromPerson],
         chores: mockChoreData.chores,
+        dailyCompletions: [],
         lastResetDate: '2024-01-01',
+        settings: {
+          dailyResetTime: '03:00',
+          historyEnabled: true,
+        },
       };
 
       const { container } = render(() => (

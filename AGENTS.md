@@ -77,6 +77,29 @@ pnpm run build:client   # Build frontend without copying to root
 pnpm run build:node     # Build backend without copying to root
 ```
 
+### Commit Standards
+
+**Please follow Conventional Commits format**: `type(scope): description`
+
+**Types**: `feat`, `fix`, `refactor`, `docs`, `style`, `chore`, `test`
+
+**Examples**:
+
+- `fix(admin): use getLocalDayName helper in isSkipDay function`
+- `feat(types): add skip day visibility enum`
+- `refactor(backend): extract date utilities to separate module`
+- `chore(deps): update biome to v2.4.14`
+- `test(api): add coverage for people CRUD operations`
+
+**Guidelines**:
+
+- Use lowercase for types and scope
+- Scope should be specific to the area changed (e.g., `admin`, `frontend`, `backend`, `types`, `utils`)
+- Description should be a concise summary of what changed and why
+- Focus on the "what" and "why" rather than the "how"
+
+If the pre-commit hook fails: `pnpm fix && pnpm build && git add . && git commit -m "your message"`
+
 ### Data Model Rules
 
 **UUID-Based IDs:**

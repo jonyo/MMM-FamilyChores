@@ -1,5 +1,10 @@
 import type { Component } from 'solid-js';
 import { createSignal } from 'solid-js';
+import './person-modal.css';
+import './buttons.css';
+import './forms.css';
+import './modals.css';
+import './person.css';
 import { createPerson, updatePerson } from '../api';
 import type { Person } from '../types/chore-types';
 import type { CreatePersonRequest, UpdatePersonRequest } from '../types/request-types';

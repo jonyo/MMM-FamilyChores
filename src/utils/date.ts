@@ -7,6 +7,15 @@ import type { DayOfWeek } from '../types/chore-types';
 /**
  * Gets the local date string in YYYY-MM-DD format
  * Uses Intl.DateTimeFormat for proper timezone and DST handling
+ *
+ * @warning Do not pass a Date object created from a YYYY-MM-DD string (e.g., new Date('2026-05-17'))
+ * as it parses as UTC midnight and will produce incorrect results when formatted back to local timezone.
+ * Only pass Date objects created from real time values (e.g., new Date(), new Date(timestamp)).
+ *
+ * Avoid:
+ * - Date objects created from YYYY-MM-DD strings (parsed as UTC midnight)
+ * - Double local correction (UTC → local timezone → back into helper)
+ *
  * @param date - Optional date to convert (defaults to current time)
  */
 export const getLocalDateString = (date = new Date()): string => {
@@ -22,6 +31,15 @@ export const getLocalDateString = (date = new Date()): string => {
 /**
  * Gets the local time string in HH:MM format
  * Uses Intl.DateTimeFormat for proper timezone and DST handling
+ *
+ * @warning Do not pass a Date object created from a YYYY-MM-DD string (e.g., new Date('2026-05-17'))
+ * as it parses as UTC midnight and will produce incorrect results when formatted back to local timezone.
+ * Only pass Date objects created from real time values (e.g., new Date(), new Date(timestamp)).
+ *
+ * Avoid:
+ * - Date objects created from YYYY-MM-DD strings (parsed as UTC midnight)
+ * - Double local correction (UTC → local timezone → back into helper)
+ *
  * @param date - Optional date to convert (defaults to current time)
  */
 export const getLocalTimeString = (date = new Date()): string => {
@@ -37,6 +55,15 @@ export const getLocalTimeString = (date = new Date()): string => {
 /**
  * Gets the local day name in lowercase (sunday, monday, etc.)
  * Uses Intl.DateTimeFormat for proper timezone and DST handling
+ *
+ * @warning Do not pass a Date object created from a YYYY-MM-DD string (e.g., new Date('2026-05-17'))
+ * as it parses as UTC midnight and will produce incorrect results when formatted back to local timezone.
+ * Only pass Date objects created from real time values (e.g., new Date(), new Date(timestamp)).
+ *
+ * Avoid:
+ * - Date objects created from YYYY-MM-DD strings (parsed as UTC midnight)
+ * - Double local correction (UTC → local timezone → back into helper)
+ *
  * @param date - Optional date to convert (defaults to current time)
  */
 export const getLocalDayName = (date = new Date()): DayOfWeek => {
@@ -45,6 +72,72 @@ export const getLocalDayName = (date = new Date()): DayOfWeek => {
   });
 
   return formatter.format(date).toLowerCase() as DayOfWeek;
+};
+
+/**
+ * Gets the local day name in abbreviated format (Sun, Mon, Tue, etc.)
+ * Uses Intl.DateTimeFormat for proper timezone and DST handling
+ *
+ * @warning Do not pass a Date object created from a YYYY-MM-DD string (e.g., new Date('2026-05-17'))
+ * as it parses as UTC midnight and will produce incorrect results when formatted back to local timezone.
+ * Only pass Date objects created from real time values (e.g., new Date(), new Date(timestamp)).
+ *
+ * Avoid:
+ * - Date objects created from YYYY-MM-DD strings (parsed as UTC midnight)
+ * - Double local correction (UTC → local timezone → back into helper)
+ *
+ * @param date - Optional date to convert (defaults to current time)
+ */
+export const getLocalDayNameShort = (date = new Date()): string => {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    weekday: 'short',
+  });
+
+  return formatter.format(date);
+};
+
+/**
+ * Gets the local month name in abbreviated format (Jan, Feb, Mar, etc.)
+ * Uses Intl.DateTimeFormat for proper timezone and DST handling
+ *
+ * @warning Do not pass a Date object created from a YYYY-MM-DD string (e.g., new Date('2026-05-17'))
+ * as it parses as UTC midnight and will produce incorrect results when formatted back to local timezone.
+ * Only pass Date objects created from real time values (e.g., new Date(), new Date(timestamp)).
+ *
+ * Avoid:
+ * - Date objects created from YYYY-MM-DD strings (parsed as UTC midnight)
+ * - Double local correction (UTC → local timezone → back into helper)
+ *
+ * @param date - Optional date to convert (defaults to current time)
+ */
+export const getLocalMonthNameShort = (date = new Date()): string => {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+  });
+
+  return formatter.format(date);
+};
+
+/**
+ * Gets the local day of month as a number
+ * Uses Intl.DateTimeFormat for proper timezone and DST handling
+ *
+ * @warning Do not pass a Date object created from a YYYY-MM-DD string (e.g., new Date('2026-05-17'))
+ * as it parses as UTC midnight and will produce incorrect results when formatted back to local timezone.
+ * Only pass Date objects created from real time values (e.g., new Date(), new Date(timestamp)).
+ *
+ * Avoid:
+ * - Date objects created from YYYY-MM-DD strings (parsed as UTC midnight)
+ * - Double local correction (UTC → local timezone → back into helper)
+ *
+ * @param date - Optional date to convert (defaults to current time)
+ */
+export const getLocalDayOfMonth = (date = new Date()): number => {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    day: 'numeric',
+  });
+
+  return parseInt(formatter.format(date), 10);
 };
 
 /**

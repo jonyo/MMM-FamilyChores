@@ -1,5 +1,11 @@
 import type { Component } from 'solid-js';
 import { createSignal, For, onMount, Show } from 'solid-js';
+import './admin.css';
+import './buttons.css';
+import './forms.css';
+import './person.css';
+import './card.css';
+import './chore.css';
 import { deleteChore, deletePerson } from '../api';
 import type {
   Chore,
@@ -12,11 +18,14 @@ import type {
 import { ChoreType } from '../types/chore-types';
 import { escapeHtml } from '../utils/browser';
 import { getLocalDateString } from '../utils/date';
+import { ChoreHistoryModal } from './chore-history-modal';
 import { CopyChoresModal } from './copy-chores-modal';
 import { PersonModal } from './person-modal';
 import { PersonalChoreModal } from './personal-chore-modal';
 import { RotatingChoreCard } from './rotating-chore';
 import { RotatingChoreModal } from './rotating-chore-modal';
+import { SettingsModal } from './settings-modal';
+import { Tooltip } from './tooltip';
 
 // API base URL
 const API_BASE = '/MMM-FamilyChores';
@@ -33,10 +42,12 @@ export const Admin: Component<Record<string, never>> = () => {
   const [personalChoreModalOpen, setPersonalChoreModalOpen] = createSignal(false);
   const [rotatingChoreModalOpen, setRotatingChoreModalOpen] = createSignal(false);
   const [copyChoresModalOpen, setCopyChoresModalOpen] = createSignal(false);
+  const [settingsModalOpen, setSettingsModalOpen] = createSignal(false);
   const [editingPerson, setEditingPerson] = createSignal<Person | null>(null);
   const [editingChore, setEditingChore] = createSignal<Chore | null>(null);
   const [editingChorePerson, setEditingChorePerson] = createSignal<Person | null>(null);
   const [copyChoresFromPerson, setCopyChoresFromPerson] = createSignal<Person | null>(null);
+  const [historyPerson, setHistoryPerson] = createSignal<Person | null>(null);
   const [loading, setLoading] = createSignal(true);
   const [retryCount, setRetryCount] = createSignal(0);
 
@@ -108,6 +119,16 @@ export const Admin: Component<Record<string, never>> = () => {
   const closeCopyChoresModal = async () => {
     setCopyChoresModalOpen(false);
     setCopyChoresFromPerson(null);
+    await loadData();
+  };
+
+  // Settings modal handlers
+  const openSettingsModal = () => {
+    setSettingsModalOpen(true);
+  };
+
+  const closeSettingsModal = async () => {
+    setSettingsModalOpen(false);
     await loadData();
   };
 
@@ -263,6 +284,14 @@ export const Admin: Component<Record<string, never>> = () => {
             Restore Backup
           </label>
           <input type="file" id="restoreFile" accept=".json" hidden onInput={handleRestore} />
+          <button
+            type="button"
+            class="btn btn-secondary"
+            id="settingsBtn"
+            onClick={openSettingsModal}
+          >
+            ⚙️ Settings
+          </button>
         </div>
       </header>
 
@@ -293,13 +322,12 @@ export const Admin: Component<Record<string, never>> = () => {
                   Add Person
                 </button>
                 <Show when={choreData()?.people.length === 0}>
-                  <span
-                    id="addPersonInfo"
+                  <Tooltip
+                    text="Add at least one person before you can create chores"
                     class="info-icon"
-                    data-tooltip="Add at least one person before you can create chores"
                   >
                     ℹ️
-                  </span>
+                  </Tooltip>
                 </Show>
               </div>
             </div>
@@ -325,6 +353,13 @@ export const Admin: Component<Record<string, never>> = () => {
                           onClick={() => openPersonModal(person)}
                         >
                           Edit
+                        </button>
+                        <button
+                          type="button"
+                          class="btn btn-secondary btn-sm"
+                          onClick={() => setHistoryPerson(person)}
+                        >
+                          History
                         </button>
                         <button
                           type="button"
@@ -454,21 +489,26 @@ export const Admin: Component<Record<string, never>> = () => {
                 <strong>Last Reset Date:</strong>{' '}
                 <span id="lastResetDate">{choreData()?.lastResetDate || 'Never'}</span>
               </p>
-              <div class="button-with-tooltip">
-                <button
-                  type="button"
-                  class="btn btn-warning"
-                  id="resetDailyBtn"
-                  onClick={handleForceReset}
-                >
-                  Force Daily Reset
-                </button>
-                <span
-                  class="info-icon"
-                  data-tooltip="WARNING: This will un-check all chores and rotate assignment on rotating chores to the next person. It does respect skip days if today is a skip day. Useful for testing or immediately advancing chore assignments."
-                >
-                  ℹ️
-                </span>
+              <div class="button-group">
+                <div class="button-with-tooltip">
+                  <button
+                    type="button"
+                    class="btn btn-warning"
+                    id="resetDailyBtn"
+                    onClick={handleForceReset}
+                  >
+                    Force Daily Reset
+                  </button>
+                  <Tooltip
+                    text="WARNING: This will un-check all chores and rotate assignment on rotating chores to the next person. It does respect skip days if today is a skip day. Useful for testing or immediately advancing chore assignments."
+                    position="above"
+                    align="center"
+                    multiline
+                    class="info-icon"
+                  >
+                    ℹ️
+                  </Tooltip>
+                </div>
               </div>
             </div>
           </section>
@@ -489,7 +529,17 @@ export const Admin: Component<Record<string, never>> = () => {
       <Show when={rotatingChoreModalOpen() && choreData()}>
         <RotatingChoreModal
           initialChore={editingChore() as RotatingChore | undefined}
-          choreData={choreData() ?? { people: [], chores: [] }}
+          choreData={
+            choreData() ?? {
+              people: [],
+              chores: [],
+              dailyCompletions: [],
+              settings: {
+                dailyResetTime: '03:00',
+                historyEnabled: true,
+              },
+            }
+          }
           closeModal={closeRotatingChoreModal}
         />
       </Show>
@@ -498,6 +548,24 @@ export const Admin: Component<Record<string, never>> = () => {
           fromPerson={copyChoresFromPerson() as Person}
           choreData={choreData() as FamilyChoresData}
           closeModal={closeCopyChoresModal}
+        />
+      </Show>
+      <Show when={historyPerson() && choreData()}>
+        <ChoreHistoryModal
+          person={historyPerson() as Person}
+          choreData={choreData() as FamilyChoresData}
+          closeModal={() => setHistoryPerson(null)}
+        />
+      </Show>
+      <Show when={settingsModalOpen() && choreData()}>
+        <SettingsModal
+          initialSettings={
+            choreData()?.settings ?? {
+              dailyResetTime: '03:00',
+              historyEnabled: true,
+            }
+          }
+          closeModal={closeSettingsModal}
         />
       </Show>
     </div>

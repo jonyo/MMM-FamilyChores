@@ -1,8 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import type { Person } from '../types/chore-types';
+import type { Chore, Person } from '../types/chore-types';
 import { ChoreType, DayOfWeek, SkipDayVisibility } from '../types/chore-types';
 import { generateTestUUID } from '../utils/uuid';
-import { validateChore, validatePerson } from './validator';
+import {
+  validateChore,
+  validateDailyCompletion,
+  validatePerson,
+  validateSettings,
+} from './validator';
 
 const person = (n: number, overrides: Partial<Person> = {}): Person => ({
   id: generateTestUUID(n),
@@ -232,5 +237,151 @@ describe('validateChore', () => {
         ).valid
       ).toBe(true);
     });
+  });
+});
+
+describe('validateSettings', () => {
+  it('rejects non-objects', () => {
+    expect(validateSettings(null).valid).toBe(false);
+    expect(validateSettings(undefined).valid).toBe(false);
+    expect(validateSettings('x').valid).toBe(false);
+    expect(validateSettings(1).valid).toBe(false);
+  });
+
+  it('rejects missing or invalid dailyResetTime', () => {
+    expect(validateSettings({}).valid).toBe(false);
+    expect(validateSettings({ dailyResetTime: '' }).valid).toBe(false);
+    expect(validateSettings({ dailyResetTime: 1 }).valid).toBe(false);
+    expect(validateSettings({ dailyResetTime: '25:00' }).valid).toBe(false);
+    expect(validateSettings({ dailyResetTime: '8:0' }).valid).toBe(false);
+    expect(validateSettings({ dailyResetTime: '08:60' }).valid).toBe(false);
+  });
+
+  it('rejects missing or invalid historyEnabled', () => {
+    expect(validateSettings({ dailyResetTime: '03:00' }).valid).toBe(false);
+    expect(validateSettings({ dailyResetTime: '03:00', historyEnabled: 'yes' }).valid).toBe(false);
+    expect(validateSettings({ dailyResetTime: '03:00', historyEnabled: 1 }).valid).toBe(false);
+  });
+
+  it('accepts valid settings', () => {
+    expect(validateSettings({ dailyResetTime: '03:00', historyEnabled: true }).valid).toBe(true);
+    expect(validateSettings({ dailyResetTime: '21:00', historyEnabled: false }).valid).toBe(true);
+    expect(validateSettings({ dailyResetTime: '8:00', historyEnabled: true }).valid).toBe(true);
+  });
+});
+
+describe('validateDailyCompletion', () => {
+  const people: Person[] = [person(1), person(2)];
+  const chores: Chore[] = [
+    {
+      ...baseChoreFields(1),
+      type: ChoreType.PERSONAL,
+      assignedTo: people[0].id,
+    },
+    {
+      ...baseChoreFields(2),
+      type: ChoreType.ROTATING,
+      rotation: [people[0].id, people[1].id],
+      rotatingIndex: 0,
+    },
+  ];
+
+  it('rejects non-objects', () => {
+    expect(validateDailyCompletion(null, chores).valid).toBe(false);
+    expect(validateDailyCompletion(undefined, chores).valid).toBe(false);
+    expect(validateDailyCompletion('x', chores).valid).toBe(false);
+  });
+
+  it('rejects invalid id', () => {
+    expect(validateDailyCompletion({}, chores).valid).toBe(false);
+    expect(validateDailyCompletion({ id: '' }, chores).valid).toBe(false);
+    expect(validateDailyCompletion({ id: 'not-uuid' }, chores).valid).toBe(false);
+  });
+
+  it('rejects invalid date', () => {
+    const base = {
+      id: generateTestUUID(1),
+      date: '2024-01-15',
+      personId: people[0].id,
+      choreId: chores[0].id,
+      completed: true,
+      wasLate: false,
+    };
+    expect(validateDailyCompletion({ ...base, date: '' }, chores).valid).toBe(false);
+    expect(validateDailyCompletion({ ...base, date: '01/15/2024' }, chores).valid).toBe(false);
+    expect(validateDailyCompletion({ ...base, date: '2024-1-15' }, chores).valid).toBe(false);
+  });
+
+  it('rejects invalid personId', () => {
+    const base = {
+      id: generateTestUUID(1),
+      date: '2024-01-15',
+      personId: people[0].id,
+      choreId: chores[0].id,
+      completed: true,
+      wasLate: false,
+    };
+    expect(validateDailyCompletion({ ...base, personId: '' }, chores).valid).toBe(false);
+    expect(validateDailyCompletion({ ...base, personId: 'not-uuid' }, chores).valid).toBe(false);
+  });
+
+  it('rejects invalid choreId', () => {
+    const base = {
+      id: generateTestUUID(1),
+      date: '2024-01-15',
+      personId: people[0].id,
+      choreId: chores[0].id,
+      completed: true,
+      wasLate: false,
+    };
+    expect(validateDailyCompletion({ ...base, choreId: '' }, chores).valid).toBe(false);
+    expect(validateDailyCompletion({ ...base, choreId: 'not-uuid' }, chores).valid).toBe(false);
+    expect(validateDailyCompletion({ ...base, choreId: generateTestUUID(99) }, chores).valid).toBe(
+      false
+    );
+  });
+
+  it('rejects invalid completed or wasLate', () => {
+    const base = {
+      id: generateTestUUID(1),
+      date: '2024-01-15',
+      personId: people[0].id,
+      choreId: chores[0].id,
+      completed: true,
+      wasLate: false,
+    };
+    expect(validateDailyCompletion({ ...base, completed: 'yes' }, chores).valid).toBe(false);
+    expect(validateDailyCompletion({ ...base, completed: 1 }, chores).valid).toBe(false);
+    expect(validateDailyCompletion({ ...base, wasLate: 'no' }, chores).valid).toBe(false);
+    expect(validateDailyCompletion({ ...base, wasLate: 0 }, chores).valid).toBe(false);
+  });
+
+  it('rejects invalid completedAt when present', () => {
+    const base = {
+      id: generateTestUUID(1),
+      date: '2024-01-15',
+      personId: people[0].id,
+      choreId: chores[0].id,
+      completed: true,
+      completedAt: '12:00',
+      wasLate: false,
+    };
+    expect(validateDailyCompletion({ ...base, completedAt: 1 }, chores).valid).toBe(false);
+    expect(validateDailyCompletion({ ...base, completedAt: '25:00' }, chores).valid).toBe(false);
+    expect(validateDailyCompletion({ ...base, completedAt: '8:0' }, chores).valid).toBe(false);
+  });
+
+  it('accepts valid daily completion', () => {
+    const valid = {
+      id: generateTestUUID(1),
+      date: '2024-01-15',
+      personId: people[0].id,
+      choreId: chores[0].id,
+      completed: true,
+      completedAt: '12:00',
+      wasLate: false,
+    };
+    expect(validateDailyCompletion(valid, chores).valid).toBe(true);
+    expect(validateDailyCompletion({ ...valid, completedAt: undefined }, chores).valid).toBe(true);
   });
 });

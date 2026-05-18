@@ -1,3 +1,10 @@
+/*
+This file was automatically generated:
+ - edit the CSS files in src/admin/
+ - run "pnpm build" to regenerate this file
+
+- section source: src/admin/admin.css
+*/
 * {
   box-sizing: border-box;
   margin: 0;
@@ -110,6 +117,124 @@ main {
   margin: 0;
 }
 
+.item-list {
+  display: grid;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.person-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.person-chores {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #e9ecef;
+}
+
+.person-chores-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #e9ecef;
+}
+
+.person-chores-header h4 {
+  font-size: 1.1rem;
+  color: #667eea;
+  margin: 0;
+}
+
+.person-chores-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.chore-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.chore-item:last-child {
+  margin-bottom: 0;
+}
+
+.chore-info h4 {
+  font-size: 1rem;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.chore-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.state-info {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.state-info p {
+  margin-bottom: 15px;
+  font-size: 1.1rem;
+}
+
+.state-info strong {
+  color: #667eea;
+}
+
+.button-with-tooltip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.button-group {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  margin-top: 16px;
+  align-items: flex-start;
+}
+
+.info-icon {
+  margin-left: 8px;
+  font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+  header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .backup-section {
+    width: 100%;
+    justify-content: center;
+  }
+}
+/*
+This file was automatically generated:
+ - edit the CSS files in src/admin/
+ - run "pnpm build" to regenerate this file
+
+- section source: src/admin/buttons.css
+*/
 .btn {
   padding: 10px 20px;
   border: none;
@@ -170,12 +295,127 @@ main {
   background: #218838;
 }
 
-.item-list {
-  display: grid;
-  gap: 15px;
-  margin-top: 20px;
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+}
+/*
+This file was automatically generated:
+ - edit the CSS files in src/admin/
+ - run "pnpm build" to regenerate this file
+
+- section source: src/admin/forms.css
+*/
+.form-group {
+  margin-bottom: 20px;
 }
 
+.form-label {
+  display: block;
+  margin-bottom: 12px;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-help {
+  display: block;
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin-top: 5px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 12px;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-group input[type="text"],
+.form-group input[type="time"],
+.form-group select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+  margin-bottom: 8px;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="time"]:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.form-group input[type="color"] {
+  width: 60px;
+  height: 40px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.color-input-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.checkbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  background: #f8f9fa;
+}
+
+.checkbox-list label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: normal;
+}
+
+.checkbox-list input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 25px;
+}
+/*
+This file was automatically generated:
+ - edit the CSS files in src/admin/
+ - run "pnpm build" to regenerate this file
+
+- section source: src/admin/person.css
+*/
+.color-badge {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  vertical-align: middle;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+}
+/*
+This file was automatically generated:
+ - edit the CSS files in src/admin/
+ - run "pnpm build" to regenerate this file
+
+- section source: src/admin/card.css
+*/
 .item-card {
   background: #f8f9fa;
   border: 1px solid #e9ecef;
@@ -187,71 +427,6 @@ main {
 .item-card:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   border-color: #667eea;
-}
-
-.person-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-}
-
-.person-chores {
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 1px solid #e9ecef;
-}
-
-.person-chores-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 1px solid #e9ecef;
-}
-
-.person-chores-header h4 {
-  font-size: 1.1rem;
-  color: #667eea;
-  margin: 0;
-}
-
-.person-chores-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.empty-message {
-  color: #6c757d;
-  font-style: italic;
-  margin: 10px 0;
-}
-
-.chore-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-  background: white;
-  border: 1px solid #e9ecef;
-  border-radius: 6px;
-  margin-bottom: 10px;
-}
-
-.chore-item:last-child {
-  margin-bottom: 0;
-}
-
-.chore-info h4 {
-  font-size: 1rem;
-  margin-bottom: 5px;
-  color: #333;
-}
-
-.chore-actions {
-  display: flex;
-  gap: 8px;
 }
 
 .item-info {
@@ -273,80 +448,170 @@ main {
   display: flex;
   gap: 10px;
 }
+/*
+This file was automatically generated:
+ - edit the CSS files in src/admin/
+ - run "pnpm build" to regenerate this file
 
-.color-badge {
+- section source: src/admin/chore.css
+*/
+.chore-type-badge {
   display: inline-block;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  vertical-align: middle;
-  border: 2px solid rgba(0, 0, 0, 0.1);
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-left: 10px;
 }
 
-.state-info {
-  background: #f8f9fa;
-  padding: 20px;
-  border-radius: 8px;
-  border: 1px solid #e9ecef;
+.chore-type-badge.personal {
+  background: #e3f2fd;
+  color: #1976d2;
 }
 
-.state-info p {
-  margin-bottom: 15px;
-  font-size: 1.1rem;
+.chore-type-badge.rotating {
+  background: #f3e5f5;
+  color: #7b1fa2;
 }
 
-.state-info strong {
-  color: #667eea;
-}
-
-.button-with-tooltip {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.info-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  font-size: 14px;
-  cursor: help;
-  position: relative;
-  user-select: none;
-}
-
-.info-icon::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%) translateY(-8px);
-  background: #333;
-  color: white;
-  padding: 8px 12px;
-  border-radius: 6px;
+.skip-days {
   font-size: 0.85rem;
-  white-space: normal;
-  max-width: 300px;
-  width: max-content;
-  opacity: 0;
-  visibility: hidden;
-  transition:
-    opacity 0.2s,
-    visibility 0.2s;
-  z-index: 100;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  pointer-events: none;
+  color: #6c757d;
+  margin-top: 5px;
 }
 
-.info-icon:hover::after,
-.info-icon[style*="--tooltip-visible: true"]::after {
-  opacity: 1;
-  visibility: visible;
+.deadline {
+  font-size: 0.85rem;
+  color: #667eea;
+  margin-top: 5px;
+}
+/*
+This file was automatically generated:
+ - edit the CSS files in src/admin/
+ - run "pnpm build" to regenerate this file
+
+- section source: src/admin/chore-history-modal.css
+*/
+.history-grid {
+  margin: 20px 0;
+  overflow-x: auto;
+  scrollbar-gutter: stable;
 }
 
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.history-table th {
+  padding: 10px;
+  text-align: center;
+  border: 1px solid #d1d5db;
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #333;
+  vertical-align: bottom;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.history-table th.date {
+  height: 100px;
+  white-space: nowrap;
+  padding: 0;
+}
+
+.history-table th.date .vertical-text {
+  transform: rotate(-90deg);
+  transform-origin: 18px 5px;
+  white-space: nowrap;
+  display: block;
+  width: 50px;
+  padding: 5px;
+}
+
+.history-table td {
+  padding: 10px;
+  text-align: center;
+  border: 1px solid #d1d5db;
+}
+
+.history-table .chore-name {
+  text-align: left;
+  font-weight: 500;
+  min-width: 150px;
+  position: relative;
+  white-space: nowrap;
+}
+
+.rotating-icon {
+  margin-left: 8px;
+  font-size: 1rem;
+}
+
+.history-cell {
+  width: 50px;
+  height: 50px;
+}
+
+.history-skip-day {
+  background: #e9ecef;
+}
+
+.completion-badge {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+  text-align: center;
+  border-radius: 50%;
+  font-weight: bold;
+  font-size: 1.2rem;
+  cursor: pointer;
+  position: relative;
+  transition: box-shadow 0.2s;
+}
+
+.completion-badge:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.completion-missed {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.completion-ontime {
+  background: #28a745;
+  color: white;
+}
+
+.completion-late {
+  background: #ffc107;
+  color: #333;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.error {
+  text-align: center;
+  padding: 40px;
+  color: #dc3545;
+}
+/*
+This file was automatically generated:
+ - edit the CSS files in src/admin/
+ - run "pnpm build" to regenerate this file
+
+- section source: src/admin/modals.css
+*/
 .modal {
   display: none;
   position: fixed;
@@ -390,7 +655,118 @@ main {
   font-size: 1.5rem;
 }
 
-.assigned-person-display,
+.modal-content-large {
+  max-width: 90vw;
+}
+/*
+This file was automatically generated:
+ - edit the CSS files in src/admin/
+ - run "pnpm build" to regenerate this file
+
+- section source: src/admin/tooltip.css
+*/
+/* Generic tooltip classes */
+.tooltip {
+  position: relative;
+  cursor: help;
+}
+
+.tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  background: #333;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.2s,
+    visibility 0.2s;
+  z-index: 10000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+}
+
+.tooltip:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Tooltip positions */
+.tooltip-above::after {
+  bottom: 100%;
+  transform: translateY(-8px);
+}
+
+.tooltip-below::after {
+  top: 100%;
+  transform: translateY(8px);
+}
+
+.tooltip-left::after {
+  right: 100%;
+  transform: translateX(-8px);
+}
+
+.tooltip-right::after {
+  left: 100%;
+  transform: translateX(8px);
+}
+
+.tooltip-above-right::after {
+  left: 100%;
+  bottom: 100%;
+  transform: translateX(8px) translateY(-8px);
+}
+
+.tooltip-below-right::after {
+  left: 100%;
+  top: 100%;
+  transform: translateX(8px) translateY(8px);
+}
+
+/* Tooltip alignment for above/below */
+.tooltip-align-left::after {
+  left: 0;
+}
+
+.tooltip-align-center::after {
+  left: 50%;
+  transform: translateX(-50%) translateY(-8px);
+}
+
+.tooltip-align-right::after {
+  right: 0;
+}
+
+/* Multiline tooltip support */
+.tooltip-multiline::after {
+  white-space: normal;
+  max-width: 300px;
+  width: max-content;
+  line-height: 1.3;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+}
+
+/* Override transform for multiline centered tooltips */
+.tooltip-above.tooltip-align-center.tooltip-multiline::after {
+  transform: translateX(-50%) translateY(-8px);
+}
+
+.tooltip-below.tooltip-align-center.tooltip-multiline::after {
+  transform: translateX(-50%) translateY(8px);
+}
+/*
+This file was automatically generated:
+ - edit the CSS files in src/admin/
+ - run "pnpm build" to regenerate this file
+
+- section source: src/admin/copy-chores-modal.css
+*/
 .copy-from-display {
   display: flex;
   align-items: center;
@@ -403,136 +779,48 @@ main {
   font-size: 1rem;
 }
 
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 12px;
-  font-weight: 500;
-  color: #333;
-}
-
-.form-group input[type="text"],
-.form-group input[type="time"],
-.form-group select {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 1rem;
-  transition: border-color 0.2s;
-  margin-bottom: 8px;
-}
-
-.form-group input[type="text"]:focus,
-.form-group input[type="time"]:focus,
-.form-group select:focus {
-  outline: none;
-  border-color: #667eea;
-}
-
-.form-group input[type="color"] {
-  width: 60px;
-  height: 40px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.color-input-group {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.btn-sm {
-  padding: 6px 12px;
-  font-size: 0.85rem;
-}
-
-.checkbox-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 12px;
-  border: 1px solid #e9ecef;
-  border-radius: 6px;
-  background: #f8f9fa;
-}
-
-.checkbox-list label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  font-weight: normal;
-}
-
-.checkbox-list input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-}
-
-.form-actions {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-  margin-top: 25px;
-}
-
-.chore-type-badge {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  margin-left: 10px;
-}
-
-.chore-type-badge.personal {
-  background: #e3f2fd;
-  color: #1976d2;
-}
-
-.chore-type-badge.rotating {
-  background: #f3e5f5;
-  color: #7b1fa2;
-}
-
-.skip-days {
-  font-size: 0.85rem;
+.empty-message {
   color: #6c757d;
-  margin-top: 5px;
+  font-style: italic;
+  margin: 10px 0;
 }
+/*
+This file was automatically generated:
+ - edit the CSS files in src/admin/
+ - run "pnpm build" to regenerate this file
 
-.deadline {
-  font-size: 0.85rem;
-  color: #667eea;
-  margin-top: 5px;
+- section source: src/admin/person-modal.css
+*/
+/*
+This file was automatically generated:
+ - edit the CSS files in src/admin/
+ - run "pnpm build" to regenerate this file
+
+- section source: src/admin/personal-chore-modal.css
+*/
+.assigned-person-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+  font-size: 1rem;
 }
+/*
+This file was automatically generated:
+ - edit the CSS files in src/admin/
+ - run "pnpm build" to regenerate this file
 
-@media (max-width: 768px) {
-  header {
-    flex-direction: column;
-    text-align: center;
-  }
+- section source: src/admin/rotating-chore.css
+*/
+/*
+This file was automatically generated:
+ - edit the CSS files in src/admin/
+ - run "pnpm build" to regenerate this file
 
-  .backup-section {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .item-card {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
-  }
-
-  .item-actions {
-    width: 100%;
-    justify-content: flex-end;
-  }
-}
+- section source: src/admin/settings-modal.css
+*/
+/*$vite$:1*/

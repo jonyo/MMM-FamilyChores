@@ -30,6 +30,11 @@ describe('Admin Component Tests', () => {
           },
         ],
         lastResetDate: '2024-01-01',
+        dailyCompletions: [],
+        settings: {
+          dailyResetTime: '03:00',
+          historyEnabled: true,
+        },
       };
 
       vi.mocked(fetch).mockResolvedValueOnce({
@@ -54,7 +59,12 @@ describe('Admin Component Tests', () => {
       const mockData: FamilyChoresData = {
         people: [],
         chores: [],
+        dailyCompletions: [],
         lastResetDate: '2024-01-01',
+        settings: {
+          dailyResetTime: '03:00',
+          historyEnabled: true,
+        },
       };
 
       vi.mocked(fetch).mockResolvedValueOnce({
@@ -70,7 +80,12 @@ describe('Admin Component Tests', () => {
       const mockData: FamilyChoresData = {
         people: [],
         chores: [],
+        dailyCompletions: [],
         lastResetDate: '2024-01-01',
+        settings: {
+          dailyResetTime: '03:00',
+          historyEnabled: true,
+        },
       };
 
       vi.mocked(fetch).mockResolvedValueOnce({
@@ -92,7 +107,12 @@ describe('Admin Component Tests', () => {
       const mockData: FamilyChoresData = {
         people: [{ id: 'p1', name: 'Alice', color: '#FF6B6B' }],
         chores: [],
+        dailyCompletions: [],
         lastResetDate: '2024-01-01',
+        settings: {
+          dailyResetTime: '03:00',
+          historyEnabled: true,
+        },
       };
 
       vi.mocked(fetch).mockResolvedValueOnce({
@@ -122,7 +142,12 @@ describe('Admin Component Tests', () => {
           { id: 'p2', name: 'Bob', color: '#4ECDC4' },
         ],
         chores: [],
+        dailyCompletions: [],
         lastResetDate: '2024-01-01',
+        settings: {
+          dailyResetTime: '03:00',
+          historyEnabled: true,
+        },
       };
 
       vi.mocked(fetch).mockResolvedValueOnce({

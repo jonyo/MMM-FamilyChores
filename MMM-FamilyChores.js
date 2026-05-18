@@ -47,6 +47,15 @@
 	/**
 	* Gets the local time string in HH:MM format
 	* Uses Intl.DateTimeFormat for proper timezone and DST handling
+	*
+	* @warning Do not pass a Date object created from a YYYY-MM-DD string (e.g., new Date('2026-05-17'))
+	* as it parses as UTC midnight and will produce incorrect results when formatted back to local timezone.
+	* Only pass Date objects created from real time values (e.g., new Date(), new Date(timestamp)).
+	*
+	* Avoid:
+	* - Date objects created from YYYY-MM-DD strings (parsed as UTC midnight)
+	* - Double local correction (UTC → local timezone → back into helper)
+	*
 	* @param date - Optional date to convert (defaults to current time)
 	*/
 	var getLocalTimeString = (date = /* @__PURE__ */ new Date()) => {
@@ -59,6 +68,15 @@
 	/**
 	* Gets the local day name in lowercase (sunday, monday, etc.)
 	* Uses Intl.DateTimeFormat for proper timezone and DST handling
+	*
+	* @warning Do not pass a Date object created from a YYYY-MM-DD string (e.g., new Date('2026-05-17'))
+	* as it parses as UTC midnight and will produce incorrect results when formatted back to local timezone.
+	* Only pass Date objects created from real time values (e.g., new Date(), new Date(timestamp)).
+	*
+	* Avoid:
+	* - Date objects created from YYYY-MM-DD strings (parsed as UTC midnight)
+	* - Double local correction (UTC → local timezone → back into helper)
+	*
 	* @param date - Optional date to convert (defaults to current time)
 	*/
 	var getLocalDayName = (date = /* @__PURE__ */ new Date()) => {
@@ -104,8 +122,7 @@
 				incompleteTitle: "Incomplete Chores",
 				rotatingTitle: "Today's Rotation",
 				overdueTitle: "Overdue"
-			},
-			dailyResetTime: "03:00"
+			}
 		},
 		defaults: {
 			updateInterval: 6e4,
@@ -120,8 +137,7 @@
 				incompleteTitle: "Incomplete Chores",
 				rotatingTitle: "Today's Rotation",
 				overdueTitle: "Overdue"
-			},
-			dailyResetTime: "03:00"
+			}
 		},
 		choreData: null,
 		start() {

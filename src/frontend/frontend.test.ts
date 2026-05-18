@@ -154,6 +154,11 @@ describe('Frontend Tests', () => {
             caughtUp: true,
           },
         ],
+        dailyCompletions: [],
+        settings: {
+          dailyResetTime: '03:00',
+          historyEnabled: true,
+        },
       };
     });
 
@@ -340,6 +345,11 @@ describe('Frontend Tests', () => {
             skipDayVisibility: SkipDayVisibility.HIDE,
           },
         ],
+        dailyCompletions: [],
+        settings: {
+          dailyResetTime: '03:00',
+          historyEnabled: true,
+        },
       };
     });
 
@@ -457,6 +467,11 @@ describe('Frontend Tests', () => {
             skipDayVisibility: SkipDayVisibility.HIDE,
           },
         ],
+        dailyCompletions: [],
+        settings: {
+          dailyResetTime: '03:00',
+          historyEnabled: true,
+        },
       };
     });
 
@@ -633,6 +648,11 @@ describe('Frontend Tests', () => {
           { id: 'bob', name: 'Bob', color: '#4ECDC4' },
         ],
         chores: [],
+        dailyCompletions: [],
+        settings: {
+          dailyResetTime: '03:00',
+          historyEnabled: true,
+        },
       };
     });
 
@@ -1113,6 +1133,11 @@ describe('Frontend Tests', () => {
             caughtUp: true,
           },
         ],
+        dailyCompletions: [],
+        settings: {
+          dailyResetTime: '03:00',
+          historyEnabled: true,
+        },
       };
 
       // Render the module to page
@@ -1156,6 +1181,11 @@ describe('Frontend Tests', () => {
             caughtUp: true,
           },
         ],
+        dailyCompletions: [],
+        settings: {
+          dailyResetTime: '03:00',
+          historyEnabled: true,
+        },
       };
 
       module.config.personFilter = 'Alice';
@@ -1185,6 +1215,11 @@ describe('Frontend Tests', () => {
             caughtUp: true,
           },
         ],
+        dailyCompletions: [],
+        settings: {
+          dailyResetTime: '03:00',
+          historyEnabled: true,
+        },
       };
 
       module.config.personFilter = 'Bob'; // Bob has no chores
@@ -1250,6 +1285,11 @@ describe('Frontend Tests', () => {
             caughtUp: true,
           },
         ],
+        dailyCompletions: [],
+        settings: {
+          dailyResetTime: '03:00',
+          historyEnabled: true,
+        },
       };
     });
 
@@ -1538,6 +1578,11 @@ describe('Frontend Tests', () => {
             caughtUp: true,
           },
         ],
+        dailyCompletions: [],
+        settings: {
+          dailyResetTime: '03:00',
+          historyEnabled: true,
+        },
       };
     });
 

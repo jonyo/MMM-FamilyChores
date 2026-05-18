@@ -1,5 +1,11 @@
 import type { Component } from 'solid-js';
 import { createSignal, For, Show } from 'solid-js';
+import './personal-chore-modal.css';
+import './buttons.css';
+import './forms.css';
+import './modals.css';
+import './person.css';
+import './chore.css';
 import { createChore, updateChore } from '../api';
 import type { Person, PersonalChore, SkipDayVisibility } from '../types/chore-types';
 import {

@@ -1,6 +1,6 @@
 import * as Log from 'logger';
 import { SocketNotifications } from '../constants/socket-notifications';
-import type { Chore, FamilyChoresData, Person } from '../types/chore-types';
+import type { Chore, DailyCompletion, FamilyChoresData, Person } from '../types/chore-types';
 import { ChoreType, SkipDayVisibility } from '../types/chore-types';
 import type {
   CopyChoresRequest,
@@ -9,6 +9,7 @@ import type {
   RestoreDataRequest,
   UpdateChoreRequest,
   UpdatePersonRequest,
+  UpdateSettingsRequest,
 } from '../types/request-types';
 import type { ApiErrorBody } from '../types/response-types';
 import { generateUUID } from '../utils/uuid';
@@ -47,6 +48,8 @@ export interface AdminHandlers {
   getBackup: (req: Request, res: Response) => void;
   postRestore: (req: Request, res: Response) => void;
   postCopyChores: (req: Request, res: Response) => void;
+  getHistory: (req: Request, res: Response) => void;
+  putSettings: (req: Request, res: Response) => void;
 }
 
 export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers {
@@ -155,7 +158,6 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
           return;
         }
 
-        // Remove person
         choreData.people.splice(personIndex, 1);
 
         // Clean up chores assigned to this person
@@ -165,7 +167,10 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
           } else if (chore.type === 'rotating') {
             // Remove from rotation lists
             chore.rotation = chore.rotation?.filter((personId: string) => personId !== id) || [];
-            // If rotation is empty, remove the chore
+            // Adjust rotating index if needed
+            if (chore.rotatingIndex !== undefined && chore.rotatingIndex >= chore.rotation.length) {
+              chore.rotatingIndex = Math.max(0, chore.rotation.length - 1);
+            }
             return chore.rotation.length > 0;
           }
           return true;
@@ -220,6 +225,7 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         }
 
         choreData.chores.push(newChore as Chore);
+
         context.saveChoreData();
         context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
 
@@ -277,6 +283,7 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         }
 
         Object.assign(chore, updatedChore);
+
         context.saveChoreData();
         context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
 
@@ -372,7 +379,15 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         context.setChoreData({
           people: validPeople,
           chores: validChores,
+          dailyCompletions: Array.isArray(restoredData.dailyCompletions)
+            ? (restoredData.dailyCompletions as DailyCompletion[])
+            : [],
           lastResetDate: restoredData.lastResetDate,
+          // Auto-spread defaults for settings
+          settings: {
+            dailyResetTime: restoredData.settings?.dailyResetTime ?? '03:00',
+            historyEnabled: restoredData.settings?.historyEnabled ?? true,
+          },
         });
         context.saveChoreData();
         context.sendNotification(SocketNotifications.CHORE_DATA, context.getChoreData());
@@ -441,6 +456,78 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
       } catch (error) {
         Log.error(`Error copying chores: ${error}`);
         res.status(500).json(apiErr('Failed to copy chores'));
+      }
+    },
+
+    getHistory: (req, res) => {
+      const choreData = context.getChoreData();
+      if (!choreData) {
+        res.status(500).json(apiErr('No data available'));
+        return;
+      }
+
+      if (!choreData.settings?.historyEnabled) {
+        res.json([]);
+        return;
+      }
+
+      const personId = (req.query as { personId?: string })?.personId;
+      const dailyCompletions = choreData.dailyCompletions || [];
+
+      // Filter by personId if provided
+      const filteredCompletions = personId
+        ? dailyCompletions.filter((dc) => dc.personId === personId)
+        : dailyCompletions;
+
+      // Sort by date descending (newest first)
+      const sortedCompletions = [...filteredCompletions].sort((a, b) => {
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      });
+
+      res.json(sortedCompletions);
+    },
+
+    putSettings: (req, res) => {
+      try {
+        const { dailyResetTime, historyEnabled } = req.body as UpdateSettingsRequest;
+        const choreData = context.getChoreData();
+
+        if (!choreData) {
+          res.status(500).json(apiErr('No data available'));
+          return;
+        }
+
+        // Initialize settings if not present
+        if (!choreData.settings) {
+          choreData.settings = {
+            dailyResetTime: '03:00',
+            historyEnabled: true,
+          };
+        }
+
+        // Update daily reset time if provided
+        if (dailyResetTime !== undefined) {
+          // Validate format (HH:mm)
+          const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+          if (!timeRegex.test(dailyResetTime)) {
+            res.status(400).json(apiErr('Invalid time format. Use HH:mm (24-hour format)'));
+            return;
+          }
+          choreData.settings.dailyResetTime = dailyResetTime;
+        }
+
+        // Update history enabled if provided
+        if (historyEnabled !== undefined) {
+          choreData.settings.historyEnabled = historyEnabled;
+        }
+
+        context.saveChoreData();
+        context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
+
+        res.json(choreData.settings);
+      } catch (error) {
+        Log.error(`Error updating settings: ${error}`);
+        res.status(500).json(apiErr('Failed to update settings'));
       }
     },
   };

@@ -1,5 +1,10 @@
 import type { Component } from 'solid-js';
 import { createMemo, createSignal, For, onMount, Show } from 'solid-js';
+import './copy-chores-modal.css';
+import './buttons.css';
+import './forms.css';
+import './modals.css';
+import './person.css';
 import { copyChores } from '../api';
 import type { FamilyChoresData, Person, PersonalChore } from '../types/chore-types';
 import { ChoreType } from '../types/chore-types';

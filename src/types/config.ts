@@ -30,8 +30,4 @@ export type Config = {
     rotatingTitle?: string;
     overdueTitle?: string;
   };
-  /**
-   * Format: "HH:mm" in 24-hour format, default "03:00"
-   */
-  dailyResetTime?: string;
 };

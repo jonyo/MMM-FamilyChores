@@ -1,4 +1,4 @@
-// Automatically built — do not edit directly. Edit src/admin/admin.tsx and run pnpm build:admin.
+// Automatically built — do not edit directly. Edit src/admin/.. files and run pnpm build
 (function() {
 	//#region node_modules/.pnpm/solid-js@1.9.12/node_modules/solid-js/dist/solid.js
 	var sharedConfig = {
@@ -28,6 +28,8 @@
 		};
 	}
 	var equalFn = (a, b) => a === b;
+	var $PROXY = Symbol("solid-proxy");
+	var SUPPORTS_PROXY = typeof Proxy === "function";
 	var $TRACK = Symbol("solid-track");
 	var signalOptions = { equals: equalFn };
 	var ERROR = null;
@@ -155,6 +157,15 @@
 	function useContext(context) {
 		let value;
 		return Owner && Owner.context && (value = Owner.context[context.id]) !== void 0 ? value : context.defaultValue;
+	}
+	function children(fn) {
+		const children = createMemo(fn);
+		const memo = createMemo(() => resolveChildren(children()));
+		memo.toArray = () => {
+			const c = memo();
+			return Array.isArray(c) ? c : c != null ? [c] : [];
+		};
+		return memo;
 	}
 	var SuspenseContext;
 	function readSignal() {
@@ -524,6 +535,18 @@
 		});
 		else runErrors(error, fns, owner);
 	}
+	function resolveChildren(children) {
+		if (typeof children === "function" && !children.length) return resolveChildren(children());
+		if (Array.isArray(children)) {
+			const results = [];
+			for (let i = 0; i < children.length; i++) {
+				const result = resolveChildren(children[i]);
+				Array.isArray(result) ? results.push.apply(results, result) : results.push(result);
+			}
+			return results;
+		}
+		return children;
+	}
 	var FALLBACK = Symbol("fallback");
 	function dispose(d) {
 		for (let i = 0; i < d.length; i++) d[i]();
@@ -626,6 +649,101 @@
 		}
 		return untrack(() => Comp(props || {}));
 	}
+	function trueFn() {
+		return true;
+	}
+	var propTraps = {
+		get(_, property, receiver) {
+			if (property === $PROXY) return receiver;
+			return _.get(property);
+		},
+		has(_, property) {
+			if (property === $PROXY) return true;
+			return _.has(property);
+		},
+		set: trueFn,
+		deleteProperty: trueFn,
+		getOwnPropertyDescriptor(_, property) {
+			return {
+				configurable: true,
+				enumerable: true,
+				get() {
+					return _.get(property);
+				},
+				set: trueFn,
+				deleteProperty: trueFn
+			};
+		},
+		ownKeys(_) {
+			return _.keys();
+		}
+	};
+	function resolveSource(s) {
+		return !(s = typeof s === "function" ? s() : s) ? {} : s;
+	}
+	function resolveSources() {
+		for (let i = 0, length = this.length; i < length; ++i) {
+			const v = this[i]();
+			if (v !== void 0) return v;
+		}
+	}
+	function mergeProps(...sources) {
+		let proxy = false;
+		for (let i = 0; i < sources.length; i++) {
+			const s = sources[i];
+			proxy = proxy || !!s && $PROXY in s;
+			sources[i] = typeof s === "function" ? (proxy = true, createMemo(s)) : s;
+		}
+		if (SUPPORTS_PROXY && proxy) return new Proxy({
+			get(property) {
+				for (let i = sources.length - 1; i >= 0; i--) {
+					const v = resolveSource(sources[i])[property];
+					if (v !== void 0) return v;
+				}
+			},
+			has(property) {
+				for (let i = sources.length - 1; i >= 0; i--) if (property in resolveSource(sources[i])) return true;
+				return false;
+			},
+			keys() {
+				const keys = [];
+				for (let i = 0; i < sources.length; i++) keys.push(...Object.keys(resolveSource(sources[i])));
+				return [...new Set(keys)];
+			}
+		}, propTraps);
+		const sourcesMap = {};
+		const defined = Object.create(null);
+		for (let i = sources.length - 1; i >= 0; i--) {
+			const source = sources[i];
+			if (!source) continue;
+			const sourceKeys = Object.getOwnPropertyNames(source);
+			for (let i = sourceKeys.length - 1; i >= 0; i--) {
+				const key = sourceKeys[i];
+				if (key === "__proto__" || key === "constructor") continue;
+				const desc = Object.getOwnPropertyDescriptor(source, key);
+				if (!defined[key]) defined[key] = desc.get ? {
+					enumerable: true,
+					configurable: true,
+					get: resolveSources.bind(sourcesMap[key] = [desc.get.bind(source)])
+				} : desc.value !== void 0 ? desc : void 0;
+				else {
+					const sources = sourcesMap[key];
+					if (sources) {
+						if (desc.get) sources.push(desc.get.bind(source));
+						else if (desc.value !== void 0) sources.push(() => desc.value);
+					}
+				}
+			}
+		}
+		const target = {};
+		const definedKeys = Object.keys(defined);
+		for (let i = definedKeys.length - 1; i >= 0; i--) {
+			const key = definedKeys[i], desc = defined[key];
+			if (desc && desc.get) Object.defineProperty(target, key, desc);
+			else target[key] = desc ? desc.value : void 0;
+		}
+		return target;
+	}
 	var narrowedError = (name) => `Stale read from <${name}>.`;
 	function For(props) {
 		const fallback = "fallback" in props && { fallback: () => props.fallback };
@@ -646,6 +764,40 @@
 			}
 			return props.fallback;
 		}, void 0, void 0);
+	}
+	function Switch(props) {
+		const chs = children(() => props.children);
+		const switchFunc = createMemo(() => {
+			const ch = chs();
+			const mps = Array.isArray(ch) ? ch : [ch];
+			let func = () => void 0;
+			for (let i = 0; i < mps.length; i++) {
+				const index = i;
+				const mp = mps[i];
+				const prevFunc = func;
+				const conditionValue = createMemo(() => prevFunc() ? void 0 : mp.when, void 0, void 0);
+				const condition = mp.keyed ? conditionValue : createMemo(conditionValue, void 0, { equals: (a, b) => !a === !b });
+				func = () => prevFunc() || (condition() ? [
+					index,
+					conditionValue,
+					mp
+				] : void 0);
+			}
+			return func;
+		});
+		return createMemo(() => {
+			const sel = switchFunc()();
+			if (!sel) return props.fallback;
+			const [index, conditionValue, mp] = sel;
+			const child = mp.children;
+			return typeof child === "function" && child.length > 0 ? untrack(() => child(mp.keyed ? conditionValue() : () => {
+				if (untrack(switchFunc)()?.[0] !== index) throw narrowedError("Match");
+				return conditionValue();
+			})) : child;
+		}, void 0, void 0);
+	}
+	function Match(props) {
+		return props;
 	}
 	//#endregion
 	//#region node_modules/.pnpm/solid-js@1.9.12/node_modules/solid-js/web/dist/web.js
@@ -734,6 +886,23 @@
 		if (value == null) node.removeAttribute(name);
 		else node.setAttribute(name, value);
 	}
+	function classList(node, value, prev = {}) {
+		const classKeys = Object.keys(value || {}), prevKeys = Object.keys(prev);
+		let i, len;
+		for (i = 0, len = prevKeys.length; i < len; i++) {
+			const key = prevKeys[i];
+			if (!key || key === "undefined" || value[key]) continue;
+			toggleClassKey(node, key, false);
+			delete prev[key];
+		}
+		for (i = 0, len = classKeys.length; i < len; i++) {
+			const key = classKeys[i], classValue = !!value[key];
+			if (!key || key === "undefined" || prev[key] === classValue || !classValue) continue;
+			toggleClassKey(node, key, true);
+			prev[key] = classValue;
+		}
+		return prev;
+	}
 	function style(node, value, prev) {
 		if (!value) return prev ? setAttribute(node, "style") : value;
 		const nodeStyle = node.style;
@@ -762,6 +931,10 @@
 	}
 	function isHydrating(node) {
 		return !!sharedConfig.context && !sharedConfig.done && (!node || node.isConnected);
+	}
+	function toggleClassKey(node, key, value) {
+		const classNames = key.trim().split(/\s+/);
+		for (let i = 0, nameLen = classNames.length; i < nameLen; i++) node.classList.toggle(classNames[i], value);
 	}
 	function eventHandler(e) {
 		if (sharedConfig.registry && sharedConfig.events) {
@@ -995,6 +1168,12 @@
 		}
 	};
 	//#endregion
+	//#region src/api/history.ts
+	var getHistory = async (personId) => {
+		const url = personId ? `${API_BASE_URL}/history?personId=${personId}` : `${API_BASE_URL}/history`;
+		return await handleResponse(await fetch(url));
+	};
+	//#endregion
 	//#region src/api/people.ts
 	var createPerson = async (data) => {
 		return handleResponse(await fetch(`${API_BASE_URL}/people`, {
@@ -1014,6 +1193,18 @@
 	var deletePerson = async (id) => {
 		validateId(id);
 		await handleResponse(await fetch(`${API_BASE_URL}/people/${id}`, { method: "DELETE" }));
+	};
+	//#endregion
+	//#region src/api/settings.ts
+	/**
+	* Update global settings
+	*/
+	var updateSettings = async (data) => {
+		return await handleResponse(await fetch(`${API_BASE_URL}/settings`, {
+			method: "PUT",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(data)
+		}));
 	};
 	//#endregion
 	//#region src/types/chore-types.ts
@@ -1077,6 +1268,15 @@
 	/**
 	* Gets the local date string in YYYY-MM-DD format
 	* Uses Intl.DateTimeFormat for proper timezone and DST handling
+	*
+	* @warning Do not pass a Date object created from a YYYY-MM-DD string (e.g., new Date('2026-05-17'))
+	* as it parses as UTC midnight and will produce incorrect results when formatted back to local timezone.
+	* Only pass Date objects created from real time values (e.g., new Date(), new Date(timestamp)).
+	*
+	* Avoid:
+	* - Date objects created from YYYY-MM-DD strings (parsed as UTC midnight)
+	* - Double local correction (UTC → local timezone → back into helper)
+	*
 	* @param date - Optional date to convert (defaults to current time)
 	*/
 	var getLocalDateString = (date = /* @__PURE__ */ new Date()) => {
@@ -1086,9 +1286,309 @@
 			day: "2-digit"
 		}).format(date);
 	};
+	/**
+	* Gets the local day name in lowercase (sunday, monday, etc.)
+	* Uses Intl.DateTimeFormat for proper timezone and DST handling
+	*
+	* @warning Do not pass a Date object created from a YYYY-MM-DD string (e.g., new Date('2026-05-17'))
+	* as it parses as UTC midnight and will produce incorrect results when formatted back to local timezone.
+	* Only pass Date objects created from real time values (e.g., new Date(), new Date(timestamp)).
+	*
+	* Avoid:
+	* - Date objects created from YYYY-MM-DD strings (parsed as UTC midnight)
+	* - Double local correction (UTC → local timezone → back into helper)
+	*
+	* @param date - Optional date to convert (defaults to current time)
+	*/
+	var getLocalDayName = (date = /* @__PURE__ */ new Date()) => {
+		return new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(date).toLowerCase();
+	};
+	/**
+	* Gets the local day name in abbreviated format (Sun, Mon, Tue, etc.)
+	* Uses Intl.DateTimeFormat for proper timezone and DST handling
+	*
+	* @warning Do not pass a Date object created from a YYYY-MM-DD string (e.g., new Date('2026-05-17'))
+	* as it parses as UTC midnight and will produce incorrect results when formatted back to local timezone.
+	* Only pass Date objects created from real time values (e.g., new Date(), new Date(timestamp)).
+	*
+	* Avoid:
+	* - Date objects created from YYYY-MM-DD strings (parsed as UTC midnight)
+	* - Double local correction (UTC → local timezone → back into helper)
+	*
+	* @param date - Optional date to convert (defaults to current time)
+	*/
+	var getLocalDayNameShort = (date = /* @__PURE__ */ new Date()) => {
+		return new Intl.DateTimeFormat("en-US", { weekday: "short" }).format(date);
+	};
+	/**
+	* Gets the local month name in abbreviated format (Jan, Feb, Mar, etc.)
+	* Uses Intl.DateTimeFormat for proper timezone and DST handling
+	*
+	* @warning Do not pass a Date object created from a YYYY-MM-DD string (e.g., new Date('2026-05-17'))
+	* as it parses as UTC midnight and will produce incorrect results when formatted back to local timezone.
+	* Only pass Date objects created from real time values (e.g., new Date(), new Date(timestamp)).
+	*
+	* Avoid:
+	* - Date objects created from YYYY-MM-DD strings (parsed as UTC midnight)
+	* - Double local correction (UTC → local timezone → back into helper)
+	*
+	* @param date - Optional date to convert (defaults to current time)
+	*/
+	var getLocalMonthNameShort = (date = /* @__PURE__ */ new Date()) => {
+		return new Intl.DateTimeFormat("en-US", { month: "short" }).format(date);
+	};
+	/**
+	* Gets the local day of month as a number
+	* Uses Intl.DateTimeFormat for proper timezone and DST handling
+	*
+	* @warning Do not pass a Date object created from a YYYY-MM-DD string (e.g., new Date('2026-05-17'))
+	* as it parses as UTC midnight and will produce incorrect results when formatted back to local timezone.
+	* Only pass Date objects created from real time values (e.g., new Date(), new Date(timestamp)).
+	*
+	* Avoid:
+	* - Date objects created from YYYY-MM-DD strings (parsed as UTC midnight)
+	* - Double local correction (UTC → local timezone → back into helper)
+	*
+	* @param date - Optional date to convert (defaults to current time)
+	*/
+	var getLocalDayOfMonth = (date = /* @__PURE__ */ new Date()) => {
+		const formatter = new Intl.DateTimeFormat("en-US", { day: "numeric" });
+		return parseInt(formatter.format(date), 10);
+	};
+	//#endregion
+	//#region src/admin/tooltip.tsx
+	var _tmpl$$8 = /* @__PURE__ */ template(`<span data-testid=tooltip>`);
+	var Tooltip = (rawProps) => {
+		const props = mergeProps({
+			position: "above",
+			align: "left",
+			multiline: false,
+			class: "",
+			classList: {}
+		}, rawProps);
+		return (() => {
+			var _el$ = _tmpl$$8();
+			insert(_el$, () => props.children);
+			createRenderEffect((_p$) => {
+				var _v$ = {
+					tooltip: !!props.text,
+					"tooltip-multiline": !!props.text && props.multiline,
+					[`tooltip-${props.position}`]: !!props.text,
+					[`tooltip-align-${props.align}`]: !!props.text,
+					[props.class || ""]: !!props.class,
+					...props.classList
+				}, _v$2 = props.text || "";
+				_p$.e = classList(_el$, _v$, _p$.e);
+				_v$2 !== _p$.t && setAttribute(_el$, "data-tooltip", _p$.t = _v$2);
+				return _p$;
+			}, {
+				e: void 0,
+				t: void 0
+			});
+			return _el$;
+		})();
+	};
+	//#endregion
+	//#region src/admin/chore-history-modal.tsx
+	var _tmpl$$7 = /* @__PURE__ */ template(`<div class=loading>Loading history...`), _tmpl$2$5 = /* @__PURE__ */ template(`<div class=error>Error: `), _tmpl$3$4 = /* @__PURE__ */ template(`<div class=history-grid><table class=history-table><thead><tr><th>Chore</th></tr></thead><tbody>`), _tmpl$4$2 = /* @__PURE__ */ template(`<div class="modal active"><div class="modal-content modal-content-large"><h3>'s Chore History</h3><div class=form-actions><button type=button class="btn btn-secondary">Close`), _tmpl$5$2 = /* @__PURE__ */ template(`<th class=date><span class=vertical-text>`), _tmpl$6$2 = /* @__PURE__ */ template(`<tr><td class=chore-name>`), _tmpl$7$1 = /* @__PURE__ */ template(`<td class=history-cell>`), _tmpl$8$1 = /* @__PURE__ */ template(`<span style=opacity:0;width:32px;height:32px;display:inline-block>`);
+	var ChoreHistoryModal = (props) => {
+		const [history, setHistory] = createSignal([]);
+		const [loading, setLoading] = createSignal(true);
+		const [error, setError] = createSignal(null);
+		onMount(async () => {
+			try {
+				setHistory(await getHistory(props.person.id));
+			} catch (err) {
+				setError(err instanceof Error ? err.message : "Failed to load history");
+			} finally {
+				setLoading(false);
+			}
+		});
+		const getDays = () => {
+			const days = [];
+			for (let i = 13; i >= 0; i--) {
+				const date = /* @__PURE__ */ new Date();
+				date.setDate(date.getDate() - i);
+				const dayNameShort = getLocalDayNameShort(date);
+				const monthShort = getLocalMonthNameShort(date);
+				const dayOfMonth = getLocalDayOfMonth(date);
+				days.push({
+					date: getLocalDateString(date),
+					dayName: getLocalDayName(date),
+					display: `${dayNameShort} ${monthShort} ${dayOfMonth}`
+				});
+			}
+			return days;
+		};
+		const getPersonChores = () => {
+			return props.choreData.chores.filter((chore) => {
+				if (chore.type === "personal" && chore.assignedTo === props.person.id) return true;
+				if (chore.type === "rotating" && chore.rotation?.includes(props.person.id)) return true;
+				return false;
+			});
+		};
+		const getCompletionDetails = (choreId, date) => {
+			return history().find((dc) => dc.choreId === choreId && dc.date === date);
+		};
+		const isSkipDay = (chore, day) => {
+			if (!chore.skipDays || chore.skipDays.length === 0) return false;
+			return chore.skipDays.includes(day.dayName);
+		};
+		return (() => {
+			var _el$ = _tmpl$4$2(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.firstChild, _el$12 = _el$3.nextSibling, _el$13 = _el$12.firstChild;
+			insert(_el$3, () => escapeHtml(props.person.name), _el$4);
+			insert(_el$2, createComponent(Show, {
+				get when() {
+					return loading();
+				},
+				get children() {
+					return _tmpl$$7();
+				}
+			}), _el$12);
+			insert(_el$2, createComponent(Show, {
+				get when() {
+					return error();
+				},
+				get children() {
+					var _el$6 = _tmpl$2$5();
+					_el$6.firstChild;
+					insert(_el$6, () => escapeHtml(error() ?? "Unknown error"), null);
+					return _el$6;
+				}
+			}), _el$12);
+			insert(_el$2, createComponent(Show, {
+				get when() {
+					return memo(() => !!!loading())() && !error();
+				},
+				get children() {
+					var _el$8 = _tmpl$3$4(), _el$0 = _el$8.firstChild.firstChild, _el$1 = _el$0.firstChild;
+					_el$1.firstChild;
+					var _el$11 = _el$0.nextSibling;
+					insert(_el$1, createComponent(For, {
+						get each() {
+							return getDays();
+						},
+						children: (day) => (() => {
+							var _el$14 = _tmpl$5$2(), _el$15 = _el$14.firstChild;
+							insert(_el$15, () => day.display);
+							return _el$14;
+						})()
+					}), null);
+					insert(_el$11, createComponent(For, {
+						get each() {
+							return getPersonChores();
+						},
+						children: (chore) => (() => {
+							var _el$16 = _tmpl$6$2(), _el$17 = _el$16.firstChild;
+							insert(_el$17, () => escapeHtml(chore.name), null);
+							insert(_el$17, createComponent(Show, {
+								get when() {
+									return chore.type === "rotating";
+								},
+								get children() {
+									return [" ", createComponent(Tooltip, {
+										text: "Rotating chore",
+										position: "above-right",
+										multiline: true,
+										"class": "rotating-icon",
+										children: "🔄"
+									})];
+								}
+							}), null);
+							insert(_el$16, createComponent(For, {
+								get each() {
+									return getDays();
+								},
+								children: (day) => {
+									const completion = getCompletionDetails(chore.id, day.date);
+									const skipDay = isSkipDay(chore, day);
+									const emptyDay = !skipDay && !completion;
+									const getEmptyTooltip = () => {
+										if (chore.type === "rotating") return "Either it was someone else's turn (rotating chore), Magic Mirror was not running this day, or the chore was not created yet.";
+										return "Either Magic Mirror was not running this day, or the chore was not created yet.";
+									};
+									const getTooltipText = () => {
+										if (completion?.completed) return `Completed at ${completion.completedAt} (24h)`;
+										if (completion && !completion.completed) return "Not completed";
+										if (skipDay) return "Skip day";
+										if (emptyDay) return getEmptyTooltip();
+										return "";
+									};
+									return (() => {
+										var _el$18 = _tmpl$7$1();
+										_el$18.classList.toggle("history-skip-day", !!skipDay);
+										insert(_el$18, createComponent(Switch, {
+											get fallback() {
+												return createComponent(Tooltip, {
+													get text() {
+														return getTooltipText();
+													},
+													position: "above",
+													align: "right",
+													multiline: emptyDay,
+													get children() {
+														return _tmpl$8$1();
+													}
+												});
+											},
+											get children() {
+												return [createComponent(Match, {
+													get when() {
+														return completion?.completed;
+													},
+													get children() {
+														return createComponent(Tooltip, {
+															get text() {
+																return getTooltipText();
+															},
+															position: "above",
+															align: "right",
+															get classList() {
+																return {
+																	"completion-badge": true,
+																	"completion-late": completion?.wasLate,
+																	"completion-ontime": !completion?.wasLate
+																};
+															},
+															children: "✓"
+														});
+													}
+												}), createComponent(Match, {
+													get when() {
+														return completion?.completed === false;
+													},
+													get children() {
+														return createComponent(Tooltip, {
+															get text() {
+																return getTooltipText();
+															},
+															position: "above",
+															align: "right",
+															"class": "completion-badge completion-missed",
+															children: "✗"
+														});
+													}
+												})];
+											}
+										}));
+										return _el$18;
+									})();
+								}
+							}), null);
+							return _el$16;
+						})()
+					}));
+					return _el$8;
+				}
+			}), _el$12);
+			_el$13.$$click = () => props.closeModal();
+			return _el$;
+		})();
+	};
+	delegateEvents(["click"]);
 	//#endregion
 	//#region src/admin/copy-chores-modal.tsx
-	var _tmpl$$5 = /* @__PURE__ */ template(`<div class=empty-message><p>No other people available to copy chores to.</p><button type=button class="btn btn-secondary">Close`), _tmpl$2$4 = /* @__PURE__ */ template(`<form><div class=form-group><div class=form-label>Select Person to Copy To</div><select id=toPerson required><option value>-- Select a person --</option></select></div><div class=form-group><div class=form-label>Select Chores to Copy</div><div class=checkbox-list></div></div><div class=form-actions><button type=button class="btn btn-secondary">Cancel</button><button type=submit class="btn btn-primary">`), _tmpl$3$3 = /* @__PURE__ */ template(`<div class="modal active"><div class=modal-content><h3>Copy Chores</h3><div class=copy-from-display><span class=color-badge></span><strong>From:</strong> `), _tmpl$4$1 = /* @__PURE__ */ template(`<div class=empty-message><p>No personal chores to copy for <!>.</p><button type=button class="btn btn-secondary">Close`), _tmpl$5$1 = /* @__PURE__ */ template(`<option>`), _tmpl$6$1 = /* @__PURE__ */ template(`<label><input type=checkbox>`);
+	var _tmpl$$6 = /* @__PURE__ */ template(`<div class=empty-message><p>No other people available to copy chores to.</p><button type=button class="btn btn-secondary">Close`), _tmpl$2$4 = /* @__PURE__ */ template(`<form><div class=form-group><div class=form-label>Select Person to Copy To</div><select id=toPerson required><option value>-- Select a person --</option></select></div><div class=form-group><div class=form-label>Select Chores to Copy</div><div class=checkbox-list></div></div><div class=form-actions><button type=button class="btn btn-secondary">Cancel</button><button type=submit class="btn btn-primary">`), _tmpl$3$3 = /* @__PURE__ */ template(`<div class="modal active"><div class=modal-content><h3>Copy Chores</h3><div class=copy-from-display><span class=color-badge></span><strong>From:</strong> `), _tmpl$4$1 = /* @__PURE__ */ template(`<div class=empty-message><p>No personal chores to copy for <!>.</p><button type=button class="btn btn-secondary">Close`), _tmpl$5$1 = /* @__PURE__ */ template(`<option>`), _tmpl$6$1 = /* @__PURE__ */ template(`<label><input type=checkbox>`);
 	var CopyChoresModal = (props) => {
 		const personalChores = createMemo(() => {
 			return props.choreData.chores.filter((chore) => chore.type === ChoreType.PERSONAL && chore.assignedTo === props.fromPerson.id);
@@ -1155,7 +1655,7 @@
 							return availablePeople().length === 0;
 						},
 						get children() {
-							var _el$8 = _tmpl$$5(), _el$0 = _el$8.firstChild.nextSibling;
+							var _el$8 = _tmpl$$6(), _el$0 = _el$8.firstChild.nextSibling;
 							_el$0.$$click = () => props.closeModal();
 							return _el$8;
 						}
@@ -1209,7 +1709,7 @@
 	delegateEvents(["click", "input"]);
 	//#endregion
 	//#region src/admin/person-modal.tsx
-	var _tmpl$$4 = /* @__PURE__ */ template(`<div class="modal active"><div class=modal-content><h3></h3><form><div class=form-group><label for=personName>Name</label><input type=text id=personName required></div><div class=form-group><label for=personColor>Color</label><div class=color-input-group><input type=color id=personColor required><button type=button class="btn btn-secondary btn-sm">Randomize</button></div></div><div class=form-actions><button type=button class="btn btn-secondary">Cancel</button><button type=submit class="btn btn-primary">`);
+	var _tmpl$$5 = /* @__PURE__ */ template(`<div class="modal active"><div class=modal-content><h3></h3><form><div class=form-group><label for=personName>Name</label><input type=text id=personName required></div><div class=form-group><label for=personColor>Color</label><div class=color-input-group><input type=color id=personColor required><button type=button class="btn btn-secondary btn-sm">Randomize</button></div></div><div class=form-actions><button type=button class="btn btn-secondary">Cancel</button><button type=submit class="btn btn-primary">`);
 	var PersonModal = (props) => {
 		const [name, setName] = createSignal(props.initialPerson?.name ?? "");
 		const [color, setColor] = createSignal(props.initialPerson?.color ?? generatePastelColor());
@@ -1233,7 +1733,7 @@
 			}
 		};
 		return (() => {
-			var _el$ = _tmpl$$4(), _el$3 = _el$.firstChild.firstChild, _el$4 = _el$3.nextSibling, _el$5 = _el$4.firstChild, _el$7 = _el$5.firstChild.nextSibling, _el$8 = _el$5.nextSibling, _el$1 = _el$8.firstChild.nextSibling.firstChild, _el$10 = _el$1.nextSibling, _el$12 = _el$8.nextSibling.firstChild, _el$13 = _el$12.nextSibling;
+			var _el$ = _tmpl$$5(), _el$3 = _el$.firstChild.firstChild, _el$4 = _el$3.nextSibling, _el$5 = _el$4.firstChild, _el$7 = _el$5.firstChild.nextSibling, _el$8 = _el$5.nextSibling, _el$1 = _el$8.firstChild.nextSibling.firstChild, _el$10 = _el$1.nextSibling, _el$12 = _el$8.nextSibling.firstChild, _el$13 = _el$12.nextSibling;
 			insert(_el$3, () => props.initialPerson ? "Edit Person" : "Add Person");
 			_el$4.addEventListener("submit", handleSubmit);
 			_el$7.$$input = (e) => setName(e.currentTarget.value);
@@ -1249,7 +1749,7 @@
 	delegateEvents(["input", "click"]);
 	//#endregion
 	//#region src/admin/personal-chore-modal.tsx
-	var _tmpl$$3 = /* @__PURE__ */ template(`<div class="modal active"><div class=modal-content><h3>Error</h3><p>Person not found. Please refresh the page.</p><button type=button class="btn btn-secondary">Close`), _tmpl$2$3 = /* @__PURE__ */ template(`<div class="modal active"><div class=modal-content><h3></h3><div class=assigned-person-display><span class=color-badge></span><strong>Assigned to:</strong> </div><form><div class=form-group><label for=choreName>Chore Name</label><input type=text id=choreName required></div><div class=form-group><label for=deadline>Deadline (optional)</label><input type=time id=deadline></div><div class=form-group><div class=form-label>Skip Days</div><div class=checkbox-list></div></div><div class=form-group><label for=skipDayVisibility>Skip Day Visibility</label><select id=skipDayVisibility><option>Hide</option><option>Show Always</option><option>Show If Overdue</option></select></div><div class=form-actions><button type=button class="btn btn-secondary">Cancel</button><button type=submit class="btn btn-primary">`), _tmpl$3$2 = /* @__PURE__ */ template(`<label><input type=checkbox>`);
+	var _tmpl$$4 = /* @__PURE__ */ template(`<div class="modal active"><div class=modal-content><h3>Error</h3><p>Person not found. Please refresh the page.</p><button type=button class="btn btn-secondary">Close`), _tmpl$2$3 = /* @__PURE__ */ template(`<div class="modal active"><div class=modal-content><h3></h3><div class=assigned-person-display><span class=color-badge></span><strong>Assigned to:</strong> </div><form><div class=form-group><label for=choreName>Chore Name</label><input type=text id=choreName required></div><div class=form-group><label for=deadline>Deadline (optional)</label><input type=time id=deadline></div><div class=form-group><div class=form-label>Skip Days</div><div class=checkbox-list></div></div><div class=form-group><label for=skipDayVisibility>Skip Day Visibility</label><select id=skipDayVisibility><option>Hide</option><option>Show Always</option><option>Show If Overdue</option></select></div><div class=form-actions><button type=button class="btn btn-secondary">Cancel</button><button type=submit class="btn btn-primary">`), _tmpl$3$2 = /* @__PURE__ */ template(`<label><input type=checkbox>`);
 	var PersonalChoreModal = (props) => {
 		const [name, setName] = createSignal(props.initialChore?.name ?? "");
 		const [deadline, setDeadline] = createSignal(props.initialChore?.deadline ?? "");
@@ -1298,7 +1798,7 @@
 			keyed: true,
 			get fallback() {
 				return (() => {
-					var _el$ = _tmpl$$3(), _el$5 = _el$.firstChild.firstChild.nextSibling.nextSibling;
+					var _el$ = _tmpl$$4(), _el$5 = _el$.firstChild.firstChild.nextSibling.nextSibling;
 					_el$5.$$click = () => props.closeModal();
 					return _el$;
 				})();
@@ -1342,7 +1842,7 @@
 	delegateEvents(["click", "input"]);
 	//#endregion
 	//#region src/admin/rotating-chore.tsx
-	var _tmpl$$2 = /* @__PURE__ */ template(`<p class=deadline>Deadline: `), _tmpl$2$2 = /* @__PURE__ */ template(`<div class=item-card><div class=item-info><h3> <span class="chore-type-badge rotating">Rotating</span></h3><p>Current: </p><p>Rotation: </p><p class=skip-days>Skip days: </p></div><div class=item-actions><button type=button class="btn btn-secondary">Edit</button><button type=button class="btn btn-danger btn-sm">Delete`);
+	var _tmpl$$3 = /* @__PURE__ */ template(`<p class=deadline>Deadline: `), _tmpl$2$2 = /* @__PURE__ */ template(`<div class=item-card><div class=item-info><h3> <span class="chore-type-badge rotating">Rotating</span></h3><p>Current: </p><p>Rotation: </p><p class=skip-days>Skip days: </p></div><div class=item-actions><button type=button class="btn btn-secondary">Edit</button><button type=button class="btn btn-danger btn-sm">Delete`);
 	/** Format skip days for display */
 	var formatSkipDays$1 = (skipDays) => {
 		if (!skipDays || skipDays.length === 0) return "None";
@@ -1380,7 +1880,7 @@
 					return props.chore.deadline;
 				},
 				get children() {
-					var _el$9 = _tmpl$$2();
+					var _el$9 = _tmpl$$3();
 					_el$9.firstChild;
 					insert(_el$9, () => props.chore.deadline, null);
 					return _el$9;
@@ -1395,7 +1895,7 @@
 	delegateEvents(["click"]);
 	//#endregion
 	//#region src/admin/rotating-chore-modal.tsx
-	var _tmpl$$1 = /* @__PURE__ */ template(`<div class="modal active"><div class=modal-content><h3></h3><form><div class=form-group><label for=choreName>Chore Name</label><input type=text id=choreName required></div><div class=form-group><div class=form-label>Rotation (select people)</div><div class=checkbox-list></div></div><div class=form-group><label for=rotatingIndex>Starting Index (current person)</label><select id=rotatingIndex></select></div><div class=form-group><label for=deadline>Deadline (optional)</label><input type=time id=deadline></div><div class=form-group><div class=form-label>Skip Days</div><div class=checkbox-list></div></div><div class=form-group><label for=skipDayVisibility>Skip Day Visibility</label><select id=skipDayVisibility><option>Hide</option><option>Show Always</option><option>Show If Overdue</option></select></div><div class=form-actions><button type=button class="btn btn-secondary">Cancel</button><button type=submit class="btn btn-primary">`), _tmpl$2$1 = /* @__PURE__ */ template(`<label><input type=checkbox>`), _tmpl$3$1 = /* @__PURE__ */ template(`<option>`);
+	var _tmpl$$2 = /* @__PURE__ */ template(`<div class="modal active"><div class=modal-content><h3></h3><form><div class=form-group><label for=choreName>Chore Name</label><input type=text id=choreName required></div><div class=form-group><div class=form-label>Rotation (select people)</div><div class=checkbox-list></div></div><div class=form-group><label for=rotatingIndex>Starting Index (current person)</label><select id=rotatingIndex></select></div><div class=form-group><label for=deadline>Deadline (optional)</label><input type=time id=deadline></div><div class=form-group><div class=form-label>Skip Days</div><div class=checkbox-list></div></div><div class=form-group><label for=skipDayVisibility>Skip Day Visibility</label><select id=skipDayVisibility><option>Hide</option><option>Show Always</option><option>Show If Overdue</option></select></div><div class=form-actions><button type=button class="btn btn-secondary">Cancel</button><button type=submit class="btn btn-primary">`), _tmpl$2$1 = /* @__PURE__ */ template(`<label><input type=checkbox>`), _tmpl$3$1 = /* @__PURE__ */ template(`<option>`);
 	var RotatingChoreModal = (props) => {
 		const [name, setName] = createSignal(props.initialChore?.name ?? "");
 		const [deadline, setDeadline] = createSignal(props.initialChore?.deadline ?? "");
@@ -1438,7 +1938,7 @@
 			}
 		};
 		return (() => {
-			var _el$ = _tmpl$$1(), _el$3 = _el$.firstChild.firstChild, _el$4 = _el$3.nextSibling, _el$5 = _el$4.firstChild, _el$7 = _el$5.firstChild.nextSibling, _el$8 = _el$5.nextSibling, _el$0 = _el$8.firstChild.nextSibling, _el$1 = _el$8.nextSibling, _el$11 = _el$1.firstChild.nextSibling, _el$12 = _el$1.nextSibling, _el$14 = _el$12.firstChild.nextSibling, _el$15 = _el$12.nextSibling, _el$17 = _el$15.firstChild.nextSibling, _el$18 = _el$15.nextSibling, _el$20 = _el$18.firstChild.nextSibling, _el$21 = _el$20.firstChild, _el$22 = _el$21.nextSibling, _el$23 = _el$22.nextSibling, _el$25 = _el$18.nextSibling.firstChild, _el$26 = _el$25.nextSibling;
+			var _el$ = _tmpl$$2(), _el$3 = _el$.firstChild.firstChild, _el$4 = _el$3.nextSibling, _el$5 = _el$4.firstChild, _el$7 = _el$5.firstChild.nextSibling, _el$8 = _el$5.nextSibling, _el$0 = _el$8.firstChild.nextSibling, _el$1 = _el$8.nextSibling, _el$11 = _el$1.firstChild.nextSibling, _el$12 = _el$1.nextSibling, _el$14 = _el$12.firstChild.nextSibling, _el$15 = _el$12.nextSibling, _el$17 = _el$15.firstChild.nextSibling, _el$18 = _el$15.nextSibling, _el$20 = _el$18.firstChild.nextSibling, _el$21 = _el$20.firstChild, _el$22 = _el$21.nextSibling, _el$23 = _el$22.nextSibling, _el$25 = _el$18.nextSibling.firstChild, _el$26 = _el$25.nextSibling;
 			insert(_el$3, () => props.initialChore ? "Edit Rotating Chore" : "Add Rotating Chore");
 			_el$4.addEventListener("submit", handleSubmit);
 			_el$7.$$input = (e) => setName(e.currentTarget.value);
@@ -1498,8 +1998,39 @@
 	};
 	delegateEvents(["input", "click"]);
 	//#endregion
+	//#region src/admin/settings-modal.tsx
+	var _tmpl$$1 = /* @__PURE__ */ template(`<div class="modal active"><div class=modal-content><h3>Settings</h3><form><div class=form-group><label for=dailyResetTime>Daily Reset Time (24-hour format, HH:mm)</label><input type=time id=dailyResetTime required><small class=form-help>Time when daily chore reset occurs. Default: 03:00</small><br><small class=form-help><strong>Tip:</strong> Set to at least 03:00 to avoid daylight savings time changes (no roll forward/back occurs after 3am)</small></div><div class=form-group><label><input type=checkbox id=historyEnabled>Enable History Tracking</label><small class=form-help>Track daily chore completions (keeps last 14 days)</small></div><div class=form-actions><button type=button class="btn btn-secondary">Cancel</button><button type=submit class="btn btn-primary">Save`);
+	var SettingsModal = (props) => {
+		const [dailyResetTime, setDailyResetTime] = createSignal(props.initialSettings.dailyResetTime);
+		const [historyEnabled, setHistoryEnabled] = createSignal(props.initialSettings.historyEnabled);
+		const handleSubmit = async (event) => {
+			event.preventDefault();
+			try {
+				await updateSettings({
+					dailyResetTime: dailyResetTime(),
+					historyEnabled: historyEnabled()
+				});
+				props.closeModal();
+			} catch (error) {
+				console.error("Error saving settings:", error);
+				alert(`Failed to save settings: ${error instanceof Error ? error.message : "Unknown error"}`);
+			}
+		};
+		return (() => {
+			var _el$ = _tmpl$$1(), _el$4 = _el$.firstChild.firstChild.nextSibling, _el$5 = _el$4.firstChild, _el$7 = _el$5.firstChild.nextSibling, _el$8 = _el$5.nextSibling, _el$0 = _el$8.firstChild.firstChild, _el$10 = _el$8.nextSibling.firstChild;
+			_el$4.addEventListener("submit", handleSubmit);
+			_el$7.$$input = (e) => setDailyResetTime(e.currentTarget.value);
+			_el$0.$$input = (e) => setHistoryEnabled(e.currentTarget.checked);
+			_el$10.$$click = () => props.closeModal();
+			createRenderEffect(() => _el$7.value = dailyResetTime());
+			createRenderEffect(() => _el$0.checked = historyEnabled());
+			return _el$;
+		})();
+	};
+	delegateEvents(["input", "click"]);
+	//#endregion
 	//#region src/admin/admin.tsx
-	var _tmpl$ = /* @__PURE__ */ template(`<p class=retry-info>Retrying... (attempt <!>)`), _tmpl$2 = /* @__PURE__ */ template(`<div class=loading-message><div class=loading-message-content><p>Magic Mirror is starting up, please wait...`), _tmpl$3 = /* @__PURE__ */ template(`<span id=addPersonInfo class=info-icon data-tooltip="Add at least one person before you can create chores">ℹ️`), _tmpl$4 = /* @__PURE__ */ template(`<section class=section id=rotatingChoresSection><div class=section-header><h2>Rotating Chores</h2><button type=button class="btn btn-primary"id=addRotatingChoreBtn>Add Rotating Chore</button></div><div id=rotatingChoresList class=item-list>`), _tmpl$5 = /* @__PURE__ */ template(`<main><section class=section><div class=section-header><h2>People</h2><div class=button-with-tooltip><button type=button class="btn btn-primary"id=addPersonBtn>Add Person</button></div></div><div id=peopleList class=item-list></div></section><section class=section><h2>System State</h2><div class=state-info><p><strong>Last Reset Date:</strong> <span id=lastResetDate></span></p><div class=button-with-tooltip><button type=button class="btn btn-warning"id=resetDailyBtn>Force Daily Reset</button><span class=info-icon data-tooltip="WARNING: This will un-check all chores and rotate assignment on rotating chores to the next person. It does respect skip days if today is a skip day. Useful for testing or immediately advancing chore assignments.">ℹ️`), _tmpl$6 = /* @__PURE__ */ template(`<div class=container><header><h1>Family Chores Admin</h1><div class=backup-section><button type=button class="btn btn-secondary"id=backupBtn>Download Backup</button><label for=restoreFile class="btn btn-secondary">Restore Backup</label><input type=file id=restoreFile accept=.json hidden>`), _tmpl$7 = /* @__PURE__ */ template(`<button type=button class="btn btn-secondary btn-sm">Copy Chores`), _tmpl$8 = /* @__PURE__ */ template(`<div class=person-chores>`), _tmpl$9 = /* @__PURE__ */ template(`<div class=item-card><div class=person-header><div class=item-info><h3> <span class=color-badge></span></h3><p>ID: </p></div><div class=item-actions><button type=button class="btn btn-secondary btn-sm">Edit</button><button type=button class="btn btn-danger btn-sm">Delete</button></div></div><div class=person-chores-header><h4>'s Personal Chores</h4><div class=person-chores-actions><button type=button class="btn btn-primary btn-sm">Add Chore`), _tmpl$0 = /* @__PURE__ */ template(`<div class=person-chores><p class=empty-message>No personal chores yet.`), _tmpl$1 = /* @__PURE__ */ template(`<p class=deadline>Deadline: `), _tmpl$10 = /* @__PURE__ */ template(`<div class=chore-item><div class=chore-info><h4></h4><p class=skip-days>Skip days: </p></div><div class=chore-actions><button type=button class="btn btn-secondary btn-sm">Edit</button><button type=button class="btn btn-danger btn-sm">Delete`);
+	var _tmpl$ = /* @__PURE__ */ template(`<p class=retry-info>Retrying... (attempt <!>)`), _tmpl$2 = /* @__PURE__ */ template(`<div class=loading-message><div class=loading-message-content><p>Magic Mirror is starting up, please wait...`), _tmpl$3 = /* @__PURE__ */ template(`<section class=section id=rotatingChoresSection><div class=section-header><h2>Rotating Chores</h2><button type=button class="btn btn-primary"id=addRotatingChoreBtn>Add Rotating Chore</button></div><div id=rotatingChoresList class=item-list>`), _tmpl$4 = /* @__PURE__ */ template(`<main><section class=section><div class=section-header><h2>People</h2><div class=button-with-tooltip><button type=button class="btn btn-primary"id=addPersonBtn>Add Person</button></div></div><div id=peopleList class=item-list></div></section><section class=section><h2>System State</h2><div class=state-info><p><strong>Last Reset Date:</strong> <span id=lastResetDate></span></p><div class=button-group><div class=button-with-tooltip><button type=button class="btn btn-warning"id=resetDailyBtn>Force Daily Reset`), _tmpl$5 = /* @__PURE__ */ template(`<div class=container><header><h1>Family Chores Admin</h1><div class=backup-section><button type=button class="btn btn-secondary"id=backupBtn>Download Backup</button><label for=restoreFile class="btn btn-secondary">Restore Backup</label><input type=file id=restoreFile accept=.json hidden><button type=button class="btn btn-secondary"id=settingsBtn>⚙️ Settings`), _tmpl$6 = /* @__PURE__ */ template(`<button type=button class="btn btn-secondary btn-sm">Copy Chores`), _tmpl$7 = /* @__PURE__ */ template(`<div class=person-chores>`), _tmpl$8 = /* @__PURE__ */ template(`<div class=item-card><div class=person-header><div class=item-info><h3> <span class=color-badge></span></h3><p>ID: </p></div><div class=item-actions><button type=button class="btn btn-secondary btn-sm">Edit</button><button type=button class="btn btn-secondary btn-sm">History</button><button type=button class="btn btn-danger btn-sm">Delete</button></div></div><div class=person-chores-header><h4>'s Personal Chores</h4><div class=person-chores-actions><button type=button class="btn btn-primary btn-sm">Add Chore`), _tmpl$9 = /* @__PURE__ */ template(`<div class=person-chores><p class=empty-message>No personal chores yet.`), _tmpl$0 = /* @__PURE__ */ template(`<p class=deadline>Deadline: `), _tmpl$1 = /* @__PURE__ */ template(`<div class=chore-item><div class=chore-info><h4></h4><p class=skip-days>Skip days: </p></div><div class=chore-actions><button type=button class="btn btn-secondary btn-sm">Edit</button><button type=button class="btn btn-danger btn-sm">Delete`);
 	var API_BASE = "/MMM-FamilyChores";
 	var formatSkipDays = (skipDays) => {
 		if (!skipDays || skipDays.length === 0) return "None";
@@ -1511,10 +2042,12 @@
 		const [personalChoreModalOpen, setPersonalChoreModalOpen] = createSignal(false);
 		const [rotatingChoreModalOpen, setRotatingChoreModalOpen] = createSignal(false);
 		const [copyChoresModalOpen, setCopyChoresModalOpen] = createSignal(false);
+		const [settingsModalOpen, setSettingsModalOpen] = createSignal(false);
 		const [editingPerson, setEditingPerson] = createSignal(null);
 		const [editingChore, setEditingChore] = createSignal(null);
 		const [editingChorePerson, setEditingChorePerson] = createSignal(null);
 		const [copyChoresFromPerson, setCopyChoresFromPerson] = createSignal(null);
+		const [historyPerson, setHistoryPerson] = createSignal(null);
 		const [loading, setLoading] = createSignal(true);
 		const [retryCount, setRetryCount] = createSignal(0);
 		const loadData = async () => {
@@ -1570,6 +2103,13 @@
 		const closeCopyChoresModal = async () => {
 			setCopyChoresModalOpen(false);
 			setCopyChoresFromPerson(null);
+			await loadData();
+		};
+		const openSettingsModal = () => {
+			setSettingsModalOpen(true);
+		};
+		const closeSettingsModal = async () => {
+			setSettingsModalOpen(false);
 			await loadData();
 		};
 		const handleDeletePerson = async (personId) => {
@@ -1660,28 +2200,29 @@
 			return data.chores.filter((chore) => chore.type === ChoreType.ROTATING);
 		};
 		return (() => {
-			var _el$ = _tmpl$6(), _el$5 = _el$.firstChild.firstChild.nextSibling.firstChild, _el$7 = _el$5.nextSibling.nextSibling;
+			var _el$ = _tmpl$5(), _el$5 = _el$.firstChild.firstChild.nextSibling.firstChild, _el$7 = _el$5.nextSibling.nextSibling, _el$8 = _el$7.nextSibling;
 			_el$5.$$click = handleDownloadBackup;
 			_el$7.$$input = handleRestore;
+			_el$8.$$click = openSettingsModal;
 			insert(_el$, createComponent(Show, {
 				get when() {
 					return loading();
 				},
 				get children() {
-					var _el$8 = _tmpl$2(), _el$9 = _el$8.firstChild;
-					_el$9.firstChild;
-					insert(_el$9, createComponent(Show, {
+					var _el$9 = _tmpl$2(), _el$0 = _el$9.firstChild;
+					_el$0.firstChild;
+					insert(_el$0, createComponent(Show, {
 						get when() {
 							return retryCount() > 0;
 						},
 						get children() {
-							var _el$1 = _tmpl$(), _el$12 = _el$1.firstChild.nextSibling;
-							_el$12.nextSibling;
-							insert(_el$1, retryCount, _el$12);
-							return _el$1;
+							var _el$10 = _tmpl$(), _el$13 = _el$10.firstChild.nextSibling;
+							_el$13.nextSibling;
+							insert(_el$10, retryCount, _el$13);
+							return _el$10;
 						}
 					}), null);
-					return _el$8;
+					return _el$9;
 				}
 			}), null);
 			insert(_el$, createComponent(Show, {
@@ -1689,14 +2230,18 @@
 					return choreData();
 				},
 				get children() {
-					var _el$13 = _tmpl$5(), _el$14 = _el$13.firstChild, _el$15 = _el$14.firstChild, _el$17 = _el$15.firstChild.nextSibling, _el$18 = _el$17.firstChild, _el$20 = _el$15.nextSibling, _el$26 = _el$14.nextSibling, _el$29 = _el$26.firstChild.nextSibling.firstChild, _el$32 = _el$29.firstChild.nextSibling.nextSibling, _el$34 = _el$29.nextSibling.firstChild;
-					_el$18.$$click = () => openPersonModal();
-					insert(_el$17, createComponent(Show, {
+					var _el$14 = _tmpl$4(), _el$15 = _el$14.firstChild, _el$16 = _el$15.firstChild, _el$18 = _el$16.firstChild.nextSibling, _el$19 = _el$18.firstChild, _el$20 = _el$16.nextSibling, _el$26 = _el$15.nextSibling, _el$29 = _el$26.firstChild.nextSibling.firstChild, _el$32 = _el$29.firstChild.nextSibling.nextSibling, _el$34 = _el$29.nextSibling.firstChild, _el$35 = _el$34.firstChild;
+					_el$19.$$click = () => openPersonModal();
+					insert(_el$18, createComponent(Show, {
 						get when() {
 							return choreData()?.people.length === 0;
 						},
 						get children() {
-							return _tmpl$3();
+							return createComponent(Tooltip, {
+								text: "Add at least one person before you can create chores",
+								"class": "info-icon",
+								children: "ℹ️"
+							});
 						}
 					}), null);
 					insert(_el$20, createComponent(For, {
@@ -1704,79 +2249,80 @@
 							return choreData()?.people ?? [];
 						},
 						children: (person) => (() => {
-							var _el$35 = _tmpl$9(), _el$36 = _el$35.firstChild, _el$37 = _el$36.firstChild, _el$38 = _el$37.firstChild, _el$39 = _el$38.firstChild, _el$40 = _el$39.nextSibling, _el$41 = _el$38.nextSibling;
-							_el$41.firstChild;
-							var _el$44 = _el$37.nextSibling.firstChild, _el$45 = _el$44.nextSibling, _el$47 = _el$36.nextSibling.firstChild, _el$48 = _el$47.firstChild, _el$49 = _el$47.nextSibling, _el$50 = _el$49.firstChild;
-							insert(_el$38, () => escapeHtml(person.name), _el$39);
-							insert(_el$41, () => person.id, null);
-							_el$44.$$click = () => openPersonModal(person);
-							_el$45.$$click = () => handleDeletePerson(person.id);
-							insert(_el$47, () => escapeHtml(person.name), _el$48);
-							_el$50.$$click = () => {
+							var _el$36 = _tmpl$8(), _el$37 = _el$36.firstChild, _el$38 = _el$37.firstChild, _el$39 = _el$38.firstChild, _el$40 = _el$39.firstChild, _el$41 = _el$40.nextSibling, _el$42 = _el$39.nextSibling;
+							_el$42.firstChild;
+							var _el$45 = _el$38.nextSibling.firstChild, _el$46 = _el$45.nextSibling, _el$47 = _el$46.nextSibling, _el$49 = _el$37.nextSibling.firstChild, _el$50 = _el$49.firstChild, _el$51 = _el$49.nextSibling, _el$52 = _el$51.firstChild;
+							insert(_el$39, () => escapeHtml(person.name), _el$40);
+							insert(_el$42, () => person.id, null);
+							_el$45.$$click = () => openPersonModal(person);
+							_el$46.$$click = () => setHistoryPerson(person);
+							_el$47.$$click = () => handleDeletePerson(person.id);
+							insert(_el$49, () => escapeHtml(person.name), _el$50);
+							_el$52.$$click = () => {
 								openPersonalChoreModal(person, null);
 							};
-							insert(_el$49, createComponent(Show, {
+							insert(_el$51, createComponent(Show, {
 								get when() {
 									return memo(() => getPersonalChores(person.id).length > 0)() && (choreData()?.people.length ?? 0) > 1;
 								},
 								get children() {
-									var _el$51 = _tmpl$7();
-									_el$51.$$click = () => {
+									var _el$53 = _tmpl$6();
+									_el$53.$$click = () => {
 										openCopyChoresModal(person);
 									};
-									return _el$51;
+									return _el$53;
 								}
 							}), null);
-							insert(_el$35, createComponent(Show, {
+							insert(_el$36, createComponent(Show, {
 								get when() {
 									return getPersonalChores(person.id).length > 0;
 								},
 								get fallback() {
-									return _tmpl$0();
+									return _tmpl$9();
 								},
 								get children() {
-									var _el$52 = _tmpl$8();
-									insert(_el$52, createComponent(For, {
+									var _el$54 = _tmpl$7();
+									insert(_el$54, createComponent(For, {
 										get each() {
 											return getPersonalChores(person.id);
 										},
 										children: (chore) => (() => {
-											var _el$54 = _tmpl$10(), _el$55 = _el$54.firstChild, _el$56 = _el$55.firstChild, _el$59 = _el$56.nextSibling;
-											_el$59.firstChild;
-											var _el$62 = _el$55.nextSibling.firstChild, _el$63 = _el$62.nextSibling;
-											insert(_el$56, () => escapeHtml(chore.name));
-											insert(_el$55, createComponent(Show, {
+											var _el$56 = _tmpl$1(), _el$57 = _el$56.firstChild, _el$58 = _el$57.firstChild, _el$61 = _el$58.nextSibling;
+											_el$61.firstChild;
+											var _el$64 = _el$57.nextSibling.firstChild, _el$65 = _el$64.nextSibling;
+											insert(_el$58, () => escapeHtml(chore.name));
+											insert(_el$57, createComponent(Show, {
 												get when() {
 													return chore.deadline;
 												},
 												get children() {
-													var _el$57 = _tmpl$1();
-													_el$57.firstChild;
-													insert(_el$57, () => chore.deadline, null);
-													return _el$57;
+													var _el$59 = _tmpl$0();
+													_el$59.firstChild;
+													insert(_el$59, () => chore.deadline, null);
+													return _el$59;
 												}
-											}), _el$59);
-											insert(_el$59, () => formatSkipDays(chore.skipDays), null);
-											_el$62.$$click = () => {
+											}), _el$61);
+											insert(_el$61, () => formatSkipDays(chore.skipDays), null);
+											_el$64.$$click = () => {
 												openPersonalChoreModal(person, chore);
 											};
-											_el$63.$$click = () => handleDeleteChore(chore.id);
-											return _el$54;
+											_el$65.$$click = () => handleDeleteChore(chore.id);
+											return _el$56;
 										})()
 									}));
-									return _el$52;
+									return _el$54;
 								}
 							}), null);
-							createRenderEffect((_$p) => style(_el$40, `background-color: ${person.color}`, _$p));
-							return _el$35;
+							createRenderEffect((_$p) => style(_el$41, `background-color: ${person.color}`, _$p));
+							return _el$36;
 						})()
 					}));
-					insert(_el$13, createComponent(Show, {
+					insert(_el$14, createComponent(Show, {
 						get when() {
 							return (choreData()?.people?.length ?? 0) > 0;
 						},
 						get children() {
-							var _el$21 = _tmpl$4(), _el$22 = _el$21.firstChild, _el$24 = _el$22.firstChild.nextSibling, _el$25 = _el$22.nextSibling;
+							var _el$21 = _tmpl$3(), _el$22 = _el$21.firstChild, _el$24 = _el$22.firstChild.nextSibling, _el$25 = _el$22.nextSibling;
 							_el$24.$$click = () => openRotatingChoreModal();
 							insert(_el$25, createComponent(For, {
 								get each() {
@@ -1795,8 +2341,16 @@
 						}
 					}), _el$26);
 					insert(_el$32, () => choreData()?.lastResetDate || "Never");
-					_el$34.$$click = handleForceReset;
-					return _el$13;
+					_el$35.$$click = handleForceReset;
+					insert(_el$34, createComponent(Tooltip, {
+						text: "WARNING: This will un-check all chores and rotate assignment on rotating chores to the next person. It does respect skip days if today is a skip day. Useful for testing or immediately advancing chore assignments.",
+						position: "above",
+						align: "center",
+						multiline: true,
+						"class": "info-icon",
+						children: "ℹ️"
+					}), null);
+					return _el$14;
 				}
 			}), null);
 			insert(_el$, createComponent(Show, {
@@ -1840,7 +2394,12 @@
 						get choreData() {
 							return choreData() ?? {
 								people: [],
-								chores: []
+								chores: [],
+								dailyCompletions: [],
+								settings: {
+									dailyResetTime: "03:00",
+									historyEnabled: true
+								}
 							};
 						},
 						closeModal: closeRotatingChoreModal
@@ -1860,6 +2419,38 @@
 							return choreData();
 						},
 						closeModal: closeCopyChoresModal
+					});
+				}
+			}), null);
+			insert(_el$, createComponent(Show, {
+				get when() {
+					return memo(() => !!historyPerson())() && choreData();
+				},
+				get children() {
+					return createComponent(ChoreHistoryModal, {
+						get person() {
+							return historyPerson();
+						},
+						get choreData() {
+							return choreData();
+						},
+						closeModal: () => setHistoryPerson(null)
+					});
+				}
+			}), null);
+			insert(_el$, createComponent(Show, {
+				get when() {
+					return memo(() => !!settingsModalOpen())() && choreData();
+				},
+				get children() {
+					return createComponent(SettingsModal, {
+						get initialSettings() {
+							return choreData()?.settings ?? {
+								dailyResetTime: "03:00",
+								historyEnabled: true
+							};
+						},
+						closeModal: closeSettingsModal
 					});
 				}
 			}), null);
