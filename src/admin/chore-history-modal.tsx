@@ -1,5 +1,5 @@
 import type { Component } from 'solid-js';
-import { createSignal, For, onMount, Show } from 'solid-js';
+import { createSignal, For, Match, onMount, Show, Switch } from 'solid-js';
 import { getHistory } from '../api';
 import type {
   Chore,
@@ -14,6 +14,7 @@ import {
   getLocalDayOfMonth,
   getLocalMonthNameShort,
 } from '../utils/date';
+import { Tooltip } from './tooltip';
 
 interface ChoreHistoryModalProps {
   person: Person;
@@ -92,12 +93,14 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
       <div class="modal-content modal-content-large">
         <h3>
           {escapeHtml(props.person.name)}'s Chore History
-          <span
-            class="info-icon"
-            data-tooltip="Shows daily chore completions for the last 14 days. Green = completed on time, Yellow = completed late, Gray = skip day."
+          <Tooltip
+            text="Shows daily chore completions for the last 14 days. Green = completed on time, Yellow = completed late, Gray = skip day."
+            position="below"
+            align="center"
+            multiline
           >
-            ℹ️
-          </span>
+            <span class="info-icon">ℹ️</span>
+          </Tooltip>
         </h3>
         <Show when={loading()}>
           <div class="loading">Loading history...</div>
@@ -127,50 +130,90 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
                       <td class="chore-name">
                         {escapeHtml(chore.name)}
                         <Show when={chore.type === 'rotating'}>
-                          <span
+                          {' '}
+                          <Tooltip
+                            text={chore.type === 'rotating' ? 'Rotating chore' : ''}
+                            position="above-right"
+                            multiline
                             class="rotating-icon"
-                            data-tooltip="Rotating chore: Blank cells mean it was likely someone else's turn, Magic Mirror wasn't running, or the chore is newer than this date."
                           >
                             🔄
-                          </span>
+                          </Tooltip>
                         </Show>
                       </td>
                       <For each={getDays()}>
                         {(day) => {
                           const completion = getCompletionDetails(chore.id, day);
                           const skipDay = isSkipDay(chore, day);
+                          const emptyDay = !skipDay && !completion;
+
+                          const getEmptyTooltip = () => {
+                            if (chore.type === 'rotating') {
+                              return "Either it was someone else's turn (rotating chore), Magic Mirror was not running this day, or the chore was not created yet.";
+                            }
+                            return 'Either Magic Mirror was not running this day, or the chore was not created yet.';
+                          };
+
+                          const getTooltipText = () => {
+                            if (completion?.completed)
+                              return `Completed at ${completion.completedAt} (24h)`;
+                            if (completion && !completion.completed) return 'Not completed';
+                            if (skipDay) return 'Skip day';
+                            if (emptyDay) return getEmptyTooltip();
+                            return '';
+                          };
+
                           return (
                             <td
                               class="history-cell"
                               classList={{
                                 'history-skip-day': skipDay,
                               }}
-                              data-tooltip={skipDay ? 'Skip day' : ''}
                             >
-                              <Show when={completion?.completed}>
-                                <span
-                                  class="completion-badge"
-                                  classList={{
-                                    'completion-late': completion?.wasLate,
-                                    'completion-ontime': !completion?.wasLate,
-                                  }}
-                                  data-tooltip={
-                                    completion?.completedAt
-                                      ? `Completed at ${completion.completedAt} (24h)`
-                                      : ''
-                                  }
-                                >
-                                  ✓
-                                </span>
-                              </Show>
-                              <Show when={completion && !completion.completed}>
-                                <span
-                                  class="completion-badge completion-missed"
-                                  data-tooltip="Not completed"
-                                >
-                                  ✗
-                                </span>
-                              </Show>
+                              <Switch
+                                fallback={
+                                  <Tooltip
+                                    text={getTooltipText()}
+                                    position="above"
+                                    align="right"
+                                    multiline={emptyDay}
+                                  >
+                                    <span
+                                      style={{
+                                        opacity: 0,
+                                        width: '32px',
+                                        height: '32px',
+                                        display: 'inline-block',
+                                      }}
+                                    />
+                                  </Tooltip>
+                                }
+                              >
+                                <Match when={completion?.completed}>
+                                  <Tooltip
+                                    text={getTooltipText()}
+                                    position="above"
+                                    align="right"
+                                    classList={{
+                                      'completion-badge': true,
+                                      'completion-late': completion?.wasLate,
+                                      'completion-ontime': !completion?.wasLate,
+                                    }}
+                                  >
+                                    ✓
+                                  </Tooltip>
+                                </Match>
+                                <Match when={completion?.completed === false}>
+                                  <Tooltip
+                                    text={getTooltipText()}
+                                    position="above"
+                                    align="right"
+                                    class="completion-badge completion-missed"
+                                  >
+                                    ✗
+                                  </Tooltip>
+                                </Match>
+                              </Switch>
                             </td>
                           );
                         }}

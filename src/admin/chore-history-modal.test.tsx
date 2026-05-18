@@ -233,7 +233,8 @@ describe('ChoreHistoryModal', () => {
 
     const infoIcon = container.querySelector('.info-icon');
     expect(infoIcon).toBeInTheDocument();
-    expect(infoIcon).toHaveAttribute('data-tooltip');
+    const tooltipWrapper = container.querySelector('[data-testid="tooltip"]');
+    expect(tooltipWrapper).toHaveAttribute('data-tooltip');
   });
 
   it('filters history by person ID', async () => {

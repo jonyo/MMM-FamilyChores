@@ -19,6 +19,7 @@ import { PersonalChoreModal } from './personal-chore-modal';
 import { RotatingChoreCard } from './rotating-chore';
 import { RotatingChoreModal } from './rotating-chore-modal';
 import { SettingsModal } from './settings-modal';
+import { Tooltip } from './tooltip';
 
 // API base URL
 const API_BASE = '/MMM-FamilyChores';
@@ -493,12 +494,15 @@ export const Admin: Component<Record<string, never>> = () => {
                   >
                     Force Daily Reset
                   </button>
-                  <span
+                  <Tooltip
+                    text="WARNING: This will un-check all chores and rotate assignment on rotating chores to the next person. It does respect skip days if today is a skip day. Useful for testing or immediately advancing chore assignments."
+                    position="above"
+                    align="center"
+                    multiline
                     class="info-icon"
-                    data-tooltip="WARNING: This will un-check all chores and rotate assignment on rotating chores to the next person. It does respect skip days if today is a skip day. Useful for testing or immediately advancing chore assignments."
                   >
                     ℹ️
-                  </span>
+                  </Tooltip>
                 </div>
               </div>
             </div>
