@@ -5,16 +5,11 @@ import './buttons.css';
 import './modals.css';
 import { Match, onMount, Switch } from 'solid-js';
 import { getHistory } from '../api';
-import type {
-  Chore,
-  DailyCompletion,
-  DayOfWeek,
-  FamilyChoresData,
-  Person,
-} from '../types/chore-types';
+import type { Chore, DailyCompletion, FamilyChoresData, Person } from '../types/chore-types';
 import { escapeHtml } from '../utils/browser';
 import {
   getLocalDateString,
+  getLocalDayName,
   getLocalDayNameShort,
   getLocalDayOfMonth,
   getLocalMonthNameShort,
@@ -87,9 +82,7 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
       return false;
     }
     const date = new Date(dateStr);
-    const dayName = date
-      .toLocaleDateString('en-US', { weekday: 'long' })
-      .toLowerCase() as DayOfWeek;
+    const dayName = getLocalDayName(date);
     return chore.skipDays.includes(dayName);
   };
 

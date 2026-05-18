@@ -1278,6 +1278,14 @@
 		}).format(date);
 	};
 	/**
+	* Gets the local day name in lowercase (sunday, monday, etc.)
+	* Uses Intl.DateTimeFormat for proper timezone and DST handling
+	* @param date - Optional date to convert (defaults to current time)
+	*/
+	var getLocalDayName = (date = /* @__PURE__ */ new Date()) => {
+		return new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(date).toLowerCase();
+	};
+	/**
 	* Gets the local day name in abbreviated format (Sun, Mon, Tue, etc.)
 	* Uses Intl.DateTimeFormat for proper timezone and DST handling
 	* @param date - Optional date to convert (defaults to current time)
@@ -1376,7 +1384,7 @@
 		};
 		const isSkipDay = (chore, dateStr) => {
 			if (!chore.skipDays || chore.skipDays.length === 0) return false;
-			const dayName = new Date(dateStr).toLocaleDateString("en-US", { weekday: "long" }).toLowerCase();
+			const dayName = getLocalDayName(new Date(dateStr));
 			return chore.skipDays.includes(dayName);
 		};
 		return (() => {
