@@ -61,11 +61,6 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
     });
   };
 
-  // Check if chore was completed on a specific date
-  const _isCompleted = (choreId: string, date: string) => {
-    return history().some((dc) => dc.choreId === choreId && dc.date === date && dc.completed);
-  };
-
   // Get completion details for a chore on a specific date
   const getCompletionDetails = (choreId: string, date: string) => {
     return history().find((dc) => dc.choreId === choreId && dc.date === date);
