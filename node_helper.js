@@ -375,7 +375,6 @@ function createAdminHandlers(context) {
 					res.status(404).json(apiErr("Person not found"));
 					return;
 				}
-				choreData.people[personIndex];
 				choreData.people.splice(personIndex, 1);
 				choreData.chores = choreData.chores.filter((chore) => {
 					if (chore.type === "personal") return chore.assignedTo !== id;
@@ -423,7 +422,6 @@ function createAdminHandlers(context) {
 					return;
 				}
 				choreData.chores.push(newChore);
-				if (type === "personal") {}
 				context.saveChoreData();
 				context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
 				res.json(newChore);
@@ -468,7 +466,6 @@ function createAdminHandlers(context) {
 					return;
 				}
 				Object.assign(chore, updatedChore);
-				if (chore.type === ChoreType.PERSONAL) chore.assignedTo;
 				context.saveChoreData();
 				context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
 				res.json(chore);
@@ -490,8 +487,6 @@ function createAdminHandlers(context) {
 					res.status(404).json(apiErr("Chore not found"));
 					return;
 				}
-				const chore = choreData.chores[choreIndex];
-				if (chore.type === ChoreType.PERSONAL) chore.assignedTo;
 				choreData.chores.splice(choreIndex, 1);
 				context.saveChoreData();
 				context.sendNotification(SocketNotifications.CHORE_DATA, choreData);

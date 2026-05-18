@@ -158,7 +158,6 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
           return;
         }
 
-        const _person = choreData.people[personIndex];
         choreData.people.splice(personIndex, 1);
 
         // Clean up chores assigned to this person
@@ -226,10 +225,6 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         }
 
         choreData.chores.push(newChore as Chore);
-        let _personId: string | undefined;
-        if (type === 'personal') {
-          _personId = assignedTo;
-        }
 
         context.saveChoreData();
         context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
@@ -288,10 +283,6 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         }
 
         Object.assign(chore, updatedChore);
-        let _personId: string | undefined;
-        if (chore.type === ChoreType.PERSONAL) {
-          _personId = chore.assignedTo;
-        }
 
         context.saveChoreData();
         context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
@@ -319,11 +310,6 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
           return;
         }
 
-        const chore = choreData.chores[choreIndex];
-        let _personId: string | undefined;
-        if (chore.type === ChoreType.PERSONAL) {
-          _personId = chore.assignedTo;
-        }
         choreData.chores.splice(choreIndex, 1);
         context.saveChoreData();
         context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
