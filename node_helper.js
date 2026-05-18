@@ -316,6 +316,88 @@ var validatePersonalChoreParts = (chore, people) => {
 	};
 	return { valid: true };
 };
+var validateSettings = (settings) => {
+	if (!settings || typeof settings !== "object") return {
+		valid: false,
+		error: "Settings must be an object"
+	};
+	const settingsObj = settings;
+	if (!settingsObj.dailyResetTime || typeof settingsObj.dailyResetTime !== "string") return {
+		valid: false,
+		error: "Settings must have a dailyResetTime string"
+	};
+	if (!settingsObj.dailyResetTime.match(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)) return {
+		valid: false,
+		error: "Settings dailyResetTime must be in 24-hour format (e.g., \"03:00\" or \"21:00\")"
+	};
+	if (typeof settingsObj.historyEnabled !== "boolean") return {
+		valid: false,
+		error: "Settings must have a historyEnabled boolean"
+	};
+	return { valid: true };
+};
+var validateDailyCompletion = (completion, chores) => {
+	if (!completion || typeof completion !== "object") return {
+		valid: false,
+		error: "Daily completion must be an object"
+	};
+	const completionObj = completion;
+	if (!completionObj.id || typeof completionObj.id !== "string" || !completionObj.id.trim()) return {
+		valid: false,
+		error: "Daily completion must have a non-empty id"
+	};
+	if (!isValidUUID(completionObj.id)) return {
+		valid: false,
+		error: "Daily completion id must be a valid UUID"
+	};
+	if (!completionObj.date || typeof completionObj.date !== "string") return {
+		valid: false,
+		error: "Daily completion must have a date string"
+	};
+	if (!completionObj.date.match(/^\d{4}-\d{2}-\d{2}$/)) return {
+		valid: false,
+		error: "Daily completion date must be in YYYY-MM-DD format (e.g., \"2024-01-15\")"
+	};
+	if (!completionObj.personId || typeof completionObj.personId !== "string" || !completionObj.personId.trim()) return {
+		valid: false,
+		error: "Daily completion must have a non-empty personId"
+	};
+	if (!isValidUUID(completionObj.personId)) return {
+		valid: false,
+		error: "Daily completion personId must be a valid UUID"
+	};
+	if (!completionObj.choreId || typeof completionObj.choreId !== "string" || !completionObj.choreId.trim()) return {
+		valid: false,
+		error: "Daily completion must have a non-empty choreId"
+	};
+	if (!isValidUUID(completionObj.choreId)) return {
+		valid: false,
+		error: "Daily completion choreId must be a valid UUID"
+	};
+	if (!chores.some((chore) => chore.id === completionObj.choreId)) return {
+		valid: false,
+		error: "Daily completion choreId references a non-existent chore (may have been deleted)"
+	};
+	if (typeof completionObj.completed !== "boolean") return {
+		valid: false,
+		error: "Daily completion must have a completed boolean"
+	};
+	if (completionObj.completedAt !== void 0) {
+		if (typeof completionObj.completedAt !== "string") return {
+			valid: false,
+			error: "Daily completion completedAt must be a string"
+		};
+		if (!completionObj.completedAt.match(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)) return {
+			valid: false,
+			error: "Daily completion completedAt must be in 24-hour format (e.g., \"12:00\" or \"19:30\")"
+		};
+	}
+	if (typeof completionObj.wasLate !== "boolean") return {
+		valid: false,
+		error: "Daily completion must have a wasLate boolean"
+	};
+	return { valid: true };
+};
 //#endregion
 //#region src/backend/admin-routes.ts
 function createAdminHandlers(context) {
@@ -740,15 +822,30 @@ var node_helper_default = node_helper.create({
 					if (result.valid) validChores.push(chore);
 					else logger.warn(`Skipping invalid chore in data file: ${result.error}`);
 				}
+				const rawSettings = rawData.settings;
+				const settingsResult = validateSettings(rawSettings);
+				let settings;
+				if (settingsResult.valid) settings = rawSettings;
+				else {
+					logger.warn(`Invalid settings in data file, using defaults: ${settingsResult.error}`);
+					settings = {
+						dailyResetTime: "03:00",
+						historyEnabled: true
+					};
+				}
+				const rawCompletions = Array.isArray(rawData.dailyCompletions) ? rawData.dailyCompletions : [];
+				const validCompletions = [];
+				for (const completion of rawCompletions) {
+					const result = validateDailyCompletion(completion, validChores);
+					if (result.valid) validCompletions.push(completion);
+					else logger.warn(`Skipping invalid daily completion in data file: ${result.error}`);
+				}
 				this.choreData = {
 					people: validPeople,
 					chores: validChores,
-					dailyCompletions: Array.isArray(rawData.dailyCompletions) ? rawData.dailyCompletions : [],
+					dailyCompletions: validCompletions,
 					lastResetDate: typeof rawData.lastResetDate === "string" ? rawData.lastResetDate : void 0,
-					settings: {
-						dailyResetTime: rawData.settings?.dailyResetTime ?? "03:00",
-						historyEnabled: rawData.settings?.historyEnabled ?? true
-					}
+					settings
 				};
 				logger.info(`Loaded chore data from ${dataPath}`);
 			} else {

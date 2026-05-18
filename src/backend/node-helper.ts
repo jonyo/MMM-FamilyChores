@@ -18,7 +18,12 @@ import type {
 import { getLocalDateString, getLocalDayName, getLocalTimeString } from '../utils/date';
 import { generateUUID } from '../utils/uuid';
 import { createAdminHandlers } from './admin-routes';
-import { validateChore, validatePerson } from './validator';
+import {
+  validateChore,
+  validateDailyCompletion,
+  validatePerson,
+  validateSettings,
+} from './validator';
 
 interface FamilyChoresNodeHelper extends Partial<NodeHelper.NodeHelperModule> {
   // Module state
@@ -119,19 +124,38 @@ const nodeHelper: FamilyChoresNodeHelper = {
           }
         }
 
+        // Validate settings, use defaults if invalid
+        const rawSettings = rawData.settings;
+        const settingsResult = validateSettings(rawSettings);
+        let settings: { dailyResetTime: string; historyEnabled: boolean };
+        if (settingsResult.valid) {
+          settings = rawSettings as { dailyResetTime: string; historyEnabled: boolean };
+        } else {
+          Log.warn(`Invalid settings in data file, using defaults: ${settingsResult.error}`);
+          settings = { dailyResetTime: '03:00', historyEnabled: true };
+        }
+
+        // Validate and filter daily completions against valid chores
+        const rawCompletions = Array.isArray(rawData.dailyCompletions)
+          ? rawData.dailyCompletions
+          : [];
+        const validCompletions: DailyCompletion[] = [];
+        for (const completion of rawCompletions) {
+          const result = validateDailyCompletion(completion, validChores);
+          if (result.valid) {
+            validCompletions.push(completion as DailyCompletion);
+          } else {
+            Log.warn(`Skipping invalid daily completion in data file: ${result.error}`);
+          }
+        }
+
         this.choreData = {
           people: validPeople,
           chores: validChores,
-          dailyCompletions: Array.isArray(rawData.dailyCompletions) ? rawData.dailyCompletions : [],
+          dailyCompletions: validCompletions,
           lastResetDate:
             typeof rawData.lastResetDate === 'string' ? rawData.lastResetDate : undefined,
-          // Auto-spread defaults for settings
-          settings: {
-            dailyResetTime:
-              (rawData.settings as { dailyResetTime?: string })?.dailyResetTime ?? '03:00',
-            historyEnabled:
-              (rawData.settings as { historyEnabled?: boolean })?.historyEnabled ?? true,
-          },
+          settings,
         };
         Log.info(`Loaded chore data from ${dataPath}`);
       } else {
