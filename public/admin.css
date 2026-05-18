@@ -434,7 +434,7 @@ main {
 .history-table th {
   padding: 10px;
   text-align: center;
-  border: 1px solid #e9ecef;
+  border: 1px solid #d1d5db;
   background: #f8f9fa;
   font-weight: 600;
   color: #333;
@@ -462,7 +462,7 @@ main {
 .history-table td {
   padding: 10px;
   text-align: center;
-  border: 1px solid #e9ecef;
+  border: 1px solid #d1d5db;
 }
 
 .history-table .chore-name {
