@@ -41,6 +41,37 @@ pnpm install
 pnpm test
 ```
 
+## CI/CD and Security
+
+This project uses automated vulnerability scanning to keep dependencies secure:
+
+### CI Workflow
+
+- **pnpm audit**: Runs on every push and PR to detect known vulnerabilities (moderate+ severity fails the build)
+- **Type checking**: Ensures TypeScript compiles without errors
+- **Linting**: Runs Biome (primary) and ESLint (reactivity errors)
+- **Testing**: Runs all tests with Vitest
+
+### Dependency Review
+
+- Runs on every pull request to main
+- Blocks PRs that introduce moderate or higher severity vulnerabilities
+- Only allows common open-source licenses (MIT, Apache-2.0, BSD, ISC, 0BSD)
+
+### Dependabot
+
+- Checks dependencies weekly for known vulnerabilities
+- Automatically creates PRs for security updates
+- Labels PRs with "dependencies" and "security"
+
+### Before Submitting PRs
+
+1. Run `pnpm test` - all tests must pass
+2. Run `pnpm typecheck` - TypeScript must compile without errors
+3. Run `pnpm lint` - code must pass both Biome and ESLint
+4. Run `pnpm audit` locally to check for vulnerabilities
+5. CI will automatically run these checks on your PR
+
 ## Code of Conduct
 
 Be respectful. We're all here to make household chore tracking a little easier.
