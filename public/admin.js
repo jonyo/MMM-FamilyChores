@@ -1437,14 +1437,6 @@
 		return (() => {
 			var _el$ = _tmpl$4$2(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.firstChild, _el$12 = _el$3.nextSibling, _el$13 = _el$12.firstChild;
 			insert(_el$3, () => escapeHtml(props.person.name), _el$4);
-			insert(_el$3, createComponent(Tooltip, {
-				text: "Shows daily chore completions for the last 14 days. Green = completed on time, Yellow = completed late, Gray = skip day.",
-				position: "below",
-				align: "center",
-				multiline: true,
-				"class": "info-icon",
-				children: "ℹ️"
-			}), null);
 			insert(_el$2, createComponent(Show, {
 				get when() {
 					return loading();

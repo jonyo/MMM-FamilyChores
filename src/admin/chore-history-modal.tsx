@@ -109,18 +109,7 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
   return (
     <div class="modal active">
       <div class="modal-content modal-content-large">
-        <h3>
-          {escapeHtml(props.person.name)}'s Chore History
-          <Tooltip
-            text="Shows daily chore completions for the last 14 days. Green = completed on time, Yellow = completed late, Gray = skip day."
-            position="below"
-            align="center"
-            multiline
-            class="info-icon"
-          >
-            ℹ️
-          </Tooltip>
-        </h3>
+        <h3>{escapeHtml(props.person.name)}'s Chore History</h3>
         <Show when={loading()}>
           <div class="loading">Loading history...</div>
         </Show>

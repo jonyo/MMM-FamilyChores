@@ -220,19 +220,6 @@ describe('ChoreHistoryModal', () => {
     expect(closeModal).toHaveBeenCalledTimes(1);
   });
 
-  it('shows info tooltip with explanation', () => {
-    const closeModal = vi.fn();
-
-    const { container } = render(() => (
-      <ChoreHistoryModal person={mockPerson} choreData={mockChoreData} closeModal={closeModal} />
-    ));
-
-    const infoIcon = container.querySelector('.info-icon');
-    expect(infoIcon).toBeInTheDocument();
-    const tooltipWrapper = container.querySelector('[data-testid="tooltip"]');
-    expect(tooltipWrapper).toHaveAttribute('data-tooltip');
-  });
-
   it('filters history by person ID', async () => {
     const closeModal = vi.fn();
     globalThis.fetch = vi.fn(() =>
