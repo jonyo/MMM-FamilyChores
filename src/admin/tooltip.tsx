@@ -1,6 +1,5 @@
 import type { ParentComponent } from 'solid-js';
 import { mergeProps } from 'solid-js';
-import './tooltip.css';
 
 export type TooltipPosition = 'above' | 'below' | 'left' | 'right' | 'above-right' | 'below-right';
 
@@ -13,6 +12,7 @@ export interface TooltipProps {
   multiline?: boolean;
   class?: string;
   classList?: { [key: string]: boolean | undefined };
+  dataTestId?: string;
 }
 
 export const Tooltip: ParentComponent<TooltipProps> = (rawProps) => {
@@ -32,13 +32,20 @@ export const Tooltip: ParentComponent<TooltipProps> = (rawProps) => {
       classList={{
         tooltip: !!props.text,
         'tooltip-multiline': !!props.text && props.multiline,
-        [`tooltip-${props.position}`]: !!props.text,
-        [`tooltip-align-${props.align}`]: !!props.text,
+        'tooltip-above': !!props.text && props.position === 'above',
+        'tooltip-below': !!props.text && props.position === 'below',
+        'tooltip-left': !!props.text && props.position === 'left',
+        'tooltip-right': !!props.text && props.position === 'right',
+        'tooltip-above-right': !!props.text && props.position === 'above-right',
+        'tooltip-below-right': !!props.text && props.position === 'below-right',
+        'tooltip-align-left': !!props.text && props.align === 'left',
+        'tooltip-align-center': !!props.text && props.align === 'center',
+        'tooltip-align-right': !!props.text && props.align === 'right',
         [props.class || '']: !!props.class,
         ...props.classList,
       }}
       data-tooltip={props.text || ''}
-      data-testid="tooltip"
+      data-testid={props.dataTestId || 'tooltip'}
     >
       {props.children}
     </span>

@@ -84,7 +84,7 @@ describe('ChoreHistoryModal', () => {
       <ChoreHistoryModal person={mockPerson} choreData={mockChoreData} closeModal={closeModal} />
     ));
 
-    expect(container.querySelector('.modal')).toHaveClass('active');
+    expect(container.querySelector('[data-testid="modal"]')).toBeInTheDocument();
     expect(screen.getByText("Alice's Chore History")).toBeInTheDocument();
   });
 
@@ -133,7 +133,7 @@ describe('ChoreHistoryModal', () => {
     // Wait for async operations
     await vi.advanceTimersByTimeAsync(100);
 
-    expect(container.querySelector('.history-table')).toBeInTheDocument();
+    expect(container.querySelector('[data-testid="history-table"]')).toBeInTheDocument();
     expect(screen.getByText('Clean room')).toBeInTheDocument();
     expect(screen.getByText('Do dishes')).toBeInTheDocument();
   });
@@ -154,7 +154,9 @@ describe('ChoreHistoryModal', () => {
     // Wait for async operations
     await vi.advanceTimersByTimeAsync(100);
 
-    const completionBadges = container.querySelectorAll('.completion-badge');
+    const completionBadges = container.querySelectorAll(
+      '[data-testid="completion-ontime"], [data-testid="completion-late"]'
+    );
     expect(completionBadges.length).toBeGreaterThan(0);
   });
 
@@ -174,7 +176,7 @@ describe('ChoreHistoryModal', () => {
     // Wait for async operations
     await vi.advanceTimersByTimeAsync(100);
 
-    const onTimeBadge = container.querySelector('.completion-ontime');
+    const onTimeBadge = container.querySelector('[data-testid="completion-ontime"]');
     expect(onTimeBadge).toBeInTheDocument();
   });
 
@@ -194,7 +196,7 @@ describe('ChoreHistoryModal', () => {
     // Wait for async operations
     await vi.advanceTimersByTimeAsync(100);
 
-    const lateBadge = container.querySelector('.completion-late');
+    const lateBadge = container.querySelector('[data-testid="completion-late"]');
     expect(lateBadge).toBeInTheDocument();
   });
 
@@ -214,7 +216,9 @@ describe('ChoreHistoryModal', () => {
     // Wait for async operations
     await vi.advanceTimersByTimeAsync(100);
 
-    const closeButton = container.querySelector('.btn-secondary') as HTMLButtonElement;
+    const closeButton = container.querySelector(
+      '[data-testid="close-button"]'
+    ) as HTMLButtonElement;
     closeButton.click();
 
     expect(closeModal).toHaveBeenCalledTimes(1);

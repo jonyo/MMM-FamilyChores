@@ -78,22 +78,22 @@ describe('Tooltip', () => {
 
   it('passes through class prop', () => {
     render(() => (
-      <Tooltip text="Test tooltip" class="custom-class">
+      <Tooltip text="Test tooltip" class="test-dummy-class">
         <span>Content</span>
       </Tooltip>
     ));
     const tooltip = page.getByTestId('tooltip');
-    expect(tooltip).toHaveClass('custom-class');
+    expect(tooltip).toHaveClass('test-dummy-class');
   });
 
   it('passes through classList prop', () => {
     render(() => (
-      <Tooltip text="Test tooltip" classList={{ 'custom-class': true }}>
+      <Tooltip text="Test tooltip" classList={{ 'test-dummy-class': true }}>
         <span>Content</span>
       </Tooltip>
     ));
     const tooltip = page.getByTestId('tooltip');
-    expect(tooltip).toHaveClass('custom-class');
+    expect(tooltip).toHaveClass('test-dummy-class');
   });
 
   describe('when text is empty', () => {
@@ -108,22 +108,22 @@ describe('Tooltip', () => {
 
     it('still passes through class prop when text is empty', async () => {
       render(() => (
-        <Tooltip text="" class="custom-class">
+        <Tooltip text="" class="test-dummy-class">
           Content
         </Tooltip>
       ));
       const tooltip = page.getByTestId('tooltip');
-      await expect.element(tooltip).toHaveClass('custom-class');
+      await expect.element(tooltip).toHaveClass('test-dummy-class');
     });
 
     it('still passes through classList prop when text is empty', async () => {
       render(() => (
-        <Tooltip text="" classList={{ 'custom-class': true }}>
+        <Tooltip text="" classList={{ 'test-dummy-class': true }}>
           Content
         </Tooltip>
       ));
       const tooltip = page.getByTestId('tooltip');
-      await expect.element(tooltip).toHaveClass('custom-class');
+      await expect.element(tooltip).toHaveClass('test-dummy-class');
     });
 
     it('sets data-tooltip to empty string when text is empty', async () => {

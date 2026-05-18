@@ -299,6 +299,7 @@ At midnight, all `completedToday` entries are cleared, making personal chores av
 - **TypeScript**: Strong typing for all data structures and components
 - **Vite**: Fast build system for both frontend and backend
 - **SolidJS**: Reactive UI framework for the admin interface
+- **Tailwind CSS v4**: Utility-first CSS framework with CSS-first configuration for the admin interface
 - **Vitest**: Testing framework with browser mode support for UI components
 - **Biome**: Primary linting and formatting tool
 - **ESLint**: Reactivity error detection for SolidJS components

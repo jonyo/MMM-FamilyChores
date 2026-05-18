@@ -1,9 +1,5 @@
 import type { Component } from 'solid-js';
-import { createSignal, For, Show } from 'solid-js';
-import './chore-history-modal.css';
-import './buttons.css';
-import './modals.css';
-import { Match, onMount, Switch } from 'solid-js';
+import { createSignal, For, Match, onMount, Show, Switch } from 'solid-js';
 import { getHistory } from '../api';
 import type {
   Chore,
@@ -20,6 +16,7 @@ import {
   getLocalDayOfMonth,
   getLocalMonthNameShort,
 } from '../utils/date';
+import { Button } from './button';
 import { Tooltip } from './tooltip';
 
 interface ChoreHistoryModalProps {
@@ -107,25 +104,42 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
   };
 
   return (
-    <div class="modal active">
-      <div class="modal-content modal-content-large">
-        <h3>{escapeHtml(props.person.name)}'s Chore History</h3>
+    <div
+      class="fixed inset-0 z-1000 flex  items-center justify-center bg-black/50"
+      data-testid="modal"
+    >
+      <div
+        class="max-h-[90vh] w-[90%] max-w-[95vw] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"
+        data-testid="modal-content"
+      >
+        <h3 class="mb-5 text-2xl text-indigo-600">
+          {escapeHtml(props.person.name)}'s Chore History
+        </h3>
         <Show when={loading()}>
-          <div class="loading">Loading history...</div>
+          <div class="py-4 text-center text-slate-500">Loading history...</div>
         </Show>
         <Show when={error()}>
-          <div class="error">Error: {escapeHtml(error() ?? 'Unknown error')}</div>
+          <div class="py-4 text-center text-red-600">
+            Error: {escapeHtml(error() ?? 'Unknown error')}
+          </div>
         </Show>
         <Show when={!loading() && !error()}>
-          <div class="history-grid">
-            <table class="history-table">
+          <div class="overflow-x-auto">
+            <table
+              class="w-full border-collapse border border-slate-200"
+              data-testid="history-table"
+            >
               <thead>
                 <tr>
-                  <th>Chore</th>
+                  <th class="border border-slate-200 p-2.5 text-left text-base font-medium whitespace-nowrap text-slate-900">
+                    Chore
+                  </th>
                   <For each={getDays()}>
                     {(day) => (
-                      <th class="date">
-                        <span class="vertical-text">{day.display}</span>
+                      <th class="relative h-[100px] w-[50px] overflow-visible border border-slate-200 p-2.5 text-left text-base font-medium text-slate-900">
+                        <span class="absolute top-1/2 left-1/2 -translate-1/2  -rotate-90 whitespace-nowrap">
+                          {day.display}
+                        </span>
                       </th>
                     )}
                   </For>
@@ -135,7 +149,7 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
                 <For each={getPersonChores()}>
                   {(chore) => (
                     <tr>
-                      <td class="chore-name">
+                      <td class="border border-slate-200 p-2.5 text-base whitespace-nowrap text-slate-900">
                         {escapeHtml(chore.name)}
                         <Show when={chore.type === 'rotating'}>
                           {' '}
@@ -143,7 +157,7 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
                             text="Rotating chore"
                             position="above-right"
                             multiline
-                            class="rotating-icon"
+                            class="text-sm"
                           >
                             🔄
                           </Tooltip>
@@ -173,9 +187,9 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
 
                           return (
                             <td
-                              class="history-cell"
+                              class="border border-slate-200 p-2.5 text-center"
                               classList={{
-                                'history-skip-day': skipDay,
+                                'bg-slate-100': skipDay,
                               }}
                             >
                               <Switch
@@ -203,10 +217,19 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
                                     position="above"
                                     align="right"
                                     classList={{
-                                      'completion-badge': true,
-                                      'completion-late': completion?.wasLate,
-                                      'completion-ontime': !completion?.wasLate,
+                                      'inline-block': true,
+                                      'w-8': true,
+                                      'h-8': true,
+                                      'rounded-full': true,
+                                      'text-center': true,
+                                      'leading-8': true,
+                                      'bg-red-500': completion?.wasLate,
+                                      'bg-green-500': !completion?.wasLate,
+                                      'text-white': true,
                                     }}
+                                    dataTestId={
+                                      completion?.wasLate ? 'completion-late' : 'completion-ontime'
+                                    }
                                   >
                                     ✓
                                   </Tooltip>
@@ -216,7 +239,8 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
                                     text={getTooltipText()}
                                     position="above"
                                     align="right"
-                                    class="completion-badge completion-missed"
+                                    class="inline-block size-8  rounded-full bg-yellow-500 text-center leading-8 text-slate-900"
+                                    dataTestId="completion-missed"
                                   >
                                     ✗
                                   </Tooltip>
@@ -233,10 +257,15 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
             </table>
           </div>
         </Show>
-        <div class="form-actions">
-          <button type="button" class="btn btn-secondary" onClick={() => props.closeModal()}>
+        <div class="mt-6 flex justify-end gap-2.5">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => props.closeModal()}
+            dataTestId="close-button"
+          >
             Close
-          </button>
+          </Button>
         </div>
       </div>
     </div>

@@ -217,13 +217,60 @@ src/api/
 └── index.ts       # Barrel exports
 ```
 
+### Admin Panel Styling
+
+**Tailwind CSS v4 with CSS-First Configuration:**
+
+- The admin panel uses Tailwind CSS v4 with a CSS-first configuration approach
+- Configuration is in `src/admin/admin.css` using `@import "tailwindcss"` and `@theme` rules
+- This approach eliminates the need for a separate `tailwind.config.js` file
+- Custom theme colors and animations are defined directly in the CSS file using `@theme`
+
+**Button Component:**
+
+- All admin components use the reusable `Button` component from `src/admin/button.tsx`
+- The Button component supports variants: `primary`, `secondary`, `warning`, `danger`, `success`
+- Size option: `sm` for smaller buttons
+- Use `dataTestId` prop for testing instead of `data-testid` attribute
+- Example: `<Button type="button" variant="primary" onClick={handler}>Click me</Button>`
+
+**Component Styling:**
+
+- All admin components use Tailwind utility classes for styling
+- No legacy CSS files exist in `src/admin/` - all styling is done with Tailwind
+- Tooltip styles are preserved in `src/admin/admin.css` using `@layer components`
+- Use `data-testid` attributes on elements that need to be selected in tests
+- This is especially important for modal content, lists, and other dynamic elements
+
+**Biome Configuration:**
+
+- `biome.jsonc` is configured to recognize Tailwind CSS directives
+- The CSS parser has `tailwindDirectives` enabled to support `@theme` and `@apply` rules
+- This prevents Biome from flagging Tailwind-specific CSS as errors
+
+**ESLint Configuration:**
+
+- `eslint-plugin-solid` enforces SolidJS reactivity best practices (e.g., `solid/reactivity`)
+- `eslint-plugin-better-tailwindcss` validates Tailwind CSS classes and detects unknown/incorrect utilities
+  - Uses `entryPoint: "src/admin/admin.css"` to read Tailwind v4 CSS-first configuration
+  - `detectComponentClasses: true` recognizes custom `@layer components` classes (e.g., `tooltip`, `tooltip-above`)
+  - Only correctness rules are enabled (unknown classes, conflicting classes)
+- Biome handles all formatting and additional linting for the admin panel
+
+**Testing Considerations:**
+
+- When adding new admin components, always add `data-testid` attributes to key elements
+- Use `data-testid` selectors in test files instead of CSS class selectors
+- This makes tests more robust against styling changes
+- Example: `expect(container.querySelector('[data-testid="modal-content"]')).toBeTruthy()`
+
 ### Testing Requirements
 
 **Before committing:**
 
 1. Run `pnpm run test` - All tests must pass
 2. Run `pnpm run typecheck` - TypeScript must compile without errors
-3. Run `pnpm run lint` - Code must pass both Biome (primary) and ESLint (reactivity errors)
+3. Run `pnpm run lint` - Code must pass both Biome (primary) and ESLint (reactivity + Tailwind correctness)
 4. Run `pnpm run build` - Verify build succeeds (maintainers will build and commit releases)
 
 **Test Coverage:**

@@ -1,14 +1,10 @@
 import type { Component } from 'solid-js';
 import { createSignal } from 'solid-js';
-import './person-modal.css';
-import './buttons.css';
-import './forms.css';
-import './modals.css';
-import './person.css';
 import { createPerson, updatePerson } from '../api';
 import type { Person } from '../types/chore-types';
 import type { CreatePersonRequest, UpdatePersonRequest } from '../types/request-types';
 import { generatePastelColor } from '../utils/browser';
+import { Button } from './button';
 
 interface PersonModalProps {
   initialPerson?: Person;
@@ -44,46 +40,55 @@ export const PersonModal: Component<PersonModalProps> = (props) => {
   };
 
   return (
-    <div class="modal active">
-      <div class="modal-content">
-        <h3>{props.initialPerson ? 'Edit Person' : 'Add Person'}</h3>
+    <div class="fixed inset-0 z-1000 flex  items-center justify-center bg-black/50">
+      <div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200">
+        <h3 class="mb-5 text-2xl text-indigo-600">
+          {props.initialPerson ? 'Edit Person' : 'Add Person'}
+        </h3>
         <form onSubmit={handleSubmit}>
-          <div class="form-group">
-            <label for="personName">Name</label>
+          <div class="mb-5">
+            <label for="personName" class="mb-3 block font-medium text-slate-900">
+              Name
+            </label>
             <input
               type="text"
               id="personName"
               value={name()}
               onInput={(e) => setName(e.currentTarget.value)}
               required
+              class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"
             />
           </div>
-          <div class="form-group">
-            <label for="personColor">Color</label>
-            <div class="color-input-group">
+          <div class="mb-5">
+            <label for="personColor" class="mb-3 block font-medium text-slate-900">
+              Color
+            </label>
+            <div class="flex items-center gap-2.5">
               <input
                 type="color"
                 id="personColor"
                 value={color()}
                 onInput={(e) => setColor(e.currentTarget.value)}
                 required
+                class="h-10 w-15 cursor-pointer rounded-lg border border-slate-300"
               />
-              <button
+              <Button
                 type="button"
-                class="btn btn-secondary btn-sm"
+                variant="secondary"
+                size="sm"
                 onClick={() => setColor(generatePastelColor())}
               >
                 Randomize
-              </button>
+              </Button>
             </div>
           </div>
-          <div class="form-actions">
-            <button type="button" class="btn btn-secondary" onClick={() => props.closeModal()}>
+          <div class="mt-6 flex justify-end gap-2.5">
+            <Button type="button" variant="secondary" onClick={() => props.closeModal()}>
               Cancel
-            </button>
-            <button type="submit" class="btn btn-primary">
+            </Button>
+            <Button type="submit" variant="primary">
               {props.initialPerson ? 'Save' : 'Add'}
-            </button>
+            </Button>
           </div>
         </form>
       </div>
