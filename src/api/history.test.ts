@@ -17,8 +17,6 @@ describe('getHistory', () => {
         completed: true,
         completedAt: '12:00',
         wasLate: false,
-        wasSkipDay: false,
-        wasMyTurn: false,
       },
     ];
 
@@ -44,8 +42,6 @@ describe('getHistory', () => {
         completed: true,
         completedAt: '12:00',
         wasLate: false,
-        wasSkipDay: false,
-        wasMyTurn: false,
       },
     ];
 

@@ -115,14 +115,6 @@ export interface DailyCompletion {
    * Whether the completion was late (after the deadline)
    */
   wasLate: boolean;
-  /**
-   * Whether this day was a skip day for the chore
-   */
-  wasSkipDay: boolean;
-  /**
-   * Whether this was the person's turn (for rotating chores)
-   */
-  wasMyTurn: boolean;
 }
 
 /**

@@ -55,8 +55,6 @@ describe('ChoreHistoryModal', () => {
       completed: true,
       completedAt: '12:00',
       wasLate: false,
-      wasSkipDay: false,
-      wasMyTurn: true,
     },
     {
       id: 'dc2',
@@ -66,8 +64,6 @@ describe('ChoreHistoryModal', () => {
       completed: true,
       completedAt: '19:00',
       wasLate: true,
-      wasSkipDay: false,
-      wasMyTurn: true,
     },
   ];
 

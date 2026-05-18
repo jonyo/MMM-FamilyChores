@@ -321,16 +321,13 @@ const nodeHelper: FamilyChoresNodeHelper = {
 
       const todayDate = getLocalDateString();
       const todayDayName = getLocalDayName();
-      const isSkipDay = (chore.skipDays ?? []).includes(todayDayName);
+      const _isSkipDay = (chore.skipDays ?? []).includes(todayDayName);
 
       if (payload.completed && personId) {
         // Create daily completion record
         const currentTime = new Date();
         const currentTimeString = getLocalTimeString();
         const wasLate = !!chore.deadline && currentTimeString > chore.deadline;
-        const wasMyTurn =
-          chore.type === 'personal' ||
-          (chore.type === 'rotating' && chore.rotation[chore.rotatingIndex ?? 0] === personId);
 
         const dailyCompletion = {
           id: generateUUID(),
@@ -340,8 +337,6 @@ const nodeHelper: FamilyChoresNodeHelper = {
           completed: true,
           completedAt: getLocalTimeString(currentTime),
           wasLate,
-          wasSkipDay: isSkipDay,
-          wasMyTurn,
         };
 
         this.choreData.dailyCompletions.push(dailyCompletion);
@@ -460,17 +455,14 @@ const nodeHelper: FamilyChoresNodeHelper = {
     if (!this.choreData?.settings?.historyEnabled) return;
 
     let personId: string;
-    let wasMyTurn = false;
 
     if (chore.type === 'personal') {
       personId = chore.assignedTo;
-      wasMyTurn = true;
     } else {
       // rotating chore
       const rotation = chore.rotation ?? [];
       const rotatingIndex = chore.rotatingIndex ?? 0;
       personId = rotation[rotatingIndex] ?? '';
-      wasMyTurn = true;
     }
 
     if (!personId) return;
@@ -482,8 +474,6 @@ const nodeHelper: FamilyChoresNodeHelper = {
       choreId: chore.id,
       completed: false,
       wasLate: false,
-      wasSkipDay: false,
-      wasMyTurn,
     };
 
     this.choreData.dailyCompletions.push(completion);

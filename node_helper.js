@@ -865,12 +865,11 @@ var node_helper_default = node_helper.create({
 			else if (chore.type === "rotating") personId = chore.rotation[chore.rotatingIndex ?? 0];
 			const todayDate = getLocalDateString();
 			const todayDayName = getLocalDayName();
-			const isSkipDay = (chore.skipDays ?? []).includes(todayDayName);
+			(chore.skipDays ?? []).includes(todayDayName);
 			if (payload.completed && personId) {
 				const currentTime = /* @__PURE__ */ new Date();
 				const currentTimeString = getLocalTimeString();
 				const wasLate = !!chore.deadline && currentTimeString > chore.deadline;
-				const wasMyTurn = chore.type === "personal" || chore.type === "rotating" && chore.rotation[chore.rotatingIndex ?? 0] === personId;
 				const dailyCompletion = {
 					id: generateUUID(),
 					date: todayDate,
@@ -878,9 +877,7 @@ var node_helper_default = node_helper.create({
 					choreId: chore.id,
 					completed: true,
 					completedAt: getLocalTimeString(currentTime),
-					wasLate,
-					wasSkipDay: isSkipDay,
-					wasMyTurn
+					wasLate
 				};
 				this.choreData.dailyCompletions.push(dailyCompletion);
 			} else if (!payload.completed && personId) {
@@ -964,14 +961,8 @@ var node_helper_default = node_helper.create({
 	logIncompleteChore(chore, date) {
 		if (!this.choreData?.settings?.historyEnabled) return;
 		let personId;
-		let wasMyTurn = false;
-		if (chore.type === "personal") {
-			personId = chore.assignedTo;
-			wasMyTurn = true;
-		} else {
-			personId = (chore.rotation ?? [])[chore.rotatingIndex ?? 0] ?? "";
-			wasMyTurn = true;
-		}
+		if (chore.type === "personal") personId = chore.assignedTo;
+		else personId = (chore.rotation ?? [])[chore.rotatingIndex ?? 0] ?? "";
 		if (!personId) return;
 		const completion = {
 			id: generateUUID(),
@@ -979,9 +970,7 @@ var node_helper_default = node_helper.create({
 			personId,
 			choreId: chore.id,
 			completed: false,
-			wasLate: false,
-			wasSkipDay: false,
-			wasMyTurn
+			wasLate: false
 		};
 		this.choreData.dailyCompletions.push(completion);
 	},
