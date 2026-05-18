@@ -42,7 +42,8 @@ describe('RotatingChoreModal', () => {
 
       expect(container.querySelector('h3')?.textContent).toBe('Add Rotating Chore');
       expect(container.querySelector('#choreName')).toBeTruthy();
-      expect(container.querySelector('.checkbox-list')).toBeTruthy();
+      expect(container.querySelector('[data-testid="checkbox-list"]')).toBeTruthy();
+      expect(container.querySelector('[data-testid="skip-days-checkbox-list"]')).toBeTruthy();
     });
 
     it('should click cancel button', async () => {

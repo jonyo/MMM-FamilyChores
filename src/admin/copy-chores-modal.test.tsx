@@ -61,10 +61,12 @@ describe('CopyChoresModal', () => {
       ));
 
       expect(container.querySelector('h3')?.textContent).toBe('Copy Chores');
-      expect(container.querySelector('.copy-from-display')).toBeTruthy();
-      expect(container.querySelector('.copy-from-display')?.textContent).toContain('From: Alice');
+      expect(container.querySelector('[data-testid="copy-from-display"]')).toBeTruthy();
+      expect(container.querySelector('[data-testid="copy-from-display"]')?.textContent).toContain(
+        'From: Alice'
+      );
       expect(container.querySelector('#toPerson')).toBeTruthy();
-      expect(container.querySelector('.checkbox-list')).toBeTruthy();
+      expect(container.querySelector('[data-testid="checkbox-list"]')).toBeTruthy();
     });
 
     it('should display from person color badge', () => {
@@ -78,7 +80,9 @@ describe('CopyChoresModal', () => {
         />
       ));
 
-      const colorBadge = container.querySelector('.color-badge') as HTMLElement;
+      const colorBadge = container.querySelector(
+        '[data-testid="person-color-badge"]'
+      ) as HTMLElement;
       expect(colorBadge?.style.backgroundColor).toBe('rgb(255, 107, 107)');
     });
 
@@ -103,7 +107,7 @@ describe('CopyChoresModal', () => {
         />
       ));
 
-      expect(container.querySelector('.empty-message')?.textContent).toContain(
+      expect(container.querySelector('[data-testid="empty-message"]')?.textContent).toContain(
         'No personal chores to copy for Alice'
       );
     });
@@ -129,7 +133,7 @@ describe('CopyChoresModal', () => {
         />
       ));
 
-      expect(container.querySelector('.empty-message')?.textContent).toContain(
+      expect(container.querySelector('[data-testid="empty-message"]')?.textContent).toContain(
         'No other people available to copy chores to'
       );
     });

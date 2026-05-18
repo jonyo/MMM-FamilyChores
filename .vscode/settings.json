@@ -6,6 +6,7 @@
   },
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "biomejs.biome",
+  "tailwindCSS.experimental.configFile": "src/admin/admin.css",
   "[javascript]": {
     "editor.defaultFormatter": "biomejs.biome"
   },

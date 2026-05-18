@@ -1,223 +1,149 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+@import "tailwindcss";
 
-body {
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  min-height: 100vh;
-  padding: 20px;
-  color: #333;
-}
+@theme {
+  /* Neutral color palette - slate/gray tones */
+  --color-slate-50: #f8fafc;
+  --color-slate-100: #f1f5f9;
+  --color-slate-200: #e2e8f0;
+  --color-slate-300: #cbd5e1;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1e293b;
+  --color-slate-900: #0f172a;
 
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-  overflow: hidden;
-}
+  /* Primary accent - indigo */
+  --color-indigo-500: #6366f1;
+  --color-indigo-600: #4f46e5;
+  --color-indigo-700: #4338ca;
 
-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 30px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 15px;
-}
+  /* Status colors for badges/buttons */
+  --color-red-500: #ef4444;
+  --color-red-600: #dc2626;
+  --color-red-700: #b91c1c;
 
-header h1 {
-  font-size: 2rem;
-  font-weight: 600;
-}
+  --color-green-500: #22c55e;
+  --color-green-600: #16a34a;
+  --color-green-700: #15803d;
 
-.backup-section {
-  display: flex;
-  gap: 10px;
-}
+  --color-yellow-500: #eab308;
+  --color-yellow-600: #ca8a04;
+  --color-yellow-700: #a16207;
 
-main {
-  padding: 30px;
-}
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
 
-.loading-message {
-  padding: 60px 30px;
-  text-align: center;
-  color: #6c757d;
-  background: radial-gradient(circle, #1976d2 0%, #ffffff 100%);
-  background-size: 100% 100%;
-  background-position: center;
-  animation: loadingPulse 4s ease-in-out infinite;
-}
+  --animate-loading-pulse: loadingPulse 4s ease-in-out infinite;
 
-@keyframes loadingPulse {
-  0% {
-    background-size: 100% 100%;
-  }
-  50% {
-    background-size: 300% 300%;
-  }
-  100% {
-    background-size: 100% 100%;
+  @keyframes loadingPulse {
+    0% {
+      background-size: 100% 100%;
+    }
+    50% {
+      background-size: 300% 300%;
+    }
+    100% {
+      background-size: 100% 100%;
+    }
   }
 }
 
-.loading-message-content {
-  display: inline-block;
-  background: rgba(255, 255, 255, 0.3);
-  padding: 30px 40px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.loading-message p {
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin-bottom: 10px;
-  color: #333;
-}
-
-.retry-info {
-  font-size: 0.9rem;
-  color: #666;
-  font-style: italic;
-  font-weight: 500;
-}
-
-.section {
-  margin-bottom: 40px;
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.section h2 {
-  font-size: 1.5rem;
-  color: #667eea;
-  border-bottom: 2px solid #667eea;
-  padding-bottom: 10px;
-  margin: 0;
-}
-
-.item-list {
-  display: grid;
-  gap: 15px;
-  margin-top: 20px;
-}
-
-.person-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-}
-
-.person-chores {
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 1px solid #e9ecef;
-}
-
-.person-chores-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 1px solid #e9ecef;
-}
-
-.person-chores-header h4 {
-  font-size: 1.1rem;
-  color: #667eea;
-  margin: 0;
-}
-
-.person-chores-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.chore-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-  background: white;
-  border: 1px solid #e9ecef;
-  border-radius: 6px;
-  margin-bottom: 10px;
-}
-
-.chore-item:last-child {
-  margin-bottom: 0;
-}
-
-.chore-info h4 {
-  font-size: 1rem;
-  margin-bottom: 5px;
-  color: #333;
-}
-
-.chore-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.state-info {
-  background: #f8f9fa;
-  padding: 20px;
-  border-radius: 8px;
-  border: 1px solid #e9ecef;
-}
-
-.state-info p {
-  margin-bottom: 15px;
-  font-size: 1.1rem;
-}
-
-.state-info strong {
-  color: #667eea;
-}
-
-.button-with-tooltip {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.button-group {
-  display: flex;
-  flex-direction: row;
-  gap: 16px;
-  margin-top: 16px;
-  align-items: flex-start;
-}
-
-.info-icon {
-  margin-left: 8px;
-  font-size: 1rem;
-}
-
-@media (max-width: 768px) {
-  header {
-    flex-direction: column;
-    text-align: center;
+/* Tooltip pseudo-elements - cannot be expressed as utilities */
+@layer components {
+  .tooltip {
+    position: relative;
+    cursor: help;
   }
 
-  .backup-section {
-    width: 100%;
-    justify-content: center;
+  .tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    background: #333;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 0.2s,
+      visibility 0.2s;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+  }
+
+  .tooltip:hover::after {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* Tooltip positions */
+  .tooltip-above::after {
+    bottom: 100%;
+    transform: translateY(-8px);
+  }
+
+  .tooltip-below::after {
+    top: 100%;
+    transform: translateY(8px);
+  }
+
+  .tooltip-left::after {
+    right: 100%;
+    transform: translateX(-8px);
+  }
+
+  .tooltip-right::after {
+    left: 100%;
+    transform: translateX(8px);
+  }
+
+  .tooltip-above-right::after {
+    left: 100%;
+    bottom: 100%;
+    transform: translateX(8px) translateY(-8px);
+  }
+
+  .tooltip-below-right::after {
+    left: 100%;
+    top: 100%;
+    transform: translateX(8px) translateY(8px);
+  }
+
+  /* Tooltip alignment for above/below */
+  .tooltip-align-left::after {
+    left: 0;
+  }
+
+  .tooltip-align-center::after {
+    left: 50%;
+    transform: translateX(-50%) translateY(-8px);
+  }
+
+  .tooltip-align-right::after {
+    right: 0;
+  }
+
+  /* Multiline tooltip support */
+  .tooltip-multiline::after {
+    white-space: normal;
+    max-width: 300px;
+    width: max-content;
+    line-height: 1.3;
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+
+  /* Override transform for multiline centered tooltips */
+  .tooltip-above.tooltip-align-center.tooltip-multiline::after {
+    transform: translateX(-50%) translateY(-8px);
+  }
+
+  .tooltip-below.tooltip-align-center.tooltip-multiline::after {
+    transform: translateX(-50%) translateY(8px);
   }
 }

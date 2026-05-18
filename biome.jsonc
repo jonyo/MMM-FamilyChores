@@ -59,6 +59,12 @@
       "semicolons": "always"
     }
   },
+  "css": {
+    "parser": {
+      "cssModules": false,
+      "tailwindDirectives": true
+    }
+  },
   "overrides": [
     {
       // Apply filenaming convention to src directory - can't do this

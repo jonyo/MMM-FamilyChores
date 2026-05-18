@@ -1,11 +1,5 @@
 import type { Component } from 'solid-js';
 import { createSignal, For, onMount, Show } from 'solid-js';
-import './admin.css';
-import './buttons.css';
-import './forms.css';
-import './person.css';
-import './card.css';
-import './chore.css';
 import { deleteChore, deletePerson } from '../api';
 import type {
   Chore,
@@ -18,6 +12,7 @@ import type {
 import { ChoreType } from '../types/chore-types';
 import { escapeHtml } from '../utils/browser';
 import { getLocalDateString } from '../utils/date';
+import { Button } from './button';
 import { ChoreHistoryModal } from './chore-history-modal';
 import { CopyChoresModal } from './copy-chores-modal';
 import { PersonModal } from './person-modal';
@@ -268,177 +263,195 @@ export const Admin: Component<Record<string, never>> = () => {
   };
 
   return (
-    <div class="container">
-      <header>
-        <h1>Family Chores Admin</h1>
-        <div class="backup-section">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            id="backupBtn"
-            onClick={handleDownloadBackup}
-          >
+    <div
+      class="mx-auto max-w-5xl overflow-hidden rounded-xl bg-white shadow-2xl"
+      data-testid="admin-container"
+    >
+      <header class="flex flex-wrap items-center justify-between gap-4 bg-slate-100 p-8 text-slate-900">
+        <h1 class="text-3xl font-semibold">Family Chores Admin</h1>
+        <div class="flex gap-2.5">
+          <Button type="button" variant="secondary" id="backupBtn" onClick={handleDownloadBackup}>
             Download Backup
-          </button>
-          <label for="restoreFile" class="btn btn-secondary">
+          </Button>
+          <label
+            for="restoreFile"
+            class="cursor-pointer rounded-lg border-none bg-gray-600 px-5 py-2.5 text-sm font-medium text-white transition-all hover:-translate-y-0.5 hover:bg-gray-700 hover:shadow-md"
+          >
             Restore Backup
           </label>
           <input type="file" id="restoreFile" accept=".json" hidden onInput={handleRestore} />
-          <button
-            type="button"
-            class="btn btn-secondary"
-            id="settingsBtn"
-            onClick={openSettingsModal}
-          >
+          <Button type="button" variant="secondary" id="settingsBtn" onClick={openSettingsModal}>
             ⚙️ Settings
-          </button>
+          </Button>
         </div>
       </header>
 
       <Show when={loading()}>
-        <div class="loading-message">
-          <div class="loading-message-content">
-            <p>Magic Mirror is starting up, please wait...</p>
+        <div class="animate-loading-pulse bg-[radial-gradient(circle,#2563eb,#ffffff)] bg-size-[200%_200%] bg-center px-8 py-16 text-center text-slate-500">
+          <div class="inline-block rounded-xl bg-white/30 p-8 shadow-md">
+            <p class="mb-2.5 text-xl font-semibold text-slate-900">
+              Magic Mirror is starting up, please wait...
+            </p>
             <Show when={retryCount() > 0}>
-              <p class="retry-info">Retrying... (attempt {retryCount()})</p>
+              <p class="text-sm font-medium text-slate-600 italic">
+                Retrying... (attempt {retryCount()})
+              </p>
             </Show>
           </div>
         </div>
       </Show>
 
       <Show when={choreData()}>
-        <main>
+        <main class="p-8">
           {/* People Section */}
-          <section class="section">
-            <div class="section-header">
-              <h2>People</h2>
-              <div class="button-with-tooltip">
-                <button
+          <section class="mb-10" data-testid="people-section">
+            <div class="mb-5 flex items-center justify-between">
+              <h2 class="m-0 border-b-2 border-indigo-600 pb-2.5 text-2xl text-indigo-600">
+                People
+              </h2>
+              <div class="flex items-center gap-2">
+                <Button
                   type="button"
-                  class="btn btn-primary"
+                  variant="primary"
                   id="addPersonBtn"
                   onClick={() => openPersonModal()}
                 >
                   Add Person
-                </button>
+                </Button>
                 <Show when={choreData()?.people.length === 0}>
                   <Tooltip
                     text="Add at least one person before you can create chores"
-                    class="info-icon"
+                    class="ml-2 text-base"
                   >
                     ℹ️
                   </Tooltip>
                 </Show>
               </div>
             </div>
-            <div id="peopleList" class="item-list">
+            <div id="peopleList" class="mt-5 grid gap-4">
               <For each={choreData()?.people ?? []}>
                 {(person) => (
-                  <div class="item-card">
-                    <div class="person-header">
-                      <div class="item-info">
-                        <h3>
+                  <div
+                    class="rounded-lg border border-slate-200 bg-slate-50 p-5 transition-all hover:border-indigo-600 hover:shadow-md"
+                    data-testid="person-card"
+                  >
+                    <div class="mb-4 flex items-center justify-between">
+                      <div class="flex-1">
+                        <h3 class="mb-1.5 text-xl text-slate-900">
                           {escapeHtml(person.name)}{' '}
                           <span
-                            class="color-badge"
+                            class="inline-block size-6  rounded-full border-2 border-black/10 align-middle"
                             style={`background-color: ${person.color}`}
                           ></span>
                         </h3>
-                        <p>ID: {person.id}</p>
+                        <p class="text-sm text-slate-500">ID: {person.id}</p>
                       </div>
-                      <div class="item-actions">
-                        <button
+                      <div class="flex gap-2.5">
+                        <Button
                           type="button"
-                          class="btn btn-secondary btn-sm"
+                          variant="secondary"
+                          size="sm"
                           onClick={() => openPersonModal(person)}
                         >
                           Edit
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           type="button"
-                          class="btn btn-secondary btn-sm"
+                          variant="secondary"
+                          size="sm"
                           onClick={() => setHistoryPerson(person)}
                         >
                           History
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           type="button"
-                          class="btn btn-danger btn-sm"
+                          variant="danger"
+                          size="sm"
                           onClick={() => handleDeletePerson(person.id)}
                         >
                           Delete
-                        </button>
+                        </Button>
                       </div>
                     </div>
-                    <div class="person-chores-header">
-                      <h4>{escapeHtml(person.name)}'s Personal Chores</h4>
-                      <div class="person-chores-actions">
-                        <button
+                    <div class="mt-4 flex items-center justify-between border-t border-slate-200 pt-4">
+                      <h4 class="m-0 text-lg text-indigo-600">
+                        {escapeHtml(person.name)}'s Personal Chores
+                      </h4>
+                      <div class="flex gap-2">
+                        <Button
                           type="button"
-                          class="btn btn-primary btn-sm"
+                          variant="primary"
+                          size="sm"
                           onClick={() => {
                             openPersonalChoreModal(person, null);
                           }}
                         >
                           Add Chore
-                        </button>
+                        </Button>
                         <Show
                           when={
                             getPersonalChores(person.id).length > 0 &&
                             (choreData()?.people.length ?? 0) > 1
                           }
                         >
-                          <button
+                          <Button
                             type="button"
-                            class="btn btn-secondary btn-sm"
+                            variant="secondary"
+                            size="sm"
                             onClick={() => {
                               openCopyChoresModal(person);
                             }}
                           >
                             Copy Chores
-                          </button>
+                          </Button>
                         </Show>
                       </div>
                     </div>
                     <Show
                       when={getPersonalChores(person.id).length > 0}
                       fallback={
-                        <div class="person-chores">
-                          <p class="empty-message">No personal chores yet.</p>
+                        <div class="mt-4 border-t border-slate-200 pt-4">
+                          <p class="my-2.5 text-slate-500 italic">No personal chores yet.</p>
                         </div>
                       }
                     >
-                      <div class="person-chores">
+                      <div class="mt-4 border-t border-slate-200 pt-4">
                         <For each={getPersonalChores(person.id)}>
                           {(chore) => (
                             <>
-                              <div class="chore-item">
-                                <div class="chore-info">
-                                  <h4>{escapeHtml(chore.name)}</h4>
+                              <div class="mb-2.5 flex items-center justify-between rounded-lg border border-slate-200 bg-white p-2.5 last:mb-0">
+                                <div>
+                                  <h4 class="mb-1.5 text-base text-slate-900">
+                                    {escapeHtml(chore.name)}
+                                  </h4>
                                   <Show when={chore.deadline}>
-                                    <p class="deadline">Deadline: {chore.deadline}</p>
+                                    <p class="mt-1.25 text-sm text-indigo-600">
+                                      Deadline: {chore.deadline}
+                                    </p>
                                   </Show>
-                                  <p class="skip-days">
+                                  <p class="mt-1.25 text-sm text-slate-500">
                                     Skip days: {formatSkipDays(chore.skipDays)}
                                   </p>
                                 </div>
-                                <div class="chore-actions">
-                                  <button
+                                <div class="flex gap-2">
+                                  <Button
                                     type="button"
-                                    class="btn btn-secondary btn-sm"
+                                    variant="secondary"
+                                    size="sm"
                                     onClick={() => {
                                       openPersonalChoreModal(person, chore);
                                     }}
                                   >
                                     Edit
-                                  </button>
-                                  <button
+                                  </Button>
+                                  <Button
                                     type="button"
-                                    class="btn btn-danger btn-sm"
+                                    variant="danger"
+                                    size="sm"
                                     onClick={() => handleDeleteChore(chore.id)}
                                   >
                                     Delete
-                                  </button>
+                                  </Button>
                                 </div>
                               </div>
                             </>
@@ -454,19 +467,21 @@ export const Admin: Component<Record<string, never>> = () => {
 
           {/* Rotating Chores Section */}
           <Show when={(choreData()?.people?.length ?? 0) > 0}>
-            <section class="section" id="rotatingChoresSection">
-              <div class="section-header">
-                <h2>Rotating Chores</h2>
-                <button
+            <section class="mb-10" id="rotatingChoresSection">
+              <div class="mb-5 flex items-center justify-between">
+                <h2 class="m-0 border-b-2 border-indigo-600 pb-2.5 text-2xl text-indigo-600">
+                  Rotating Chores
+                </h2>
+                <Button
                   type="button"
-                  class="btn btn-primary"
+                  variant="primary"
                   id="addRotatingChoreBtn"
                   onClick={() => openRotatingChoreModal()}
                 >
                   Add Rotating Chore
-                </button>
+                </Button>
               </div>
-              <div id="rotatingChoresList" class="item-list">
+              <div id="rotatingChoresList" class="mt-5 grid gap-4">
                 <For each={getRotatingChores()}>
                   {(chore) => (
                     <RotatingChoreCard
@@ -482,29 +497,31 @@ export const Admin: Component<Record<string, never>> = () => {
           </Show>
 
           {/* System State Section */}
-          <section class="section">
-            <h2>System State</h2>
-            <div class="state-info">
-              <p>
-                <strong>Last Reset Date:</strong>{' '}
+          <section class="mb-10">
+            <h2 class="m-0 border-b-2 border-indigo-600 pb-2.5 text-2xl text-indigo-600">
+              System State
+            </h2>
+            <div class="rounded-lg border border-slate-200 bg-slate-50 p-5">
+              <p class="mb-4 text-base">
+                <strong class="text-indigo-600">Last Reset Date:</strong>{' '}
                 <span id="lastResetDate">{choreData()?.lastResetDate || 'Never'}</span>
               </p>
-              <div class="button-group">
-                <div class="button-with-tooltip">
-                  <button
+              <div class="mt-4 flex flex-row items-start gap-4">
+                <div class="flex items-center gap-2">
+                  <Button
                     type="button"
-                    class="btn btn-warning"
+                    variant="warning"
                     id="resetDailyBtn"
                     onClick={handleForceReset}
                   >
                     Force Daily Reset
-                  </button>
+                  </Button>
                   <Tooltip
                     text="WARNING: This will un-check all chores and rotate assignment on rotating chores to the next person. It does respect skip days if today is a skip day. Useful for testing or immediately advancing chore assignments."
                     position="above"
                     align="center"
                     multiline
-                    class="info-icon"
+                    class="ml-2 text-base"
                   >
                     ℹ️
                   </Tooltip>

@@ -27,10 +27,10 @@ describe('PersonalChoreModal', () => {
       expect(container.querySelector('h3')?.textContent).toBe('Add Personal Chore');
       expect(container.querySelector('#choreName')).toBeTruthy();
       expect(container.querySelector('#deadline')).toBeTruthy();
-      expect(container.querySelector('.assigned-person-display')).toBeTruthy();
-      expect(container.querySelector('.assigned-person-display')?.textContent).toContain(
-        'Assigned to: Alice'
-      );
+      expect(container.querySelector('[data-testid="assigned-person-display"]')).toBeTruthy();
+      expect(
+        container.querySelector('[data-testid="assigned-person-display"]')?.textContent
+      ).toContain('Assigned to: Alice');
     });
 
     it('should display person color badge', () => {
@@ -40,7 +40,9 @@ describe('PersonalChoreModal', () => {
         <PersonalChoreModal person={mockPerson} initialChore={undefined} closeModal={closeModal} />
       ));
 
-      const colorBadge = container.querySelector('.color-badge') as HTMLElement;
+      const colorBadge = container.querySelector(
+        '[data-testid="person-color-badge"]'
+      ) as HTMLElement;
       expect(colorBadge?.style.backgroundColor).toBe('rgb(255, 107, 107)');
     });
 

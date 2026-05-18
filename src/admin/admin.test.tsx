@@ -47,7 +47,7 @@ describe('Admin Component Tests', () => {
       // Verify people are displayed
       await expect.element(page.getByText('People')).toBeVisible();
 
-      const personCards = document.querySelectorAll('.item-card');
+      const personCards = document.querySelectorAll('[data-testid="person-card"]');
       expect(personCards.length).toBe(2);
       expect(personCards[0].textContent).toContain('Alice');
       expect(personCards[1].textContent).toContain('Bob');
@@ -123,13 +123,13 @@ describe('Admin Component Tests', () => {
       render(() => <Admin />);
       await expect.element(page.getByText('Family Chores Admin')).toBeVisible();
 
-      const container = document.querySelector('.container');
+      const container = document.querySelector('[data-testid="admin-container"]');
       expect(container).toBeTruthy();
 
       const header = document.querySelector('header');
       expect(header).toBeTruthy();
 
-      const section = document.querySelector('.section');
+      const section = document.querySelector('[data-testid="people-section"]');
       expect(section).toBeTruthy();
     });
   });
@@ -166,7 +166,7 @@ describe('Admin Component Tests', () => {
       await aliceAddChoreButton.click();
 
       // Verify modal opened and contains the person's name (not "Person not found")
-      const modalContent = document.querySelector('.modal-content');
+      const modalContent = document.querySelector('[data-testid="modal-content"]');
       expect(modalContent).toBeTruthy();
 
       // The modal should show "Assigned to: Alice" not "Person not found"

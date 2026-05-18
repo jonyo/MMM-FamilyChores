@@ -1,11 +1,8 @@
 import type { Component } from 'solid-js';
 import { createMemo, Show } from 'solid-js';
-import './rotating-chore.css';
-import './buttons.css';
-import './card.css';
-import './chore.css';
 import type { Person, RotatingChore } from '../types/chore-types';
 import { escapeHtml } from '../utils/browser';
+import { Button } from './button';
 
 /** Props for the RotatingChoreCard component */
 interface RotatingChoreCardProps {
@@ -56,29 +53,40 @@ export const RotatingChoreCard: Component<RotatingChoreCardProps> = (props) => {
   });
 
   return (
-    <div class="item-card">
-      <div class="item-info">
-        <h3>
-          {escapeHtml(props.chore.name)} <span class="chore-type-badge rotating">Rotating</span>
+    <div class="rounded-lg border border-slate-200 bg-slate-50 p-5 transition-all hover:border-indigo-600 hover:shadow-md">
+      <div class="flex-1">
+        <h3 class="mb-1.5 text-xl text-slate-900">
+          {escapeHtml(props.chore.name)}{' '}
+          <span class="ml-2 inline-block rounded bg-indigo-100 px-2 py-1 text-xs font-medium text-indigo-700">
+            Rotating
+          </span>
         </h3>
-        <p>Current: {currentAssignee()}</p>
-        <p>Rotation: {rotationText()}</p>
+        <p class="text-sm text-slate-500">Current: {currentAssignee()}</p>
+        <p class="text-sm text-slate-500">Rotation: {rotationText()}</p>
         <Show when={props.chore.deadline}>
-          <p class="deadline">Deadline: {props.chore.deadline}</p>
+          <p class="mt-1.25 text-sm text-indigo-600">Deadline: {props.chore.deadline}</p>
         </Show>
-        <p class="skip-days">Skip days: {formatSkipDays(props.chore.skipDays)}</p>
+        <p class="mt-1.25 text-sm text-slate-500">
+          Skip days: {formatSkipDays(props.chore.skipDays)}
+        </p>
       </div>
-      <div class="item-actions">
-        <button type="button" class="btn btn-secondary" onClick={() => props.onEdit(props.chore)}>
-          Edit
-        </button>
-        <button
+      <div class="flex gap-2.5">
+        <Button
           type="button"
-          class="btn btn-danger btn-sm"
+          variant="secondary"
+          size="sm"
+          onClick={() => props.onEdit(props.chore)}
+        >
+          Edit
+        </Button>
+        <Button
+          type="button"
+          variant="danger"
+          size="sm"
           onClick={() => props.onDelete(props.chore.id)}
         >
           Delete
-        </button>
+        </Button>
       </div>
     </div>
   );
