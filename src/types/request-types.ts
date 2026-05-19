@@ -67,7 +67,6 @@ export interface RestoreDataBody<TPerson = unknown, TChore = unknown> {
   dailyCompletions?: unknown[];
   lastResetDate?: string;
   settings?: {
-    dailyResetTime?: string;
     historyEnabled?: boolean;
   };
   pin?: string;
@@ -97,7 +96,6 @@ export interface CopyChoresRequest extends PinProtectedRequest {
  * Request body for updating global settings
  */
 export interface UpdateSettingsRequest extends PinProtectedRequest {
-  dailyResetTime?: string;
   historyEnabled?: boolean;
   adminPin?: string | null;
 }

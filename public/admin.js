@@ -1310,6 +1310,42 @@
 		return div.innerHTML;
 	};
 	//#endregion
+	//#region src/admin/button.tsx
+	var _tmpl$$12 = /* @__PURE__ */ template(`<button class="cursor-pointer rounded-lg border-none px-5 py-2.5 text-sm font-medium transition-all hover:-translate-y-0.5 hover:shadow-md">`);
+	var Button = (props) => {
+		return (() => {
+			var _el$ = _tmpl$$12();
+			_el$.$$click = (event) => props.onClick?.(event);
+			insert(_el$, () => props.children);
+			createRenderEffect((_p$) => {
+				var _v$ = props.id, _v$2 = props.dataTestId, _v$3 = props.type ?? "button", _v$4 = {
+					"bg-indigo-600 text-white hover:bg-indigo-700": props.variant === "primary",
+					"bg-gray-600 text-white hover:bg-gray-700": props.variant === "secondary",
+					"bg-yellow-500 text-gray-900 hover:bg-yellow-600": props.variant === "warning",
+					"bg-red-600 text-white hover:bg-red-700": props.variant === "danger",
+					"bg-green-600 text-white hover:bg-green-700": props.variant === "success",
+					"px-3 py-1.5 text-xs": props.size === "sm",
+					[props.class || ""]: !!props.class,
+					...props.classList
+				}, _v$5 = props.disabled;
+				_v$ !== _p$.e && setAttribute(_el$, "id", _p$.e = _v$);
+				_v$2 !== _p$.t && setAttribute(_el$, "data-testid", _p$.t = _v$2);
+				_v$3 !== _p$.a && setAttribute(_el$, "type", _p$.a = _v$3);
+				_p$.o = classList(_el$, _v$4, _p$.o);
+				_v$5 !== _p$.i && (_el$.disabled = _p$.i = _v$5);
+				return _p$;
+			}, {
+				e: void 0,
+				t: void 0,
+				a: void 0,
+				o: void 0,
+				i: void 0
+			});
+			return _el$;
+		})();
+	};
+	delegateEvents(["click"]);
+	//#endregion
 	//#region src/utils/date.ts
 	/**
 	* Gets the local date string in YYYY-MM-DD format
@@ -1401,42 +1437,6 @@
 		const formatter = new Intl.DateTimeFormat("en-US", { day: "numeric" });
 		return parseInt(formatter.format(date), 10);
 	};
-	//#endregion
-	//#region src/admin/button.tsx
-	var _tmpl$$12 = /* @__PURE__ */ template(`<button class="cursor-pointer rounded-lg border-none px-5 py-2.5 text-sm font-medium transition-all hover:-translate-y-0.5 hover:shadow-md">`);
-	var Button = (props) => {
-		return (() => {
-			var _el$ = _tmpl$$12();
-			_el$.$$click = (event) => props.onClick?.(event);
-			insert(_el$, () => props.children);
-			createRenderEffect((_p$) => {
-				var _v$ = props.id, _v$2 = props.dataTestId, _v$3 = props.type ?? "button", _v$4 = {
-					"bg-indigo-600 text-white hover:bg-indigo-700": props.variant === "primary",
-					"bg-gray-600 text-white hover:bg-gray-700": props.variant === "secondary",
-					"bg-yellow-500 text-gray-900 hover:bg-yellow-600": props.variant === "warning",
-					"bg-red-600 text-white hover:bg-red-700": props.variant === "danger",
-					"bg-green-600 text-white hover:bg-green-700": props.variant === "success",
-					"px-3 py-1.5 text-xs": props.size === "sm",
-					[props.class || ""]: !!props.class,
-					...props.classList
-				}, _v$5 = props.disabled;
-				_v$ !== _p$.e && setAttribute(_el$, "id", _p$.e = _v$);
-				_v$2 !== _p$.t && setAttribute(_el$, "data-testid", _p$.t = _v$2);
-				_v$3 !== _p$.a && setAttribute(_el$, "type", _p$.a = _v$3);
-				_p$.o = classList(_el$, _v$4, _p$.o);
-				_v$5 !== _p$.i && (_el$.disabled = _p$.i = _v$5);
-				return _p$;
-			}, {
-				e: void 0,
-				t: void 0,
-				a: void 0,
-				o: void 0,
-				i: void 0
-			});
-			return _el$;
-		})();
-	};
-	delegateEvents(["click"]);
 	//#endregion
 	//#region src/admin/tooltip.tsx
 	var _tmpl$$11 = /* @__PURE__ */ template(`<span>`);
@@ -2367,11 +2367,10 @@
 	delegateEvents(["input"]);
 	//#endregion
 	//#region src/admin/settings-modal.tsx
-	var _tmpl$$2 = /* @__PURE__ */ template(`<div class="mb-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800"><strong>Note:</strong> This PIN is a basic deterrent only. It is stored in plain text in the module's data file. It is <strong>not</strong> intended for high-security environments. Do not expose the admin panel outside your local network. See the module README for more details.`), _tmpl$2$2 = /* @__PURE__ */ template(`<div class=mb-3><label for=currentPin class="mb-2 block font-medium text-amber-900">Current PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=currentPin placeholder="Enter current PIN to save changes"required class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"><button type=button class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100">`), _tmpl$3$2 = /* @__PURE__ */ template(`<label class="mb-3 flex cursor-pointer items-center gap-2"><input type=checkbox class="size-4.5 cursor-pointer">Change PIN`), _tmpl$4$2 = /* @__PURE__ */ template(`<div class=mb-3><label for=newPin class="mb-2 block font-medium text-slate-900"> <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=newPin required class="flex-1 rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><button type=button class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 transition-colors hover:bg-slate-100">`), _tmpl$5$1 = /* @__PURE__ */ template(`<div class=mb-3><label for=confirmPin class="mb-2 block font-medium text-slate-900">Confirm PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=confirmPin placeholder="Confirm PIN"required class="flex-1 rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><button type=button class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 transition-colors hover:bg-slate-100">`), _tmpl$6$1 = /* @__PURE__ */ template(`<small class="block text-sm text-slate-500">PIN can be any combination of letters, numbers, or symbols. There is no length limit.`), _tmpl$7$1 = /* @__PURE__ */ template(`<div class=mb-3><label for=currentPin class="mb-2 block font-medium text-amber-900">Current PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=currentPin placeholder="Enter current PIN to disable protection"required class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"><button type=button class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100">`), _tmpl$8$1 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><h3 class="mb-5 text-2xl text-indigo-600">Settings</h3><form><div class=mb-5><label for=dailyResetTime class="mb-3 block font-medium text-slate-900">Daily Reset Time (24-hour format, HH:mm)</label><input type=time id=dailyResetTime required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><small class="text-sm text-slate-500">Time when daily chore reset occurs. Default: 03:00</small><br><small class="text-sm text-slate-500"><strong>Tip:</strong> Set to at least 03:00 to avoid daylight savings time changes (no roll forward/back occurs after 3am)</small></div><div class=mb-5><label class="flex cursor-pointer items-center gap-2"><input type=checkbox id=historyEnabled class="size-4.5 cursor-pointer">Enable History Tracking</label><small class="mt-2 block text-sm text-slate-500">Track daily chore completions (keeps last 14 days)</small></div><div class="mb-5 rounded-lg border border-slate-200 bg-slate-50 p-4"><h4 class="mb-3 font-medium text-slate-900">Admin PIN Protection</h4><label class="mb-4 flex cursor-pointer items-center gap-2"><input type=checkbox class="size-4.5 cursor-pointer">Enable PIN Protection</label><small class="block text-sm text-slate-500">When enabled, a PIN is required for all admin actions including backup, restore, and modifying people or chores.</small></div><div class="mt-6 flex justify-end gap-2.5">`);
+	var _tmpl$$2 = /* @__PURE__ */ template(`<div class="mb-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800"><strong>Note:</strong> This PIN is a basic deterrent only. It is stored in plain text in the module's data file. It is <strong>not</strong> intended for high-security environments. Do not expose the admin panel outside your local network. See the module README for more details.`), _tmpl$2$2 = /* @__PURE__ */ template(`<div class=mb-3><label for=currentPin class="mb-2 block font-medium text-amber-900">Current PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=currentPin placeholder="Enter current PIN to save changes"required class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"><button type=button class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100">`), _tmpl$3$2 = /* @__PURE__ */ template(`<label class="mb-3 flex cursor-pointer items-center gap-2"><input type=checkbox class="size-4.5 cursor-pointer">Change PIN`), _tmpl$4$2 = /* @__PURE__ */ template(`<div class=mb-3><label for=newPin class="mb-2 block font-medium text-slate-900"> <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=newPin required class="flex-1 rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><button type=button class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 transition-colors hover:bg-slate-100">`), _tmpl$5$1 = /* @__PURE__ */ template(`<div class=mb-3><label for=confirmPin class="mb-2 block font-medium text-slate-900">Confirm PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=confirmPin placeholder="Confirm PIN"required class="flex-1 rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><button type=button class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 transition-colors hover:bg-slate-100">`), _tmpl$6$1 = /* @__PURE__ */ template(`<small class="block text-sm text-slate-500">PIN can be any combination of letters, numbers, or symbols. There is no length limit.`), _tmpl$7$1 = /* @__PURE__ */ template(`<div class=mb-3><label for=currentPin class="mb-2 block font-medium text-amber-900">Current PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=currentPin placeholder="Enter current PIN to disable protection"required class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"><button type=button class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100">`), _tmpl$8$1 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><h3 class="mb-5 text-2xl text-indigo-600">Settings</h3><form><div class=mb-5><label class="flex cursor-pointer items-center gap-2"><input type=checkbox id=historyEnabled class="size-4.5 cursor-pointer">Enable History Tracking</label><small class="mt-2 block text-sm text-slate-500">Track daily chore completions (keeps last 14 days)</small></div><div class="mb-5 rounded-lg border border-slate-200 bg-slate-50 p-4"><h4 class="mb-3 font-medium text-slate-900">Admin PIN Protection</h4><label class="mb-4 flex cursor-pointer items-center gap-2"><input type=checkbox class="size-4.5 cursor-pointer">Enable PIN Protection</label><small class="block text-sm text-slate-500">When enabled, a PIN is required for all admin actions including backup, restore, and modifying people or chores.</small></div><div class="mt-6 flex justify-end gap-2.5">`);
 	var SettingsModal = (props) => {
 		const { choreData } = useAdminContext();
 		const settings = () => choreData().settings;
-		const [dailyResetTime, setDailyResetTime] = createSignal(settings().dailyResetTime);
 		const [historyEnabled, setHistoryEnabled] = createSignal(settings().historyEnabled);
 		const [pinEnabled, setPinEnabled] = createSignal(!!settings().adminPin);
 		const [currentPin, setCurrentPin] = createSignal("");
@@ -2406,7 +2405,6 @@
 			}
 			try {
 				const body = {
-					dailyResetTime: dailyResetTime(),
 					historyEnabled: historyEnabled(),
 					pin: hadPin ? currentPin() || void 0 : void 0
 				};
@@ -2421,17 +2419,16 @@
 			}
 		};
 		return (() => {
-			var _el$ = _tmpl$8$1(), _el$4 = _el$.firstChild.firstChild.nextSibling, _el$5 = _el$4.firstChild, _el$7 = _el$5.firstChild.nextSibling, _el$8 = _el$5.nextSibling, _el$0 = _el$8.firstChild.firstChild, _el$1 = _el$8.nextSibling, _el$11 = _el$1.firstChild.nextSibling, _el$12 = _el$11.firstChild, _el$38 = _el$11.nextSibling, _el$39 = _el$1.nextSibling;
+			var _el$ = _tmpl$8$1(), _el$4 = _el$.firstChild.firstChild.nextSibling, _el$5 = _el$4.firstChild, _el$7 = _el$5.firstChild.firstChild, _el$8 = _el$5.nextSibling, _el$0 = _el$8.firstChild.nextSibling, _el$1 = _el$0.firstChild, _el$35 = _el$0.nextSibling, _el$36 = _el$8.nextSibling;
 			_el$4.addEventListener("submit", handleSubmit);
-			_el$7.$$input = (e) => setDailyResetTime(e.currentTarget.value);
-			_el$0.$$input = (e) => setHistoryEnabled(e.currentTarget.checked);
-			_el$12.$$input = (e) => {
+			_el$7.$$input = (e) => setHistoryEnabled(e.currentTarget.checked);
+			_el$1.$$input = (e) => {
 				setPinEnabled(e.currentTarget.checked);
 				setChangePin(false);
 				setNewPin("");
 				setConfirmPin("");
 			};
-			insert(_el$1, createComponent(Show, {
+			insert(_el$8, createComponent(Show, {
 				get when() {
 					return pinEnabled();
 				},
@@ -2444,22 +2441,22 @@
 							},
 							get children() {
 								return [(() => {
-									var _el$14 = _tmpl$2$2(), _el$17 = _el$14.firstChild.nextSibling.firstChild, _el$18 = _el$17.nextSibling;
-									_el$17.$$input = (e) => setCurrentPin(e.currentTarget.value);
-									_el$18.$$click = () => setShowCurrentPin(!showCurrentPin());
-									insert(_el$18, () => showCurrentPin() ? "🙈" : "👁");
-									createRenderEffect(() => setAttribute(_el$17, "type", showCurrentPin() ? "text" : "password"));
-									createRenderEffect(() => _el$17.value = currentPin());
-									return _el$14;
+									var _el$11 = _tmpl$2$2(), _el$14 = _el$11.firstChild.nextSibling.firstChild, _el$15 = _el$14.nextSibling;
+									_el$14.$$input = (e) => setCurrentPin(e.currentTarget.value);
+									_el$15.$$click = () => setShowCurrentPin(!showCurrentPin());
+									insert(_el$15, () => showCurrentPin() ? "🙈" : "👁");
+									createRenderEffect(() => setAttribute(_el$14, "type", showCurrentPin() ? "text" : "password"));
+									createRenderEffect(() => _el$14.value = currentPin());
+									return _el$11;
 								})(), (() => {
-									var _el$19 = _tmpl$3$2(), _el$20 = _el$19.firstChild;
-									_el$20.$$input = (e) => {
+									var _el$16 = _tmpl$3$2(), _el$17 = _el$16.firstChild;
+									_el$17.$$input = (e) => {
 										setChangePin(e.currentTarget.checked);
 										setNewPin("");
 										setConfirmPin("");
 									};
-									createRenderEffect(() => _el$20.checked = changePin());
-									return _el$19;
+									createRenderEffect(() => _el$17.checked = changePin());
+									return _el$16;
 								})()];
 							}
 						}),
@@ -2470,31 +2467,31 @@
 							get children() {
 								return [
 									(() => {
-										var _el$21 = _tmpl$4$2(), _el$22 = _el$21.firstChild, _el$23 = _el$22.firstChild, _el$25 = _el$22.nextSibling.firstChild, _el$26 = _el$25.nextSibling;
-										insert(_el$22, () => hasPin() ? "New PIN" : "Set PIN", _el$23);
-										_el$25.$$input = (e) => setNewPin(e.currentTarget.value);
-										_el$26.$$click = () => setShowNewPin(!showNewPin());
-										insert(_el$26, () => showNewPin() ? "🙈" : "👁");
+										var _el$18 = _tmpl$4$2(), _el$19 = _el$18.firstChild, _el$20 = _el$19.firstChild, _el$22 = _el$19.nextSibling.firstChild, _el$23 = _el$22.nextSibling;
+										insert(_el$19, () => hasPin() ? "New PIN" : "Set PIN", _el$20);
+										_el$22.$$input = (e) => setNewPin(e.currentTarget.value);
+										_el$23.$$click = () => setShowNewPin(!showNewPin());
+										insert(_el$23, () => showNewPin() ? "🙈" : "👁");
 										createRenderEffect((_p$) => {
 											var _v$ = showNewPin() ? "text" : "password", _v$2 = hasPin() ? "Enter new PIN" : "Enter PIN to protect admin actions";
-											_v$ !== _p$.e && setAttribute(_el$25, "type", _p$.e = _v$);
-											_v$2 !== _p$.t && setAttribute(_el$25, "placeholder", _p$.t = _v$2);
+											_v$ !== _p$.e && setAttribute(_el$22, "type", _p$.e = _v$);
+											_v$2 !== _p$.t && setAttribute(_el$22, "placeholder", _p$.t = _v$2);
 											return _p$;
 										}, {
 											e: void 0,
 											t: void 0
 										});
-										createRenderEffect(() => _el$25.value = newPin());
-										return _el$21;
+										createRenderEffect(() => _el$22.value = newPin());
+										return _el$18;
 									})(),
 									(() => {
-										var _el$27 = _tmpl$5$1(), _el$30 = _el$27.firstChild.nextSibling.firstChild, _el$31 = _el$30.nextSibling;
-										_el$30.$$input = (e) => setConfirmPin(e.currentTarget.value);
-										_el$31.$$click = () => setShowConfirmPin(!showConfirmPin());
-										insert(_el$31, () => showConfirmPin() ? "🙈" : "👁");
-										createRenderEffect(() => setAttribute(_el$30, "type", showConfirmPin() ? "text" : "password"));
-										createRenderEffect(() => _el$30.value = confirmPin());
-										return _el$27;
+										var _el$24 = _tmpl$5$1(), _el$27 = _el$24.firstChild.nextSibling.firstChild, _el$28 = _el$27.nextSibling;
+										_el$27.$$input = (e) => setConfirmPin(e.currentTarget.value);
+										_el$28.$$click = () => setShowConfirmPin(!showConfirmPin());
+										insert(_el$28, () => showConfirmPin() ? "🙈" : "👁");
+										createRenderEffect(() => setAttribute(_el$27, "type", showConfirmPin() ? "text" : "password"));
+										createRenderEffect(() => _el$27.value = confirmPin());
+										return _el$24;
 									})(),
 									_tmpl$6$1()
 								];
@@ -2502,42 +2499,41 @@
 						})
 					];
 				}
-			}), _el$38);
-			insert(_el$1, createComponent(Show, {
+			}), _el$35);
+			insert(_el$8, createComponent(Show, {
 				get when() {
 					return memo(() => !!!pinEnabled())() && hasPin();
 				},
 				get children() {
-					var _el$33 = _tmpl$7$1(), _el$36 = _el$33.firstChild.nextSibling.firstChild, _el$37 = _el$36.nextSibling;
-					_el$36.$$input = (e) => setCurrentPin(e.currentTarget.value);
-					_el$37.$$click = () => setShowCurrentPin(!showCurrentPin());
-					insert(_el$37, () => showCurrentPin() ? "🙈" : "👁");
-					createRenderEffect(() => setAttribute(_el$36, "type", showCurrentPin() ? "text" : "password"));
-					createRenderEffect(() => _el$36.value = currentPin());
-					return _el$33;
+					var _el$30 = _tmpl$7$1(), _el$33 = _el$30.firstChild.nextSibling.firstChild, _el$34 = _el$33.nextSibling;
+					_el$33.$$input = (e) => setCurrentPin(e.currentTarget.value);
+					_el$34.$$click = () => setShowCurrentPin(!showCurrentPin());
+					insert(_el$34, () => showCurrentPin() ? "🙈" : "👁");
+					createRenderEffect(() => setAttribute(_el$33, "type", showCurrentPin() ? "text" : "password"));
+					createRenderEffect(() => _el$33.value = currentPin());
+					return _el$30;
 				}
-			}), _el$38);
-			insert(_el$39, createComponent(Button, {
+			}), _el$35);
+			insert(_el$36, createComponent(Button, {
 				type: "button",
 				variant: "secondary",
 				onClick: () => props.closeModal(),
 				children: "Cancel"
 			}), null);
-			insert(_el$39, createComponent(Button, {
+			insert(_el$36, createComponent(Button, {
 				type: "submit",
 				variant: "primary",
 				children: "Save"
 			}), null);
-			createRenderEffect(() => _el$7.value = dailyResetTime());
-			createRenderEffect(() => _el$0.checked = historyEnabled());
-			createRenderEffect(() => _el$12.checked = pinEnabled());
+			createRenderEffect(() => _el$7.checked = historyEnabled());
+			createRenderEffect(() => _el$1.checked = pinEnabled());
 			return _el$;
 		})();
 	};
 	delegateEvents(["input", "click"]);
 	//#endregion
 	//#region src/admin/main-page.tsx
-	var _tmpl$$1 = /* @__PURE__ */ template(`<header class="flex flex-wrap items-center justify-between gap-4 bg-slate-100 p-8 text-slate-900"><h1 class="text-3xl font-semibold">Family Chores Admin</h1><div class="flex gap-2.5"><label for=restoreFile class="cursor-pointer rounded-lg border-none bg-gray-600 px-5 py-2.5 text-sm font-medium text-white transition-all hover:-translate-y-0.5 hover:bg-gray-700 hover:shadow-md">Restore Backup</label><input type=file id=restoreFile accept=.json hidden>`), _tmpl$2$1 = /* @__PURE__ */ template(`<section class=mb-10 id=rotatingChoresSection><div class="mb-5 flex items-center justify-between"><h2 class="m-0 border-b-2 border-indigo-600 pb-2.5 text-2xl text-indigo-600">Rotating Chores</h2></div><div id=rotatingChoresList class="mt-5 grid gap-4">`), _tmpl$3$1 = /* @__PURE__ */ template(`<main class=p-8><section class=mb-10 data-testid=people-section><div class="mb-5 flex items-center justify-between"><h2 class="m-0 border-b-2 border-indigo-600 pb-2.5 text-2xl text-indigo-600">People</h2><div class="flex items-center gap-2"></div></div><div id=peopleList class="mt-5 grid gap-4"></div></section><section class=mb-10><h2 class="m-0 border-b-2 border-indigo-600 pb-2.5 text-2xl text-indigo-600">System State</h2><div class="rounded-lg border border-slate-200 bg-slate-50 p-5"><p class="mb-4 text-base"><strong class=text-indigo-600>Last Reset Date:</strong> <span id=lastResetDate></span></p><div class="mt-4 flex flex-row items-start gap-4"><div class="flex items-center gap-2">`), _tmpl$4$1 = /* @__PURE__ */ template(`<div class="mt-4 border-t border-slate-200 pt-4">`), _tmpl$5 = /* @__PURE__ */ template(`<div class="rounded-lg border border-slate-200 bg-slate-50 p-5 transition-all hover:border-indigo-600 hover:shadow-md"data-testid=person-card><div class="mb-4 flex items-center justify-between"><div class=flex-1><h3 class="mb-1.5 text-xl text-slate-900"> <span class="inline-block size-6 rounded-full border-2 border-black/10 align-middle"></span></h3><p class="text-sm text-slate-500">ID: </p></div><div class="flex gap-2.5"></div></div><div class="mt-4 flex items-center justify-between border-t border-slate-200 pt-4"><h4 class="m-0 text-lg text-indigo-600">'s Personal Chores</h4><div class="flex gap-2">`), _tmpl$6 = /* @__PURE__ */ template(`<div class="mt-4 border-t border-slate-200 pt-4"><p class="my-2.5 text-slate-500 italic">No personal chores yet.`), _tmpl$7 = /* @__PURE__ */ template(`<p class="mt-1.25 text-sm text-indigo-600">Deadline: `), _tmpl$8 = /* @__PURE__ */ template(`<div class="mb-2.5 flex items-center justify-between rounded-lg border border-slate-200 bg-white p-2.5 last:mb-0"><div><h4 class="mb-1.5 text-base text-slate-900"></h4><p class="mt-1.25 text-sm text-slate-500">Skip days: </p></div><div class="flex gap-2">`);
+	var _tmpl$$1 = /* @__PURE__ */ template(`<header class="flex flex-wrap items-center justify-between gap-4 bg-slate-100 p-8 text-slate-900"><h1 class="text-3xl font-semibold">Family Chores Admin</h1><div class="flex gap-2.5"><label for=restoreFile class="cursor-pointer rounded-lg border-none bg-gray-600 px-5 py-2.5 text-sm font-medium text-white transition-all hover:-translate-y-0.5 hover:bg-gray-700 hover:shadow-md">Restore Backup</label><input type=file id=restoreFile accept=.json hidden>`), _tmpl$2$1 = /* @__PURE__ */ template(`<section class=mb-10 id=rotatingChoresSection><div class="mb-5 flex items-center justify-between"><h2 class="m-0 border-b-2 border-indigo-600 pb-2.5 text-2xl text-indigo-600">Rotating Chores</h2></div><div id=rotatingChoresList class="mt-5 grid gap-4">`), _tmpl$3$1 = /* @__PURE__ */ template(`<main class=p-8><section class=mb-10 data-testid=people-section><div class="mb-5 flex items-center justify-between"><h2 class="m-0 border-b-2 border-indigo-600 pb-2.5 text-2xl text-indigo-600">People</h2><div class="flex items-center gap-2"></div></div><div id=peopleList class="mt-5 grid gap-4">`), _tmpl$4$1 = /* @__PURE__ */ template(`<div class="mt-4 border-t border-slate-200 pt-4">`), _tmpl$5 = /* @__PURE__ */ template(`<div class="rounded-lg border border-slate-200 bg-slate-50 p-5 transition-all hover:border-indigo-600 hover:shadow-md"data-testid=person-card><div class="mb-4 flex items-center justify-between"><div class=flex-1><h3 class="mb-1.5 text-xl text-slate-900"> <span class="inline-block size-6 rounded-full border-2 border-black/10 align-middle"></span></h3><p class="text-sm text-slate-500">ID: </p></div><div class="flex gap-2.5"></div></div><div class="mt-4 flex items-center justify-between border-t border-slate-200 pt-4"><h4 class="m-0 text-lg text-indigo-600">'s Personal Chores</h4><div class="flex gap-2">`), _tmpl$6 = /* @__PURE__ */ template(`<div class="mt-4 border-t border-slate-200 pt-4"><p class="my-2.5 text-slate-500 italic">No personal chores yet.`), _tmpl$7 = /* @__PURE__ */ template(`<p class="mt-1.25 text-sm text-indigo-600">Deadline: `), _tmpl$8 = /* @__PURE__ */ template(`<div class="mb-2.5 flex items-center justify-between rounded-lg border border-slate-200 bg-white p-2.5 last:mb-0"><div><h4 class="mb-1.5 text-base text-slate-900"></h4><p class="mt-1.25 text-sm text-slate-500">Skip days: </p></div><div class="flex gap-2">`);
 	var API_BASE$1 = "/MMM-FamilyChores";
 	var formatSkipDays = (skipDays) => {
 		if (!skipDays || skipDays.length === 0) return "None";
@@ -2720,40 +2716,6 @@
 				alert(`Failed to delete chore: ${error instanceof Error ? error.message : "Unknown error"}`);
 			}
 		};
-		const handleForceReset = async () => {
-			if (!confirm("Are you sure you want to force a daily reset? This will reset all chore states for the new day.")) return;
-			let pin = cachedPin();
-			let rememberPin = false;
-			if (pinRequired() && !pin) {
-				const result = await requestPin("Admin PIN Required", "Enter admin PIN to force daily reset");
-				if (!result.pin) return;
-				pin = result.pin;
-				rememberPin = result.remember;
-			}
-			try {
-				const yesterday = /* @__PURE__ */ new Date();
-				yesterday.setDate(yesterday.getDate() - 1);
-				const yesterdayStr = getLocalDateString(yesterday);
-				const data = {
-					...choreData(),
-					lastResetDate: yesterdayStr
-				};
-				if (!(await fetch(`${API_BASE$1}/restore`, {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({
-						...data,
-						pin: pin || void 0
-					})
-				})).ok) throw new Error("Failed to force reset");
-				if (rememberPin) setCachedPin(pin);
-				alert("Daily reset triggered successfully! The data will be updated on the next sync.");
-				await loadData();
-			} catch (error) {
-				console.error("Error forcing reset:", error);
-				alert("Failed to force reset. Please try again.");
-			}
-		};
 		const getPersonalChores = (personId) => {
 			return choreData().chores.filter((chore) => chore.type === ChoreType.PERSONAL && chore.assignedTo === personId);
 		};
@@ -2781,7 +2743,7 @@
 				return _el$;
 			})(),
 			(() => {
-				var _el$6 = _tmpl$3$1(), _el$7 = _el$6.firstChild, _el$8 = _el$7.firstChild, _el$0 = _el$8.firstChild.nextSibling, _el$1 = _el$8.nextSibling, _el$14 = _el$7.nextSibling, _el$17 = _el$14.firstChild.nextSibling.firstChild, _el$20 = _el$17.firstChild.nextSibling.nextSibling, _el$22 = _el$17.nextSibling.firstChild;
+				var _el$6 = _tmpl$3$1(), _el$8 = _el$6.firstChild.firstChild, _el$0 = _el$8.firstChild.nextSibling, _el$1 = _el$8.nextSibling;
 				insert(_el$0, createComponent(Button, {
 					type: "button",
 					variant: "primary",
@@ -2806,34 +2768,34 @@
 						return choreData().people;
 					},
 					children: (person) => (() => {
-						var _el$23 = _tmpl$5(), _el$24 = _el$23.firstChild, _el$25 = _el$24.firstChild, _el$26 = _el$25.firstChild, _el$27 = _el$26.firstChild, _el$28 = _el$27.nextSibling, _el$29 = _el$26.nextSibling;
-						_el$29.firstChild;
-						var _el$31 = _el$25.nextSibling, _el$33 = _el$24.nextSibling.firstChild, _el$34 = _el$33.firstChild, _el$35 = _el$33.nextSibling;
-						insert(_el$26, () => escapeHtml(person.name), _el$27);
-						insert(_el$29, () => person.id, null);
-						insert(_el$31, createComponent(Button, {
+						var _el$14 = _tmpl$5(), _el$15 = _el$14.firstChild, _el$16 = _el$15.firstChild, _el$17 = _el$16.firstChild, _el$18 = _el$17.firstChild, _el$19 = _el$18.nextSibling, _el$20 = _el$17.nextSibling;
+						_el$20.firstChild;
+						var _el$22 = _el$16.nextSibling, _el$24 = _el$15.nextSibling.firstChild, _el$25 = _el$24.firstChild, _el$26 = _el$24.nextSibling;
+						insert(_el$17, () => escapeHtml(person.name), _el$18);
+						insert(_el$20, () => person.id, null);
+						insert(_el$22, createComponent(Button, {
 							type: "button",
 							variant: "secondary",
 							size: "sm",
 							onClick: () => openPersonModal(person),
 							children: "Edit"
 						}), null);
-						insert(_el$31, createComponent(Button, {
+						insert(_el$22, createComponent(Button, {
 							type: "button",
 							variant: "secondary",
 							size: "sm",
 							onClick: () => setHistoryPerson(person),
 							children: "History"
 						}), null);
-						insert(_el$31, createComponent(Button, {
+						insert(_el$22, createComponent(Button, {
 							type: "button",
 							variant: "danger",
 							size: "sm",
 							onClick: () => handleDeletePerson(person.id),
 							children: "Delete"
 						}), null);
-						insert(_el$33, () => escapeHtml(person.name), _el$34);
-						insert(_el$35, createComponent(Button, {
+						insert(_el$24, () => escapeHtml(person.name), _el$25);
+						insert(_el$26, createComponent(Button, {
 							type: "button",
 							variant: "primary",
 							size: "sm",
@@ -2842,7 +2804,7 @@
 							},
 							children: "Add Chore"
 						}), null);
-						insert(_el$35, createComponent(Show, {
+						insert(_el$26, createComponent(Show, {
 							get when() {
 								return memo(() => getPersonalChores(person.id).length > 0)() && choreData().people.length > 1;
 							},
@@ -2858,7 +2820,7 @@
 								});
 							}
 						}), null);
-						insert(_el$23, createComponent(Show, {
+						insert(_el$14, createComponent(Show, {
 							get when() {
 								return getPersonalChores(person.id).length > 0;
 							},
@@ -2866,29 +2828,29 @@
 								return _tmpl$6();
 							},
 							get children() {
-								var _el$36 = _tmpl$4$1();
-								insert(_el$36, createComponent(For, {
+								var _el$27 = _tmpl$4$1();
+								insert(_el$27, createComponent(For, {
 									get each() {
 										return getPersonalChores(person.id);
 									},
 									children: (chore) => (() => {
-										var _el$38 = _tmpl$8(), _el$39 = _el$38.firstChild, _el$40 = _el$39.firstChild, _el$43 = _el$40.nextSibling;
-										_el$43.firstChild;
-										var _el$45 = _el$39.nextSibling;
-										insert(_el$40, () => escapeHtml(chore.name));
-										insert(_el$39, createComponent(Show, {
+										var _el$29 = _tmpl$8(), _el$30 = _el$29.firstChild, _el$31 = _el$30.firstChild, _el$34 = _el$31.nextSibling;
+										_el$34.firstChild;
+										var _el$36 = _el$30.nextSibling;
+										insert(_el$31, () => escapeHtml(chore.name));
+										insert(_el$30, createComponent(Show, {
 											get when() {
 												return chore.deadline;
 											},
 											get children() {
-												var _el$41 = _tmpl$7();
-												_el$41.firstChild;
-												insert(_el$41, () => chore.deadline, null);
-												return _el$41;
+												var _el$32 = _tmpl$7();
+												_el$32.firstChild;
+												insert(_el$32, () => chore.deadline, null);
+												return _el$32;
 											}
-										}), _el$43);
-										insert(_el$43, () => formatSkipDays(chore.skipDays), null);
-										insert(_el$45, createComponent(Button, {
+										}), _el$34);
+										insert(_el$34, () => formatSkipDays(chore.skipDays), null);
+										insert(_el$36, createComponent(Button, {
 											type: "button",
 											variant: "secondary",
 											size: "sm",
@@ -2897,21 +2859,21 @@
 											},
 											children: "Edit"
 										}), null);
-										insert(_el$45, createComponent(Button, {
+										insert(_el$36, createComponent(Button, {
 											type: "button",
 											variant: "danger",
 											size: "sm",
 											onClick: () => handleDeleteChore(chore.id),
 											children: "Delete"
 										}), null);
-										return _el$38;
+										return _el$29;
 									})()
 								}));
-								return _el$36;
+								return _el$27;
 							}
 						}), null);
-						createRenderEffect((_$p) => style(_el$28, `background-color: ${person.color}`, _$p));
-						return _el$23;
+						createRenderEffect((_$p) => style(_el$19, `background-color: ${person.color}`, _$p));
+						return _el$14;
 					})()
 				}));
 				insert(_el$6, createComponent(Show, {
@@ -2944,22 +2906,6 @@
 						}));
 						return _el$10;
 					}
-				}), _el$14);
-				insert(_el$20, () => choreData().lastResetDate || "Never");
-				insert(_el$22, createComponent(Button, {
-					type: "button",
-					variant: "warning",
-					id: "resetDailyBtn",
-					onClick: handleForceReset,
-					children: "Force Daily Reset"
-				}), null);
-				insert(_el$22, createComponent(Tooltip, {
-					text: "WARNING: This will un-check all chores and rotate assignment on rotating chores to the next person. It does respect skip days if today is a skip day. Useful for testing or immediately advancing chore assignments.",
-					position: "above",
-					align: "center",
-					multiline: true,
-					"class": "ml-2 text-base",
-					children: "ℹ️"
 				}), null);
 				return _el$6;
 			})(),

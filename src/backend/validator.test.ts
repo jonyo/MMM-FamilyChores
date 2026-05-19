@@ -248,29 +248,19 @@ describe('validateSettings', () => {
     expect(validateSettings(1).valid).toBe(false);
   });
 
-  it('rejects missing or invalid dailyResetTime', () => {
-    expect(validateSettings({}).valid).toBe(false);
-    expect(validateSettings({ dailyResetTime: '' }).valid).toBe(false);
-    expect(validateSettings({ dailyResetTime: 1 }).valid).toBe(false);
-    expect(validateSettings({ dailyResetTime: '25:00' }).valid).toBe(false);
-    expect(validateSettings({ dailyResetTime: '8:0' }).valid).toBe(false);
-    expect(validateSettings({ dailyResetTime: '08:60' }).valid).toBe(false);
-  });
-
   it('rejects missing or invalid historyEnabled', () => {
-    expect(validateSettings({ dailyResetTime: '03:00' }).valid).toBe(false);
-    expect(validateSettings({ dailyResetTime: '03:00', historyEnabled: 'yes' }).valid).toBe(false);
-    expect(validateSettings({ dailyResetTime: '03:00', historyEnabled: 1 }).valid).toBe(false);
+    expect(validateSettings({}).valid).toBe(false);
+    expect(validateSettings({ historyEnabled: 'yes' }).valid).toBe(false);
+    expect(validateSettings({ historyEnabled: 1 }).valid).toBe(false);
   });
 
   it('accepts valid settings', () => {
-    expect(validateSettings({ dailyResetTime: '03:00', historyEnabled: true }).valid).toBe(true);
-    expect(validateSettings({ dailyResetTime: '21:00', historyEnabled: false }).valid).toBe(true);
-    expect(validateSettings({ dailyResetTime: '8:00', historyEnabled: true }).valid).toBe(true);
+    expect(validateSettings({ historyEnabled: true }).valid).toBe(true);
+    expect(validateSettings({ historyEnabled: false }).valid).toBe(true);
   });
 
   it('accepts valid adminPin values', () => {
-    const base = { dailyResetTime: '03:00', historyEnabled: true };
+    const base = { historyEnabled: true };
     expect(validateSettings({ ...base, adminPin: undefined }).valid).toBe(true);
     expect(validateSettings({ ...base, adminPin: null }).valid).toBe(true);
     expect(validateSettings({ ...base, adminPin: '1234' }).valid).toBe(true);
@@ -279,7 +269,7 @@ describe('validateSettings', () => {
   });
 
   it('rejects invalid adminPin types', () => {
-    const base = { dailyResetTime: '03:00', historyEnabled: true };
+    const base = { historyEnabled: true };
     expect(validateSettings({ ...base, adminPin: 1234 }).valid).toBe(false);
     expect(validateSettings({ ...base, adminPin: true }).valid).toBe(false);
     expect(validateSettings({ ...base, adminPin: {} }).valid).toBe(false);

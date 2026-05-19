@@ -125,10 +125,6 @@ export interface DailyCompletion {
  */
 export interface Settings {
   /**
-   * Format: "HH:mm" in 24-hour format, default "03:00"
-   */
-  dailyResetTime: string;
-  /**
    * Enable/disable history tracking (default: true)
    */
   historyEnabled: boolean;
@@ -148,7 +144,7 @@ export interface FamilyChoresData {
   /**
    * ISO date string when daily reset was last performed (YYYY-MM-DD)
    */
-  lastResetDate?: string;
+  lastResetDate: string;
   /**
    * Daily completion records for tracking chore completion status
    */

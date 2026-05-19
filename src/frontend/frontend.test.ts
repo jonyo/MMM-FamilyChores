@@ -116,6 +116,7 @@ describe('Frontend Tests', () => {
   describe('getFilteredChores', () => {
     beforeEach(() => {
       module.choreData = {
+        lastResetDate: '2024-01-01',
         people: [
           { id: 'alice', name: 'Alice', color: '#FF6B6B' },
           { id: 'bob', name: 'Bob', color: '#4ECDC4' },
@@ -156,7 +157,6 @@ describe('Frontend Tests', () => {
         ],
         dailyCompletions: [],
         settings: {
-          dailyResetTime: '03:00',
           historyEnabled: true,
         },
       };
@@ -332,6 +332,7 @@ describe('Frontend Tests', () => {
   describe('shouldShowChore', () => {
     beforeEach(() => {
       module.choreData = {
+        lastResetDate: '2024-01-01',
         people: [{ id: 'alice', name: 'Alice', color: '#FF6B6B' }],
         chores: [
           {
@@ -347,7 +348,6 @@ describe('Frontend Tests', () => {
         ],
         dailyCompletions: [],
         settings: {
-          dailyResetTime: '03:00',
           historyEnabled: true,
         },
       };
@@ -418,6 +418,7 @@ describe('Frontend Tests', () => {
   describe('getSummaryChores', () => {
     beforeEach(() => {
       module.choreData = {
+        lastResetDate: '2024-01-01',
         people: [
           { id: 'alice', name: 'Alice', color: '#FF6B6B' },
           { id: 'bob', name: 'Bob', color: '#4ECDC4' },
@@ -469,7 +470,6 @@ describe('Frontend Tests', () => {
         ],
         dailyCompletions: [],
         settings: {
-          dailyResetTime: '03:00',
           historyEnabled: true,
         },
       };
@@ -643,6 +643,7 @@ describe('Frontend Tests', () => {
   describe('renderChoreItem', () => {
     beforeEach(() => {
       module.choreData = {
+        lastResetDate: '2024-01-01',
         people: [
           { id: 'alice', name: 'Alice', color: '#FF6B6B' },
           { id: 'bob', name: 'Bob', color: '#4ECDC4' },
@@ -650,7 +651,6 @@ describe('Frontend Tests', () => {
         chores: [],
         dailyCompletions: [],
         settings: {
-          dailyResetTime: '03:00',
           historyEnabled: true,
         },
       };
@@ -1106,6 +1106,7 @@ describe('Frontend Tests', () => {
 
     it('should show chore data when available', async () => {
       module.choreData = {
+        lastResetDate: '2024-01-01',
         people: [
           { id: '1', name: 'Alice', color: '#FF6B6B' },
           { id: '2', name: 'Bob', color: '#4ECDC4' },
@@ -1135,7 +1136,6 @@ describe('Frontend Tests', () => {
         ],
         dailyCompletions: [],
         settings: {
-          dailyResetTime: '03:00',
           historyEnabled: true,
         },
       };
@@ -1154,6 +1154,7 @@ describe('Frontend Tests', () => {
 
     it('should filter chores by personFilter using person name', async () => {
       module.choreData = {
+        lastResetDate: '2024-01-01',
         people: [
           { id: '1', name: 'Alice', color: '#FF6B6B' },
           { id: '2', name: 'Bob', color: '#4ECDC4' },
@@ -1183,7 +1184,6 @@ describe('Frontend Tests', () => {
         ],
         dailyCompletions: [],
         settings: {
-          dailyResetTime: '03:00',
           historyEnabled: true,
         },
       };
@@ -1199,6 +1199,7 @@ describe('Frontend Tests', () => {
 
     it('should show empty state when filter matches no chores', async () => {
       module.choreData = {
+        lastResetDate: '2024-01-01',
         people: [
           { id: '1', name: 'Alice', color: '#FF6B6B' },
           { id: '2', name: 'Bob', color: '#4ECDC4' },
@@ -1217,7 +1218,6 @@ describe('Frontend Tests', () => {
         ],
         dailyCompletions: [],
         settings: {
-          dailyResetTime: '03:00',
           historyEnabled: true,
         },
       };
@@ -1236,6 +1236,7 @@ describe('Frontend Tests', () => {
     beforeEach(() => {
       module.config.viewMode = 'summary';
       module.choreData = {
+        lastResetDate: '2024-01-01',
         people: [
           { id: 'alice', name: 'Alice', color: '#FF6B6B' },
           { id: 'bob', name: 'Bob', color: '#4ECDC4' },
@@ -1287,7 +1288,6 @@ describe('Frontend Tests', () => {
         ],
         dailyCompletions: [],
         settings: {
-          dailyResetTime: '03:00',
           historyEnabled: true,
         },
       };
@@ -1561,6 +1561,7 @@ describe('Frontend Tests', () => {
     beforeEach(() => {
       // Set up chore data for interaction tests
       module.choreData = {
+        lastResetDate: '2024-01-01',
         people: [
           { id: '1', name: 'Alice', color: '#FF6B6B' },
           { id: '2', name: 'Bob', color: '#4ECDC4' },
@@ -1580,7 +1581,6 @@ describe('Frontend Tests', () => {
         ],
         dailyCompletions: [],
         settings: {
-          dailyResetTime: '03:00',
           historyEnabled: true,
         },
       };

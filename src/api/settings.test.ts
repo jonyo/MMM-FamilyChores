@@ -7,37 +7,37 @@ globalThis.fetch = vi.fn();
 describe('settings API', () => {
   describe('updateSettings', () => {
     it('should update settings successfully', async () => {
-      const mockSettings = { dailyResetTime: '04:00', historyEnabled: false };
+      const mockSettings = { historyEnabled: false };
 
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
         json: async () => mockSettings,
       } as Response);
 
-      const result = await updateSettings({ dailyResetTime: '04:00' });
+      const result = await updateSettings({ historyEnabled: false });
 
       expect(fetch).toHaveBeenCalledWith('/MMM-FamilyChores/settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dailyResetTime: '04:00' }),
+        body: JSON.stringify({ historyEnabled: false }),
       });
       expect(result).toEqual(mockSettings);
     });
 
     it('should update settings with PIN', async () => {
-      const mockSettings = { dailyResetTime: '04:00', historyEnabled: true };
+      const mockSettings = { historyEnabled: true };
 
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
         json: async () => mockSettings,
       } as Response);
 
-      const result = await updateSettings({ dailyResetTime: '04:00', pin: '1234' });
+      const result = await updateSettings({ historyEnabled: true, pin: '1234' });
 
       expect(fetch).toHaveBeenCalledWith('/MMM-FamilyChores/settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dailyResetTime: '04:00', pin: '1234' }),
+        body: JSON.stringify({ historyEnabled: true, pin: '1234' }),
       });
       expect(result).toEqual(mockSettings);
     });

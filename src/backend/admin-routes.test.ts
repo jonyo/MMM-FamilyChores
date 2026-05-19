@@ -92,7 +92,6 @@ function makeBaseData(): FamilyChoresData {
     dailyCompletions: [],
     lastResetDate: getLocalDateString(),
     settings: {
-      dailyResetTime: '03:00',
       historyEnabled: true,
     },
   };
@@ -557,6 +556,87 @@ describe('createAdminHandlers', () => {
       expect(res.statusCode).toBe(400);
       expect(res.jsonBody).toMatchObject({ error: expect.stringContaining('Invalid chore') });
       expect(mockSave).not.toHaveBeenCalled();
+    });
+
+    it('returns 400 when settings fail validation', () => {
+      const { context, mockSave } = makeContext();
+      const { postRestore } = createAdminHandlers(context);
+      const res = createMockRes();
+      postRestore(
+        {
+          body: {
+            people: [{ id: pid1, name: 'A', color: '#fff' }],
+            chores: [],
+            settings: { historyEnabled: 'yes' },
+          },
+          params: {},
+        },
+        res
+      );
+      expect(res.statusCode).toBe(400);
+      expect(res.jsonBody).toMatchObject({ error: expect.stringContaining('Invalid settings') });
+      expect(mockSave).not.toHaveBeenCalled();
+    });
+
+    it('skips invalid daily completions and filters old ones', () => {
+      const { context, mockSave, getData } = makeContext();
+      const { postRestore } = createAdminHandlers(context);
+      const res = createMockRes();
+      const oldDate = '2020-01-01';
+      const recentDate = getLocalDateString();
+      postRestore(
+        {
+          body: {
+            people: [{ id: pid1, name: 'A', color: '#fff' }],
+            chores: [
+              {
+                id: cid1,
+                name: 'C',
+                type: ChoreType.PERSONAL,
+                assignedTo: pid1,
+                skipDays: [],
+                skipDayVisibility: SkipDayVisibility.HIDE,
+                caughtUp: true,
+                completedToday: false,
+              },
+            ],
+            dailyCompletions: [
+              {
+                id: generateTestUUID(1),
+                date: oldDate,
+                personId: pid1,
+                choreId: cid1,
+                completed: true,
+                wasLate: false,
+              },
+              {
+                id: generateTestUUID(2),
+                date: recentDate,
+                personId: pid1,
+                choreId: cid1,
+                completed: false,
+                wasLate: false,
+              },
+              {
+                id: generateTestUUID(3),
+                date: recentDate,
+                personId: 'invalid-uuid',
+                choreId: cid1,
+                completed: true,
+                wasLate: false,
+              },
+            ],
+          },
+          params: {},
+        },
+        res
+      );
+      expect(res.statusCode).toBe(200);
+      const completions = getData()?.dailyCompletions ?? [];
+      expect(completions).toHaveLength(1);
+      expect(completions[0].date).toBe(recentDate);
+      expect(completions[0].completed).toBe(false);
+      expect(mockSave).toHaveBeenCalled();
     });
   });
 

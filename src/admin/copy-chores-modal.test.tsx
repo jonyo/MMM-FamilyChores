@@ -380,7 +380,7 @@ describe('CopyChoresModal', () => {
               },
               { ...mockPersonalChore, id: 'c2', name: 'Do dishes', assignedTo: 'p1' },
             ],
-            settings: { dailyResetTime: '03:00', historyEnabled: true },
+            settings: { historyEnabled: true },
           }}
           pinRequired={true}
         >
@@ -408,7 +408,7 @@ describe('CopyChoresModal', () => {
               },
               { ...mockPersonalChore, id: 'c2', name: 'Do dishes', assignedTo: 'p1' },
             ],
-            settings: { dailyResetTime: '03:00', historyEnabled: true },
+            settings: { historyEnabled: true },
           }}
           pinRequired={true}
           initialCachedPin="1234"
@@ -438,7 +438,7 @@ describe('CopyChoresModal', () => {
               },
               { ...mockPersonalChore, id: 'c2', name: 'Do dishes', assignedTo: 'p1' },
             ],
-            settings: { dailyResetTime: '03:00', historyEnabled: true },
+            settings: { historyEnabled: true },
           }}
           pinRequired={true}
           initialCachedPin="1234"

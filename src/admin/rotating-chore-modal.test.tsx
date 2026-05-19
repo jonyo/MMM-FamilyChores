@@ -138,7 +138,7 @@ describe('RotatingChoreModal', () => {
 
       const { container } = render(() => (
         <MockAdminProvider
-          choreDataOverride={{ settings: { dailyResetTime: '03:00', historyEnabled: true } }}
+          choreDataOverride={{ settings: { historyEnabled: true } }}
           pinRequired={true}
         >
           <RotatingChoreModal initialChore={undefined} closeModal={closeModal} />
@@ -153,7 +153,7 @@ describe('RotatingChoreModal', () => {
 
       const { container } = render(() => (
         <MockAdminProvider
-          choreDataOverride={{ settings: { dailyResetTime: '03:00', historyEnabled: true } }}
+          choreDataOverride={{ settings: { historyEnabled: true } }}
           pinRequired={true}
           initialCachedPin="1234"
         >
@@ -169,7 +169,7 @@ describe('RotatingChoreModal', () => {
 
       render(() => (
         <MockAdminProvider
-          choreDataOverride={{ settings: { dailyResetTime: '03:00', historyEnabled: true } }}
+          choreDataOverride={{ settings: { historyEnabled: true } }}
           pinRequired={true}
           initialCachedPin="1234"
         >

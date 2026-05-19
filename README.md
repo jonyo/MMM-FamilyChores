@@ -242,7 +242,7 @@ The module includes a web-based admin panel for managing people, chores, setting
 
 - **People**: Add, edit, and remove family members. Each person has a name and text color.
 - **Chores**: Create and manage personal and rotating chores, assign skip days, set deadlines, and copy chores between people.
-- **Settings**: Configure daily reset time, enable/disable activity history, and set an admin PIN.
+- **Settings**: Enable/disable activity history and set an admin PIN.
 - **Activity History**: View a log of who completed which chores and when (requires `historyEnabled` to be set).
 - **Backup/Restore**: Download the current `data.json` for safekeeping or upload a previously saved backup.
 
@@ -301,7 +301,7 @@ Rotating chores pause until the next valid day.
 
 ### Daily Reset
 
-At midnight, all `completedToday` entries are cleared, making personal chores available again.
+The module detects when the local date has advanced past the last reset date and automatically clears all `completedToday` entries, making personal chores available again. This happens on the first update after midnight (or whenever the module next checks after the date changes).
 
 ### Mirror Interactions
 

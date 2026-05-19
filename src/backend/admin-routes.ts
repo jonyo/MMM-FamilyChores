@@ -1,6 +1,12 @@
 import * as Log from 'logger';
 import { SocketNotifications } from '../constants/socket-notifications';
-import type { Chore, DailyCompletion, FamilyChoresData, Person } from '../types/chore-types';
+import type {
+  Chore,
+  DailyCompletion,
+  FamilyChoresData,
+  Person,
+  Settings,
+} from '../types/chore-types';
 import { ChoreType, SkipDayVisibility } from '../types/chore-types';
 import type {
   CopyChoresRequest,
@@ -12,8 +18,14 @@ import type {
   UpdateSettingsRequest,
 } from '../types/request-types';
 import type { ApiErrorBody } from '../types/response-types';
+import { getLocalDateString } from '../utils/date';
 import { generateUUID } from '../utils/uuid';
-import { validateChore, validatePerson } from './validator';
+import {
+  validateChore,
+  validateDailyCompletion,
+  validatePerson,
+  validateSettings,
+} from './validator';
 
 // Use more flexible types for MagicMirror's Express implementation
 interface Request {
@@ -408,18 +420,42 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
           validChores.push(chore as Chore);
         }
 
+        // Validate settings if provided
+        const rawSettings = restoredData.settings ?? { historyEnabled: true };
+        const settingsValidation = validateSettings(rawSettings);
+        if (!settingsValidation.valid) {
+          res.status(400).json(apiErr(`Invalid settings: ${settingsValidation.error}`));
+          return;
+        }
+
+        // Validate daily completions and pre-filter old ones
+        const retentionDays = 14;
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
+        const cutoffDateString = getLocalDateString(cutoffDate);
+
+        const validCompletions: DailyCompletion[] = [];
+        if (Array.isArray(restoredData.dailyCompletions)) {
+          for (const completion of restoredData.dailyCompletions) {
+            const validation = validateDailyCompletion(completion, validChores);
+            if (!validation.valid) {
+              Log.warn(`Skipping invalid daily completion in restore data: ${validation.error}`);
+              continue;
+            }
+            const completionObj = completion as DailyCompletion;
+            if (completionObj.date < cutoffDateString) {
+              continue;
+            }
+            validCompletions.push(completionObj);
+          }
+        }
+
         context.setChoreData({
           people: validPeople,
           chores: validChores,
-          dailyCompletions: Array.isArray(restoredData.dailyCompletions)
-            ? (restoredData.dailyCompletions as DailyCompletion[])
-            : [],
-          lastResetDate: restoredData.lastResetDate,
-          // Auto-spread defaults for settings
-          settings: {
-            dailyResetTime: restoredData.settings?.dailyResetTime ?? '03:00',
-            historyEnabled: restoredData.settings?.historyEnabled ?? true,
-          },
+          dailyCompletions: validCompletions,
+          lastResetDate: restoredData.lastResetDate ?? getLocalDateString(),
+          settings: rawSettings as Settings,
         });
         context.saveChoreData();
         context.sendNotification(SocketNotifications.CHORE_DATA, context.getChoreData());
@@ -495,7 +531,7 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
     putSettings: (req, res) => {
       if (!validatePin(req, res, context)) return;
       try {
-        const { dailyResetTime, historyEnabled, adminPin } = req.body as UpdateSettingsRequest;
+        const { historyEnabled, adminPin } = req.body as UpdateSettingsRequest;
         const choreData = context.getChoreData();
 
         if (!choreData) {
@@ -506,20 +542,8 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         // Initialize settings if not present
         if (!choreData.settings) {
           choreData.settings = {
-            dailyResetTime: '03:00',
             historyEnabled: true,
           };
-        }
-
-        // Update daily reset time if provided
-        if (dailyResetTime !== undefined) {
-          // Validate format (HH:mm)
-          const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
-          if (!timeRegex.test(dailyResetTime)) {
-            res.status(400).json(apiErr('Invalid time format. Use HH:mm (24-hour format)'));
-            return;
-          }
-          choreData.settings.dailyResetTime = dailyResetTime;
         }
 
         // Update history enabled if provided

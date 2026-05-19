@@ -13,7 +13,6 @@ export const SettingsModal: Component<SettingsModalProps> = (props) => {
   const { choreData } = useAdminContext();
   const settings = () => choreData().settings;
 
-  const [dailyResetTime, setDailyResetTime] = createSignal(settings().dailyResetTime);
   const [historyEnabled, setHistoryEnabled] = createSignal(settings().historyEnabled);
   const [pinEnabled, setPinEnabled] = createSignal(!!settings().adminPin);
   const [currentPin, setCurrentPin] = createSignal('');
@@ -55,7 +54,6 @@ export const SettingsModal: Component<SettingsModalProps> = (props) => {
 
     try {
       const body: UpdateSettingsRequest = {
-        dailyResetTime: dailyResetTime(),
         historyEnabled: historyEnabled(),
         pin: hadPin ? currentPin() || undefined : undefined,
       };
@@ -81,27 +79,6 @@ export const SettingsModal: Component<SettingsModalProps> = (props) => {
       <div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200">
         <h3 class="mb-5 text-2xl text-indigo-600">Settings</h3>
         <form onSubmit={handleSubmit}>
-          <div class="mb-5">
-            <label for="dailyResetTime" class="mb-3 block font-medium text-slate-900">
-              Daily Reset Time (24-hour format, HH:mm)
-            </label>
-            <input
-              type="time"
-              id="dailyResetTime"
-              value={dailyResetTime()}
-              onInput={(e) => setDailyResetTime(e.currentTarget.value)}
-              required
-              class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"
-            />
-            <small class="text-sm text-slate-500">
-              Time when daily chore reset occurs. Default: 03:00
-            </small>
-            <br />
-            <small class="text-sm text-slate-500">
-              <strong>Tip:</strong> Set to at least 03:00 to avoid daylight savings time changes (no
-              roll forward/back occurs after 3am)
-            </small>
-          </div>
           <div class="mb-5">
             <label class="flex cursor-pointer items-center gap-2">
               <input

@@ -322,14 +322,6 @@ var validateSettings = (settings) => {
 		error: "Settings must be an object"
 	};
 	const settingsObj = settings;
-	if (!settingsObj.dailyResetTime || typeof settingsObj.dailyResetTime !== "string") return {
-		valid: false,
-		error: "Settings must have a dailyResetTime string"
-	};
-	if (!settingsObj.dailyResetTime.match(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)) return {
-		valid: false,
-		error: "Settings dailyResetTime must be in 24-hour format (e.g., \"03:00\" or \"21:00\")"
-	};
 	if (typeof settingsObj.historyEnabled !== "boolean") return {
 		valid: false,
 		error: "Settings must have a historyEnabled boolean"
@@ -682,15 +674,33 @@ function createAdminHandlers(context) {
 					}
 					validChores.push(chore);
 				}
+				const rawSettings = restoredData.settings ?? { historyEnabled: true };
+				const settingsValidation = validateSettings(rawSettings);
+				if (!settingsValidation.valid) {
+					res.status(400).json(apiErr(`Invalid settings: ${settingsValidation.error}`));
+					return;
+				}
+				const retentionDays = 14;
+				const cutoffDate = /* @__PURE__ */ new Date();
+				cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
+				const cutoffDateString = getLocalDateString(cutoffDate);
+				const validCompletions = [];
+				if (Array.isArray(restoredData.dailyCompletions)) for (const completion of restoredData.dailyCompletions) {
+					const validation = validateDailyCompletion(completion, validChores);
+					if (!validation.valid) {
+						logger.warn(`Skipping invalid daily completion in restore data: ${validation.error}`);
+						continue;
+					}
+					const completionObj = completion;
+					if (completionObj.date < cutoffDateString) continue;
+					validCompletions.push(completionObj);
+				}
 				context.setChoreData({
 					people: validPeople,
 					chores: validChores,
-					dailyCompletions: Array.isArray(restoredData.dailyCompletions) ? restoredData.dailyCompletions : [],
-					lastResetDate: restoredData.lastResetDate,
-					settings: {
-						dailyResetTime: restoredData.settings?.dailyResetTime ?? "03:00",
-						historyEnabled: restoredData.settings?.historyEnabled ?? true
-					}
+					dailyCompletions: validCompletions,
+					lastResetDate: restoredData.lastResetDate ?? getLocalDateString(),
+					settings: rawSettings
 				});
 				context.saveChoreData();
 				context.sendNotification(SocketNotifications.CHORE_DATA, context.getChoreData());
@@ -752,23 +762,13 @@ function createAdminHandlers(context) {
 		putSettings: (req, res) => {
 			if (!validatePin(req, res, context)) return;
 			try {
-				const { dailyResetTime, historyEnabled, adminPin } = req.body;
+				const { historyEnabled, adminPin } = req.body;
 				const choreData = context.getChoreData();
 				if (!choreData) {
 					res.status(500).json(apiErr("No data available"));
 					return;
 				}
-				if (!choreData.settings) choreData.settings = {
-					dailyResetTime: "03:00",
-					historyEnabled: true
-				};
-				if (dailyResetTime !== void 0) {
-					if (!/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(dailyResetTime)) {
-						res.status(400).json(apiErr("Invalid time format. Use HH:mm (24-hour format)"));
-						return;
-					}
-					choreData.settings.dailyResetTime = dailyResetTime;
-				}
+				if (!choreData.settings) choreData.settings = { historyEnabled: true };
 				if (historyEnabled !== void 0) choreData.settings.historyEnabled = historyEnabled;
 				if (adminPin !== void 0) choreData.settings.adminPin = adminPin || null;
 				context.saveChoreData();
@@ -848,10 +848,7 @@ var node_helper_default = node_helper.create({
 				if (settingsResult.valid) settings = rawSettings;
 				else {
 					logger.warn(`Invalid settings in data file, using defaults: ${settingsResult.error}`);
-					settings = {
-						dailyResetTime: "03:00",
-						historyEnabled: true
-					};
+					settings = { historyEnabled: true };
 				}
 				const rawCompletions = Array.isArray(rawData.dailyCompletions) ? rawData.dailyCompletions : [];
 				const validCompletions = [];
@@ -864,7 +861,7 @@ var node_helper_default = node_helper.create({
 					people: validPeople,
 					chores: validChores,
 					dailyCompletions: validCompletions,
-					lastResetDate: typeof rawData.lastResetDate === "string" ? rawData.lastResetDate : void 0,
+					lastResetDate: typeof rawData.lastResetDate === "string" ? rawData.lastResetDate : getLocalDateString(),
 					settings
 				};
 				logger.info(`Loaded chore data from ${dataPath}`);
@@ -903,10 +900,7 @@ var node_helper_default = node_helper.create({
 			chores: [],
 			dailyCompletions: [],
 			lastResetDate: getLocalDateString(),
-			settings: {
-				dailyResetTime: "03:00",
-				historyEnabled: true
-			}
+			settings: { historyEnabled: true }
 		};
 	},
 	/**
@@ -915,11 +909,8 @@ var node_helper_default = node_helper.create({
 	checkAndPerformDailyReset() {
 		if (!this.choreData) return;
 		const todayDateString = getLocalDateString();
-		const currentTimeString = getLocalTimeString();
-		if (this.choreData.lastResetDate && todayDateString <= this.choreData.lastResetDate) return;
-		const dailyResetTime = this.choreData.settings?.dailyResetTime || "03:00";
-		if (currentTimeString < dailyResetTime) return;
-		logger.info(`Daily reset triggered for ${getLocalDateString()} at ${currentTimeString}, reset time: ${dailyResetTime}`);
+		if (todayDateString <= this.choreData.lastResetDate) return;
+		logger.info(`Daily reset triggered for ${todayDateString}`);
 		this.transitionChoresForNewDay();
 		this.cleanupOldDailyCompletions();
 		this.choreData.lastResetDate = getLocalDateString();
@@ -966,6 +957,10 @@ var node_helper_default = node_helper.create({
 	},
 	handleChoreToggle(payload) {
 		if (!this.choreData) return;
+		if (getLocalDateString() > this.choreData.lastResetDate) {
+			logger.warn("Cannot toggle chore, daily midnight reset is in progress. If this persists you may need to restart MagicMirror.");
+			return;
+		}
 		const chore = this.choreData.chores.find((c) => c.id === payload.choreId);
 		if (!chore) {
 			logger.error(`Chore not found: ${payload.choreId}`);
