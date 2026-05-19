@@ -7,9 +7,19 @@ import type { Chore, ChoreType, DayOfWeek, Person, SkipDayVisibility, UUID } fro
  */
 
 /**
+ * Base fields for PIN-protected requests
+ */
+interface PinProtectedRequest {
+  /**
+   * PIN for validating admin actions. Required when adminPin is configured.
+   */
+  pin?: string;
+}
+
+/**
  * Request body for creating a new person
  */
-export interface CreatePersonRequest {
+export interface CreatePersonRequest extends PinProtectedRequest {
   name: string;
   color: string;
 }
@@ -17,7 +27,7 @@ export interface CreatePersonRequest {
 /**
  * Request body for updating a person
  */
-export interface UpdatePersonRequest {
+export interface UpdatePersonRequest extends PinProtectedRequest {
   name?: string;
   color?: string;
 }
@@ -25,7 +35,7 @@ export interface UpdatePersonRequest {
 /**
  * Request body for creating a new chore
  */
-export interface CreateChoreRequest {
+export interface CreateChoreRequest extends PinProtectedRequest {
   name: string;
   type: ChoreType;
   assignedTo?: UUID;
@@ -38,7 +48,9 @@ export interface CreateChoreRequest {
 /**
  * Request body for updating a chore
  */
-export interface UpdateChoreRequest extends Partial<CreateChoreRequest> {}
+export interface UpdateChoreRequest extends Partial<CreateChoreRequest> {
+  pin?: string;
+}
 
 /**
  * Restore upload JSON. Defaults use `unknown` for each row so the **server** can
@@ -58,6 +70,7 @@ export interface RestoreDataBody<TPerson = unknown, TChore = unknown> {
     dailyResetTime?: string;
     historyEnabled?: boolean;
   };
+  pin?: string;
 }
 
 /**
@@ -74,7 +87,7 @@ export type RestoreDataSubmission = RestoreDataBody<Person, Chore>;
 /**
  * Request body for copying chores from one person to another
  */
-export interface CopyChoresRequest {
+export interface CopyChoresRequest extends PinProtectedRequest {
   fromPersonId: UUID;
   toPersonId: UUID;
   choreIds: UUID[];
@@ -83,7 +96,8 @@ export interface CopyChoresRequest {
 /**
  * Request body for updating global settings
  */
-export interface UpdateSettingsRequest {
+export interface UpdateSettingsRequest extends PinProtectedRequest {
   dailyResetTime?: string;
   historyEnabled?: boolean;
+  adminPin?: string | null;
 }

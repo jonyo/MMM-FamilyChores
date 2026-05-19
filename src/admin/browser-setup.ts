@@ -1,4 +1,5 @@
 import { beforeEach } from 'vitest';
+import './admin.css';
 
 beforeEach(() => {
   // Clean up DOM between tests in browser mode

@@ -22,9 +22,10 @@ export const updatePerson = async (id: string, data: UpdatePersonRequest): Promi
   return handleResponse(response) as Promise<Person>;
 };
 
-export const deletePerson = async (id: string): Promise<void> => {
+export const deletePerson = async (id: string, pin?: string): Promise<void> => {
   validateId(id);
-  const response = await fetch(`${API_BASE_URL}/people/${id}`, {
+  const query = pin ? `?pin=${encodeURIComponent(pin)}` : '';
+  const response = await fetch(`${API_BASE_URL}/people/${id}${query}`, {
     method: 'DELETE',
   });
   await handleResponse(response);

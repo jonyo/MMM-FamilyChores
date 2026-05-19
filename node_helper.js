@@ -334,6 +334,12 @@ var validateSettings = (settings) => {
 		valid: false,
 		error: "Settings must have a historyEnabled boolean"
 	};
+	if (settingsObj.adminPin !== void 0 && settingsObj.adminPin !== null) {
+		if (typeof settingsObj.adminPin !== "string") return {
+			valid: false,
+			error: "Settings adminPin must be a string or null"
+		};
+	}
 	return { valid: true };
 };
 var validateDailyCompletion = (completion, chores) => {
@@ -400,6 +406,21 @@ var validateDailyCompletion = (completion, chores) => {
 };
 //#endregion
 //#region src/backend/admin-routes.ts
+/**
+* Validate PIN for protected actions. Returns true if allowed, false if blocked (and sends response).
+* Checks body first, then query params (for DELETE requests without body).
+*/
+function validatePin(req, res, context) {
+	const adminPin = context.getChoreData()?.settings?.adminPin;
+	if (!adminPin) return true;
+	const body = req.body;
+	const query = req.query;
+	if ((body?.pin ?? query?.pin) !== adminPin) {
+		res.status(403).json({ error: "Invalid PIN" });
+		return false;
+	}
+	return true;
+}
 function createAdminHandlers(context) {
 	const apiErr = (message) => ({ error: message });
 	return {
@@ -409,9 +430,13 @@ function createAdminHandlers(context) {
 				res.status(500).json(apiErr("No data available"));
 				return;
 			}
-			res.json(choreData);
+			const data = JSON.parse(JSON.stringify(choreData));
+			const settings = data.settings;
+			if (settings?.adminPin) settings.adminPin = true;
+			res.json(data);
 		},
 		postPerson: (req, res) => {
+			if (!validatePin(req, res, context)) return;
 			try {
 				const { name, color } = req.body;
 				const choreData = context.getChoreData();
@@ -439,6 +464,7 @@ function createAdminHandlers(context) {
 			}
 		},
 		putPerson: (req, res) => {
+			if (!validatePin(req, res, context)) return;
 			try {
 				const { id } = req.params;
 				const { name, color } = req.body;
@@ -472,6 +498,7 @@ function createAdminHandlers(context) {
 			}
 		},
 		deletePerson: (req, res) => {
+			if (!validatePin(req, res, context)) return;
 			try {
 				const { id } = req.params;
 				const choreData = context.getChoreData();
@@ -503,6 +530,7 @@ function createAdminHandlers(context) {
 			}
 		},
 		postChore: (req, res) => {
+			if (!validatePin(req, res, context)) return;
 			try {
 				const { name, type, assignedTo, rotation, deadline, skipDays, skipDayVisibility } = req.body;
 				const choreData = context.getChoreData();
@@ -540,6 +568,7 @@ function createAdminHandlers(context) {
 			}
 		},
 		putChore: (req, res) => {
+			if (!validatePin(req, res, context)) return;
 			try {
 				const { id } = req.params;
 				const { name, type, assignedTo, rotation, deadline, skipDays, skipDayVisibility } = req.body;
@@ -584,6 +613,7 @@ function createAdminHandlers(context) {
 			}
 		},
 		deleteChore: (req, res) => {
+			if (!validatePin(req, res, context)) return;
 			try {
 				const { id } = req.params;
 				const choreData = context.getChoreData();
@@ -605,7 +635,8 @@ function createAdminHandlers(context) {
 				res.status(500).json(apiErr("Failed to delete chore"));
 			}
 		},
-		getBackup: (_req, res) => {
+		getBackup: (req, res) => {
+			if (!validatePin(req, res, context)) return;
 			try {
 				const choreData = context.getChoreData();
 				if (!choreData) {
@@ -622,6 +653,7 @@ function createAdminHandlers(context) {
 			}
 		},
 		postRestore: (req, res) => {
+			if (!validatePin(req, res, context)) return;
 			try {
 				const restoredData = req.body;
 				if (!restoredData?.people || !restoredData.chores) {
@@ -672,6 +704,7 @@ function createAdminHandlers(context) {
 			}
 		},
 		postCopyChores: (req, res) => {
+			if (!validatePin(req, res, context)) return;
 			try {
 				const { fromPersonId, toPersonId, choreIds } = req.body;
 				if (!fromPersonId || !toPersonId || !choreIds) {
@@ -734,8 +767,9 @@ function createAdminHandlers(context) {
 			res.json(sortedCompletions);
 		},
 		putSettings: (req, res) => {
+			if (!validatePin(req, res, context)) return;
 			try {
-				const { dailyResetTime, historyEnabled } = req.body;
+				const { dailyResetTime, historyEnabled, adminPin } = req.body;
 				const choreData = context.getChoreData();
 				if (!choreData) {
 					res.status(500).json(apiErr("No data available"));
@@ -753,9 +787,12 @@ function createAdminHandlers(context) {
 					choreData.settings.dailyResetTime = dailyResetTime;
 				}
 				if (historyEnabled !== void 0) choreData.settings.historyEnabled = historyEnabled;
+				if (adminPin !== void 0) choreData.settings.adminPin = adminPin || null;
 				context.saveChoreData();
 				context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
-				res.json(choreData.settings);
+				const responseSettings = { ...choreData.settings };
+				if (responseSettings.adminPin) responseSettings.adminPin = true;
+				res.json(responseSettings);
 			} catch (error) {
 				logger.error(`Error updating settings: ${error}`);
 				res.status(500).json(apiErr("Failed to update settings"));

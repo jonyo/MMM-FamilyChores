@@ -1,35 +1,48 @@
 import type { Component } from 'solid-js';
-import { createSignal } from 'solid-js';
+import { createSignal, Show } from 'solid-js';
 import { createPerson, updatePerson } from '../api';
 import type { Person } from '../types/chore-types';
 import type { CreatePersonRequest, UpdatePersonRequest } from '../types/request-types';
 import { generatePastelColor } from '../utils/browser';
 import { Button } from './button';
+import { PinField } from './pin-field';
 
 interface PersonModalProps {
   initialPerson?: Person;
+  pinRequired: boolean;
   closeModal: () => void;
+  onPinRemembered?: (pin: string) => void;
+  cachedPin?: string;
 }
 
 export const PersonModal: Component<PersonModalProps> = (props) => {
   const [name, setName] = createSignal(props.initialPerson?.name ?? '');
   const [color, setColor] = createSignal(props.initialPerson?.color ?? generatePastelColor());
+  const [pin, setPin] = createSignal('');
+  const [rememberPin, setRememberPin] = createSignal(false);
 
   const handleSubmit = async (event: Event) => {
     event.preventDefault();
     try {
+      const pinToUse = props.cachedPin || pin();
       if (props.initialPerson?.id) {
         const body: UpdatePersonRequest = {
           name: name(),
           color: color(),
+          pin: props.pinRequired ? pinToUse || undefined : undefined,
         };
         await updatePerson(props.initialPerson.id, body);
       } else {
         const body: CreatePersonRequest = {
           name: name(),
           color: color(),
+          pin: props.pinRequired ? pinToUse || undefined : undefined,
         };
         await createPerson(body);
+      }
+
+      if (!props.cachedPin && rememberPin() && pin()) {
+        props.onPinRemembered?.(pin());
       }
 
       props.closeModal();
@@ -61,7 +74,7 @@ export const PersonModal: Component<PersonModalProps> = (props) => {
           </div>
           <div class="mb-5">
             <label for="personColor" class="mb-3 block font-medium text-slate-900">
-              Color
+              Text Color
             </label>
             <div class="flex items-center gap-2.5">
               <input
@@ -82,6 +95,14 @@ export const PersonModal: Component<PersonModalProps> = (props) => {
               </Button>
             </div>
           </div>
+          <Show when={props.pinRequired && !props.cachedPin}>
+            <PinField
+              pin={pin()}
+              onPinChange={setPin}
+              remember={rememberPin()}
+              onRememberChange={setRememberPin}
+            />
+          </Show>
           <div class="mt-6 flex justify-end gap-2.5">
             <Button type="button" variant="secondary" onClick={() => props.closeModal()}>
               Cancel

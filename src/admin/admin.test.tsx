@@ -1,6 +1,5 @@
 import { render } from '@solidjs/testing-library';
 import { describe, expect, it, vi } from 'vitest';
-import '../../public/admin.css';
 import { page } from 'vitest/browser';
 import type { FamilyChoresData } from '../types/chore-types';
 import { ChoreType, SkipDayVisibility } from '../types/chore-types';

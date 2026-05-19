@@ -5,11 +5,15 @@ import type { FamilyChoresData, Person, PersonalChore } from '../types/chore-typ
 import { ChoreType } from '../types/chore-types';
 import { escapeHtml } from '../utils/browser';
 import { Button } from './button';
+import { PinField } from './pin-field';
 
 interface CopyChoresModalProps {
   fromPerson: Person;
   choreData: FamilyChoresData;
+  pinRequired: boolean;
   closeModal: () => void;
+  onPinRemembered?: (pin: string) => void;
+  cachedPin?: string;
 }
 
 export const CopyChoresModal: Component<CopyChoresModalProps> = (props) => {
@@ -28,6 +32,8 @@ export const CopyChoresModal: Component<CopyChoresModalProps> = (props) => {
   const [selectedChoreIds, setSelectedChoreIds] = createSignal<string[]>([]);
   const [toPersonId, setToPersonId] = createSignal<string>('');
   const [loading, setLoading] = createSignal(false);
+  const [pin, setPin] = createSignal('');
+  const [rememberPin, setRememberPin] = createSignal(false);
 
   // Initialize selected chore IDs with all personal chores (default checked)
   onMount(() => {
@@ -59,11 +65,18 @@ export const CopyChoresModal: Component<CopyChoresModalProps> = (props) => {
     setLoading(true);
 
     try {
+      const pinToUse = props.cachedPin || pin();
       await copyChores({
         fromPersonId: props.fromPerson.id,
         toPersonId: toPersonId(),
         choreIds: selectedChoreIds(),
+        pin: props.pinRequired ? pinToUse || undefined : undefined,
       });
+
+      if (!props.cachedPin && rememberPin() && pin()) {
+        props.onPinRemembered?.(pin());
+      }
+
       props.closeModal();
     } catch (error) {
       console.error('Error copying chores:', error);
@@ -146,6 +159,14 @@ export const CopyChoresModal: Component<CopyChoresModalProps> = (props) => {
                   </For>
                 </div>
               </div>
+              <Show when={props.pinRequired && !props.cachedPin}>
+                <PinField
+                  pin={pin()}
+                  onPinChange={setPin}
+                  remember={rememberPin()}
+                  onRememberChange={setRememberPin}
+                />
+              </Show>
               <div class="mt-6 flex justify-end gap-2.5">
                 <Button type="button" variant="secondary" onClick={() => props.closeModal()}>
                   Cancel

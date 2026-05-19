@@ -3,7 +3,6 @@ import { describe, expect, it, vi } from 'vitest';
 import type { Person, RotatingChore } from '../types/chore-types';
 import { ChoreType, DayOfWeek, SkipDayVisibility } from '../types/chore-types';
 import { RotatingChoreCard } from './rotating-chore';
-import '../../public/admin.css';
 
 describe('RotatingChoreCard', () => {
   const mockPeople: Person[] = [

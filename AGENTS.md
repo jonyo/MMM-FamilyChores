@@ -48,6 +48,8 @@ Ask yourself: "Is this information useful to know about this specific property/f
 - **YES** → Use JSDoc
 - **NO** (implementation detail) → Use inline comment
 
+JSDoc is encouraged but not strictly required when the name and type signature are already self-documenting. Focus JSDoc on non-obvious behavior, constraints, or public API contracts.
+
 ### Development Workflow
 
 **ALWAYS run these commands before making changes:**
@@ -115,6 +117,13 @@ If the pre-commit hook fails: `pnpm fix && pnpm build && git add . && git commit
 - Daily reset at midnight clears `completedToday`
 - Rotating chores stay with current person until completed
 
+**Validation on Load:**
+
+- The in-memory `choreData` is treated as trusted — it is validated once when loaded from disk and invalid entries are skipped
+- `validatePerson`, `validateChore`, `validateSettings`, and `validateDailyCompletion` in `src/backend/validator.ts` enforce all shapes at load time
+- **Any change to the shape of `choreData` or any of its sub-parts MUST include updating the corresponding validator.** If you add a field to `Person`, `Chore`, `Settings`, or `DailyCompletion` (or change the type of an existing field), update the matching `validate*` function and add tests in `src/backend/validator.test.ts`
+- This prevents corrupted or unexpected data from silently entering the trusted in-memory state
+
 **Chore Types:**
 
 - `personal`: Fixed assignment, daily reset
@@ -169,10 +178,10 @@ Note: These files are committed so that the module works out of the box without 
 
 **Type Safety:**
 
-- All functions must have explicit return types
 - All parameters must have explicit types
 - Use generic types where appropriate instead of `any`
 - Leverage TypeScript's type inference but provide explicit types when clarity is needed
+- Explicit return types are encouraged for public/exported functions and complex logic, but not strictly required for simple `void` helpers where inference is clear
 - Use `unknown` instead of `any` when you must handle values of uncertain types - requires type narrowing before use
 - Consider `never` for impossible states, unreachable code paths, or functions that never return
 
@@ -272,6 +281,7 @@ src/api/
 2. Run `pnpm run typecheck` - TypeScript must compile without errors
 3. Run `pnpm run lint` - Code must pass both Biome (primary) and ESLint (reactivity + Tailwind correctness)
 4. Run `pnpm run build` - Verify build succeeds (maintainers will build and commit releases)
+5. **If you changed data model shapes** (`Person`, `Chore`, `Settings`, `DailyCompletion`, or request types), verify the matching `validate*` function in `src/backend/validator.ts` and its tests are updated
 
 **Test Coverage:**
 
@@ -311,7 +321,8 @@ src/api/
 
 - Use `render` from `@solidjs/testing-library` for SolidJS component testing in browser mode
 - **CRITICAL**: The browser project in vitest.config.ts MUST include `solidPlugin()` in the plugins array for JSX to work
-- Import CSS files in test files using relative path: `import '../../public/admin.css';`
+- CSS is loaded globally via the browser setup file (`src/admin/browser-setup.ts`) importing `src/admin/admin.css`
+- The `@tailwindcss/vite` plugin must be included in the Vitest browser project plugins array alongside `solidPlugin()`
 - **DO NOT use `fireEvent`** from testing libraries - it's meant for fake DOM and uses JS to dispatch events
 - Use `page` from `vitest/browser` for browser mode interactions - it works with Playwright to mimic real user actions
 - The testing library's render handles container creation and cleanup automatically
@@ -330,7 +341,7 @@ src/api/
 
 - Node tests: Backend logic, utilities, API functions
 - Browser tests: Frontend components, UI interactions, modal components
-- Admin tests currently disabled due to browser import issues (CSS imports)
+- Admin tests are enabled and run in browser mode with Playwright
 - Test files are automatically included based on pattern matching in vitest.config.ts
 
 ### Configuration Patterns

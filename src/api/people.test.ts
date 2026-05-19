@@ -111,6 +111,19 @@ describe('people API', () => {
       });
     });
 
+    it('should delete a person with PIN query param', async () => {
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({}),
+      } as Response);
+
+      await expect(deletePerson('p1', 'secret123')).resolves.not.toThrow();
+
+      expect(fetch).toHaveBeenCalledWith('/MMM-FamilyChores/people/p1?pin=secret123', {
+        method: 'DELETE',
+      });
+    });
+
     it('should throw error when API returns error response', async () => {
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: false,
