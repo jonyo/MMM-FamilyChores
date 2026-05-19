@@ -85,7 +85,7 @@ describe('ChoreHistoryModal', () => {
     expect(screen.getByText('Loading history...')).toBeInTheDocument();
   });
 
-  it.skip('renders history table when data loads successfully', async () => {
+  it('renders history table when data loads successfully', async () => {
     const closeModal = vi.fn();
     const loadDataMock = vi.fn().mockResolvedValue(undefined);
 
@@ -93,8 +93,8 @@ describe('ChoreHistoryModal', () => {
       <MockAdminProvider
         choreDataOverride={{
           chores: [
-            { ...mockPersonalChore, id: 'c1', name: 'Clean room' },
-            { ...mockPersonalChore, id: 'c2', name: 'Do dishes' },
+            { ...mockPersonalChore, id: 'c1', name: 'Clean room', assignedTo: 'p1' },
+            { ...mockPersonalChore, id: 'c2', name: 'Do dishes', assignedTo: 'p1' },
           ],
           dailyCompletions: mockHistory,
         }}
@@ -112,7 +112,7 @@ describe('ChoreHistoryModal', () => {
     expect(screen.getByText('Do dishes')).toBeInTheDocument();
   });
 
-  it.skip('shows completion badges for completed chores', async () => {
+  it('shows completion badges for completed chores', async () => {
     const closeModal = vi.fn();
     const loadDataMock = vi.fn().mockResolvedValue(undefined);
 
@@ -120,8 +120,8 @@ describe('ChoreHistoryModal', () => {
       <MockAdminProvider
         choreDataOverride={{
           chores: [
-            { ...mockPersonalChore, id: 'c1', name: 'Clean room' },
-            { ...mockPersonalChore, id: 'c2', name: 'Do dishes' },
+            { ...mockPersonalChore, id: 'c1', name: 'Clean room', assignedTo: 'p1' },
+            { ...mockPersonalChore, id: 'c2', name: 'Do dishes', assignedTo: 'p1' },
           ],
           dailyCompletions: mockHistory,
         }}
@@ -140,7 +140,7 @@ describe('ChoreHistoryModal', () => {
     expect(completionBadges.length).toBeGreaterThan(0);
   });
 
-  it.skip('shows on-time completion in green', async () => {
+  it('shows on-time completion in green', async () => {
     const closeModal = vi.fn();
     const loadDataMock = vi.fn().mockResolvedValue(undefined);
 
@@ -148,8 +148,8 @@ describe('ChoreHistoryModal', () => {
       <MockAdminProvider
         choreDataOverride={{
           chores: [
-            { ...mockPersonalChore, id: 'c1', name: 'Clean room' },
-            { ...mockPersonalChore, id: 'c2', name: 'Do dishes' },
+            { ...mockPersonalChore, id: 'c1', name: 'Clean room', assignedTo: 'p1' },
+            { ...mockPersonalChore, id: 'c2', name: 'Do dishes', assignedTo: 'p1' },
           ],
           dailyCompletions: mockHistory,
         }}
@@ -166,7 +166,7 @@ describe('ChoreHistoryModal', () => {
     expect(onTimeBadge).toBeInTheDocument();
   });
 
-  it.skip('shows late completion in yellow', async () => {
+  it('shows late completion in yellow', async () => {
     const closeModal = vi.fn();
     const loadDataMock = vi.fn().mockResolvedValue(undefined);
 
@@ -174,8 +174,8 @@ describe('ChoreHistoryModal', () => {
       <MockAdminProvider
         choreDataOverride={{
           chores: [
-            { ...mockPersonalChore, id: 'c1', name: 'Clean room' },
-            { ...mockPersonalChore, id: 'c2', name: 'Do dishes' },
+            { ...mockPersonalChore, id: 'c1', name: 'Clean room', assignedTo: 'p1' },
+            { ...mockPersonalChore, id: 'c2', name: 'Do dishes', assignedTo: 'p1' },
           ],
           dailyCompletions: mockHistory,
         }}
@@ -246,7 +246,7 @@ describe('ChoreHistoryModal', () => {
     expect(loadDataMock).toHaveBeenCalledTimes(1);
   });
 
-  it.skip('shows only personal chores for the person', async () => {
+  it('shows only personal chores for the person', async () => {
     const closeModal = vi.fn();
     const loadDataMock = vi.fn().mockResolvedValue(undefined);
 
