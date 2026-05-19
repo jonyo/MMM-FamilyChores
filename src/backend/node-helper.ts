@@ -369,9 +369,8 @@ const nodeHelper: FamilyChoresNodeHelper = {
         // Create daily completion record
         const currentTime = new Date();
         const currentTimeString = getLocalTimeString();
-        const deadlineLate = !!chore.deadline && currentTimeString > chore.deadline;
-        const dateLate = !chore.caughtUp && todayDate > resetDate;
-        const wasLate = deadlineLate || dateLate;
+        const wasLate =
+          !!chore.deadline && (currentTimeString > chore.deadline || todayDate > resetDate);
 
         const dailyCompletion = {
           id: generateUUID(),

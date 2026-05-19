@@ -1050,9 +1050,7 @@ var node_helper_default = node_helper.create({
 			if (payload.completed && personId) {
 				const currentTime = /* @__PURE__ */ new Date();
 				const currentTimeString = getLocalTimeString();
-				const deadlineLate = !!chore.deadline && currentTimeString > chore.deadline;
-				const dateLate = !chore.caughtUp && todayDate > resetDate;
-				const wasLate = deadlineLate || dateLate;
+				const wasLate = !!chore.deadline && (currentTimeString > chore.deadline || todayDate > resetDate);
 				const dailyCompletion = {
 					id: generateUUID(),
 					date: resetDate,
