@@ -51,12 +51,15 @@ export const Admin: Component<Record<string, never>> = () => {
   const [pinPromptTitle, setPinPromptTitle] = createSignal('');
   const [pinPromptMessage, setPinPromptMessage] = createSignal('');
 
-  let pinPromiseResolve: ((pin: string | null) => void) | null = null;
+  let pinPromiseResolve: ((value: { pin: string | null; remember: boolean }) => void) | null = null;
   let pinTimeout: ReturnType<typeof setTimeout> | null = null;
 
   const pinRequired = () => !!choreData()?.settings?.adminPin;
 
-  const requestPin = (title: string, message: string): Promise<string | null> => {
+  const requestPin = (
+    title: string,
+    message: string
+  ): Promise<{ pin: string | null; remember: boolean }> => {
     return new Promise((resolve) => {
       pinPromiseResolve = resolve;
       setPinPromptTitle(title);
@@ -79,17 +82,13 @@ export const Admin: Component<Record<string, never>> = () => {
 
   const handlePinConfirm = (pin: string, remember: boolean) => {
     setPinPromptOpen(false);
-    pinPromiseResolve?.(pin);
+    pinPromiseResolve?.({ pin, remember });
     pinPromiseResolve = null;
-
-    if (remember) {
-      cachePin(pin);
-    }
   };
 
   const handlePinCancel = () => {
     setPinPromptOpen(false);
-    pinPromiseResolve?.(null);
+    pinPromiseResolve?.({ pin: null, remember: false });
     pinPromiseResolve = null;
   };
 
@@ -185,17 +184,20 @@ export const Admin: Component<Record<string, never>> = () => {
     }
 
     let pin = adminPin();
+    let rememberPin = false;
     if (pinRequired() && !pin) {
-      const enteredPin = await requestPin(
+      const result = await requestPin(
         'Admin PIN Required',
         'Enter admin PIN to delete this person'
       );
-      if (!enteredPin) return;
-      pin = enteredPin;
+      if (!result.pin) return;
+      pin = result.pin;
+      rememberPin = result.remember;
     }
 
     try {
       await deletePerson(personId, pin || undefined);
+      if (rememberPin) cachePin(pin);
       await loadData();
     } catch (error) {
       console.error('Error deleting person:', error);
@@ -209,17 +211,17 @@ export const Admin: Component<Record<string, never>> = () => {
     }
 
     let pin = adminPin();
+    let rememberPin = false;
     if (pinRequired() && !pin) {
-      const enteredPin = await requestPin(
-        'Admin PIN Required',
-        'Enter admin PIN to delete this chore'
-      );
-      if (!enteredPin) return;
-      pin = enteredPin;
+      const result = await requestPin('Admin PIN Required', 'Enter admin PIN to delete this chore');
+      if (!result.pin) return;
+      pin = result.pin;
+      rememberPin = result.remember;
     }
 
     try {
       await deleteChore(choreId, pin || undefined);
+      if (rememberPin) cachePin(pin);
       await loadData();
     } catch (error) {
       console.error('Error deleting chore:', error);
@@ -231,16 +233,16 @@ export const Admin: Component<Record<string, never>> = () => {
   const handleDownloadBackup = async () => {
     try {
       let pin = adminPin();
+      let rememberPin = false;
       if (pinRequired() && !pin) {
-        const enteredPin = await requestPin(
-          'Download Backup',
-          'Enter admin PIN to download backup'
-        );
-        if (!enteredPin) return;
-        pin = enteredPin;
+        const result = await requestPin('Download Backup', 'Enter admin PIN to download backup');
+        if (!result.pin) return;
+        pin = result.pin;
+        rememberPin = result.remember;
       }
 
       const blob = await downloadBackup(pin || undefined);
+      if (rememberPin) cachePin(pin);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -262,13 +264,15 @@ export const Admin: Component<Record<string, never>> = () => {
     if (!file) return;
 
     let pin = adminPin();
+    let rememberPin = false;
     if (pinRequired() && !pin) {
-      const enteredPin = await requestPin('Restore Backup', 'Enter admin PIN to restore data');
-      if (!enteredPin) {
+      const result = await requestPin('Restore Backup', 'Enter admin PIN to restore data');
+      if (!result.pin) {
         (e.target as HTMLInputElement).value = '';
         return;
       }
-      pin = enteredPin;
+      pin = result.pin;
+      rememberPin = result.remember;
     }
 
     try {
@@ -284,6 +288,7 @@ export const Admin: Component<Record<string, never>> = () => {
 
       if (!response.ok) throw new Error('Failed to restore data');
 
+      if (rememberPin) cachePin(pin);
       alert('Data restored successfully!');
       await loadData();
     } catch (error) {
@@ -305,13 +310,12 @@ export const Admin: Component<Record<string, never>> = () => {
     }
 
     let pin = adminPin();
+    let rememberPin = false;
     if (pinRequired() && !pin) {
-      const enteredPin = await requestPin(
-        'Admin PIN Required',
-        'Enter admin PIN to force daily reset'
-      );
-      if (!enteredPin) return;
-      pin = enteredPin;
+      const result = await requestPin('Admin PIN Required', 'Enter admin PIN to force daily reset');
+      if (!result.pin) return;
+      pin = result.pin;
+      rememberPin = result.remember;
     }
 
     try {
@@ -333,6 +337,7 @@ export const Admin: Component<Record<string, never>> = () => {
 
       if (!response.ok) throw new Error('Failed to force reset');
 
+      if (rememberPin) cachePin(pin);
       alert('Daily reset triggered successfully! The data will be updated on the next sync.');
       await loadData();
     } catch (error) {
@@ -634,6 +639,7 @@ export const Admin: Component<Record<string, never>> = () => {
           pinRequired={pinRequired()}
           closeModal={closePersonModal}
           onPinRemembered={cachePin}
+          cachedPin={adminPin()}
         />
       </Show>
       <Show when={personalChoreModalOpen()}>
@@ -643,6 +649,7 @@ export const Admin: Component<Record<string, never>> = () => {
           pinRequired={pinRequired()}
           closeModal={closePersonalChoreModal}
           onPinRemembered={cachePin}
+          cachedPin={adminPin()}
         />
       </Show>
       <Show when={rotatingChoreModalOpen() && choreData()}>
@@ -662,6 +669,7 @@ export const Admin: Component<Record<string, never>> = () => {
           pinRequired={pinRequired()}
           closeModal={closeRotatingChoreModal}
           onPinRemembered={cachePin}
+          cachedPin={adminPin()}
         />
       </Show>
       <Show when={copyChoresModalOpen() && copyChoresFromPerson() && choreData()}>
@@ -671,6 +679,7 @@ export const Admin: Component<Record<string, never>> = () => {
           pinRequired={pinRequired()}
           closeModal={closeCopyChoresModal}
           onPinRemembered={cachePin}
+          cachedPin={adminPin()}
         />
       </Show>
       <Show when={historyPerson() && choreData()}>

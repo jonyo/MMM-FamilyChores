@@ -13,6 +13,7 @@ interface CopyChoresModalProps {
   pinRequired: boolean;
   closeModal: () => void;
   onPinRemembered?: (pin: string) => void;
+  cachedPin?: string;
 }
 
 export const CopyChoresModal: Component<CopyChoresModalProps> = (props) => {
@@ -64,14 +65,15 @@ export const CopyChoresModal: Component<CopyChoresModalProps> = (props) => {
     setLoading(true);
 
     try {
+      const pinToUse = props.cachedPin || pin();
       await copyChores({
         fromPersonId: props.fromPerson.id,
         toPersonId: toPersonId(),
         choreIds: selectedChoreIds(),
-        pin: props.pinRequired ? pin() || undefined : undefined,
+        pin: props.pinRequired ? pinToUse || undefined : undefined,
       });
 
-      if (rememberPin() && pin()) {
+      if (!props.cachedPin && rememberPin() && pin()) {
         props.onPinRemembered?.(pin());
       }
 
@@ -157,7 +159,7 @@ export const CopyChoresModal: Component<CopyChoresModalProps> = (props) => {
                   </For>
                 </div>
               </div>
-              <Show when={props.pinRequired}>
+              <Show when={props.pinRequired && !props.cachedPin}>
                 <PinField
                   pin={pin()}
                   onPinChange={setPin}

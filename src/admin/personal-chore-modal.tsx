@@ -17,6 +17,7 @@ interface PersonalChoreModalProps {
   pinRequired: boolean;
   closeModal: () => void;
   onPinRemembered?: (pin: string) => void;
+  cachedPin?: string;
 }
 
 export const PersonalChoreModal: Component<PersonalChoreModalProps> = (props) => {
@@ -45,6 +46,7 @@ export const PersonalChoreModal: Component<PersonalChoreModalProps> = (props) =>
       return;
     }
     try {
+      const pinToUse = props.cachedPin || pin();
       if (props.initialChore?.id) {
         const body: UpdateChoreRequest = {
           name: name(),
@@ -53,7 +55,7 @@ export const PersonalChoreModal: Component<PersonalChoreModalProps> = (props) =>
           deadline: deadline() || undefined,
           skipDays: skipDays(),
           skipDayVisibility: skipDayVisibility(),
-          pin: props.pinRequired ? pin() || undefined : undefined,
+          pin: props.pinRequired ? pinToUse || undefined : undefined,
         };
         await updateChore(props.initialChore.id, body);
       } else {
@@ -64,12 +66,12 @@ export const PersonalChoreModal: Component<PersonalChoreModalProps> = (props) =>
           deadline: deadline() || undefined,
           skipDays: skipDays(),
           skipDayVisibility: skipDayVisibility(),
-          pin: props.pinRequired ? pin() || undefined : undefined,
+          pin: props.pinRequired ? pinToUse || undefined : undefined,
         };
         await createChore(body);
       }
 
-      if (rememberPin() && pin()) {
+      if (!props.cachedPin && rememberPin() && pin()) {
         props.onPinRemembered?.(pin());
       }
 
@@ -179,7 +181,7 @@ export const PersonalChoreModal: Component<PersonalChoreModalProps> = (props) =>
                   <option value={SkipDayVisibilityEnum.SHOW_IF_OVERDUE}>Show If Overdue</option>
                 </select>
               </div>
-              <Show when={props.pinRequired}>
+              <Show when={props.pinRequired && !props.cachedPin}>
                 <PinField
                   pin={pin()}
                   onPinChange={setPin}

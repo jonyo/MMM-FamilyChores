@@ -12,6 +12,7 @@ interface PersonModalProps {
   pinRequired: boolean;
   closeModal: () => void;
   onPinRemembered?: (pin: string) => void;
+  cachedPin?: string;
 }
 
 export const PersonModal: Component<PersonModalProps> = (props) => {
@@ -23,23 +24,24 @@ export const PersonModal: Component<PersonModalProps> = (props) => {
   const handleSubmit = async (event: Event) => {
     event.preventDefault();
     try {
+      const pinToUse = props.cachedPin || pin();
       if (props.initialPerson?.id) {
         const body: UpdatePersonRequest = {
           name: name(),
           color: color(),
-          pin: props.pinRequired ? pin() || undefined : undefined,
+          pin: props.pinRequired ? pinToUse || undefined : undefined,
         };
         await updatePerson(props.initialPerson.id, body);
       } else {
         const body: CreatePersonRequest = {
           name: name(),
           color: color(),
-          pin: props.pinRequired ? pin() || undefined : undefined,
+          pin: props.pinRequired ? pinToUse || undefined : undefined,
         };
         await createPerson(body);
       }
 
-      if (rememberPin() && pin()) {
+      if (!props.cachedPin && rememberPin() && pin()) {
         props.onPinRemembered?.(pin());
       }
 
@@ -93,7 +95,7 @@ export const PersonModal: Component<PersonModalProps> = (props) => {
               </Button>
             </div>
           </div>
-          <Show when={props.pinRequired}>
+          <Show when={props.pinRequired && !props.cachedPin}>
             <PinField
               pin={pin()}
               onPinChange={setPin}

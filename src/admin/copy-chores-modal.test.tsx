@@ -301,4 +301,69 @@ describe('CopyChoresModal', () => {
       alertSpy.mockRestore();
     });
   });
+
+  describe('PIN caching', () => {
+    it('should show PIN field when pinRequired and no cachedPin', () => {
+      const closeModal = vi.fn();
+
+      const { container } = render(() => (
+        <CopyChoresModal
+          fromPerson={mockFromPerson}
+          choreData={mockChoreData}
+          pinRequired={true}
+          closeModal={closeModal}
+        />
+      ));
+
+      expect(container.querySelector('#adminPin')).toBeTruthy();
+    });
+
+    it('should hide PIN field when cachedPin is provided', () => {
+      const closeModal = vi.fn();
+
+      const { container } = render(() => (
+        <CopyChoresModal
+          fromPerson={mockFromPerson}
+          choreData={mockChoreData}
+          pinRequired={true}
+          closeModal={closeModal}
+          cachedPin="5678"
+        />
+      ));
+
+      expect(container.querySelector('#adminPin')).toBeFalsy();
+    });
+
+    it('should use cachedPin in request and not call onPinRemembered', async () => {
+      const closeModal = vi.fn();
+      const onPinRemembered = vi.fn();
+
+      render(() => (
+        <CopyChoresModal
+          fromPerson={mockFromPerson}
+          choreData={mockChoreData}
+          pinRequired={true}
+          closeModal={closeModal}
+          cachedPin="5678"
+          onPinRemembered={onPinRemembered}
+        />
+      ));
+
+      const select = page.getByRole('combobox');
+      await select.selectOptions('p2');
+
+      const copyButton = page.getByRole('button', { name: 'Copy' });
+      await copyButton.click();
+
+      expect(copyChores).toHaveBeenCalledWith(
+        expect.objectContaining({
+          fromPersonId: 'p1',
+          toPersonId: 'p2',
+          pin: '5678',
+        })
+      );
+      expect(onPinRemembered).not.toHaveBeenCalled();
+      expect(closeModal).toHaveBeenCalled();
+    });
+  });
 });

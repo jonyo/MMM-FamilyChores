@@ -1741,13 +1741,14 @@
 			}
 			setLoading(true);
 			try {
+				const pinToUse = props.cachedPin || pin();
 				await copyChores({
 					fromPersonId: props.fromPerson.id,
 					toPersonId: toPersonId(),
 					choreIds: selectedChoreIds(),
-					pin: props.pinRequired ? pin() || void 0 : void 0
+					pin: props.pinRequired ? pinToUse || void 0 : void 0
 				});
-				if (rememberPin() && pin()) props.onPinRemembered?.(pin());
+				if (!props.cachedPin && rememberPin() && pin()) props.onPinRemembered?.(pin());
 				props.closeModal();
 			} catch (error) {
 				console.error("Error copying chores:", error);
@@ -1830,7 +1831,7 @@
 							}));
 							insert(_el$0, createComponent(Show, {
 								get when() {
-									return props.pinRequired;
+									return memo(() => !!props.pinRequired)() && !props.cachedPin;
 								},
 								get children() {
 									return createComponent(PinField, {
@@ -1883,19 +1884,20 @@
 		const handleSubmit = async (event) => {
 			event.preventDefault();
 			try {
+				const pinToUse = props.cachedPin || pin();
 				if (props.initialPerson?.id) {
 					const body = {
 						name: name(),
 						color: color(),
-						pin: props.pinRequired ? pin() || void 0 : void 0
+						pin: props.pinRequired ? pinToUse || void 0 : void 0
 					};
 					await updatePerson(props.initialPerson.id, body);
 				} else await createPerson({
 					name: name(),
 					color: color(),
-					pin: props.pinRequired ? pin() || void 0 : void 0
+					pin: props.pinRequired ? pinToUse || void 0 : void 0
 				});
-				if (rememberPin() && pin()) props.onPinRemembered?.(pin());
+				if (!props.cachedPin && rememberPin() && pin()) props.onPinRemembered?.(pin());
 				props.closeModal();
 			} catch (error) {
 				console.error("Error saving person:", error);
@@ -1917,7 +1919,7 @@
 			}), null);
 			insert(_el$4, createComponent(Show, {
 				get when() {
-					return props.pinRequired;
+					return memo(() => !!props.pinRequired)() && !props.cachedPin;
 				},
 				get children() {
 					return createComponent(PinField, {
@@ -1973,6 +1975,7 @@
 				return;
 			}
 			try {
+				const pinToUse = props.cachedPin || pin();
 				if (props.initialChore?.id) {
 					const body = {
 						name: name(),
@@ -1981,7 +1984,7 @@
 						deadline: deadline() || void 0,
 						skipDays: skipDays(),
 						skipDayVisibility: skipDayVisibility(),
-						pin: props.pinRequired ? pin() || void 0 : void 0
+						pin: props.pinRequired ? pinToUse || void 0 : void 0
 					};
 					await updateChore(props.initialChore.id, body);
 				} else await createChore({
@@ -1991,9 +1994,9 @@
 					deadline: deadline() || void 0,
 					skipDays: skipDays(),
 					skipDayVisibility: skipDayVisibility(),
-					pin: props.pinRequired ? pin() || void 0 : void 0
+					pin: props.pinRequired ? pinToUse || void 0 : void 0
 				});
-				if (rememberPin() && pin()) props.onPinRemembered?.(pin());
+				if (!props.cachedPin && rememberPin() && pin()) props.onPinRemembered?.(pin());
 				props.closeModal();
 			} catch (error) {
 				console.error("Error saving chore:", error);
@@ -2043,7 +2046,7 @@
 				_el$22.$$input = (e) => setSkipDayVisibility(e.currentTarget.value);
 				insert(_el$10, createComponent(Show, {
 					get when() {
-						return props.pinRequired;
+						return memo(() => !!props.pinRequired)() && !props.cachedPin;
 					},
 					get children() {
 						return createComponent(PinField, {
@@ -2219,6 +2222,7 @@
 		const handleSubmit = async (event) => {
 			event.preventDefault();
 			try {
+				const pinToUse = props.cachedPin || pin();
 				if (props.initialChore?.id) {
 					const body = {
 						name: name(),
@@ -2227,7 +2231,7 @@
 						deadline: deadline() || void 0,
 						skipDays: skipDays(),
 						skipDayVisibility: skipDayVisibility(),
-						pin: props.pinRequired ? pin() || void 0 : void 0
+						pin: props.pinRequired ? pinToUse || void 0 : void 0
 					};
 					await updateChore(props.initialChore.id, body);
 				} else await createChore({
@@ -2237,9 +2241,9 @@
 					deadline: deadline() || void 0,
 					skipDays: skipDays(),
 					skipDayVisibility: skipDayVisibility(),
-					pin: props.pinRequired ? pin() || void 0 : void 0
+					pin: props.pinRequired ? pinToUse || void 0 : void 0
 				});
-				if (rememberPin() && pin()) props.onPinRemembered?.(pin());
+				if (!props.cachedPin && rememberPin() && pin()) props.onPinRemembered?.(pin());
 				props.closeModal();
 			} catch (error) {
 				console.error("Error saving chore:", error);
@@ -2295,7 +2299,7 @@
 			_el$20.$$input = (e) => setSkipDayVisibility(e.currentTarget.value);
 			insert(_el$4, createComponent(Show, {
 				get when() {
-					return props.pinRequired;
+					return memo(() => !!props.pinRequired)() && !props.cachedPin;
 				},
 				get children() {
 					return createComponent(PinField, {
@@ -2549,13 +2553,18 @@
 		};
 		const handlePinConfirm = (pin, remember) => {
 			setPinPromptOpen(false);
-			pinPromiseResolve?.(pin);
+			pinPromiseResolve?.({
+				pin,
+				remember
+			});
 			pinPromiseResolve = null;
-			if (remember) cachePin(pin);
 		};
 		const handlePinCancel = () => {
 			setPinPromptOpen(false);
-			pinPromiseResolve?.(null);
+			pinPromiseResolve?.({
+				pin: null,
+				remember: false
+			});
 			pinPromiseResolve = null;
 		};
 		const loadData = async () => {
@@ -2623,13 +2632,16 @@
 		const handleDeletePerson = async (personId) => {
 			if (!confirm("Are you sure you want to delete this person? This will also remove all their assigned chores.")) return;
 			let pin = adminPin();
+			let rememberPin = false;
 			if (pinRequired() && !pin) {
-				const enteredPin = await requestPin("Admin PIN Required", "Enter admin PIN to delete this person");
-				if (!enteredPin) return;
-				pin = enteredPin;
+				const result = await requestPin("Admin PIN Required", "Enter admin PIN to delete this person");
+				if (!result.pin) return;
+				pin = result.pin;
+				rememberPin = result.remember;
 			}
 			try {
 				await deletePerson(personId, pin || void 0);
+				if (rememberPin) cachePin(pin);
 				await loadData();
 			} catch (error) {
 				console.error("Error deleting person:", error);
@@ -2639,13 +2651,16 @@
 		const handleDeleteChore = async (choreId) => {
 			if (!confirm("Are you sure you want to delete this chore?")) return;
 			let pin = adminPin();
+			let rememberPin = false;
 			if (pinRequired() && !pin) {
-				const enteredPin = await requestPin("Admin PIN Required", "Enter admin PIN to delete this chore");
-				if (!enteredPin) return;
-				pin = enteredPin;
+				const result = await requestPin("Admin PIN Required", "Enter admin PIN to delete this chore");
+				if (!result.pin) return;
+				pin = result.pin;
+				rememberPin = result.remember;
 			}
 			try {
 				await deleteChore(choreId, pin || void 0);
+				if (rememberPin) cachePin(pin);
 				await loadData();
 			} catch (error) {
 				console.error("Error deleting chore:", error);
@@ -2655,12 +2670,15 @@
 		const handleDownloadBackup = async () => {
 			try {
 				let pin = adminPin();
+				let rememberPin = false;
 				if (pinRequired() && !pin) {
-					const enteredPin = await requestPin("Download Backup", "Enter admin PIN to download backup");
-					if (!enteredPin) return;
-					pin = enteredPin;
+					const result = await requestPin("Download Backup", "Enter admin PIN to download backup");
+					if (!result.pin) return;
+					pin = result.pin;
+					rememberPin = result.remember;
 				}
 				const blob = await downloadBackup(pin || void 0);
+				if (rememberPin) cachePin(pin);
 				const url = window.URL.createObjectURL(blob);
 				const a = document.createElement("a");
 				a.href = url;
@@ -2678,13 +2696,15 @@
 			const file = e.target.files?.[0];
 			if (!file) return;
 			let pin = adminPin();
+			let rememberPin = false;
 			if (pinRequired() && !pin) {
-				const enteredPin = await requestPin("Restore Backup", "Enter admin PIN to restore data");
-				if (!enteredPin) {
+				const result = await requestPin("Restore Backup", "Enter admin PIN to restore data");
+				if (!result.pin) {
 					e.target.value = "";
 					return;
 				}
-				pin = enteredPin;
+				pin = result.pin;
+				rememberPin = result.remember;
 			}
 			try {
 				const text = await file.text();
@@ -2695,6 +2715,7 @@
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify(data)
 				})).ok) throw new Error("Failed to restore data");
+				if (rememberPin) cachePin(pin);
 				alert("Data restored successfully!");
 				await loadData();
 			} catch (error) {
@@ -2706,10 +2727,12 @@
 		const handleForceReset = async () => {
 			if (!confirm("Are you sure you want to force a daily reset? This will reset all chore states for the new day.")) return;
 			let pin = adminPin();
+			let rememberPin = false;
 			if (pinRequired() && !pin) {
-				const enteredPin = await requestPin("Admin PIN Required", "Enter admin PIN to force daily reset");
-				if (!enteredPin) return;
-				pin = enteredPin;
+				const result = await requestPin("Admin PIN Required", "Enter admin PIN to force daily reset");
+				if (!result.pin) return;
+				pin = result.pin;
+				rememberPin = result.remember;
 			}
 			try {
 				const data = choreData();
@@ -2725,6 +2748,7 @@
 						pin: pin || void 0
 					})
 				})).ok) throw new Error("Failed to force reset");
+				if (rememberPin) cachePin(pin);
 				alert("Daily reset triggered successfully! The data will be updated on the next sync.");
 				await loadData();
 			} catch (error) {
@@ -2981,7 +3005,10 @@
 							return pinRequired();
 						},
 						closeModal: closePersonModal,
-						onPinRemembered: cachePin
+						onPinRemembered: cachePin,
+						get cachedPin() {
+							return adminPin();
+						}
 					});
 				}
 			}), null);
@@ -3001,7 +3028,10 @@
 							return pinRequired();
 						},
 						closeModal: closePersonalChoreModal,
-						onPinRemembered: cachePin
+						onPinRemembered: cachePin,
+						get cachedPin() {
+							return adminPin();
+						}
 					});
 				}
 			}), null);
@@ -3029,7 +3059,10 @@
 							return pinRequired();
 						},
 						closeModal: closeRotatingChoreModal,
-						onPinRemembered: cachePin
+						onPinRemembered: cachePin,
+						get cachedPin() {
+							return adminPin();
+						}
 					});
 				}
 			}), null);
@@ -3049,7 +3082,10 @@
 							return pinRequired();
 						},
 						closeModal: closeCopyChoresModal,
-						onPinRemembered: cachePin
+						onPinRemembered: cachePin,
+						get cachedPin() {
+							return adminPin();
+						}
 					});
 				}
 			}), null);

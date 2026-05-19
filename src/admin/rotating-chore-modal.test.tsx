@@ -160,4 +160,67 @@ describe('RotatingChoreModal', () => {
       expect(updateChore).toHaveBeenCalled();
     });
   });
+
+  describe('PIN caching', () => {
+    it('should show PIN field when pinRequired and no cachedPin', () => {
+      const closeModal = vi.fn();
+
+      const { container } = render(() => (
+        <RotatingChoreModal
+          initialChore={undefined}
+          choreData={mockChoreData}
+          pinRequired={true}
+          closeModal={closeModal}
+        />
+      ));
+
+      expect(container.querySelector('#adminPin')).toBeTruthy();
+    });
+
+    it('should hide PIN field when cachedPin is provided', () => {
+      const closeModal = vi.fn();
+
+      const { container } = render(() => (
+        <RotatingChoreModal
+          initialChore={undefined}
+          choreData={mockChoreData}
+          pinRequired={true}
+          closeModal={closeModal}
+          cachedPin="5678"
+        />
+      ));
+
+      expect(container.querySelector('#adminPin')).toBeFalsy();
+    });
+
+    it('should use cachedPin in request and not call onPinRemembered', async () => {
+      const closeModal = vi.fn();
+      const onPinRemembered = vi.fn();
+
+      render(() => (
+        <RotatingChoreModal
+          initialChore={undefined}
+          choreData={mockChoreData}
+          pinRequired={true}
+          closeModal={closeModal}
+          cachedPin="5678"
+          onPinRemembered={onPinRemembered}
+        />
+      ));
+
+      await page.getByLabelText('Chore Name').fill('Test Rotating Chore');
+
+      const addButton = page.getByRole('button', { name: 'Add' });
+      await addButton.click();
+
+      expect(createChore).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'Test Rotating Chore',
+          pin: '5678',
+        })
+      );
+      expect(onPinRemembered).not.toHaveBeenCalled();
+      expect(closeModal).toHaveBeenCalled();
+    });
+  });
 });

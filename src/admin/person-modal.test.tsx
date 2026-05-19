@@ -148,5 +148,49 @@ describe('PersonModal', () => {
         })
       );
     });
+
+    it('should hide PIN field when cachedPin is provided', () => {
+      const closeModal = vi.fn();
+
+      const { container } = render(() => (
+        <PersonModal
+          initialPerson={undefined}
+          pinRequired={true}
+          closeModal={closeModal}
+          cachedPin="5678"
+        />
+      ));
+
+      const pinInput = container.querySelector('#adminPin');
+      expect(pinInput).toBeFalsy();
+    });
+
+    it('should use cachedPin in request when provided', async () => {
+      const closeModal = vi.fn();
+      const onPinRemembered = vi.fn();
+
+      render(() => (
+        <PersonModal
+          initialPerson={undefined}
+          pinRequired={true}
+          closeModal={closeModal}
+          cachedPin="5678"
+          onPinRemembered={onPinRemembered}
+        />
+      ));
+
+      await page.getByLabelText('Name').fill('Test Person');
+
+      const addButton = page.getByRole('button', { name: 'Add' });
+      await addButton.click();
+
+      expect(createPerson).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'Test Person',
+          pin: '5678',
+        })
+      );
+      expect(onPinRemembered).not.toHaveBeenCalled();
+    });
   });
 });
