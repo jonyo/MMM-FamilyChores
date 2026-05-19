@@ -133,6 +133,12 @@ export const SettingsModal: Component<SettingsModalProps> = (props) => {
             </label>
 
             <Show when={pinEnabled()}>
+              <div class="mb-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                <strong>Note:</strong> This PIN is a basic deterrent only. It is stored in plain
+                text in the module's data file. It is <strong>not</strong> intended for
+                high-security environments. Do not expose the admin panel outside your local
+                network. See the module README for more details.
+              </div>
               <Show when={hasPin()}>
                 <div class="mb-3">
                   <label for="currentPin" class="mb-2 block font-medium text-amber-900">

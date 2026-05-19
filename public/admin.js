@@ -1451,7 +1451,7 @@
 	};
 	//#endregion
 	//#region src/admin/chore-history-modal.tsx
-	var _tmpl$$9 = /* @__PURE__ */ template(`<div class="py-4 text-center text-slate-500">Loading history...`), _tmpl$2$8 = /* @__PURE__ */ template(`<div class="py-4 text-center text-red-600">Error: `), _tmpl$3$6 = /* @__PURE__ */ template(`<div class=overflow-x-auto><table class="w-full border-collapse border border-slate-200"data-testid=history-table><thead><tr><th class="border border-slate-200 p-2.5 text-left text-base font-medium whitespace-nowrap text-slate-900">Chore</th></tr></thead><tbody>`), _tmpl$4$3 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"data-testid=modal><div class="max-h-[90vh] w-[90%] max-w-[95vw] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"data-testid=modal-content><h3 class="mb-5 text-2xl text-indigo-600">'s Chore History</h3><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$5$3 = /* @__PURE__ */ template(`<th class="relative h-[100px] w-[50px] overflow-visible border border-slate-200 p-2.5 text-left text-base font-medium text-slate-900"><span class="absolute top-1/2 left-1/2 -translate-1/2 -rotate-90 whitespace-nowrap">`), _tmpl$6$3 = /* @__PURE__ */ template(`<tr><td class="border border-slate-200 p-2.5 text-base whitespace-nowrap text-slate-900">`), _tmpl$7$2 = /* @__PURE__ */ template(`<td class="border border-slate-200 p-2.5 text-center">`), _tmpl$8$1 = /* @__PURE__ */ template(`<span style=opacity:0;width:32px;height:32px;display:inline-block>`);
+	var _tmpl$$9 = /* @__PURE__ */ template(`<div class="py-4 text-center text-slate-500">Loading history...`), _tmpl$2$8 = /* @__PURE__ */ template(`<div class="py-4 text-center text-red-600">Error: `), _tmpl$3$6 = /* @__PURE__ */ template(`<div class=overflow-x-auto><table class="w-full border-collapse border border-slate-200"data-testid=history-table><thead><tr><th class="border border-slate-200 p-2.5 text-left text-base font-medium whitespace-nowrap text-slate-900">Chore</th></tr></thead><tbody>`), _tmpl$4$3 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"data-testid=modal><div class="max-h-[90vh] w-[90%] max-w-[95vw] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"data-testid=modal-content><h3 class="mb-5 text-2xl text-indigo-600">'s Chore History</h3><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$5$3 = /* @__PURE__ */ template(`<th class="relative h-[100px] w-[50px] overflow-visible border border-slate-200 p-2.5 text-left text-base font-medium text-slate-900"><span class="absolute top-1/2 left-1/2 -translate-1/2 -rotate-90 whitespace-nowrap">`), _tmpl$6$3 = /* @__PURE__ */ template(`<tr><td class="border border-slate-200 p-2.5 text-base whitespace-nowrap text-slate-900">`), _tmpl$7$2 = /* @__PURE__ */ template(`<td class="border border-slate-200 p-2.5 text-center">`), _tmpl$8$2 = /* @__PURE__ */ template(`<span style=opacity:0;width:32px;height:32px;display:inline-block>`);
 	var ChoreHistoryModal = (props) => {
 		const [history, setHistory] = createSignal([]);
 		const [loading, setLoading] = createSignal(true);
@@ -1588,7 +1588,7 @@
 													align: "right",
 													multiline: emptyDay,
 													get children() {
-														return _tmpl$8$1();
+														return _tmpl$8$2();
 													}
 												});
 											},
@@ -2336,7 +2336,7 @@
 	delegateEvents(["input"]);
 	//#endregion
 	//#region src/admin/settings-modal.tsx
-	var _tmpl$$1 = /* @__PURE__ */ template(`<div class=mb-3><label for=currentPin class="mb-2 block font-medium text-amber-900">Current PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=currentPin placeholder="Enter current PIN to save changes"required class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"><button type=button class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100">`), _tmpl$2$1 = /* @__PURE__ */ template(`<label class="mb-3 flex cursor-pointer items-center gap-2"><input type=checkbox class="size-4.5 cursor-pointer">Change PIN`), _tmpl$3$1 = /* @__PURE__ */ template(`<div class=mb-3><label for=newPin class="mb-2 block font-medium text-slate-900"> <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=newPin required class="flex-1 rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><button type=button class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 transition-colors hover:bg-slate-100">`), _tmpl$4$1 = /* @__PURE__ */ template(`<div class=mb-3><label for=confirmPin class="mb-2 block font-medium text-slate-900">Confirm PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=confirmPin placeholder="Confirm PIN"required class="flex-1 rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><button type=button class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 transition-colors hover:bg-slate-100">`), _tmpl$5$1 = /* @__PURE__ */ template(`<small class="block text-sm text-slate-500">PIN can be any combination of letters, numbers, or symbols. There is no length limit.`), _tmpl$6$1 = /* @__PURE__ */ template(`<div class=mb-3><label for=currentPin class="mb-2 block font-medium text-amber-900">Current PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=currentPin placeholder="Enter current PIN to disable protection"required class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"><button type=button class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100">`), _tmpl$7$1 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><h3 class="mb-5 text-2xl text-indigo-600">Settings</h3><form><div class=mb-5><label for=dailyResetTime class="mb-3 block font-medium text-slate-900">Daily Reset Time (24-hour format, HH:mm)</label><input type=time id=dailyResetTime required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><small class="text-sm text-slate-500">Time when daily chore reset occurs. Default: 03:00</small><br><small class="text-sm text-slate-500"><strong>Tip:</strong> Set to at least 03:00 to avoid daylight savings time changes (no roll forward/back occurs after 3am)</small></div><div class=mb-5><label class="flex cursor-pointer items-center gap-2"><input type=checkbox id=historyEnabled class="size-4.5 cursor-pointer">Enable History Tracking</label><small class="mt-2 block text-sm text-slate-500">Track daily chore completions (keeps last 14 days)</small></div><div class="mb-5 rounded-lg border border-slate-200 bg-slate-50 p-4"><h4 class="mb-3 font-medium text-slate-900">Admin PIN Protection</h4><label class="mb-4 flex cursor-pointer items-center gap-2"><input type=checkbox class="size-4.5 cursor-pointer">Enable PIN Protection</label><small class="block text-sm text-slate-500">When enabled, a PIN is required for all admin actions including backup, restore, and modifying people or chores.</small></div><div class="mt-6 flex justify-end gap-2.5">`);
+	var _tmpl$$1 = /* @__PURE__ */ template(`<div class="mb-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800"><strong>Note:</strong> This PIN is a basic deterrent only. It is stored in plain text in the module's data file. It is <strong>not</strong> intended for high-security environments. Do not expose the admin panel outside your local network. See the module README for more details.`), _tmpl$2$1 = /* @__PURE__ */ template(`<div class=mb-3><label for=currentPin class="mb-2 block font-medium text-amber-900">Current PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=currentPin placeholder="Enter current PIN to save changes"required class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"><button type=button class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100">`), _tmpl$3$1 = /* @__PURE__ */ template(`<label class="mb-3 flex cursor-pointer items-center gap-2"><input type=checkbox class="size-4.5 cursor-pointer">Change PIN`), _tmpl$4$1 = /* @__PURE__ */ template(`<div class=mb-3><label for=newPin class="mb-2 block font-medium text-slate-900"> <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=newPin required class="flex-1 rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><button type=button class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 transition-colors hover:bg-slate-100">`), _tmpl$5$1 = /* @__PURE__ */ template(`<div class=mb-3><label for=confirmPin class="mb-2 block font-medium text-slate-900">Confirm PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=confirmPin placeholder="Confirm PIN"required class="flex-1 rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><button type=button class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 transition-colors hover:bg-slate-100">`), _tmpl$6$1 = /* @__PURE__ */ template(`<small class="block text-sm text-slate-500">PIN can be any combination of letters, numbers, or symbols. There is no length limit.`), _tmpl$7$1 = /* @__PURE__ */ template(`<div class=mb-3><label for=currentPin class="mb-2 block font-medium text-amber-900">Current PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=currentPin placeholder="Enter current PIN to disable protection"required class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"><button type=button class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100">`), _tmpl$8$1 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><h3 class="mb-5 text-2xl text-indigo-600">Settings</h3><form><div class=mb-5><label for=dailyResetTime class="mb-3 block font-medium text-slate-900">Daily Reset Time (24-hour format, HH:mm)</label><input type=time id=dailyResetTime required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><small class="text-sm text-slate-500">Time when daily chore reset occurs. Default: 03:00</small><br><small class="text-sm text-slate-500"><strong>Tip:</strong> Set to at least 03:00 to avoid daylight savings time changes (no roll forward/back occurs after 3am)</small></div><div class=mb-5><label class="flex cursor-pointer items-center gap-2"><input type=checkbox id=historyEnabled class="size-4.5 cursor-pointer">Enable History Tracking</label><small class="mt-2 block text-sm text-slate-500">Track daily chore completions (keeps last 14 days)</small></div><div class="mb-5 rounded-lg border border-slate-200 bg-slate-50 p-4"><h4 class="mb-3 font-medium text-slate-900">Admin PIN Protection</h4><label class="mb-4 flex cursor-pointer items-center gap-2"><input type=checkbox class="size-4.5 cursor-pointer">Enable PIN Protection</label><small class="block text-sm text-slate-500">When enabled, a PIN is required for all admin actions including backup, restore, and modifying people or chores.</small></div><div class="mt-6 flex justify-end gap-2.5">`);
 	var SettingsModal = (props) => {
 		const [dailyResetTime, setDailyResetTime] = createSignal(props.initialSettings.dailyResetTime);
 		const [historyEnabled, setHistoryEnabled] = createSignal(props.initialSettings.historyEnabled);
@@ -2388,7 +2388,7 @@
 			}
 		};
 		return (() => {
-			var _el$ = _tmpl$7$1(), _el$4 = _el$.firstChild.firstChild.nextSibling, _el$5 = _el$4.firstChild, _el$7 = _el$5.firstChild.nextSibling, _el$8 = _el$5.nextSibling, _el$0 = _el$8.firstChild.firstChild, _el$1 = _el$8.nextSibling, _el$11 = _el$1.firstChild.nextSibling, _el$12 = _el$11.firstChild, _el$37 = _el$11.nextSibling, _el$38 = _el$1.nextSibling;
+			var _el$ = _tmpl$8$1(), _el$4 = _el$.firstChild.firstChild.nextSibling, _el$5 = _el$4.firstChild, _el$7 = _el$5.firstChild.nextSibling, _el$8 = _el$5.nextSibling, _el$0 = _el$8.firstChild.firstChild, _el$1 = _el$8.nextSibling, _el$11 = _el$1.firstChild.nextSibling, _el$12 = _el$11.firstChild, _el$38 = _el$11.nextSibling, _el$39 = _el$1.nextSibling;
 			_el$4.addEventListener("submit", handleSubmit);
 			_el$7.$$input = (e) => setDailyResetTime(e.currentTarget.value);
 			_el$0.$$input = (e) => setHistoryEnabled(e.currentTarget.checked);
@@ -2403,90 +2403,94 @@
 					return pinEnabled();
 				},
 				get children() {
-					return [createComponent(Show, {
-						get when() {
-							return hasPin();
-						},
-						get children() {
-							return [(() => {
-								var _el$13 = _tmpl$$1(), _el$16 = _el$13.firstChild.nextSibling.firstChild, _el$17 = _el$16.nextSibling;
-								_el$16.$$input = (e) => setCurrentPin(e.currentTarget.value);
-								_el$17.$$click = () => setShowCurrentPin(!showCurrentPin());
-								insert(_el$17, () => showCurrentPin() ? "🙈" : "👁");
-								createRenderEffect(() => setAttribute(_el$16, "type", showCurrentPin() ? "text" : "password"));
-								createRenderEffect(() => _el$16.value = currentPin());
-								return _el$13;
-							})(), (() => {
-								var _el$18 = _tmpl$2$1(), _el$19 = _el$18.firstChild;
-								_el$19.$$input = (e) => {
-									setChangePin(e.currentTarget.checked);
-									setNewPin("");
-									setConfirmPin("");
-								};
-								createRenderEffect(() => _el$19.checked = changePin());
-								return _el$18;
-							})()];
-						}
-					}), createComponent(Show, {
-						get when() {
-							return !hasPin() || changePin();
-						},
-						get children() {
-							return [
-								(() => {
-									var _el$20 = _tmpl$3$1(), _el$21 = _el$20.firstChild, _el$22 = _el$21.firstChild, _el$24 = _el$21.nextSibling.firstChild, _el$25 = _el$24.nextSibling;
-									insert(_el$21, () => hasPin() ? "New PIN" : "Set PIN", _el$22);
-									_el$24.$$input = (e) => setNewPin(e.currentTarget.value);
-									_el$25.$$click = () => setShowNewPin(!showNewPin());
-									insert(_el$25, () => showNewPin() ? "🙈" : "👁");
-									createRenderEffect((_p$) => {
-										var _v$ = showNewPin() ? "text" : "password", _v$2 = hasPin() ? "Enter new PIN" : "Enter PIN to protect admin actions";
-										_v$ !== _p$.e && setAttribute(_el$24, "type", _p$.e = _v$);
-										_v$2 !== _p$.t && setAttribute(_el$24, "placeholder", _p$.t = _v$2);
-										return _p$;
-									}, {
-										e: void 0,
-										t: void 0
-									});
-									createRenderEffect(() => _el$24.value = newPin());
-									return _el$20;
-								})(),
-								(() => {
-									var _el$26 = _tmpl$4$1(), _el$29 = _el$26.firstChild.nextSibling.firstChild, _el$30 = _el$29.nextSibling;
-									_el$29.$$input = (e) => setConfirmPin(e.currentTarget.value);
-									_el$30.$$click = () => setShowConfirmPin(!showConfirmPin());
-									insert(_el$30, () => showConfirmPin() ? "🙈" : "👁");
-									createRenderEffect(() => setAttribute(_el$29, "type", showConfirmPin() ? "text" : "password"));
-									createRenderEffect(() => _el$29.value = confirmPin());
-									return _el$26;
-								})(),
-								_tmpl$5$1()
-							];
-						}
-					})];
+					return [
+						_tmpl$$1(),
+						createComponent(Show, {
+							get when() {
+								return hasPin();
+							},
+							get children() {
+								return [(() => {
+									var _el$14 = _tmpl$2$1(), _el$17 = _el$14.firstChild.nextSibling.firstChild, _el$18 = _el$17.nextSibling;
+									_el$17.$$input = (e) => setCurrentPin(e.currentTarget.value);
+									_el$18.$$click = () => setShowCurrentPin(!showCurrentPin());
+									insert(_el$18, () => showCurrentPin() ? "🙈" : "👁");
+									createRenderEffect(() => setAttribute(_el$17, "type", showCurrentPin() ? "text" : "password"));
+									createRenderEffect(() => _el$17.value = currentPin());
+									return _el$14;
+								})(), (() => {
+									var _el$19 = _tmpl$3$1(), _el$20 = _el$19.firstChild;
+									_el$20.$$input = (e) => {
+										setChangePin(e.currentTarget.checked);
+										setNewPin("");
+										setConfirmPin("");
+									};
+									createRenderEffect(() => _el$20.checked = changePin());
+									return _el$19;
+								})()];
+							}
+						}),
+						createComponent(Show, {
+							get when() {
+								return !hasPin() || changePin();
+							},
+							get children() {
+								return [
+									(() => {
+										var _el$21 = _tmpl$4$1(), _el$22 = _el$21.firstChild, _el$23 = _el$22.firstChild, _el$25 = _el$22.nextSibling.firstChild, _el$26 = _el$25.nextSibling;
+										insert(_el$22, () => hasPin() ? "New PIN" : "Set PIN", _el$23);
+										_el$25.$$input = (e) => setNewPin(e.currentTarget.value);
+										_el$26.$$click = () => setShowNewPin(!showNewPin());
+										insert(_el$26, () => showNewPin() ? "🙈" : "👁");
+										createRenderEffect((_p$) => {
+											var _v$ = showNewPin() ? "text" : "password", _v$2 = hasPin() ? "Enter new PIN" : "Enter PIN to protect admin actions";
+											_v$ !== _p$.e && setAttribute(_el$25, "type", _p$.e = _v$);
+											_v$2 !== _p$.t && setAttribute(_el$25, "placeholder", _p$.t = _v$2);
+											return _p$;
+										}, {
+											e: void 0,
+											t: void 0
+										});
+										createRenderEffect(() => _el$25.value = newPin());
+										return _el$21;
+									})(),
+									(() => {
+										var _el$27 = _tmpl$5$1(), _el$30 = _el$27.firstChild.nextSibling.firstChild, _el$31 = _el$30.nextSibling;
+										_el$30.$$input = (e) => setConfirmPin(e.currentTarget.value);
+										_el$31.$$click = () => setShowConfirmPin(!showConfirmPin());
+										insert(_el$31, () => showConfirmPin() ? "🙈" : "👁");
+										createRenderEffect(() => setAttribute(_el$30, "type", showConfirmPin() ? "text" : "password"));
+										createRenderEffect(() => _el$30.value = confirmPin());
+										return _el$27;
+									})(),
+									_tmpl$6$1()
+								];
+							}
+						})
+					];
 				}
-			}), _el$37);
+			}), _el$38);
 			insert(_el$1, createComponent(Show, {
 				get when() {
 					return memo(() => !!!pinEnabled())() && hasPin();
 				},
 				get children() {
-					var _el$32 = _tmpl$6$1(), _el$35 = _el$32.firstChild.nextSibling.firstChild, _el$36 = _el$35.nextSibling;
-					_el$35.$$input = (e) => setCurrentPin(e.currentTarget.value);
-					_el$36.$$click = () => setShowCurrentPin(!showCurrentPin());
-					insert(_el$36, () => showCurrentPin() ? "🙈" : "👁");
-					createRenderEffect(() => setAttribute(_el$35, "type", showCurrentPin() ? "text" : "password"));
-					createRenderEffect(() => _el$35.value = currentPin());
-					return _el$32;
+					var _el$33 = _tmpl$7$1(), _el$36 = _el$33.firstChild.nextSibling.firstChild, _el$37 = _el$36.nextSibling;
+					_el$36.$$input = (e) => setCurrentPin(e.currentTarget.value);
+					_el$37.$$click = () => setShowCurrentPin(!showCurrentPin());
+					insert(_el$37, () => showCurrentPin() ? "🙈" : "👁");
+					createRenderEffect(() => setAttribute(_el$36, "type", showCurrentPin() ? "text" : "password"));
+					createRenderEffect(() => _el$36.value = currentPin());
+					return _el$33;
 				}
-			}), _el$37);
-			insert(_el$38, createComponent(Button, {
+			}), _el$38);
+			insert(_el$39, createComponent(Button, {
 				type: "button",
 				variant: "secondary",
 				onClick: () => props.closeModal(),
 				children: "Cancel"
 			}), null);
-			insert(_el$38, createComponent(Button, {
+			insert(_el$39, createComponent(Button, {
 				type: "submit",
 				variant: "primary",
 				children: "Save"
