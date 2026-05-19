@@ -214,6 +214,13 @@ export const validateSettings = (settings: unknown): ValidatedResult => {
     return { valid: false, error: 'Settings must have a historyEnabled boolean' };
   }
 
+  // Validate adminPin (optional, must be string or null if present)
+  if (settingsObj.adminPin !== undefined && settingsObj.adminPin !== null) {
+    if (typeof settingsObj.adminPin !== 'string') {
+      return { valid: false, error: 'Settings adminPin must be a string or null' };
+    }
+  }
+
   return { valid: true };
 };
 

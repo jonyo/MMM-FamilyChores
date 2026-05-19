@@ -3,7 +3,13 @@ import * as path from 'node:path';
 import * as Log from 'logger';
 import * as NodeHelper from 'node_helper';
 import { SocketNotifications } from '../constants/socket-notifications';
-import type { Chore, DailyCompletion, FamilyChoresData, Person } from '../types/chore-types';
+import type {
+  Chore,
+  DailyCompletion,
+  FamilyChoresData,
+  Person,
+  Settings,
+} from '../types/chore-types';
 import type { Config } from '../types/config';
 import type {
   CaughtUpResetPayload,
@@ -127,9 +133,9 @@ const nodeHelper: FamilyChoresNodeHelper = {
         // Validate settings, use defaults if invalid
         const rawSettings = rawData.settings;
         const settingsResult = validateSettings(rawSettings);
-        let settings: { dailyResetTime: string; historyEnabled: boolean };
+        let settings: Settings;
         if (settingsResult.valid) {
-          settings = rawSettings as { dailyResetTime: string; historyEnabled: boolean };
+          settings = rawSettings as Settings;
         } else {
           Log.warn(`Invalid settings in data file, using defaults: ${settingsResult.error}`);
           settings = { dailyResetTime: '03:00', historyEnabled: true };
