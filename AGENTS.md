@@ -117,6 +117,13 @@ If the pre-commit hook fails: `pnpm fix && pnpm build && git add . && git commit
 - Daily reset at midnight clears `completedToday`
 - Rotating chores stay with current person until completed
 
+**Validation on Load:**
+
+- The in-memory `choreData` is treated as trusted — it is validated once when loaded from disk and invalid entries are skipped
+- `validatePerson`, `validateChore`, `validateSettings`, and `validateDailyCompletion` in `src/backend/validator.ts` enforce all shapes at load time
+- **Any change to the shape of `choreData` or any of its sub-parts MUST include updating the corresponding validator.** If you add a field to `Person`, `Chore`, `Settings`, or `DailyCompletion` (or change the type of an existing field), update the matching `validate*` function and add tests in `src/backend/validator.test.ts`
+- This prevents corrupted or unexpected data from silently entering the trusted in-memory state
+
 **Chore Types:**
 
 - `personal`: Fixed assignment, daily reset
@@ -274,6 +281,7 @@ src/api/
 2. Run `pnpm run typecheck` - TypeScript must compile without errors
 3. Run `pnpm run lint` - Code must pass both Biome (primary) and ESLint (reactivity + Tailwind correctness)
 4. Run `pnpm run build` - Verify build succeeds (maintainers will build and commit releases)
+5. **If you changed data model shapes** (`Person`, `Chore`, `Settings`, `DailyCompletion`, or request types), verify the matching `validate*` function in `src/backend/validator.ts` and its tests are updated
 
 **Test Coverage:**
 

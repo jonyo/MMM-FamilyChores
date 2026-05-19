@@ -334,6 +334,12 @@ var validateSettings = (settings) => {
 		valid: false,
 		error: "Settings must have a historyEnabled boolean"
 	};
+	if (settingsObj.adminPin !== void 0 && settingsObj.adminPin !== null) {
+		if (typeof settingsObj.adminPin !== "string") return {
+			valid: false,
+			error: "Settings adminPin must be a string or null"
+		};
+	}
 	return { valid: true };
 };
 var validateDailyCompletion = (completion, chores) => {

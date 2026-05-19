@@ -22,6 +22,9 @@ export enum DayOfWeek {
   SATURDAY = 'saturday',
 }
 
+// NOTE: Adding or changing fields on Person, Chore, Settings, or DailyCompletion?
+// Update the matching validate* function in src/backend/validator.ts and add tests.
+
 export interface Person {
   /**
    * UUID v4
