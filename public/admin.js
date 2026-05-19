@@ -1206,12 +1206,6 @@
 		}
 	};
 	//#endregion
-	//#region src/api/history.ts
-	var getHistory = async (personId) => {
-		const url = personId ? `${API_BASE_URL}/history?personId=${personId}` : `${API_BASE_URL}/history`;
-		return await handleResponse(await fetch(url));
-	};
-	//#endregion
 	//#region src/api/people.ts
 	var createPerson = async (data) => {
 		return handleResponse(await fetch(`${API_BASE_URL}/people`, {
@@ -1487,20 +1481,16 @@
 	};
 	//#endregion
 	//#region src/admin/chore-history-modal.tsx
-	var _tmpl$$10 = /* @__PURE__ */ template(`<div class="py-4 text-center text-slate-500">Loading history...`), _tmpl$2$9 = /* @__PURE__ */ template(`<div class="py-4 text-center text-red-600">Error: `), _tmpl$3$7 = /* @__PURE__ */ template(`<div class=overflow-x-auto><table class="w-full border-collapse border border-slate-200"data-testid=history-table><thead><tr><th class="border border-slate-200 p-2.5 text-left text-base font-medium whitespace-nowrap text-slate-900">Chore</th></tr></thead><tbody>`), _tmpl$4$4 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"data-testid=modal><div class="max-h-[90vh] w-[90%] max-w-[95vw] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"data-testid=modal-content><h3 class="mb-5 text-2xl text-indigo-600">'s Chore History</h3><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$5$3 = /* @__PURE__ */ template(`<th class="relative h-[100px] w-[50px] overflow-visible border border-slate-200 p-2.5 text-left text-base font-medium text-slate-900"><span class="absolute top-1/2 left-1/2 -translate-1/2 -rotate-90 whitespace-nowrap">`), _tmpl$6$3 = /* @__PURE__ */ template(`<tr><td class="border border-slate-200 p-2.5 text-base whitespace-nowrap text-slate-900">`), _tmpl$7$2 = /* @__PURE__ */ template(`<td class="border border-slate-200 p-2.5 text-center">`), _tmpl$8$2 = /* @__PURE__ */ template(`<span style=opacity:0;width:32px;height:32px;display:inline-block>`);
+	var _tmpl$$10 = /* @__PURE__ */ template(`<div class="py-4 text-center text-slate-500">Loading history...`), _tmpl$2$9 = /* @__PURE__ */ template(`<div class=overflow-x-auto><table class="w-full border-collapse border border-slate-200"data-testid=history-table><thead><tr><th class="border border-slate-200 p-2.5 text-left text-base font-medium whitespace-nowrap text-slate-900">Chore</th></tr></thead><tbody>`), _tmpl$3$7 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"data-testid=modal><div class="max-h-[90vh] w-[90%] max-w-[95vw] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"data-testid=modal-content><h3 class="mb-5 text-2xl text-indigo-600">'s Chore History</h3><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$4$4 = /* @__PURE__ */ template(`<th class="relative h-[100px] w-[50px] overflow-visible border border-slate-200 p-2.5 text-left text-base font-medium text-slate-900"><span class="absolute top-1/2 left-1/2 -translate-1/2 -rotate-90 whitespace-nowrap">`), _tmpl$5$3 = /* @__PURE__ */ template(`<tr><td class="border border-slate-200 p-2.5 text-base whitespace-nowrap text-slate-900">`), _tmpl$6$3 = /* @__PURE__ */ template(`<td class="border border-slate-200 p-2.5 text-center">`), _tmpl$7$2 = /* @__PURE__ */ template(`<span style=opacity:0;width:32px;height:32px;display:inline-block>`);
 	var ChoreHistoryModal = (props) => {
-		const { choreData } = useAdminContext();
-		const [history, setHistory] = createSignal([]);
+		const { choreData, loadData } = useAdminContext();
 		const [loading, setLoading] = createSignal(true);
-		const [error, setError] = createSignal(null);
 		onMount(async () => {
-			try {
-				setHistory(await getHistory(props.person.id));
-			} catch (err) {
-				setError(err instanceof Error ? err.message : "Failed to load history");
-			} finally {
-				setLoading(false);
-			}
+			await loadData();
+			setLoading(false);
+		});
+		const personHistory = createMemo(() => {
+			return (choreData().dailyCompletions ?? []).filter((dc) => dc.personId === props.person.id);
 		});
 		const getDays = () => {
 			const days = [];
@@ -1526,14 +1516,14 @@
 			});
 		};
 		const getCompletionDetails = (choreId, date) => {
-			return history().find((dc) => dc.choreId === choreId && dc.date === date);
+			return personHistory().find((dc) => dc.choreId === choreId && dc.date === date);
 		};
 		const isSkipDay = (chore, day) => {
 			if (!chore.skipDays || chore.skipDays.length === 0) return false;
 			return chore.skipDays.includes(day.dayName);
 		};
 		return (() => {
-			var _el$ = _tmpl$4$4(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.firstChild, _el$12 = _el$3.nextSibling;
+			var _el$ = _tmpl$3$7(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.firstChild, _el$10 = _el$3.nextSibling;
 			insert(_el$3, () => escapeHtml(props.person.name), _el$4);
 			insert(_el$2, createComponent(Show, {
 				get when() {
@@ -1542,44 +1532,33 @@
 				get children() {
 					return _tmpl$$10();
 				}
-			}), _el$12);
+			}), _el$10);
 			insert(_el$2, createComponent(Show, {
 				get when() {
-					return error();
+					return !loading();
 				},
 				get children() {
-					var _el$6 = _tmpl$2$9();
-					_el$6.firstChild;
-					insert(_el$6, () => escapeHtml(error() ?? "Unknown error"), null);
-					return _el$6;
-				}
-			}), _el$12);
-			insert(_el$2, createComponent(Show, {
-				get when() {
-					return memo(() => !!!loading())() && !error();
-				},
-				get children() {
-					var _el$8 = _tmpl$3$7(), _el$0 = _el$8.firstChild.firstChild, _el$1 = _el$0.firstChild;
-					_el$1.firstChild;
-					var _el$11 = _el$0.nextSibling;
-					insert(_el$1, createComponent(For, {
+					var _el$6 = _tmpl$2$9(), _el$8 = _el$6.firstChild.firstChild, _el$9 = _el$8.firstChild;
+					_el$9.firstChild;
+					var _el$1 = _el$8.nextSibling;
+					insert(_el$9, createComponent(For, {
 						get each() {
 							return getDays();
 						},
 						children: (day) => (() => {
-							var _el$13 = _tmpl$5$3(), _el$14 = _el$13.firstChild;
-							insert(_el$14, () => day.display);
-							return _el$13;
+							var _el$11 = _tmpl$4$4(), _el$12 = _el$11.firstChild;
+							insert(_el$12, () => day.display);
+							return _el$11;
 						})()
 					}), null);
-					insert(_el$11, createComponent(For, {
+					insert(_el$1, createComponent(For, {
 						get each() {
 							return getPersonChores();
 						},
 						children: (chore) => (() => {
-							var _el$15 = _tmpl$6$3(), _el$16 = _el$15.firstChild;
-							insert(_el$16, () => escapeHtml(chore.name), null);
-							insert(_el$16, createComponent(Show, {
+							var _el$13 = _tmpl$5$3(), _el$14 = _el$13.firstChild;
+							insert(_el$14, () => escapeHtml(chore.name), null);
+							insert(_el$14, createComponent(Show, {
 								get when() {
 									return chore.type === "rotating";
 								},
@@ -1593,7 +1572,7 @@
 									})];
 								}
 							}), null);
-							insert(_el$15, createComponent(For, {
+							insert(_el$13, createComponent(For, {
 								get each() {
 									return getDays();
 								},
@@ -1613,9 +1592,9 @@
 										return "";
 									};
 									return (() => {
-										var _el$17 = _tmpl$7$2();
-										_el$17.classList.toggle("bg-slate-100", !!skipDay);
-										insert(_el$17, createComponent(Switch, {
+										var _el$15 = _tmpl$6$3();
+										_el$15.classList.toggle("bg-slate-100", !!skipDay);
+										insert(_el$15, createComponent(Switch, {
 											get fallback() {
 												return createComponent(Tooltip, {
 													get text() {
@@ -1625,7 +1604,7 @@
 													align: "right",
 													multiline: emptyDay,
 													get children() {
-														return _tmpl$8$2();
+														return _tmpl$7$2();
 													}
 												});
 											},
@@ -1679,17 +1658,17 @@
 												})];
 											}
 										}));
-										return _el$17;
+										return _el$15;
 									})();
 								}
 							}), null);
-							return _el$15;
+							return _el$13;
 						})()
 					}));
-					return _el$8;
+					return _el$6;
 				}
-			}), _el$12);
-			insert(_el$12, createComponent(Button, {
+			}), _el$10);
+			insert(_el$10, createComponent(Button, {
 				type: "button",
 				variant: "secondary",
 				onClick: () => props.closeModal(),
