@@ -1612,7 +1612,7 @@
 																	"rounded-full": true,
 																	"text-center": true,
 																	"leading-8": true,
-																	"bg-red-500": completion?.wasLate,
+																	"bg-yellow-500": completion?.wasLate,
 																	"bg-green-500": !completion?.wasLate,
 																	"text-white": true
 																};
@@ -1634,7 +1634,7 @@
 															},
 															position: "above",
 															align: "right",
-															"class": "inline-block size-8  rounded-full bg-yellow-500 text-center leading-8 text-slate-900",
+															"class": "inline-block size-8  rounded-full bg-red-500 text-center leading-8 text-white",
 															dataTestId: "completion-missed",
 															children: "✗"
 														});
