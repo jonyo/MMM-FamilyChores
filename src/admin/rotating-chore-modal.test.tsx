@@ -155,7 +155,7 @@ describe('RotatingChoreModal', () => {
         <MockAdminProvider
           choreDataOverride={{ settings: { dailyResetTime: '03:00', historyEnabled: true } }}
           pinRequired={true}
-          initialAdminPin="1234"
+          initialCachedPin="1234"
         >
           <RotatingChoreModal initialChore={undefined} closeModal={closeModal} />
         </MockAdminProvider>
@@ -171,7 +171,7 @@ describe('RotatingChoreModal', () => {
         <MockAdminProvider
           choreDataOverride={{ settings: { dailyResetTime: '03:00', historyEnabled: true } }}
           pinRequired={true}
-          initialAdminPin="1234"
+          initialCachedPin="1234"
         >
           <RotatingChoreModal initialChore={undefined} closeModal={closeModal} />
         </MockAdminProvider>

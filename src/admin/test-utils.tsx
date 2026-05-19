@@ -57,10 +57,10 @@ export const mockChoreData: FamilyChoresData = {
 export const createMockAdminContextValue = (
   choreDataOverride?: Accessor<Partial<FamilyChoresData> | undefined>,
   pinRequiredValue?: Accessor<boolean>,
-  initialAdminPin?: Accessor<string>,
+  initialCachedPin?: Accessor<string>,
   loadDataMock?: Accessor<(() => Promise<void>) | undefined>
 ): AdminContextValue => {
-  const [adminPin, setAdminPin] = createSignal(initialAdminPin?.() ?? '');
+  const [cachedPin, setCachedPin] = createSignal(initialCachedPin?.() ?? '');
   const choreData: Accessor<FamilyChoresData> = () => ({
     ...mockChoreData,
     ...choreDataOverride?.(),
@@ -72,9 +72,8 @@ export const createMockAdminContextValue = (
     choreData,
     loadData: resolvedLoadData,
     pinRequired: () => pinRequiredValue?.() ?? false,
-    requestPin: async () => ({ pin: null, remember: false }),
-    cachePin: (pin) => setAdminPin(pin),
-    adminPin,
+    setCachedPin: (pin) => setCachedPin(pin),
+    cachedPin,
   };
 };
 
@@ -83,13 +82,13 @@ export const MockAdminProvider: Component<{
   children?: unknown;
   choreDataOverride?: Partial<FamilyChoresData>;
   pinRequired?: boolean;
-  initialAdminPin?: string;
+  initialCachedPin?: string;
   loadDataMock?: () => Promise<void>;
 }> = (props) => {
   const contextValue = createMockAdminContextValue(
     () => props.choreDataOverride,
     () => props.pinRequired ?? false,
-    () => props.initialAdminPin ?? '',
+    () => props.initialCachedPin ?? '',
     () => props.loadDataMock
   );
 

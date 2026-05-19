@@ -13,15 +13,10 @@ export interface AdminContextValue {
   loadData: () => Promise<void>;
   /** Accessor for whether PIN is required */
   pinRequired: Accessor<boolean>;
-  /** Request PIN from user (opens modal) */
-  requestPin: (
-    title: string,
-    message: string
-  ) => Promise<{ pin: string | null; remember: boolean }>;
-  /** Cache PIN for future use (10-minute timeout) */
-  cachePin: (pin: string) => void;
+  /** Set cached PIN with automatic 10-minute expiration */
+  setCachedPin: (pin: string) => void;
   /** Accessor for the cached admin PIN */
-  adminPin: Accessor<string>;
+  cachedPin: Accessor<string>;
 }
 
 /**

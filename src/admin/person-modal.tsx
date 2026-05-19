@@ -14,7 +14,7 @@ interface PersonModalProps {
 }
 
 export const PersonModal: Component<PersonModalProps> = (props) => {
-  const { loadData, pinRequired, adminPin, cachePin } = useAdminContext();
+  const { loadData, pinRequired, cachedPin, setCachedPin } = useAdminContext();
   const [name, setName] = createSignal(props.initialPerson?.name ?? '');
   const [color, setColor] = createSignal(props.initialPerson?.color ?? generatePastelColor());
   const [pin, setPin] = createSignal('');
@@ -23,7 +23,7 @@ export const PersonModal: Component<PersonModalProps> = (props) => {
   const handleSubmit = async (event: Event) => {
     event.preventDefault();
     try {
-      const pinToUse = adminPin() || pin();
+      const pinToUse = cachedPin() || pin();
       if (props.initialPerson?.id) {
         const body: UpdatePersonRequest = {
           name: name(),
@@ -40,8 +40,8 @@ export const PersonModal: Component<PersonModalProps> = (props) => {
         await createPerson(body);
       }
 
-      if (!adminPin() && rememberPin() && pin()) {
-        cachePin(pin());
+      if (!cachedPin() && rememberPin() && pin()) {
+        setCachedPin(pin());
       }
 
       try {
@@ -100,7 +100,7 @@ export const PersonModal: Component<PersonModalProps> = (props) => {
               </Button>
             </div>
           </div>
-          <Show when={pinRequired() && !adminPin()}>
+          <Show when={pinRequired() && !cachedPin()}>
             <PinField
               pin={pin()}
               onPinChange={setPin}

@@ -14,7 +14,7 @@ interface CopyChoresModalProps {
 }
 
 export const CopyChoresModal: Component<CopyChoresModalProps> = (props) => {
-  const { choreData, pinRequired, cachePin, adminPin } = useAdminContext();
+  const { choreData, pinRequired, setCachedPin, cachedPin } = useAdminContext();
 
   // Get personal chores for the from person
   const personalChores = createMemo<PersonalChore[]>(() => {
@@ -64,7 +64,7 @@ export const CopyChoresModal: Component<CopyChoresModalProps> = (props) => {
     setLoading(true);
 
     try {
-      const pinToUse = adminPin() || pin();
+      const pinToUse = cachedPin() || pin();
       await copyChores({
         fromPersonId: props.fromPerson.id,
         toPersonId: toPersonId(),
@@ -72,8 +72,8 @@ export const CopyChoresModal: Component<CopyChoresModalProps> = (props) => {
         pin: pinRequired() ? pinToUse || undefined : undefined,
       });
 
-      if (!adminPin() && rememberPin() && pin()) {
-        cachePin(pin());
+      if (!cachedPin() && rememberPin() && pin()) {
+        setCachedPin(pin());
       }
 
       props.closeModal();
@@ -158,7 +158,7 @@ export const CopyChoresModal: Component<CopyChoresModalProps> = (props) => {
                   </For>
                 </div>
               </div>
-              <Show when={pinRequired() && !adminPin()}>
+              <Show when={pinRequired() && !cachedPin()}>
                 <PinField
                   pin={pin()}
                   onPinChange={setPin}

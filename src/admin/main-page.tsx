@@ -11,6 +11,7 @@ import { ChoreHistoryModal } from './chore-history-modal';
 import { CopyChoresModal } from './copy-chores-modal';
 import { PersonModal } from './person-modal';
 import { PersonalChoreModal } from './personal-chore-modal';
+import { PinPromptModal } from './pin-prompt-modal';
 import { RotatingChoreCard } from './rotating-chore';
 import { RotatingChoreModal } from './rotating-chore-modal';
 import { SettingsModal } from './settings-modal';
@@ -26,7 +27,38 @@ const formatSkipDays = (skipDays: DayOfWeek[]): string => {
 };
 
 export const MainPage: Component = () => {
-  const { choreData, loadData, pinRequired, requestPin, cachePin, adminPin } = useAdminContext();
+  const { choreData, loadData, pinRequired, setCachedPin, cachedPin } = useAdminContext();
+
+  // PIN prompt modal state
+  const [pinPromptOpen, setPinPromptOpen] = createSignal(false);
+  const [pinPromptTitle, setPinPromptTitle] = createSignal('');
+  const [pinPromptMessage, setPinPromptMessage] = createSignal('');
+
+  let pinPromiseResolve: ((value: { pin: string | null; remember: boolean }) => void) | null = null;
+
+  const requestPin = (
+    title: string,
+    message: string
+  ): Promise<{ pin: string | null; remember: boolean }> => {
+    return new Promise((resolve) => {
+      pinPromiseResolve = resolve;
+      setPinPromptTitle(title);
+      setPinPromptMessage(message);
+      setPinPromptOpen(true);
+    });
+  };
+
+  const handlePinConfirm = (pin: string, remember: boolean) => {
+    setPinPromptOpen(false);
+    pinPromiseResolve?.({ pin, remember });
+    pinPromiseResolve = null;
+  };
+
+  const handlePinCancel = () => {
+    setPinPromptOpen(false);
+    pinPromiseResolve?.({ pin: null, remember: false });
+    pinPromiseResolve = null;
+  };
 
   const [personModalOpen, setPersonModalOpen] = createSignal(false);
   const [personalChoreModalOpen, setPersonalChoreModalOpen] = createSignal(false);
@@ -97,7 +129,7 @@ export const MainPage: Component = () => {
   // Backup/restore handlers
   const handleDownloadBackup = async () => {
     try {
-      let pin = adminPin();
+      let pin = cachedPin();
       let rememberPin = false;
       if (pinRequired() && !pin) {
         const result = await requestPin('Download Backup', 'Enter admin PIN to download backup');
@@ -107,7 +139,7 @@ export const MainPage: Component = () => {
       }
 
       const blob = await downloadBackup(pin || undefined);
-      if (rememberPin) cachePin(pin);
+      if (rememberPin) setCachedPin(pin);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -128,7 +160,7 @@ export const MainPage: Component = () => {
     const file = (e.target as HTMLInputElement).files?.[0];
     if (!file) return;
 
-    let pin = adminPin();
+    let pin = cachedPin();
     let rememberPin = false;
     if (pinRequired() && !pin) {
       const result = await requestPin('Restore Backup', 'Enter admin PIN to restore data');
@@ -153,7 +185,7 @@ export const MainPage: Component = () => {
 
       if (!response.ok) throw new Error('Failed to restore data');
 
-      if (rememberPin) cachePin(pin);
+      if (rememberPin) setCachedPin(pin);
       alert('Data restored successfully!');
       await loadData();
     } catch (error) {
@@ -175,7 +207,7 @@ export const MainPage: Component = () => {
       return;
     }
 
-    let pin = adminPin();
+    let pin = cachedPin();
     let rememberPin = false;
     if (pinRequired() && !pin) {
       const result = await requestPin(
@@ -189,7 +221,7 @@ export const MainPage: Component = () => {
 
     try {
       await deletePerson(personId, pin || undefined);
-      if (rememberPin) cachePin(pin);
+      if (rememberPin) setCachedPin(pin);
       await loadData();
     } catch (error) {
       console.error('Error deleting person:', error);
@@ -202,7 +234,7 @@ export const MainPage: Component = () => {
       return;
     }
 
-    let pin = adminPin();
+    let pin = cachedPin();
     let rememberPin = false;
     if (pinRequired() && !pin) {
       const result = await requestPin('Admin PIN Required', 'Enter admin PIN to delete this chore');
@@ -213,7 +245,7 @@ export const MainPage: Component = () => {
 
     try {
       await deleteChore(choreId, pin || undefined);
-      if (rememberPin) cachePin(pin);
+      if (rememberPin) setCachedPin(pin);
       await loadData();
     } catch (error) {
       console.error('Error deleting chore:', error);
@@ -230,7 +262,7 @@ export const MainPage: Component = () => {
       return;
     }
 
-    let pin = adminPin();
+    let pin = cachedPin();
     let rememberPin = false;
     if (pinRequired() && !pin) {
       const result = await requestPin('Admin PIN Required', 'Enter admin PIN to force daily reset');
@@ -255,7 +287,7 @@ export const MainPage: Component = () => {
 
       if (!response.ok) throw new Error('Failed to force reset');
 
-      if (rememberPin) cachePin(pin);
+      if (rememberPin) setCachedPin(pin);
       alert('Daily reset triggered successfully! The data will be updated on the next sync.');
       await loadData();
     } catch (error) {
@@ -560,6 +592,14 @@ export const MainPage: Component = () => {
       </Show>
       <Show when={settingsModalOpen()}>
         <SettingsModal closeModal={closeSettingsModal} />
+      </Show>
+      <Show when={pinPromptOpen()}>
+        <PinPromptModal
+          title={pinPromptTitle()}
+          message={pinPromptMessage()}
+          onConfirm={handlePinConfirm}
+          onCancel={handlePinCancel}
+        />
       </Show>
     </>
   );

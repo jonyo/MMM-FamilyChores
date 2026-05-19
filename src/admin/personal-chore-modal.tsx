@@ -19,7 +19,7 @@ interface PersonalChoreModalProps {
 }
 
 export const PersonalChoreModal: Component<PersonalChoreModalProps> = (props) => {
-  const { pinRequired, adminPin, cachePin } = useAdminContext();
+  const { pinRequired, cachedPin, setCachedPin } = useAdminContext();
   const [name, setName] = createSignal(props.initialChore?.name ?? '');
   const [deadline, setDeadline] = createSignal(props.initialChore?.deadline ?? '');
   const [skipDayVisibility, setSkipDayVisibility] = createSignal<SkipDayVisibility>(
@@ -45,8 +45,8 @@ export const PersonalChoreModal: Component<PersonalChoreModalProps> = (props) =>
       return;
     }
     try {
-      const cachedPin = adminPin();
-      const pinToUse = cachedPin || pin();
+      const cachedPinValue = cachedPin();
+      const pinToUse = cachedPinValue || pin();
       if (props.initialChore?.id) {
         const body: UpdateChoreRequest = {
           name: name(),
@@ -71,8 +71,8 @@ export const PersonalChoreModal: Component<PersonalChoreModalProps> = (props) =>
         await createChore(body);
       }
 
-      if (!cachedPin && rememberPin() && pin()) {
-        cachePin(pin());
+      if (!cachedPinValue && rememberPin() && pin()) {
+        setCachedPin(pin());
       }
 
       props.closeModal();
@@ -181,7 +181,7 @@ export const PersonalChoreModal: Component<PersonalChoreModalProps> = (props) =>
                   <option value={SkipDayVisibilityEnum.SHOW_IF_OVERDUE}>Show If Overdue</option>
                 </select>
               </div>
-              <Show when={pinRequired() && !adminPin()}>
+              <Show when={pinRequired() && !cachedPin()}>
                 <PinField
                   pin={pin()}
                   onPinChange={setPin}

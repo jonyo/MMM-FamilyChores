@@ -3,7 +3,6 @@ import { createSignal, onMount, Show } from 'solid-js';
 import type { FamilyChoresData } from '../types/chore-types';
 import AdminContext, { type AdminContextValue } from './admin-context';
 import { MainPage } from './main-page';
-import { PinPromptModal } from './pin-prompt-modal';
 
 // API base URL
 const API_BASE = '/MMM-FamilyChores';
@@ -12,50 +11,22 @@ export const Admin: Component<Record<string, never>> = () => {
   const [choreData, setChoreData] = createSignal<FamilyChoresData | null>(null);
   const [loading, setLoading] = createSignal(true);
   const [retryCount, setRetryCount] = createSignal(0);
-  const [adminPin, setAdminPin] = createSignal('');
-  const [pinPromptOpen, setPinPromptOpen] = createSignal(false);
-  const [pinPromptTitle, setPinPromptTitle] = createSignal('');
-  const [pinPromptMessage, setPinPromptMessage] = createSignal('');
+  const [cachedPin, setCachedPin] = createSignal('');
 
-  let pinPromiseResolve: ((value: { pin: string | null; remember: boolean }) => void) | null = null;
   let pinTimeout: ReturnType<typeof setTimeout> | null = null;
 
   const pinRequired = () => !!choreData()?.settings?.adminPin;
 
-  const requestPin = (
-    title: string,
-    message: string
-  ): Promise<{ pin: string | null; remember: boolean }> => {
-    return new Promise((resolve) => {
-      pinPromiseResolve = resolve;
-      setPinPromptTitle(title);
-      setPinPromptMessage(message);
-      setPinPromptOpen(true);
-    });
-  };
-
-  const cachePin = (pin: string) => {
-    setAdminPin(pin);
+  const setCachedPinWithTimeout = (pin: string) => {
+    setCachedPin(pin);
     if (pinTimeout) clearTimeout(pinTimeout);
     pinTimeout = setTimeout(
       () => {
-        setAdminPin('');
+        setCachedPin('');
         pinTimeout = null;
       },
       10 * 60 * 1000
     );
-  };
-
-  const handlePinConfirm = (pin: string, remember: boolean) => {
-    setPinPromptOpen(false);
-    pinPromiseResolve?.({ pin, remember });
-    pinPromiseResolve = null;
-  };
-
-  const handlePinCancel = () => {
-    setPinPromptOpen(false);
-    pinPromiseResolve?.({ pin: null, remember: false });
-    pinPromiseResolve = null;
   };
 
   // Load data from API
@@ -90,9 +61,8 @@ export const Admin: Component<Record<string, never>> = () => {
     },
     loadData,
     pinRequired,
-    requestPin,
-    cachePin,
-    adminPin,
+    setCachedPin: setCachedPinWithTimeout,
+    cachedPin,
   };
 
   return (
@@ -122,15 +92,6 @@ export const Admin: Component<Record<string, never>> = () => {
         <AdminContext.Provider value={contextValue}>
           <MainPage />
         </AdminContext.Provider>
-      </Show>
-
-      <Show when={pinPromptOpen()}>
-        <PinPromptModal
-          title={pinPromptTitle()}
-          message={pinPromptMessage()}
-          onConfirm={handlePinConfirm}
-          onCancel={handlePinCancel}
-        />
       </Show>
     </div>
   );

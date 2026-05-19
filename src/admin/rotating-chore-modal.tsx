@@ -18,7 +18,7 @@ interface RotatingChoreModalProps {
 }
 
 export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) => {
-  const { choreData, pinRequired, cachePin, adminPin } = useAdminContext();
+  const { choreData, pinRequired, setCachedPin, cachedPin } = useAdminContext();
   const [name, setName] = createSignal(props.initialChore?.name ?? '');
   const [deadline, setDeadline] = createSignal(props.initialChore?.deadline ?? '');
   const [skipDayVisibility, setSkipDayVisibility] = createSignal<SkipDayVisibility>(
@@ -48,7 +48,7 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
   const handleSubmit = async (event: Event) => {
     event.preventDefault();
     try {
-      const pinToUse = adminPin() || pin();
+      const pinToUse = cachedPin() || pin();
       if (props.initialChore?.id) {
         const body: UpdateChoreRequest = {
           name: name(),
@@ -73,8 +73,8 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
         await createChore(body);
       }
 
-      if (!adminPin() && rememberPin() && pin()) {
-        cachePin(pin());
+      if (!cachedPin() && rememberPin() && pin()) {
+        setCachedPin(pin());
       }
 
       props.closeModal();
@@ -195,7 +195,7 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
               <option value={SkipDayVisibilityEnum.SHOW_IF_OVERDUE}>Show If Overdue</option>
             </select>
           </div>
-          <Show when={pinRequired() && !adminPin()}>
+          <Show when={pinRequired() && !cachedPin()}>
             <PinField
               pin={pin()}
               onPinChange={setPin}

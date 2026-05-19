@@ -196,7 +196,7 @@ describe('PersonalChoreModal', () => {
       const closeModal = vi.fn();
 
       const { container } = render(() => (
-        <MockAdminProvider pinRequired={true} initialAdminPin="5678">
+        <MockAdminProvider pinRequired={true} initialCachedPin="5678">
           <PersonalChoreModal
             person={mockPerson}
             initialChore={undefined}
@@ -212,7 +212,7 @@ describe('PersonalChoreModal', () => {
       const closeModal = vi.fn();
 
       render(() => (
-        <MockAdminProvider pinRequired={true} initialAdminPin="5678">
+        <MockAdminProvider pinRequired={true} initialCachedPin="5678">
           <PersonalChoreModal
             person={mockPerson}
             initialChore={undefined}

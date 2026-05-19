@@ -411,7 +411,7 @@ describe('CopyChoresModal', () => {
             settings: { dailyResetTime: '03:00', historyEnabled: true },
           }}
           pinRequired={true}
-          initialAdminPin="1234"
+          initialCachedPin="1234"
         >
           <CopyChoresModal fromPerson={mockFromPerson} closeModal={closeModal} />
         </MockAdminProvider>
@@ -441,7 +441,7 @@ describe('CopyChoresModal', () => {
             settings: { dailyResetTime: '03:00', historyEnabled: true },
           }}
           pinRequired={true}
-          initialAdminPin="1234"
+          initialCachedPin="1234"
         >
           <CopyChoresModal fromPerson={mockFromPerson} closeModal={closeModal} />
         </MockAdminProvider>
