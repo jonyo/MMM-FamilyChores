@@ -72,7 +72,7 @@ export const PersonModal: Component<PersonModalProps> = (props) => {
           </div>
           <div class="mb-5">
             <label for="personColor" class="mb-3 block font-medium text-slate-900">
-              Color
+              Text Color
             </label>
             <div class="flex items-center gap-2.5">
               <input
