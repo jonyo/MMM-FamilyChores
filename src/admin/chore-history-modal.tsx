@@ -54,7 +54,7 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
     }
   });
 
-  // Get last 14 days with pre-computed display data
+  // Get last 14 completed days with pre-computed display data (excludes today)
   // IMPORTANT: We compute all localized values (date string, day name, display) from the
   // same local Date object before serialization. This avoids the timezone double-correction bug:
   // new Date('2026-05-17') parses as UTC midnight, and when formatted back to local timezone
@@ -62,7 +62,8 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
   // By computing all values from a single Date object, we ensure consistency.
   const getDays = (): DayInfo[] => {
     const days: DayInfo[] = [];
-    for (let i = 13; i >= 0; i--) {
+    // Start at 14 days ago and end at yesterday (i=1) so today is not shown
+    for (let i = 14; i >= 1; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);
       const dayNameShort = getLocalDayNameShort(date);
@@ -223,7 +224,7 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
                                       'rounded-full': true,
                                       'text-center': true,
                                       'leading-8': true,
-                                      'bg-red-500': completion?.wasLate,
+                                      'bg-yellow-500': completion?.wasLate,
                                       'bg-green-500': !completion?.wasLate,
                                       'text-white': true,
                                     }}
@@ -239,7 +240,7 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
                                     text={getTooltipText()}
                                     position="above"
                                     align="right"
-                                    class="inline-block size-8  rounded-full bg-yellow-500 text-center leading-8 text-slate-900"
+                                    class="inline-block size-8  rounded-full bg-red-500 text-center leading-8 text-white"
                                     dataTestId="completion-missed"
                                   >
                                     ✗
