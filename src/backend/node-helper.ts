@@ -27,6 +27,7 @@ import { createAdminHandlers } from './admin-routes';
 import {
   validateChore,
   validateDailyCompletion,
+  validateLastResetDate,
   validatePerson,
   validateSettings,
 } from './validator';
@@ -155,12 +156,23 @@ const nodeHelper: FamilyChoresNodeHelper = {
           }
         }
 
+        // Validate lastResetDate, default to today if missing or invalid
+        let lastResetDate: string;
+        const resetDateResult = validateLastResetDate(rawData.lastResetDate);
+        if (resetDateResult.valid) {
+          lastResetDate = rawData.lastResetDate as string;
+        } else {
+          lastResetDate = getLocalDateString();
+          Log.warn(
+            `Invalid lastResetDate in data file, defaulting to today: ${resetDateResult.error}`
+          );
+        }
+
         this.choreData = {
           people: validPeople,
           chores: validChores,
           dailyCompletions: validCompletions,
-          lastResetDate:
-            typeof rawData.lastResetDate === 'string' ? rawData.lastResetDate : undefined,
+          lastResetDate,
           settings,
         };
         Log.info(`Loaded chore data from ${dataPath}`);
@@ -341,7 +353,8 @@ const nodeHelper: FamilyChoresNodeHelper = {
     // Note: we do NOT change caughtUp here - it stays as-is
 
     // Track daily completion if history is enabled
-    if (this.choreData.settings?.historyEnabled) {
+    // Settings is guaranteed to exist after validation on load
+    if (this.choreData.settings.historyEnabled) {
       let personId: string | undefined;
       if (chore.type === 'personal') {
         personId = chore.assignedTo;
@@ -349,19 +362,20 @@ const nodeHelper: FamilyChoresNodeHelper = {
         personId = chore.rotation[chore.rotatingIndex ?? 0];
       }
 
+      const resetDate = this.choreData.lastResetDate;
       const todayDate = getLocalDateString();
-      const todayDayName = getLocalDayName();
-      const _isSkipDay = (chore.skipDays ?? []).includes(todayDayName);
 
       if (payload.completed && personId) {
         // Create daily completion record
         const currentTime = new Date();
         const currentTimeString = getLocalTimeString();
-        const wasLate = !!chore.deadline && currentTimeString > chore.deadline;
+        const deadlineLate = !!chore.deadline && currentTimeString > chore.deadline;
+        const dateLate = !chore.caughtUp && todayDate > resetDate;
+        const wasLate = deadlineLate || dateLate;
 
         const dailyCompletion = {
           id: generateUUID(),
-          date: todayDate,
+          date: resetDate,
           personId,
           choreId: chore.id,
           completed: true,
@@ -371,9 +385,9 @@ const nodeHelper: FamilyChoresNodeHelper = {
 
         this.choreData.dailyCompletions.push(dailyCompletion);
       } else if (!payload.completed && personId) {
-        // Delete daily completion record for this day/person/chore
+        // Delete daily completion record for this reset day/person/chore
         const index = this.choreData.dailyCompletions.findIndex(
-          (dc) => dc.date === todayDate && dc.personId === personId && dc.choreId === chore.id
+          (dc) => dc.date === resetDate && dc.personId === personId && dc.choreId === chore.id
         );
         if (index !== -1) {
           this.choreData.dailyCompletions.splice(index, 1);
@@ -531,6 +545,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
     this.expressApp?.get('/MMM-FamilyChores/backup', handlers.getBackup);
     this.expressApp?.post('/MMM-FamilyChores/restore', handlers.postRestore);
     this.expressApp?.post('/MMM-FamilyChores/copy-chores', handlers.postCopyChores);
+    this.expressApp?.post('/MMM-FamilyChores/rotate-chore', handlers.postRotateChore);
     this.expressApp?.get('/MMM-FamilyChores/history', handlers.getHistory);
     this.expressApp?.put('/MMM-FamilyChores/settings', handlers.putSettings);
 

@@ -948,11 +948,11 @@ describe('Node Helper Tests', () => {
       expect(nodeHelper.choreData?.lastResetDate).not.toBe('2024-05-11');
     });
 
-    it('should handle missing lastResetDate', () => {
+    it('should handle old lastResetDate before reset time', () => {
       if (!nodeHelper.choreData) {
         throw new Error('choreData is null');
       }
-      nodeHelper.choreData.lastResetDate = undefined;
+      nodeHelper.choreData.lastResetDate = '2024-05-11';
 
       // Mock time: 2024-05-12 at 01:00 America/New_York (before reset time)
       // Convert to UTC: America/New_York (UTC-4 in May) = 2024-05-12T05:00:00.000Z
@@ -964,7 +964,7 @@ describe('Node Helper Tests', () => {
       // Should not reset since time is before 03:00, even though lastResetDate is before today
       expect(nodeHelper.choreData?.chores[0].completedToday).toBe(true);
       expect(nodeHelper.choreData?.chores[1].completedToday).toBe(true);
-      expect(nodeHelper.choreData?.lastResetDate).toBeUndefined();
+      expect(nodeHelper.choreData?.lastResetDate).toBe('2024-05-11');
     });
 
     it('should not reset when time is before reset time on same day', () => {
@@ -1171,14 +1171,14 @@ describe('Node Helper Tests', () => {
       expect(nodeHelper.choreData?.chores).toHaveLength(0);
     });
 
-    it('stores undefined when lastResetDate is not a string', () => {
+    it('defaults lastResetDate to today when not a valid string', () => {
       vi.mocked(fs.readFileSync).mockReturnValue(
         JSON.stringify({ people: [validPerson1], chores: [], lastResetDate: 42 })
       );
 
       nodeHelper.loadChoreData();
 
-      expect(nodeHelper.choreData?.lastResetDate).toBeUndefined();
+      expect(nodeHelper.choreData?.lastResetDate).toBe(getLocalDateString());
     });
 
     it('creates default data when file does not exist', () => {

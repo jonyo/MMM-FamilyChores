@@ -1,6 +1,6 @@
 import type { Component } from 'solid-js';
 import { createSignal, For, onMount, Show } from 'solid-js';
-import { deleteChore, deletePerson, downloadBackup } from '../api';
+import { deleteChore, deletePerson, downloadBackup, rotateChore } from '../api';
 import type {
   Chore,
   DayOfWeek,
@@ -226,6 +226,26 @@ export const Admin: Component<Record<string, never>> = () => {
     } catch (error) {
       console.error('Error deleting chore:', error);
       alert(`Failed to delete chore: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
+  const handleRotateChore = async (choreId: string) => {
+    let pin = adminPin();
+    let rememberPin = false;
+    if (pinRequired() && !pin) {
+      const result = await requestPin('Admin PIN Required', 'Enter admin PIN to rotate this chore');
+      if (!result.pin) return;
+      pin = result.pin;
+      rememberPin = result.remember;
+    }
+
+    try {
+      await rotateChore({ choreId, pin: pin || undefined });
+      if (rememberPin) cachePin(pin);
+      await loadData();
+    } catch (error) {
+      console.error('Error rotating chore:', error);
+      alert(`Failed to rotate chore: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
@@ -589,6 +609,7 @@ export const Admin: Component<Record<string, never>> = () => {
                       people={choreData()?.people ?? []}
                       onEdit={openRotatingChoreModal}
                       onDelete={handleDeleteChore}
+                      onRotate={handleRotateChore}
                     />
                   )}
                 </For>
@@ -660,6 +681,7 @@ export const Admin: Component<Record<string, never>> = () => {
               people: [],
               chores: [],
               dailyCompletions: [],
+              lastResetDate: getLocalDateString(),
               settings: {
                 dailyResetTime: '03:00',
                 historyEnabled: true,

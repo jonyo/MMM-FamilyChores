@@ -644,4 +644,68 @@ describe('createAdminHandlers', () => {
       expect(res.statusCode).toBe(500);
     });
   });
+
+  describe('postRotateChore', () => {
+    it('rotates a rotating chore to the next person', () => {
+      const { context, mockSave, mockNotify, getData } = makeContext();
+      const { postRotateChore } = createAdminHandlers(context);
+      const res = createMockRes();
+
+      postRotateChore({ body: { choreId: cid2 }, params: {} }, res);
+
+      expect(res.statusCode).toBe(200);
+      expect(mockSave).toHaveBeenCalled();
+      expect(mockNotify).toHaveBeenCalledWith(SocketNotifications.CHORE_DATA, getData());
+      const chore = getData()?.chores.find((c) => c.id === cid2) as RotatingChore;
+      expect(chore.rotatingIndex).toBe(1);
+    });
+
+    it('wraps rotation index back to start', () => {
+      const baseData = makeBaseData();
+      const rotatingChore = baseData.chores[1] as RotatingChore;
+      rotatingChore.rotatingIndex = 1;
+      const { context, mockSave, getData } = makeContext(baseData);
+      const { postRotateChore } = createAdminHandlers(context);
+      const res = createMockRes();
+
+      postRotateChore({ body: { choreId: cid2 }, params: {} }, res);
+
+      expect(res.statusCode).toBe(200);
+      expect(mockSave).toHaveBeenCalled();
+      const chore = getData()?.chores.find((c) => c.id === cid2) as RotatingChore;
+      expect(chore.rotatingIndex).toBe(0);
+    });
+
+    it('returns 404 for non-existent chore', () => {
+      const { context, mockSave } = makeContext();
+      const { postRotateChore } = createAdminHandlers(context);
+      const res = createMockRes();
+
+      postRotateChore({ body: { choreId: generateTestUUID(999) }, params: {} }, res);
+
+      expect(res.statusCode).toBe(404);
+      expect(mockSave).not.toHaveBeenCalled();
+    });
+
+    it('returns 400 for non-rotating chore', () => {
+      const { context, mockSave } = makeContext();
+      const { postRotateChore } = createAdminHandlers(context);
+      const res = createMockRes();
+
+      postRotateChore({ body: { choreId: cid1 }, params: {} }, res);
+
+      expect(res.statusCode).toBe(400);
+      expect(mockSave).not.toHaveBeenCalled();
+    });
+
+    it('returns 500 when data is null', () => {
+      const { context } = makeContext(null);
+      const { postRotateChore } = createAdminHandlers(context);
+      const res = createMockRes();
+
+      postRotateChore({ body: { choreId: cid2 }, params: {} }, res);
+
+      expect(res.statusCode).toBe(500);
+    });
+  });
 });

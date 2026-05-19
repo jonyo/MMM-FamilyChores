@@ -224,6 +224,19 @@ export const validateSettings = (settings: unknown): ValidatedResult => {
   return { valid: true };
 };
 
+export const validateLastResetDate = (lastResetDate: unknown): ValidatedResult => {
+  if (!lastResetDate || typeof lastResetDate !== 'string') {
+    return { valid: false, error: 'lastResetDate must be a string' };
+  }
+  if (!lastResetDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    return {
+      valid: false,
+      error: 'lastResetDate must be in YYYY-MM-DD format (e.g., "2024-01-15")',
+    };
+  }
+  return { valid: true };
+};
+
 export const validateDailyCompletion = (completion: unknown, chores: Chore[]): ValidatedResult => {
   if (!completion || typeof completion !== 'object') {
     return { valid: false, error: 'Daily completion must be an object' };

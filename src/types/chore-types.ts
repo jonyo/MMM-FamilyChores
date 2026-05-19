@@ -148,7 +148,7 @@ export interface FamilyChoresData {
   /**
    * ISO date string when daily reset was last performed (YYYY-MM-DD)
    */
-  lastResetDate?: string;
+  lastResetDate: string;
   /**
    * Daily completion records for tracking chore completion status
    */

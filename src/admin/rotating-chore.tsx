@@ -14,6 +14,8 @@ interface RotatingChoreCardProps {
   onEdit: (chore: RotatingChore) => void;
   /** Callback when the delete button is clicked */
   onDelete: (choreId: string) => void;
+  /** Callback when the rotate button is clicked */
+  onRotate: (choreId: string) => void;
 }
 
 /** Format skip days for display */
@@ -78,6 +80,14 @@ export const RotatingChoreCard: Component<RotatingChoreCardProps> = (props) => {
           onClick={() => props.onEdit(props.chore)}
         >
           Edit
+        </Button>
+        <Button
+          type="button"
+          variant="warning"
+          size="sm"
+          onClick={() => props.onRotate(props.chore.id)}
+        >
+          Rotate Next
         </Button>
         <Button
           type="button"

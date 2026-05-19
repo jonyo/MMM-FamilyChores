@@ -26,6 +26,7 @@ describe('RotatingChoreCard', () => {
   it('renders chore name with rotating badge', () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();
+    const onRotate = vi.fn();
 
     render(() => (
       <RotatingChoreCard
@@ -33,6 +34,7 @@ describe('RotatingChoreCard', () => {
         people={mockPeople}
         onEdit={onEdit}
         onDelete={onDelete}
+        onRotate={onRotate}
       />
     ));
 
@@ -43,6 +45,7 @@ describe('RotatingChoreCard', () => {
   it('displays current assignee', () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();
+    const onRotate = vi.fn();
 
     render(() => (
       <RotatingChoreCard
@@ -50,6 +53,7 @@ describe('RotatingChoreCard', () => {
         people={mockPeople}
         onEdit={onEdit}
         onDelete={onDelete}
+        onRotate={onRotate}
       />
     ));
 
@@ -59,6 +63,7 @@ describe('RotatingChoreCard', () => {
   it('displays rotation list names', () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();
+    const onRotate = vi.fn();
     const partialRotationChore: RotatingChore = {
       ...mockChore,
       rotation: ['person-1', 'person-2'],
@@ -70,6 +75,7 @@ describe('RotatingChoreCard', () => {
         people={mockPeople}
         onEdit={onEdit}
         onDelete={onDelete}
+        onRotate={onRotate}
       />
     ));
 
@@ -79,6 +85,7 @@ describe('RotatingChoreCard', () => {
   it('displays "Everyone" when rotation includes all people', () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();
+    const onRotate = vi.fn();
 
     render(() => (
       <RotatingChoreCard
@@ -86,6 +93,7 @@ describe('RotatingChoreCard', () => {
         people={mockPeople}
         onEdit={onEdit}
         onDelete={onDelete}
+        onRotate={onRotate}
       />
     ));
 
@@ -95,6 +103,7 @@ describe('RotatingChoreCard', () => {
   it('displays "Everyone" only when rotation exactly matches all people', () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();
+    const onRotate = vi.fn();
     const partialRotationChore: RotatingChore = {
       ...mockChore,
       rotation: ['person-1', 'person-2'],
@@ -106,6 +115,7 @@ describe('RotatingChoreCard', () => {
         people={mockPeople}
         onEdit={onEdit}
         onDelete={onDelete}
+        onRotate={onRotate}
       />
     ));
 
@@ -116,6 +126,7 @@ describe('RotatingChoreCard', () => {
   it('displays deadline when present', () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();
+    const onRotate = vi.fn();
     const choreWithDeadline: RotatingChore = {
       ...mockChore,
       deadline: '5:00 PM',
@@ -127,6 +138,7 @@ describe('RotatingChoreCard', () => {
         people={mockPeople}
         onEdit={onEdit}
         onDelete={onDelete}
+        onRotate={onRotate}
       />
     ));
 
@@ -136,6 +148,7 @@ describe('RotatingChoreCard', () => {
   it('does not display deadline when not present', () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();
+    const onRotate = vi.fn();
 
     render(() => (
       <RotatingChoreCard
@@ -143,6 +156,7 @@ describe('RotatingChoreCard', () => {
         people={mockPeople}
         onEdit={onEdit}
         onDelete={onDelete}
+        onRotate={onRotate}
       />
     ));
 
@@ -152,6 +166,7 @@ describe('RotatingChoreCard', () => {
   it('displays skip days', () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();
+    const onRotate = vi.fn();
     const choreWithSkipDays: RotatingChore = {
       ...mockChore,
       skipDays: [DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY],
@@ -163,6 +178,7 @@ describe('RotatingChoreCard', () => {
         people={mockPeople}
         onEdit={onEdit}
         onDelete={onDelete}
+        onRotate={onRotate}
       />
     ));
 
@@ -172,6 +188,7 @@ describe('RotatingChoreCard', () => {
   it('displays "None" for skip days when empty', () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();
+    const onRotate = vi.fn();
 
     render(() => (
       <RotatingChoreCard
@@ -179,6 +196,7 @@ describe('RotatingChoreCard', () => {
         people={mockPeople}
         onEdit={onEdit}
         onDelete={onDelete}
+        onRotate={onRotate}
       />
     ));
 
@@ -188,6 +206,7 @@ describe('RotatingChoreCard', () => {
   it('calls onEdit with chore when edit button is clicked', async () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();
+    const onRotate = vi.fn();
 
     render(() => (
       <RotatingChoreCard
@@ -195,6 +214,7 @@ describe('RotatingChoreCard', () => {
         people={mockPeople}
         onEdit={onEdit}
         onDelete={onDelete}
+        onRotate={onRotate}
       />
     ));
 
@@ -207,6 +227,7 @@ describe('RotatingChoreCard', () => {
   it('calls onDelete with chore ID when delete button is clicked', async () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();
+    const onRotate = vi.fn();
 
     render(() => (
       <RotatingChoreCard
@@ -214,6 +235,7 @@ describe('RotatingChoreCard', () => {
         people={mockPeople}
         onEdit={onEdit}
         onDelete={onDelete}
+        onRotate={onRotate}
       />
     ));
 
@@ -223,9 +245,31 @@ describe('RotatingChoreCard', () => {
     expect(onDelete).toHaveBeenCalledWith('chore-1');
   });
 
+  it('calls onRotate with chore ID when rotate button is clicked', async () => {
+    const onEdit = vi.fn();
+    const onDelete = vi.fn();
+    const onRotate = vi.fn();
+
+    render(() => (
+      <RotatingChoreCard
+        chore={mockChore}
+        people={mockPeople}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        onRotate={onRotate}
+      />
+    ));
+
+    const rotateButton = screen.getByText('Rotate Next');
+    await rotateButton.click();
+
+    expect(onRotate).toHaveBeenCalledWith('chore-1');
+  });
+
   it('displays "Unassigned" when current person is not found', () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();
+    const onRotate = vi.fn();
     const choreWithInvalidPerson: RotatingChore = {
       ...mockChore,
       rotation: ['invalid-person-id'],
@@ -237,6 +281,7 @@ describe('RotatingChoreCard', () => {
         people={mockPeople}
         onEdit={onEdit}
         onDelete={onDelete}
+        onRotate={onRotate}
       />
     ));
 
@@ -246,6 +291,7 @@ describe('RotatingChoreCard', () => {
   it('displays "Unknown" for missing people in rotation list', () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();
+    const onRotate = vi.fn();
     const choreWithMissingPerson: RotatingChore = {
       ...mockChore,
       rotation: ['person-1', 'invalid-person-id'],
@@ -257,6 +303,7 @@ describe('RotatingChoreCard', () => {
         people={mockPeople}
         onEdit={onEdit}
         onDelete={onDelete}
+        onRotate={onRotate}
       />
     ));
 
@@ -266,9 +313,16 @@ describe('RotatingChoreCard', () => {
   it('handles empty people list', () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();
+    const onRotate = vi.fn();
 
     render(() => (
-      <RotatingChoreCard chore={mockChore} people={[]} onEdit={onEdit} onDelete={onDelete} />
+      <RotatingChoreCard
+        chore={mockChore}
+        people={[]}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        onRotate={onRotate}
+      />
     ));
 
     expect(screen.getByText('Current: Unassigned')).toBeInTheDocument();

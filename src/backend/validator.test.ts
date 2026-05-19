@@ -5,6 +5,7 @@ import { generateTestUUID } from '../utils/uuid';
 import {
   validateChore,
   validateDailyCompletion,
+  validateLastResetDate,
   validatePerson,
   validateSettings,
 } from './validator';
@@ -399,5 +400,28 @@ describe('validateDailyCompletion', () => {
     };
     expect(validateDailyCompletion(valid, chores).valid).toBe(true);
     expect(validateDailyCompletion({ ...valid, completedAt: undefined }, chores).valid).toBe(true);
+  });
+});
+
+describe('validateLastResetDate', () => {
+  it('accepts valid YYYY-MM-DD date', () => {
+    expect(validateLastResetDate('2024-01-15').valid).toBe(true);
+    expect(validateLastResetDate('2024-12-31').valid).toBe(true);
+  });
+
+  it('rejects non-string values', () => {
+    expect(validateLastResetDate(undefined).valid).toBe(false);
+    expect(validateLastResetDate(null).valid).toBe(false);
+    expect(validateLastResetDate(42).valid).toBe(false);
+    expect(validateLastResetDate({}).valid).toBe(false);
+  });
+
+  it('rejects malformed date strings', () => {
+    expect(validateLastResetDate('').valid).toBe(false);
+    expect(validateLastResetDate('2024/01/15').valid).toBe(false);
+    expect(validateLastResetDate('01-15-2024').valid).toBe(false);
+    expect(validateLastResetDate('2024-1-15').valid).toBe(false);
+    expect(validateLastResetDate('2024-01-5').valid).toBe(false);
+    expect(validateLastResetDate('not-a-date').valid).toBe(false);
   });
 });

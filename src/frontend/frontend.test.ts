@@ -155,6 +155,7 @@ describe('Frontend Tests', () => {
           },
         ],
         dailyCompletions: [],
+        lastResetDate: '2025-01-15',
         settings: {
           dailyResetTime: '03:00',
           historyEnabled: true,
@@ -346,6 +347,7 @@ describe('Frontend Tests', () => {
           },
         ],
         dailyCompletions: [],
+        lastResetDate: '2025-01-15',
         settings: {
           dailyResetTime: '03:00',
           historyEnabled: true,
@@ -468,6 +470,7 @@ describe('Frontend Tests', () => {
           },
         ],
         dailyCompletions: [],
+        lastResetDate: '2025-01-15',
         settings: {
           dailyResetTime: '03:00',
           historyEnabled: true,
@@ -649,6 +652,7 @@ describe('Frontend Tests', () => {
         ],
         chores: [],
         dailyCompletions: [],
+        lastResetDate: '2025-01-15',
         settings: {
           dailyResetTime: '03:00',
           historyEnabled: true,
@@ -1134,6 +1138,7 @@ describe('Frontend Tests', () => {
           },
         ],
         dailyCompletions: [],
+        lastResetDate: '2025-01-15',
         settings: {
           dailyResetTime: '03:00',
           historyEnabled: true,
@@ -1182,6 +1187,7 @@ describe('Frontend Tests', () => {
           },
         ],
         dailyCompletions: [],
+        lastResetDate: '2025-01-15',
         settings: {
           dailyResetTime: '03:00',
           historyEnabled: true,
@@ -1216,6 +1222,7 @@ describe('Frontend Tests', () => {
           },
         ],
         dailyCompletions: [],
+        lastResetDate: '2025-01-15',
         settings: {
           dailyResetTime: '03:00',
           historyEnabled: true,
@@ -1286,6 +1293,7 @@ describe('Frontend Tests', () => {
           },
         ],
         dailyCompletions: [],
+        lastResetDate: '2025-01-15',
         settings: {
           dailyResetTime: '03:00',
           historyEnabled: true,
@@ -1579,6 +1587,7 @@ describe('Frontend Tests', () => {
           },
         ],
         dailyCompletions: [],
+        lastResetDate: '2025-01-15',
         settings: {
           dailyResetTime: '03:00',
           historyEnabled: true,

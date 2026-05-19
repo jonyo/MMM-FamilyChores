@@ -7,11 +7,13 @@ import type {
   CreateChoreRequest,
   CreatePersonRequest,
   RestoreDataRequest,
+  RotateChoreRequest,
   UpdateChoreRequest,
   UpdatePersonRequest,
   UpdateSettingsRequest,
 } from '../types/request-types';
 import type { ApiErrorBody } from '../types/response-types';
+import { getLocalDateString } from '../utils/date';
 import { generateUUID } from '../utils/uuid';
 import { validateChore, validatePerson } from './validator';
 
@@ -67,6 +69,7 @@ export interface AdminHandlers {
   getBackup: (req: Request, res: Response) => void;
   postRestore: (req: Request, res: Response) => void;
   postCopyChores: (req: Request, res: Response) => void;
+  postRotateChore: (req: Request, res: Response) => void;
   getHistory: (req: Request, res: Response) => void;
   putSettings: (req: Request, res: Response) => void;
 }
@@ -415,7 +418,10 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
           dailyCompletions: Array.isArray(restoredData.dailyCompletions)
             ? (restoredData.dailyCompletions as DailyCompletion[])
             : [],
-          lastResetDate: restoredData.lastResetDate,
+          lastResetDate:
+            typeof restoredData.lastResetDate === 'string'
+              ? restoredData.lastResetDate
+              : getLocalDateString(),
           // Auto-spread defaults for settings
           settings: {
             dailyResetTime: restoredData.settings?.dailyResetTime ?? '03:00',
@@ -493,6 +499,43 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
       }
     },
 
+    postRotateChore: (req, res) => {
+      if (!validatePin(req, res, context)) return;
+
+      const choreData = context.getChoreData();
+      if (!choreData) {
+        res.status(500).json(apiErr('No data available'));
+        return;
+      }
+
+      try {
+        const { choreId } = req.body as RotateChoreRequest;
+
+        const chore = choreData.chores.find((c: Chore) => c.id === choreId);
+        if (!chore) {
+          res.status(404).json(apiErr('Chore not found'));
+          return;
+        }
+
+        if (chore.type !== 'rotating' || !chore.rotation || chore.rotation.length === 0) {
+          res.status(400).json(apiErr('Chore is not a rotating chore'));
+          return;
+        }
+
+        const currentIndex = chore.rotatingIndex ?? 0;
+        const nextIndex = (currentIndex + 1) % chore.rotation.length;
+        chore.rotatingIndex = nextIndex;
+
+        context.saveChoreData();
+        context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
+
+        res.json({ success: true, message: 'Chore rotated to next person' });
+      } catch (error) {
+        Log.error(`Error rotating chore: ${error}`);
+        res.status(500).json(apiErr('Failed to rotate chore'));
+      }
+    },
+
     getHistory: (req, res) => {
       const choreData = context.getChoreData();
       if (!choreData) {
@@ -500,7 +543,7 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         return;
       }
 
-      if (!choreData.settings?.historyEnabled) {
+      if (!choreData.settings.historyEnabled) {
         res.json([]);
         return;
       }

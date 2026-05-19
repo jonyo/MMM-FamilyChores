@@ -1,6 +1,7 @@
 import type {
   CopyChoresRequest,
   CreateChoreRequest,
+  RotateChoreRequest,
   UpdateChoreRequest,
 } from '../types/request-types';
 import { validateId } from '../utils/validation';
@@ -51,4 +52,13 @@ export const copyChores = async (data: CopyChoresRequest): Promise<void> => {
     }
     throw error;
   }
+};
+
+export const rotateChore = async (data: RotateChoreRequest): Promise<unknown> => {
+  const response = await fetch(`${API_BASE_URL}/rotate-chore`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
 };

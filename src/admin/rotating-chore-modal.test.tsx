@@ -21,6 +21,7 @@ describe('RotatingChoreModal', () => {
     ],
     chores: [],
     dailyCompletions: [],
+    lastResetDate: '2025-01-15',
     settings: {
       dailyResetTime: '03:00',
       historyEnabled: true,

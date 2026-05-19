@@ -65,7 +65,7 @@ export interface RestoreDataBody<TPerson = unknown, TChore = unknown> {
   people: TPerson[];
   chores: TChore[];
   dailyCompletions?: unknown[];
-  lastResetDate?: string;
+  lastResetDate: string;
   settings?: {
     dailyResetTime?: string;
     historyEnabled?: boolean;
@@ -91,6 +91,13 @@ export interface CopyChoresRequest extends PinProtectedRequest {
   fromPersonId: UUID;
   toPersonId: UUID;
   choreIds: UUID[];
+}
+
+/**
+ * Request body for rotating a chore to the next person
+ */
+export interface RotateChoreRequest extends PinProtectedRequest {
+  choreId: UUID;
 }
 
 /**

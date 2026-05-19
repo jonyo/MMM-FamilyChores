@@ -1169,6 +1169,13 @@
 			throw error;
 		}
 	};
+	var rotateChore = async (data) => {
+		return handleResponse(await fetch(`${API_BASE_URL}/rotate-chore`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(data)
+		}));
+	};
 	//#endregion
 	//#region src/api/history.ts
 	var getHistory = async (personId) => {
@@ -2192,6 +2199,13 @@
 			}), null);
 			insert(_el$11, createComponent(Button, {
 				type: "button",
+				variant: "warning",
+				size: "sm",
+				onClick: () => props.onRotate(props.chore.id),
+				children: "Rotate Next"
+			}), null);
+			insert(_el$11, createComponent(Button, {
+				type: "button",
 				variant: "danger",
 				size: "sm",
 				onClick: () => props.onDelete(props.chore.id),
@@ -2667,6 +2681,27 @@
 				alert(`Failed to delete chore: ${error instanceof Error ? error.message : "Unknown error"}`);
 			}
 		};
+		const handleRotateChore = async (choreId) => {
+			let pin = adminPin();
+			let rememberPin = false;
+			if (pinRequired() && !pin) {
+				const result = await requestPin("Admin PIN Required", "Enter admin PIN to rotate this chore");
+				if (!result.pin) return;
+				pin = result.pin;
+				rememberPin = result.remember;
+			}
+			try {
+				await rotateChore({
+					choreId,
+					pin: pin || void 0
+				});
+				if (rememberPin) cachePin(pin);
+				await loadData();
+			} catch (error) {
+				console.error("Error rotating chore:", error);
+				alert(`Failed to rotate chore: ${error instanceof Error ? error.message : "Unknown error"}`);
+			}
+		};
 		const handleDownloadBackup = async () => {
 			try {
 				let pin = adminPin();
@@ -2967,7 +3002,8 @@
 										return choreData()?.people ?? [];
 									},
 									onEdit: openRotatingChoreModal,
-									onDelete: handleDeleteChore
+									onDelete: handleDeleteChore,
+									onRotate: handleRotateChore
 								})
 							}));
 							return _el$18;
@@ -3049,6 +3085,7 @@
 								people: [],
 								chores: [],
 								dailyCompletions: [],
+								lastResetDate: getLocalDateString(),
 								settings: {
 									dailyResetTime: "03:00",
 									historyEnabled: true
