@@ -1467,7 +1467,7 @@
 		});
 		const getDays = () => {
 			const days = [];
-			for (let i = 13; i >= 0; i--) {
+			for (let i = 14; i >= 1; i--) {
 				const date = /* @__PURE__ */ new Date();
 				date.setDate(date.getDate() - i);
 				const dayNameShort = getLocalDayNameShort(date);
