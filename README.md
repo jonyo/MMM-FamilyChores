@@ -30,7 +30,7 @@ _Note: This roadmap represents current plans and priorities. Features may be add
 
 - **Advanced Scheduling**: This module focuses on daily chores with basic features like skip days. For complex scheduling needs, consider using this alongside a calendar module for the more complex "every other Monday" or "monthly" chores.
 
-- **Reward System**: Focused on simple chore tracking rather than gamification. Provides visual indicators for overdue tasks but doesn't track completion history or award rewards. Designed as a straightforward reminder system with rotating chore assignments.
+- **Reward System**: Focused on simple chore tracking rather than gamification. Provides visual indicators for overdue tasks and tracks completion history for reference, but does not award rewards or points. Designed as a straightforward reminder system with rotating chore assignments. Any "rewards" or incentives are left to the family to implement outside the system.
 
 - **Security**: Designed for private home environments only. The PIN protection provides minimal deterrence but stores PIN in plain text. Not suitable for public/shared environments. Person and chore names (and similar fields) are stored exactly as entered; the mirror UI and bundled admin page escape them when building HTML so markup in names is shown as text, not executed. This does not replace network-level controls (keep MagicMirror off the public internet; treat your LAN as the trust boundary).
 
@@ -51,15 +51,13 @@ That's it! The module includes all necessary dependencies in the bundled JavaScr
 
 ### Basic Options
 
-| Option           | Type   | Default       | Description                                                                        |
-| ---------------- | ------ | ------------- | ---------------------------------------------------------------------------------- |
-| `dataFile`       | string | `'data.json'` | Path to data file relative to module folder                                        |
-| `updateInterval` | number | `60000`       | Update interval in milliseconds                                                    |
-| `adminPin`       | string | `null`        | PIN for admin actions (reassign, caughtUp reset, delete, settings, backup/restore) |
-| `personFilter`   | string | `null`        | Filter chores by person name (case-insensitive)                                    |
-| `viewMode`       | string | `'personal'`  | View mode: `'personal'` or `'summary'`                                             |
-| `dailyResetTime` | string | `'03:00'`     | Daily reset time in 24-hour format (HH:mm)                                         |
-| `summary`        | object | see below     | Summary view configuration options                                                 |
+| Option           | Type    | Default       | Description                                                                        |
+| ---------------- | ------- | ------------- | ---------------------------------------------------------------------------------- |
+| `dataFile`       | string  | `'data.json'` | Path to data file relative to module folder                                        |
+| `updateInterval` | number  | `60000`       | Update interval in milliseconds                                                    |
+| `personFilter`   | string  | `null`        | Filter chores by person name (case-insensitive)                                    |
+| `viewMode`       | string  | `'personal'`  | View mode: `'personal'` or `'summary'`                                             |
+| `summary`        | object  | see below     | Summary view configuration options                                                 |
 
 ### Summary View Configuration
 
@@ -308,7 +306,7 @@ At midnight, all `completedToday` entries are cleared, making personal chores av
 ### Mirror Interactions
 
 - **Mark Complete/Incomplete**: Anyone can check/uncheck chores on the mirror display without a PIN
-- **Admin Actions**: Open the admin panel at `/admin.html` within the module folder. When `adminPin` is configured, destructive actions require PIN entry
+- **Admin Actions**: Open the admin panel at `/admin.html` within the module folder. When a PIN is set in the admin panel settings, destructive actions require PIN entry
 
 ## Development
 
