@@ -4,7 +4,6 @@ import { deleteChore, deletePerson, downloadBackup } from '../api';
 import type { Chore, DayOfWeek, Person, PersonalChore, RotatingChore } from '../types/chore-types';
 import { ChoreType } from '../types/chore-types';
 import { escapeHtml } from '../utils/browser';
-import { getLocalDateString } from '../utils/date';
 import { useAdminContext } from './admin-context';
 import { Button } from './button';
 import { ChoreHistoryModal } from './chore-history-modal';
@@ -253,49 +252,6 @@ export const MainPage: Component = () => {
     }
   };
 
-  const handleForceReset = async () => {
-    if (
-      !confirm(
-        'Are you sure you want to force a daily reset? This will reset all chore states for the new day.'
-      )
-    ) {
-      return;
-    }
-
-    let pin = cachedPin();
-    let rememberPin = false;
-    if (pinRequired() && !pin) {
-      const result = await requestPin('Admin PIN Required', 'Enter admin PIN to force daily reset');
-      if (!result.pin) return;
-      pin = result.pin;
-      rememberPin = result.remember;
-    }
-
-    try {
-      // Update lastResetDate to yesterday to trigger reset
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = getLocalDateString(yesterday);
-
-      const data = { ...choreData(), lastResetDate: yesterdayStr };
-
-      const response = await fetch(`${API_BASE}/restore`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...data, pin: pin || undefined }),
-      });
-
-      if (!response.ok) throw new Error('Failed to force reset');
-
-      if (rememberPin) setCachedPin(pin);
-      alert('Daily reset triggered successfully! The data will be updated on the next sync.');
-      await loadData();
-    } catch (error) {
-      console.error('Error forcing reset:', error);
-      alert('Failed to force reset. Please try again.');
-    }
-  };
-
   // Get personal chores for a person
   const getPersonalChores = (personId: string): PersonalChore[] => {
     const data = choreData();
@@ -527,38 +483,6 @@ export const MainPage: Component = () => {
         </Show>
 
         {/* System State Section */}
-        <section class="mb-10">
-          <h2 class="m-0 border-b-2 border-indigo-600 pb-2.5 text-2xl text-indigo-600">
-            System State
-          </h2>
-          <div class="rounded-lg border border-slate-200 bg-slate-50 p-5">
-            <p class="mb-4 text-base">
-              <strong class="text-indigo-600">Last Reset Date:</strong>{' '}
-              <span id="lastResetDate">{choreData().lastResetDate || 'Never'}</span>
-            </p>
-            <div class="mt-4 flex flex-row items-start gap-4">
-              <div class="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="warning"
-                  id="resetDailyBtn"
-                  onClick={handleForceReset}
-                >
-                  Force Daily Reset
-                </Button>
-                <Tooltip
-                  text="WARNING: This will un-check all chores and rotate assignment on rotating chores to the next person. It does respect skip days if today is a skip day. Useful for testing or immediately advancing chore assignments."
-                  position="above"
-                  align="center"
-                  multiline
-                  class="ml-2 text-base"
-                >
-                  ℹ️
-                </Tooltip>
-              </div>
-            </div>
-          </div>
-        </section>
       </main>
 
       {/* Modals */}

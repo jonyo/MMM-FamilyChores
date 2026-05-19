@@ -198,17 +198,6 @@ export const validateSettings = (settings: unknown): ValidatedResult => {
 
   const settingsObj = settings as Record<string, unknown>;
 
-  // Validate dailyResetTime (required, must be HH:MM format)
-  if (!settingsObj.dailyResetTime || typeof settingsObj.dailyResetTime !== 'string') {
-    return { valid: false, error: 'Settings must have a dailyResetTime string' };
-  }
-  if (!settingsObj.dailyResetTime.match(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)) {
-    return {
-      valid: false,
-      error: 'Settings dailyResetTime must be in 24-hour format (e.g., "03:00" or "21:00")',
-    };
-  }
-
   // Validate historyEnabled (required, must be boolean)
   if (typeof settingsObj.historyEnabled !== 'boolean') {
     return { valid: false, error: 'Settings must have a historyEnabled boolean' };

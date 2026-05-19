@@ -46,7 +46,6 @@ export const mockChoreData: FamilyChoresData = {
   people: [mockPerson, mockPerson2],
   chores: [mockPersonalChore, mockRotatingChore],
   settings: {
-    dailyResetTime: '03:00',
     historyEnabled: true,
   },
   lastResetDate: '2026-01-01',

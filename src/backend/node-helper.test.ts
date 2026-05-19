@@ -147,7 +147,6 @@ describe('Node Helper Tests', () => {
       lastResetDate: getLocalDateString(),
       dailyCompletions: [],
       settings: {
-        dailyResetTime: '03:00',
         historyEnabled: true,
       },
     };
@@ -244,6 +243,20 @@ describe('Node Helper Tests', () => {
     it('should early exit when chore is already incomplete', () => {
       // Ensure chore is not completed
       const payload = { choreId: '1', completed: false };
+      nodeHelper.handleChoreToggle(payload);
+
+      // Should not call saveChoreData due to early exit
+      expect(mockSaveChoreData).not.toHaveBeenCalled();
+    });
+
+    it('should return early when daily reset is pending', () => {
+      if (!nodeHelper.choreData) {
+        throw new Error('choreData is null');
+      }
+      // Set lastResetDate to yesterday so today > lastResetDate
+      nodeHelper.choreData.lastResetDate = '2024-01-01';
+
+      const payload = { choreId: '1', completed: true };
       nodeHelper.handleChoreToggle(payload);
 
       // Should not call saveChoreData due to early exit
@@ -812,7 +825,6 @@ describe('Node Helper Tests', () => {
       dailyCompletions: [],
       lastResetDate: '2024-05-11',
       settings: {
-        dailyResetTime: '03:00',
         historyEnabled: true,
       },
     });
@@ -910,80 +922,17 @@ describe('Node Helper Tests', () => {
       expect(incompleteEntry?.date).toBe('2024-05-11');
     });
 
-    it('should not perform reset when current time is before reset time', () => {
-      // Mock time: 2024-05-12 at 02:00 America/New_York (before reset time)
+    it('should perform reset when lastResetDate is before today regardless of time', () => {
+      // Mock time: 2024-05-12 at 02:00 America/New_York
       // Convert to UTC: America/New_York (UTC-4 in May) = 2024-05-12T06:00:00.000Z
       const mockDate = new Date('2024-05-12T06:00:00.000Z');
       vi.setSystemTime(mockDate);
 
       nodeHelper.checkAndPerformDailyReset();
 
-      // Should not reset since time is before 03:00
-      // Even though lastResetDate is before today, we haven't reached reset time yet today
-      expect(nodeHelper.choreData?.chores[0].completedToday).toBe(true);
-      expect(nodeHelper.choreData?.chores[1].completedToday).toBe(true);
-      expect(nodeHelper.choreData?.lastResetDate).toBe('2024-05-11');
-    });
-
-    it('should handle custom reset time correctly', () => {
-      // Update settings in choreData to use custom reset time
-      if (!nodeHelper.choreData) {
-        throw new Error('choreData is null');
-      }
-      nodeHelper.choreData.settings = {
-        dailyResetTime: '02:30',
-        historyEnabled: true,
-      };
-
-      // Mock time: 2024-05-12 at 03:00 America/New_York (after custom reset time)
-      // Convert to UTC: America/New_York (UTC-4 in May) = 2024-05-12T07:00:00.000Z
-      const mockDate = new Date('2024-05-12T07:00:00.000Z');
-      vi.setSystemTime(mockDate);
-
-      nodeHelper.checkAndPerformDailyReset();
-
-      // Should reset since time is after 02:30
+      // Should reset since lastResetDate (2024-05-11) < today (2024-05-12)
       expect(nodeHelper.choreData?.chores[0].completedToday).toBe(false);
-      // Verify that lastResetDate was updated (check it's no longer old value)
-      expect(nodeHelper.choreData?.lastResetDate).not.toBe('2024-05-11');
-    });
-
-    it('should handle missing lastResetDate', () => {
-      if (!nodeHelper.choreData) {
-        throw new Error('choreData is null');
-      }
-      nodeHelper.choreData.lastResetDate = undefined;
-
-      // Mock time: 2024-05-12 at 01:00 America/New_York (before reset time)
-      // Convert to UTC: America/New_York (UTC-4 in May) = 2024-05-12T05:00:00.000Z
-      const mockDate = new Date('2024-05-12T05:00:00.000Z');
-      vi.setSystemTime(mockDate);
-
-      nodeHelper.checkAndPerformDailyReset();
-
-      // Should not reset since time is before 03:00, even though lastResetDate is before today
-      expect(nodeHelper.choreData?.chores[0].completedToday).toBe(true);
-      expect(nodeHelper.choreData?.chores[1].completedToday).toBe(true);
-      expect(nodeHelper.choreData?.lastResetDate).toBeUndefined();
-    });
-
-    it('should not reset when time is before reset time on same day', () => {
-      // Update lastResetDate to today to test this scenario
-      if (!nodeHelper.choreData) {
-        throw new Error('choreData is null');
-      }
-      nodeHelper.choreData.lastResetDate = '2024-05-12';
-
-      // Mock time: 2024-05-12 at 01:00 America/New_York (before reset time)
-      // Convert to UTC: America/New_York (UTC-4 in May) = 2024-05-12T05:00:00.000Z
-      const mockDate = new Date('2024-05-12T05:00:00.000Z');
-      vi.setSystemTime(mockDate);
-
-      nodeHelper.checkAndPerformDailyReset();
-
-      // Should not reset even though it's same day, because time is before reset time
-      expect(nodeHelper.choreData?.chores[0].completedToday).toBe(true);
-      expect(nodeHelper.choreData?.chores[1].completedToday).toBe(true);
+      expect(nodeHelper.choreData?.chores[1].completedToday).toBe(false);
       expect(nodeHelper.choreData?.lastResetDate).toBe('2024-05-12');
     });
 
@@ -1171,14 +1120,14 @@ describe('Node Helper Tests', () => {
       expect(nodeHelper.choreData?.chores).toHaveLength(0);
     });
 
-    it('stores undefined when lastResetDate is not a string', () => {
+    it('sets lastResetDate to today when it is not a valid string', () => {
       vi.mocked(fs.readFileSync).mockReturnValue(
         JSON.stringify({ people: [validPerson1], chores: [], lastResetDate: 42 })
       );
 
       nodeHelper.loadChoreData();
 
-      expect(nodeHelper.choreData?.lastResetDate).toBeUndefined();
+      expect(nodeHelper.choreData?.lastResetDate).toBe(getLocalDateString());
     });
 
     it('creates default data when file does not exist', () => {

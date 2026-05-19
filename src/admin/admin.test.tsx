@@ -31,7 +31,6 @@ describe('Admin Component Tests', () => {
         lastResetDate: '2024-01-01',
         dailyCompletions: [],
         settings: {
-          dailyResetTime: '03:00',
           historyEnabled: true,
         },
       };
@@ -61,7 +60,6 @@ describe('Admin Component Tests', () => {
         dailyCompletions: [],
         lastResetDate: '2024-01-01',
         settings: {
-          dailyResetTime: '03:00',
           historyEnabled: true,
         },
       };
@@ -82,7 +80,6 @@ describe('Admin Component Tests', () => {
         dailyCompletions: [],
         lastResetDate: '2024-01-01',
         settings: {
-          dailyResetTime: '03:00',
           historyEnabled: true,
         },
       };
@@ -109,7 +106,6 @@ describe('Admin Component Tests', () => {
         dailyCompletions: [],
         lastResetDate: '2024-01-01',
         settings: {
-          dailyResetTime: '03:00',
           historyEnabled: true,
         },
       };
@@ -144,7 +140,6 @@ describe('Admin Component Tests', () => {
         dailyCompletions: [],
         lastResetDate: '2024-01-01',
         settings: {
-          dailyResetTime: '03:00',
           historyEnabled: true,
         },
       };

@@ -138,7 +138,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
           settings = rawSettings as Settings;
         } else {
           Log.warn(`Invalid settings in data file, using defaults: ${settingsResult.error}`);
-          settings = { dailyResetTime: '03:00', historyEnabled: true };
+          settings = { historyEnabled: true };
         }
 
         // Validate and filter daily completions against valid chores
@@ -160,7 +160,9 @@ const nodeHelper: FamilyChoresNodeHelper = {
           chores: validChores,
           dailyCompletions: validCompletions,
           lastResetDate:
-            typeof rawData.lastResetDate === 'string' ? rawData.lastResetDate : undefined,
+            typeof rawData.lastResetDate === 'string'
+              ? rawData.lastResetDate
+              : getLocalDateString(),
           settings,
         };
         Log.info(`Loaded chore data from ${dataPath}`);
@@ -208,7 +210,6 @@ const nodeHelper: FamilyChoresNodeHelper = {
       // Initialize to today to prevent immediate rotation
       lastResetDate: getLocalDateString(),
       settings: {
-        dailyResetTime: '03:00',
         historyEnabled: true,
       },
     };
@@ -220,23 +221,14 @@ const nodeHelper: FamilyChoresNodeHelper = {
   checkAndPerformDailyReset(): void {
     if (!this.choreData) return;
 
-    // Get current local date and time
     const todayDateString = getLocalDateString();
-    const currentTimeString = getLocalTimeString();
 
-    if (this.choreData.lastResetDate && todayDateString <= this.choreData.lastResetDate) {
+    if (todayDateString <= this.choreData.lastResetDate) {
       // already run today
       return;
     }
-    const dailyResetTime = this.choreData.settings?.dailyResetTime || '03:00';
 
-    if (currentTimeString < dailyResetTime) {
-      // not time yet - NOTE: if we skipped an entire day, we still wait for the reset time to pass
-      return;
-    }
-    Log.info(
-      `Daily reset triggered for ${getLocalDateString()} at ${currentTimeString}, reset time: ${dailyResetTime}`
-    );
+    Log.info(`Daily reset triggered for ${todayDateString}`);
     this.transitionChoresForNewDay();
     // Cleanup daily completions older than 14 days
     this.cleanupOldDailyCompletions();
@@ -323,6 +315,14 @@ const nodeHelper: FamilyChoresNodeHelper = {
   // Handle chore toggle
   handleChoreToggle(payload: ChoreTogglePayload): void {
     if (!this.choreData) return;
+
+    const todayDateString = getLocalDateString();
+    if (todayDateString > this.choreData.lastResetDate) {
+      Log.warn(
+        'Cannot toggle chore, daily midnight reset is in progress. If this persists you may need to restart MagicMirror.'
+      );
+      return;
+    }
 
     const chore = this.choreData.chores.find((c: Chore) => c.id === payload.choreId);
     if (!chore) {
