@@ -1,13 +1,7 @@
 import type { Component } from 'solid-js';
 import { createSignal, For, Match, onMount, Show, Switch } from 'solid-js';
 import { getHistory } from '../api';
-import type {
-  Chore,
-  DailyCompletion,
-  DayOfWeek,
-  FamilyChoresData,
-  Person,
-} from '../types/chore-types';
+import type { Chore, DailyCompletion, DayOfWeek, Person } from '../types/chore-types';
 import { escapeHtml } from '../utils/browser';
 import {
   getLocalDateString,
@@ -16,12 +10,12 @@ import {
   getLocalDayOfMonth,
   getLocalMonthNameShort,
 } from '../utils/date';
+import { useAdminContext } from './admin-context';
 import { Button } from './button';
 import { Tooltip } from './tooltip';
 
 interface ChoreHistoryModalProps {
   person: Person;
-  choreData: FamilyChoresData;
   closeModal: () => void;
 }
 
@@ -39,6 +33,7 @@ interface DayInfo {
 }
 
 export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
+  const { choreData } = useAdminContext();
   const [history, setHistory] = createSignal<DailyCompletion[]>([]);
   const [loading, setLoading] = createSignal(true);
   const [error, setError] = createSignal<string | null>(null);
@@ -80,7 +75,8 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
 
   // Get chores for a person (personal + rotating where person is in rotation)
   const getPersonChores = () => {
-    return props.choreData.chores.filter((chore) => {
+    const data = choreData();
+    return data.chores.filter((chore) => {
       if (chore.type === 'personal' && chore.assignedTo === props.person.id) {
         return true;
       }

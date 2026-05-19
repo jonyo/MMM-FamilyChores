@@ -1,32 +1,31 @@
 import type { Component } from 'solid-js';
 import { createMemo, createSignal, For, onMount, Show } from 'solid-js';
 import { copyChores } from '../api';
-import type { FamilyChoresData, Person, PersonalChore } from '../types/chore-types';
+import type { Person, PersonalChore } from '../types/chore-types';
 import { ChoreType } from '../types/chore-types';
 import { escapeHtml } from '../utils/browser';
+import { useAdminContext } from './admin-context';
 import { Button } from './button';
 import { PinField } from './pin-field';
 
 interface CopyChoresModalProps {
   fromPerson: Person;
-  choreData: FamilyChoresData;
-  pinRequired: boolean;
   closeModal: () => void;
-  onPinRemembered?: (pin: string) => void;
-  cachedPin?: string;
 }
 
 export const CopyChoresModal: Component<CopyChoresModalProps> = (props) => {
+  const { choreData, pinRequired, cachePin, adminPin } = useAdminContext();
+
   // Get personal chores for the from person
   const personalChores = createMemo<PersonalChore[]>(() => {
-    return props.choreData.chores.filter(
+    return choreData().chores.filter(
       (chore) => chore.type === ChoreType.PERSONAL && chore.assignedTo === props.fromPerson.id
     ) as PersonalChore[];
   });
 
   // Get available people to copy to (exclude from person)
   const availablePeople = createMemo<Person[]>(() => {
-    return props.choreData.people.filter((person) => person.id !== props.fromPerson.id);
+    return choreData().people.filter((person) => person.id !== props.fromPerson.id);
   });
 
   const [selectedChoreIds, setSelectedChoreIds] = createSignal<string[]>([]);
@@ -65,16 +64,16 @@ export const CopyChoresModal: Component<CopyChoresModalProps> = (props) => {
     setLoading(true);
 
     try {
-      const pinToUse = props.cachedPin || pin();
+      const pinToUse = adminPin() || pin();
       await copyChores({
         fromPersonId: props.fromPerson.id,
         toPersonId: toPersonId(),
         choreIds: selectedChoreIds(),
-        pin: props.pinRequired ? pinToUse || undefined : undefined,
+        pin: pinRequired() ? pinToUse || undefined : undefined,
       });
 
-      if (!props.cachedPin && rememberPin() && pin()) {
-        props.onPinRemembered?.(pin());
+      if (!adminPin() && rememberPin() && pin()) {
+        cachePin(pin());
       }
 
       props.closeModal();
@@ -159,7 +158,7 @@ export const CopyChoresModal: Component<CopyChoresModalProps> = (props) => {
                   </For>
                 </div>
               </div>
-              <Show when={props.pinRequired && !props.cachedPin}>
+              <Show when={pinRequired() && !adminPin()}>
                 <PinField
                   pin={pin()}
                   onPinChange={setPin}

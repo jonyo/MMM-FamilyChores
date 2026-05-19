@@ -1,19 +1,21 @@
 import type { Component } from 'solid-js';
 import { createSignal, Show } from 'solid-js';
 import { updateSettings } from '../api';
-import type { Settings } from '../types/chore-types';
 import type { UpdateSettingsRequest } from '../types/request-types';
+import { useAdminContext } from './admin-context';
 import { Button } from './button';
 
 interface SettingsModalProps {
-  initialSettings: Settings;
   closeModal: () => void;
 }
 
 export const SettingsModal: Component<SettingsModalProps> = (props) => {
-  const [dailyResetTime, setDailyResetTime] = createSignal(props.initialSettings.dailyResetTime);
-  const [historyEnabled, setHistoryEnabled] = createSignal(props.initialSettings.historyEnabled);
-  const [pinEnabled, setPinEnabled] = createSignal(!!props.initialSettings.adminPin);
+  const { choreData } = useAdminContext();
+  const settings = () => choreData().settings;
+
+  const [dailyResetTime, setDailyResetTime] = createSignal(settings().dailyResetTime);
+  const [historyEnabled, setHistoryEnabled] = createSignal(settings().historyEnabled);
+  const [pinEnabled, setPinEnabled] = createSignal(!!settings().adminPin);
   const [currentPin, setCurrentPin] = createSignal('');
   const [newPin, setNewPin] = createSignal('');
   const [confirmPin, setConfirmPin] = createSignal('');
@@ -22,7 +24,7 @@ export const SettingsModal: Component<SettingsModalProps> = (props) => {
   const [showNewPin, setShowNewPin] = createSignal(false);
   const [showConfirmPin, setShowConfirmPin] = createSignal(false);
 
-  const hasPin = () => !!props.initialSettings.adminPin;
+  const hasPin = () => !!settings().adminPin;
 
   const handleSubmit = async (event: Event) => {
     event.preventDefault();

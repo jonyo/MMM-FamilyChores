@@ -155,6 +155,14 @@
 		});
 	}
 	var [transPending, setTransPending] = /* @__PURE__ */ createSignal(false);
+	function createContext(defaultValue, options) {
+		const id = Symbol("context");
+		return {
+			id,
+			Provider: createProvider(id),
+			defaultValue
+		};
+	}
 	function useContext(context) {
 		let value;
 		return Owner && Owner.context && (value = Owner.context[context.id]) !== void 0 ? value : context.defaultValue;
@@ -547,6 +555,19 @@
 			return results;
 		}
 		return children;
+	}
+	function createProvider(id, options) {
+		return function provider(props) {
+			let res;
+			createRenderEffect(() => res = untrack(() => {
+				Owner.context = {
+					...Owner.context,
+					[id]: props.value
+				};
+				return children(() => props.children);
+			}), void 0);
+			return res;
+		};
 	}
 	var FALLBACK = Symbol("fallback");
 	function dispose(d) {
@@ -1103,6 +1124,21 @@
 		return [node];
 	}
 	//#endregion
+	//#region src/admin/admin-context.tsx
+	/**
+	* Admin context for sharing data and state across admin panel components
+	*/
+	var AdminContext = createContext();
+	/**
+	* Hook to access the admin context
+	* Must be used within an AdminContext.Provider
+	*/
+	var useAdminContext = () => {
+		const context = useContext(AdminContext);
+		if (!context) throw new Error("useAdminContext must be used within an AdminContext.Provider");
+		return context;
+	};
+	//#endregion
 	//#region src/utils/validation.ts
 	/**
 	* Validates that an ID contains only safe characters (a-z, 0-9, hyphen)
@@ -1373,10 +1409,10 @@
 	};
 	//#endregion
 	//#region src/admin/button.tsx
-	var _tmpl$$11 = /* @__PURE__ */ template(`<button class="cursor-pointer rounded-lg border-none px-5 py-2.5 text-sm font-medium transition-all hover:-translate-y-0.5 hover:shadow-md">`);
+	var _tmpl$$12 = /* @__PURE__ */ template(`<button class="cursor-pointer rounded-lg border-none px-5 py-2.5 text-sm font-medium transition-all hover:-translate-y-0.5 hover:shadow-md">`);
 	var Button = (props) => {
 		return (() => {
-			var _el$ = _tmpl$$11();
+			var _el$ = _tmpl$$12();
 			_el$.$$click = (event) => props.onClick?.(event);
 			insert(_el$, () => props.children);
 			createRenderEffect((_p$) => {
@@ -1409,7 +1445,7 @@
 	delegateEvents(["click"]);
 	//#endregion
 	//#region src/admin/tooltip.tsx
-	var _tmpl$$10 = /* @__PURE__ */ template(`<span>`);
+	var _tmpl$$11 = /* @__PURE__ */ template(`<span>`);
 	var Tooltip = (rawProps) => {
 		const props = mergeProps({
 			position: "above",
@@ -1419,7 +1455,7 @@
 			classList: {}
 		}, rawProps);
 		return (() => {
-			var _el$ = _tmpl$$10();
+			var _el$ = _tmpl$$11();
 			insert(_el$, () => props.children);
 			createRenderEffect((_p$) => {
 				var _v$ = {
@@ -1451,8 +1487,9 @@
 	};
 	//#endregion
 	//#region src/admin/chore-history-modal.tsx
-	var _tmpl$$9 = /* @__PURE__ */ template(`<div class="py-4 text-center text-slate-500">Loading history...`), _tmpl$2$8 = /* @__PURE__ */ template(`<div class="py-4 text-center text-red-600">Error: `), _tmpl$3$6 = /* @__PURE__ */ template(`<div class=overflow-x-auto><table class="w-full border-collapse border border-slate-200"data-testid=history-table><thead><tr><th class="border border-slate-200 p-2.5 text-left text-base font-medium whitespace-nowrap text-slate-900">Chore</th></tr></thead><tbody>`), _tmpl$4$3 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"data-testid=modal><div class="max-h-[90vh] w-[90%] max-w-[95vw] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"data-testid=modal-content><h3 class="mb-5 text-2xl text-indigo-600">'s Chore History</h3><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$5$3 = /* @__PURE__ */ template(`<th class="relative h-[100px] w-[50px] overflow-visible border border-slate-200 p-2.5 text-left text-base font-medium text-slate-900"><span class="absolute top-1/2 left-1/2 -translate-1/2 -rotate-90 whitespace-nowrap">`), _tmpl$6$3 = /* @__PURE__ */ template(`<tr><td class="border border-slate-200 p-2.5 text-base whitespace-nowrap text-slate-900">`), _tmpl$7$2 = /* @__PURE__ */ template(`<td class="border border-slate-200 p-2.5 text-center">`), _tmpl$8$2 = /* @__PURE__ */ template(`<span style=opacity:0;width:32px;height:32px;display:inline-block>`);
+	var _tmpl$$10 = /* @__PURE__ */ template(`<div class="py-4 text-center text-slate-500">Loading history...`), _tmpl$2$9 = /* @__PURE__ */ template(`<div class="py-4 text-center text-red-600">Error: `), _tmpl$3$7 = /* @__PURE__ */ template(`<div class=overflow-x-auto><table class="w-full border-collapse border border-slate-200"data-testid=history-table><thead><tr><th class="border border-slate-200 p-2.5 text-left text-base font-medium whitespace-nowrap text-slate-900">Chore</th></tr></thead><tbody>`), _tmpl$4$4 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"data-testid=modal><div class="max-h-[90vh] w-[90%] max-w-[95vw] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"data-testid=modal-content><h3 class="mb-5 text-2xl text-indigo-600">'s Chore History</h3><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$5$3 = /* @__PURE__ */ template(`<th class="relative h-[100px] w-[50px] overflow-visible border border-slate-200 p-2.5 text-left text-base font-medium text-slate-900"><span class="absolute top-1/2 left-1/2 -translate-1/2 -rotate-90 whitespace-nowrap">`), _tmpl$6$3 = /* @__PURE__ */ template(`<tr><td class="border border-slate-200 p-2.5 text-base whitespace-nowrap text-slate-900">`), _tmpl$7$2 = /* @__PURE__ */ template(`<td class="border border-slate-200 p-2.5 text-center">`), _tmpl$8$2 = /* @__PURE__ */ template(`<span style=opacity:0;width:32px;height:32px;display:inline-block>`);
 	var ChoreHistoryModal = (props) => {
+		const { choreData } = useAdminContext();
 		const [history, setHistory] = createSignal([]);
 		const [loading, setLoading] = createSignal(true);
 		const [error, setError] = createSignal(null);
@@ -1482,7 +1519,7 @@
 			return days;
 		};
 		const getPersonChores = () => {
-			return props.choreData.chores.filter((chore) => {
+			return choreData().chores.filter((chore) => {
 				if (chore.type === "personal" && chore.assignedTo === props.person.id) return true;
 				if (chore.type === "rotating" && chore.rotation?.includes(props.person.id)) return true;
 				return false;
@@ -1496,14 +1533,14 @@
 			return chore.skipDays.includes(day.dayName);
 		};
 		return (() => {
-			var _el$ = _tmpl$4$3(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.firstChild, _el$12 = _el$3.nextSibling;
+			var _el$ = _tmpl$4$4(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.firstChild, _el$12 = _el$3.nextSibling;
 			insert(_el$3, () => escapeHtml(props.person.name), _el$4);
 			insert(_el$2, createComponent(Show, {
 				get when() {
 					return loading();
 				},
 				get children() {
-					return _tmpl$$9();
+					return _tmpl$$10();
 				}
 			}), _el$12);
 			insert(_el$2, createComponent(Show, {
@@ -1511,7 +1548,7 @@
 					return error();
 				},
 				get children() {
-					var _el$6 = _tmpl$2$8();
+					var _el$6 = _tmpl$2$9();
 					_el$6.firstChild;
 					insert(_el$6, () => escapeHtml(error() ?? "Unknown error"), null);
 					return _el$6;
@@ -1522,7 +1559,7 @@
 					return memo(() => !!!loading())() && !error();
 				},
 				get children() {
-					var _el$8 = _tmpl$3$6(), _el$0 = _el$8.firstChild.firstChild, _el$1 = _el$0.firstChild;
+					var _el$8 = _tmpl$3$7(), _el$0 = _el$8.firstChild.firstChild, _el$1 = _el$0.firstChild;
 					_el$1.firstChild;
 					var _el$11 = _el$0.nextSibling;
 					insert(_el$1, createComponent(For, {
@@ -1664,14 +1701,14 @@
 	};
 	//#endregion
 	//#region src/admin/pin-field.tsx
-	var _tmpl$$8 = /* @__PURE__ */ template(`<label class="mt-3 flex cursor-pointer items-center gap-2"><input type=checkbox class="size-4.5 cursor-pointer">Remember PIN for 10 minutes<span title="PIN is remembered for 10 minutes or until you refresh or close the window"class="ml-1 cursor-help text-slate-400">&#9432;`), _tmpl$2$7 = /* @__PURE__ */ template(`<button type=button class="cursor-help text-sm text-indigo-600 underline">Forgot PIN?`), _tmpl$3$5 = /* @__PURE__ */ template(`<div class="mb-5 rounded-lg border border-amber-200 bg-amber-50 p-4"><label for=adminPin class="mb-2 block font-medium text-amber-900">Admin PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=adminPin placeholder="Enter admin PIN"required class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"><button type=button class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100"></button></div><small class="mt-1 block text-sm text-amber-700">PIN is required to make changes</small><div class=mt-1>`);
+	var _tmpl$$9 = /* @__PURE__ */ template(`<label class="mt-3 flex cursor-pointer items-center gap-2"><input type=checkbox class="size-4.5 cursor-pointer">Remember PIN for 10 minutes<span title="PIN is remembered for 10 minutes or until you refresh or close the window"class="ml-1 cursor-help text-slate-400">&#9432;`), _tmpl$2$8 = /* @__PURE__ */ template(`<button type=button class="cursor-help text-sm text-indigo-600 underline">Forgot PIN?`), _tmpl$3$6 = /* @__PURE__ */ template(`<div class="mb-5 rounded-lg border border-amber-200 bg-amber-50 p-4"><label for=adminPin class="mb-2 block font-medium text-amber-900">Admin PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=adminPin placeholder="Enter admin PIN"required class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"><button type=button class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100"></button></div><small class="mt-1 block text-sm text-amber-700">PIN is required to make changes</small><div class=mt-1>`);
 	/**
 	* Reusable PIN input field for admin modals.
 	*/
 	var PinField = (props) => {
 		const [showPin, setShowPin] = createSignal(false);
 		return (() => {
-			var _el$ = _tmpl$3$5(), _el$3 = _el$.firstChild.nextSibling, _el$4 = _el$3.firstChild, _el$5 = _el$4.nextSibling, _el$8 = _el$3.nextSibling, _el$9 = _el$8.nextSibling;
+			var _el$ = _tmpl$3$6(), _el$3 = _el$.firstChild.nextSibling, _el$4 = _el$3.firstChild, _el$5 = _el$4.nextSibling, _el$8 = _el$3.nextSibling, _el$9 = _el$8.nextSibling;
 			_el$4.$$input = (e) => props.onPinChange(e.currentTarget.value);
 			_el$5.$$click = () => setShowPin(!showPin());
 			insert(_el$5, createComponent(Show, {
@@ -1686,7 +1723,7 @@
 					return props.onRememberChange;
 				},
 				get children() {
-					var _el$6 = _tmpl$$8(), _el$7 = _el$6.firstChild;
+					var _el$6 = _tmpl$$9(), _el$7 = _el$6.firstChild;
 					_el$7.$$input = (e) => props.onRememberChange?.(e.currentTarget.checked);
 					createRenderEffect(() => _el$7.checked = props.remember ?? false);
 					return _el$6;
@@ -1698,7 +1735,7 @@
 				align: "left",
 				multiline: true,
 				get children() {
-					return _tmpl$2$7();
+					return _tmpl$2$8();
 				}
 			}));
 			createRenderEffect(() => setAttribute(_el$4, "type", showPin() ? "text" : "password"));
@@ -1709,13 +1746,14 @@
 	delegateEvents(["input", "click"]);
 	//#endregion
 	//#region src/admin/copy-chores-modal.tsx
-	var _tmpl$$7 = /* @__PURE__ */ template(`<div class="my-2.5 text-slate-500 italic"data-testid=empty-message><p>No other people available to copy chores to.`), _tmpl$2$6 = /* @__PURE__ */ template(`<form><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Select Person to Copy To</div><select id=toPerson required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option value>-- Select a person --</option></select></div><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Select Chores to Copy</div><div class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3"data-testid=checkbox-list></div></div><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$3$4 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><h3 class="mb-5 text-2xl text-indigo-600">Copy Chores</h3><div class="mb-5 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-base"data-testid=copy-from-display><span class="inline-block size-6 rounded-full border-2 border-black/10 align-middle"data-testid=person-color-badge></span><strong>From:</strong> `), _tmpl$4$2 = /* @__PURE__ */ template(`<div class="my-2.5 text-slate-500 italic"data-testid=empty-message><p>No personal chores to copy for <!>.`), _tmpl$5$2 = /* @__PURE__ */ template(`<option>`), _tmpl$6$2 = /* @__PURE__ */ template(`<label class="flex cursor-pointer items-center gap-2 font-normal"><input type=checkbox class="size-4.5 cursor-pointer">`);
+	var _tmpl$$8 = /* @__PURE__ */ template(`<div class="my-2.5 text-slate-500 italic"data-testid=empty-message><p>No other people available to copy chores to.`), _tmpl$2$7 = /* @__PURE__ */ template(`<form><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Select Person to Copy To</div><select id=toPerson required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option value>-- Select a person --</option></select></div><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Select Chores to Copy</div><div class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3"data-testid=checkbox-list></div></div><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$3$5 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><h3 class="mb-5 text-2xl text-indigo-600">Copy Chores</h3><div class="mb-5 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-base"data-testid=copy-from-display><span class="inline-block size-6 rounded-full border-2 border-black/10 align-middle"data-testid=person-color-badge></span><strong>From:</strong> `), _tmpl$4$3 = /* @__PURE__ */ template(`<div class="my-2.5 text-slate-500 italic"data-testid=empty-message><p>No personal chores to copy for <!>.`), _tmpl$5$2 = /* @__PURE__ */ template(`<option>`), _tmpl$6$2 = /* @__PURE__ */ template(`<label class="flex cursor-pointer items-center gap-2 font-normal"><input type=checkbox class="size-4.5 cursor-pointer">`);
 	var CopyChoresModal = (props) => {
+		const { choreData, pinRequired, cachePin, adminPin } = useAdminContext();
 		const personalChores = createMemo(() => {
-			return props.choreData.chores.filter((chore) => chore.type === ChoreType.PERSONAL && chore.assignedTo === props.fromPerson.id);
+			return choreData().chores.filter((chore) => chore.type === ChoreType.PERSONAL && chore.assignedTo === props.fromPerson.id);
 		});
 		const availablePeople = createMemo(() => {
-			return props.choreData.people.filter((person) => person.id !== props.fromPerson.id);
+			return choreData().people.filter((person) => person.id !== props.fromPerson.id);
 		});
 		const [selectedChoreIds, setSelectedChoreIds] = createSignal([]);
 		const [toPersonId, setToPersonId] = createSignal("");
@@ -1741,14 +1779,14 @@
 			}
 			setLoading(true);
 			try {
-				const pinToUse = props.cachedPin || pin();
+				const pinToUse = adminPin() || pin();
 				await copyChores({
 					fromPersonId: props.fromPerson.id,
 					toPersonId: toPersonId(),
 					choreIds: selectedChoreIds(),
-					pin: props.pinRequired ? pinToUse || void 0 : void 0
+					pin: pinRequired() ? pinToUse || void 0 : void 0
 				});
-				if (!props.cachedPin && rememberPin() && pin()) props.onPinRemembered?.(pin());
+				if (!adminPin() && rememberPin() && pin()) cachePin(pin());
 				props.closeModal();
 			} catch (error) {
 				console.error("Error copying chores:", error);
@@ -1758,7 +1796,7 @@
 			}
 		};
 		return (() => {
-			var _el$ = _tmpl$3$4(), _el$2 = _el$.firstChild, _el$4 = _el$2.firstChild.nextSibling, _el$5 = _el$4.firstChild;
+			var _el$ = _tmpl$3$5(), _el$2 = _el$.firstChild, _el$4 = _el$2.firstChild.nextSibling, _el$5 = _el$4.firstChild;
 			_el$5.nextSibling.nextSibling;
 			insert(_el$4, () => escapeHtml(props.fromPerson.name), null);
 			insert(_el$2, createComponent(Show, {
@@ -1767,7 +1805,7 @@
 				},
 				get fallback() {
 					return (() => {
-						var _el$17 = _tmpl$4$2(), _el$18 = _el$17.firstChild, _el$21 = _el$18.firstChild.nextSibling;
+						var _el$17 = _tmpl$4$3(), _el$18 = _el$17.firstChild, _el$21 = _el$18.firstChild.nextSibling;
 						_el$21.nextSibling;
 						insert(_el$18, () => escapeHtml(props.fromPerson.name), _el$21);
 						insert(_el$17, createComponent(Button, {
@@ -1785,7 +1823,7 @@
 							return availablePeople().length === 0;
 						},
 						get children() {
-							var _el$8 = _tmpl$$7();
+							var _el$8 = _tmpl$$8();
 							_el$8.firstChild;
 							insert(_el$8, createComponent(Button, {
 								type: "button",
@@ -1800,7 +1838,7 @@
 							return availablePeople().length > 0;
 						},
 						get children() {
-							var _el$0 = _tmpl$2$6(), _el$1 = _el$0.firstChild, _el$11 = _el$1.firstChild.nextSibling;
+							var _el$0 = _tmpl$2$7(), _el$1 = _el$0.firstChild, _el$11 = _el$1.firstChild.nextSibling;
 							_el$11.firstChild;
 							var _el$13 = _el$1.nextSibling, _el$15 = _el$13.firstChild.nextSibling, _el$16 = _el$13.nextSibling;
 							_el$0.addEventListener("submit", handleSubmit);
@@ -1831,7 +1869,7 @@
 							}));
 							insert(_el$0, createComponent(Show, {
 								get when() {
-									return memo(() => !!props.pinRequired)() && !props.cachedPin;
+									return memo(() => !!pinRequired())() && !adminPin();
 								},
 								get children() {
 									return createComponent(PinField, {
@@ -1875,8 +1913,9 @@
 	delegateEvents(["input"]);
 	//#endregion
 	//#region src/admin/person-modal.tsx
-	var _tmpl$$6 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><h3 class="mb-5 text-2xl text-indigo-600"></h3><form><div class=mb-5><label for=personName class="mb-3 block font-medium text-slate-900">Name</label><input type=text id=personName required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><label for=personColor class="mb-3 block font-medium text-slate-900">Text Color</label><div class="flex items-center gap-2.5"><input type=color id=personColor required class="h-10 w-15 cursor-pointer rounded-lg border border-slate-300"></div></div><div class="mt-6 flex justify-end gap-2.5">`);
+	var _tmpl$$7 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><h3 class="mb-5 text-2xl text-indigo-600"></h3><form><div class=mb-5><label for=personName class="mb-3 block font-medium text-slate-900">Name</label><input type=text id=personName required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><label for=personColor class="mb-3 block font-medium text-slate-900">Text Color</label><div class="flex items-center gap-2.5"><input type=color id=personColor required class="h-10 w-15 cursor-pointer rounded-lg border border-slate-300"></div></div><div class="mt-6 flex justify-end gap-2.5">`);
 	var PersonModal = (props) => {
+		const { loadData, pinRequired, adminPin, cachePin } = useAdminContext();
 		const [name, setName] = createSignal(props.initialPerson?.name ?? "");
 		const [color, setColor] = createSignal(props.initialPerson?.color ?? generatePastelColor());
 		const [pin, setPin] = createSignal("");
@@ -1884,20 +1923,26 @@
 		const handleSubmit = async (event) => {
 			event.preventDefault();
 			try {
-				const pinToUse = props.cachedPin || pin();
+				const pinToUse = adminPin() || pin();
 				if (props.initialPerson?.id) {
 					const body = {
 						name: name(),
 						color: color(),
-						pin: props.pinRequired ? pinToUse || void 0 : void 0
+						pin: pinRequired() ? pinToUse || void 0 : void 0
 					};
 					await updatePerson(props.initialPerson.id, body);
 				} else await createPerson({
 					name: name(),
 					color: color(),
-					pin: props.pinRequired ? pinToUse || void 0 : void 0
+					pin: pinRequired() ? pinToUse || void 0 : void 0
 				});
-				if (!props.cachedPin && rememberPin() && pin()) props.onPinRemembered?.(pin());
+				if (!adminPin() && rememberPin() && pin()) cachePin(pin());
+				try {
+					await loadData();
+				} catch (loadError) {
+					console.error("Error reloading data after save:", loadError);
+					alert("Person saved, but failed to refresh the list. Please refresh the page.");
+				}
 				props.closeModal();
 			} catch (error) {
 				console.error("Error saving person:", error);
@@ -1905,7 +1950,7 @@
 			}
 		};
 		return (() => {
-			var _el$ = _tmpl$$6(), _el$3 = _el$.firstChild.firstChild, _el$4 = _el$3.nextSibling, _el$5 = _el$4.firstChild, _el$7 = _el$5.firstChild.nextSibling, _el$8 = _el$5.nextSibling, _el$0 = _el$8.firstChild.nextSibling, _el$1 = _el$0.firstChild, _el$10 = _el$8.nextSibling;
+			var _el$ = _tmpl$$7(), _el$3 = _el$.firstChild.firstChild, _el$4 = _el$3.nextSibling, _el$5 = _el$4.firstChild, _el$7 = _el$5.firstChild.nextSibling, _el$8 = _el$5.nextSibling, _el$0 = _el$8.firstChild.nextSibling, _el$1 = _el$0.firstChild, _el$10 = _el$8.nextSibling;
 			insert(_el$3, () => props.initialPerson ? "Edit Person" : "Add Person");
 			_el$4.addEventListener("submit", handleSubmit);
 			_el$7.$$input = (e) => setName(e.currentTarget.value);
@@ -1919,7 +1964,7 @@
 			}), null);
 			insert(_el$4, createComponent(Show, {
 				get when() {
-					return memo(() => !!props.pinRequired)() && !props.cachedPin;
+					return memo(() => !!pinRequired())() && !adminPin();
 				},
 				get children() {
 					return createComponent(PinField, {
@@ -1955,8 +2000,9 @@
 	delegateEvents(["input"]);
 	//#endregion
 	//#region src/admin/personal-chore-modal.tsx
-	var _tmpl$$5 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><h3 class="mb-5 text-2xl text-indigo-600">Error</h3><p>Person not found. Please refresh the page.`), _tmpl$2$5 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"data-testid=modal><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"data-testid=modal-content><h3 class="mb-5 text-2xl text-indigo-600"></h3><div class="mb-5 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-base"data-testid=assigned-person-display><span class="inline-block size-6 rounded-full border-2 border-black/10 align-middle"data-testid=person-color-badge></span><strong>Assigned to:</strong> </div><form><div class=mb-5><label for=choreName class="mb-3 block font-medium text-slate-900">Chore Name</label><input type=text id=choreName required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><label for=deadline class="mb-3 block font-medium text-slate-900">Deadline (optional)</label><input type=time id=deadline class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Skip Days</div><div class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3"></div></div><div class=mb-5><label for=skipDayVisibility class="mb-3 block font-medium text-slate-900">Skip Day Visibility</label><select id=skipDayVisibility class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option>Hide</option><option>Show Always</option><option>Show If Overdue</option></select></div><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$3$3 = /* @__PURE__ */ template(`<label class="flex cursor-pointer items-center gap-2 font-normal"><input type=checkbox class="size-4.5 cursor-pointer">`);
+	var _tmpl$$6 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><h3 class="mb-5 text-2xl text-indigo-600">Error</h3><p>Person not found. Please refresh the page.`), _tmpl$2$6 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"data-testid=modal><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"data-testid=modal-content><h3 class="mb-5 text-2xl text-indigo-600"></h3><div class="mb-5 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-base"data-testid=assigned-person-display><span class="inline-block size-6 rounded-full border-2 border-black/10 align-middle"data-testid=person-color-badge></span><strong>Assigned to:</strong> </div><form><div class=mb-5><label for=choreName class="mb-3 block font-medium text-slate-900">Chore Name</label><input type=text id=choreName required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><label for=deadline class="mb-3 block font-medium text-slate-900">Deadline (optional)</label><input type=time id=deadline class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Skip Days</div><div class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3"></div></div><div class=mb-5><label for=skipDayVisibility class="mb-3 block font-medium text-slate-900">Skip Day Visibility</label><select id=skipDayVisibility class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option>Hide</option><option>Show Always</option><option>Show If Overdue</option></select></div><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$3$4 = /* @__PURE__ */ template(`<label class="flex cursor-pointer items-center gap-2 font-normal"><input type=checkbox class="size-4.5 cursor-pointer">`);
 	var PersonalChoreModal = (props) => {
+		const { pinRequired, adminPin, cachePin } = useAdminContext();
 		const [name, setName] = createSignal(props.initialChore?.name ?? "");
 		const [deadline, setDeadline] = createSignal(props.initialChore?.deadline ?? "");
 		const [skipDayVisibility, setSkipDayVisibility] = createSignal(props.initialChore?.skipDayVisibility ?? SkipDayVisibility.HIDE);
@@ -1975,7 +2021,8 @@
 				return;
 			}
 			try {
-				const pinToUse = props.cachedPin || pin();
+				const cachedPin = adminPin();
+				const pinToUse = cachedPin || pin();
 				if (props.initialChore?.id) {
 					const body = {
 						name: name(),
@@ -1984,7 +2031,7 @@
 						deadline: deadline() || void 0,
 						skipDays: skipDays(),
 						skipDayVisibility: skipDayVisibility(),
-						pin: props.pinRequired ? pinToUse || void 0 : void 0
+						pin: pinRequired() ? pinToUse || void 0 : void 0
 					};
 					await updateChore(props.initialChore.id, body);
 				} else await createChore({
@@ -1994,9 +2041,9 @@
 					deadline: deadline() || void 0,
 					skipDays: skipDays(),
 					skipDayVisibility: skipDayVisibility(),
-					pin: props.pinRequired ? pinToUse || void 0 : void 0
+					pin: pinRequired() ? pinToUse || void 0 : void 0
 				});
-				if (!props.cachedPin && rememberPin() && pin()) props.onPinRemembered?.(pin());
+				if (!cachedPin && rememberPin() && pin()) cachePin(pin());
 				props.closeModal();
 			} catch (error) {
 				console.error("Error saving chore:", error);
@@ -2010,7 +2057,7 @@
 			keyed: true,
 			get fallback() {
 				return (() => {
-					var _el$ = _tmpl$$5(), _el$2 = _el$.firstChild;
+					var _el$ = _tmpl$$6(), _el$2 = _el$.firstChild;
 					_el$2.firstChild.nextSibling;
 					insert(_el$2, createComponent(Button, {
 						type: "button",
@@ -2022,7 +2069,7 @@
 				})();
 			},
 			children: (person) => (() => {
-				var _el$5 = _tmpl$2$5(), _el$7 = _el$5.firstChild.firstChild, _el$8 = _el$7.nextSibling, _el$9 = _el$8.firstChild;
+				var _el$5 = _tmpl$2$6(), _el$7 = _el$5.firstChild.firstChild, _el$8 = _el$7.nextSibling, _el$9 = _el$8.firstChild;
 				_el$9.nextSibling.nextSibling;
 				var _el$10 = _el$8.nextSibling, _el$11 = _el$10.firstChild, _el$13 = _el$11.firstChild.nextSibling, _el$14 = _el$11.nextSibling, _el$16 = _el$14.firstChild.nextSibling, _el$17 = _el$14.nextSibling, _el$19 = _el$17.firstChild.nextSibling, _el$20 = _el$17.nextSibling, _el$22 = _el$20.firstChild.nextSibling, _el$23 = _el$22.firstChild, _el$24 = _el$23.nextSibling, _el$25 = _el$24.nextSibling, _el$26 = _el$20.nextSibling;
 				insert(_el$7, () => props.initialChore ? "Edit Personal Chore" : "Add Personal Chore");
@@ -2035,7 +2082,7 @@
 						return Object.values(DayOfWeek);
 					},
 					children: (day) => (() => {
-						var _el$27 = _tmpl$3$3(), _el$28 = _el$27.firstChild;
+						var _el$27 = _tmpl$3$4(), _el$28 = _el$27.firstChild;
 						_el$28.$$input = (e) => handleSkipDayChange(day, e.currentTarget.checked);
 						_el$28.value = day;
 						insert(_el$27, () => day.charAt(0).toUpperCase() + day.slice(1), null);
@@ -2046,7 +2093,7 @@
 				_el$22.$$input = (e) => setSkipDayVisibility(e.currentTarget.value);
 				insert(_el$10, createComponent(Show, {
 					get when() {
-						return memo(() => !!props.pinRequired)() && !props.cachedPin;
+						return memo(() => !!pinRequired())() && !adminPin();
 					},
 					get children() {
 						return createComponent(PinField, {
@@ -2087,58 +2134,8 @@
 	};
 	delegateEvents(["input"]);
 	//#endregion
-	//#region src/admin/pin-prompt-modal.tsx
-	var _tmpl$$4 = /* @__PURE__ */ template(`<button type=button class="cursor-help text-sm text-indigo-600 underline">Forgot PIN?`), _tmpl$2$4 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="w-[90%] max-w-[400px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><h3 class="mb-2 text-xl text-indigo-600"></h3><p class="mb-5 text-sm text-slate-600"></p><form><div class=mb-5><label for=pinPromptInput class="mb-2 block font-medium text-amber-900">PIN</label><div class="flex gap-2"><input id=pinPromptInput placeholder="Enter PIN"required autofocus class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"><button type=button class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100"></button></div></div><label class="mb-5 flex cursor-pointer items-center gap-2"><input type=checkbox class="size-4.5 cursor-pointer">Remember PIN for 10 minutes<span title="PIN is remembered for 10 minutes or until you refresh or close the window"class="ml-1 cursor-help text-slate-400">&#9432;</span></label><div class=mb-5></div><div class="flex justify-end gap-2.5">`);
-	var PinPromptModal = (props) => {
-		const [pin, setPin] = createSignal("");
-		const [showPin, setShowPin] = createSignal(false);
-		const [remember, setRemember] = createSignal(false);
-		const handleSubmit = (event) => {
-			event.preventDefault();
-			if (pin().trim() === "") return;
-			props.onConfirm(pin().trim(), remember());
-		};
-		return (() => {
-			var _el$ = _tmpl$2$4(), _el$3 = _el$.firstChild.firstChild, _el$4 = _el$3.nextSibling, _el$5 = _el$4.nextSibling, _el$6 = _el$5.firstChild, _el$9 = _el$6.firstChild.nextSibling.firstChild, _el$0 = _el$9.nextSibling, _el$1 = _el$6.nextSibling, _el$10 = _el$1.firstChild, _el$11 = _el$1.nextSibling, _el$13 = _el$11.nextSibling;
-			insert(_el$3, () => props.title);
-			insert(_el$4, () => props.message);
-			_el$5.addEventListener("submit", handleSubmit);
-			_el$9.$$input = (e) => setPin(e.currentTarget.value);
-			_el$0.$$click = () => setShowPin(!showPin());
-			insert(_el$0, () => showPin() ? "🙈" : "👁");
-			_el$10.$$input = (e) => setRemember(e.currentTarget.checked);
-			insert(_el$11, createComponent(Tooltip, {
-				text: "SSH into the MagicMirror and edit the adminPin value in the module's data file directly",
-				position: "above",
-				align: "left",
-				multiline: true,
-				get children() {
-					return _tmpl$$4();
-				}
-			}));
-			insert(_el$13, createComponent(Button, {
-				type: "button",
-				variant: "secondary",
-				get onClick() {
-					return props.onCancel;
-				},
-				children: "Cancel"
-			}), null);
-			insert(_el$13, createComponent(Button, {
-				type: "submit",
-				variant: "primary",
-				children: "Confirm"
-			}), null);
-			createRenderEffect(() => setAttribute(_el$9, "type", showPin() ? "text" : "password"));
-			createRenderEffect(() => _el$9.value = pin());
-			createRenderEffect(() => _el$10.checked = remember());
-			return _el$;
-		})();
-	};
-	delegateEvents(["input", "click"]);
-	//#endregion
 	//#region src/admin/rotating-chore.tsx
-	var _tmpl$$3 = /* @__PURE__ */ template(`<p class="mt-1.25 text-sm text-indigo-600">Deadline: `), _tmpl$2$3 = /* @__PURE__ */ template(`<div class="rounded-lg border border-slate-200 bg-slate-50 p-5 transition-all hover:border-indigo-600 hover:shadow-md"><div class=flex-1><h3 class="mb-1.5 text-xl text-slate-900"> <span class="ml-2 inline-block rounded bg-indigo-100 px-2 py-1 text-xs font-medium text-indigo-700">Rotating</span></h3><p class="text-sm text-slate-500">Current: </p><p class="text-sm text-slate-500">Rotation: </p><p class="mt-1.25 text-sm text-slate-500">Skip days: </p></div><div class="flex gap-2.5">`);
+	var _tmpl$$5 = /* @__PURE__ */ template(`<p class="mt-1.25 text-sm text-indigo-600">Deadline: `), _tmpl$2$5 = /* @__PURE__ */ template(`<div class="rounded-lg border border-slate-200 bg-slate-50 p-5 transition-all hover:border-indigo-600 hover:shadow-md"><div class=flex-1><h3 class="mb-1.5 text-xl text-slate-900"> <span class="ml-2 inline-block rounded bg-indigo-100 px-2 py-1 text-xs font-medium text-indigo-700">Rotating</span></h3><p class="text-sm text-slate-500">Current: </p><p class="text-sm text-slate-500">Rotation: </p><p class="mt-1.25 text-sm text-slate-500">Skip days: </p></div><div class="flex gap-2.5">`);
 	/** Format skip days for display */
 	var formatSkipDays$1 = (skipDays) => {
 		if (!skipDays || skipDays.length === 0) return "None";
@@ -2161,7 +2158,7 @@
 			return currentPerson ? escapeHtml(currentPerson.name) : "Unassigned";
 		});
 		return (() => {
-			var _el$ = _tmpl$2$3(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.firstChild, _el$5 = _el$3.nextSibling;
+			var _el$ = _tmpl$2$5(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.firstChild, _el$5 = _el$3.nextSibling;
 			_el$5.firstChild;
 			var _el$7 = _el$5.nextSibling;
 			_el$7.firstChild;
@@ -2176,7 +2173,7 @@
 					return props.chore.deadline;
 				},
 				get children() {
-					var _el$9 = _tmpl$$3();
+					var _el$9 = _tmpl$$5();
 					_el$9.firstChild;
 					insert(_el$9, () => props.chore.deadline, null);
 					return _el$9;
@@ -2202,8 +2199,9 @@
 	};
 	//#endregion
 	//#region src/admin/rotating-chore-modal.tsx
-	var _tmpl$$2 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><h3 class="mb-5 text-2xl text-indigo-600"></h3><form><div class=mb-5><label for=choreName class="mb-3 block font-medium text-slate-900">Chore Name</label><input type=text id=choreName required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Rotation (select people)</div><div class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3"data-testid=checkbox-list></div></div><div class=mb-5><label for=rotatingIndex class="mb-3 block font-medium text-slate-900">Starting Index (current person)</label><select id=rotatingIndex class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></select></div><div class=mb-5><label for=deadline class="mb-3 block font-medium text-slate-900">Deadline (optional)</label><input type=time id=deadline class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Skip Days</div><div class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3"data-testid=skip-days-checkbox-list></div></div><div class=mb-5><label for=skipDayVisibility class="mb-3 block font-medium text-slate-900">Skip Day Visibility</label><select id=skipDayVisibility class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option>Hide</option><option>Show Always</option><option>Show If Overdue</option></select></div><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$2$2 = /* @__PURE__ */ template(`<label class="flex cursor-pointer items-center gap-2 font-normal"><input type=checkbox class="size-4.5 cursor-pointer">`), _tmpl$3$2 = /* @__PURE__ */ template(`<option>`);
+	var _tmpl$$4 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><h3 class="mb-5 text-2xl text-indigo-600"></h3><form><div class=mb-5><label for=choreName class="mb-3 block font-medium text-slate-900">Chore Name</label><input type=text id=choreName required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Rotation (select people)</div><div class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3"data-testid=checkbox-list></div></div><div class=mb-5><label for=rotatingIndex class="mb-3 block font-medium text-slate-900">Starting Index (current person)</label><select id=rotatingIndex class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></select></div><div class=mb-5><label for=deadline class="mb-3 block font-medium text-slate-900">Deadline (optional)</label><input type=time id=deadline class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Skip Days</div><div class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3"data-testid=skip-days-checkbox-list></div></div><div class=mb-5><label for=skipDayVisibility class="mb-3 block font-medium text-slate-900">Skip Day Visibility</label><select id=skipDayVisibility class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option>Hide</option><option>Show Always</option><option>Show If Overdue</option></select></div><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$2$4 = /* @__PURE__ */ template(`<label class="flex cursor-pointer items-center gap-2 font-normal"><input type=checkbox class="size-4.5 cursor-pointer">`), _tmpl$3$3 = /* @__PURE__ */ template(`<option>`);
 	var RotatingChoreModal = (props) => {
+		const { choreData, pinRequired, cachePin, adminPin } = useAdminContext();
 		const [name, setName] = createSignal(props.initialChore?.name ?? "");
 		const [deadline, setDeadline] = createSignal(props.initialChore?.deadline ?? "");
 		const [skipDayVisibility, setSkipDayVisibility] = createSignal(props.initialChore?.skipDayVisibility ?? SkipDayVisibility.HIDE);
@@ -2222,7 +2220,7 @@
 		const handleSubmit = async (event) => {
 			event.preventDefault();
 			try {
-				const pinToUse = props.cachedPin || pin();
+				const pinToUse = adminPin() || pin();
 				if (props.initialChore?.id) {
 					const body = {
 						name: name(),
@@ -2231,7 +2229,7 @@
 						deadline: deadline() || void 0,
 						skipDays: skipDays(),
 						skipDayVisibility: skipDayVisibility(),
-						pin: props.pinRequired ? pinToUse || void 0 : void 0
+						pin: pinRequired() ? pinToUse || void 0 : void 0
 					};
 					await updateChore(props.initialChore.id, body);
 				} else await createChore({
@@ -2241,9 +2239,9 @@
 					deadline: deadline() || void 0,
 					skipDays: skipDays(),
 					skipDayVisibility: skipDayVisibility(),
-					pin: props.pinRequired ? pinToUse || void 0 : void 0
+					pin: pinRequired() ? pinToUse || void 0 : void 0
 				});
-				if (!props.cachedPin && rememberPin() && pin()) props.onPinRemembered?.(pin());
+				if (!adminPin() && rememberPin() && pin()) cachePin(pin());
 				props.closeModal();
 			} catch (error) {
 				console.error("Error saving chore:", error);
@@ -2251,16 +2249,16 @@
 			}
 		};
 		return (() => {
-			var _el$ = _tmpl$$2(), _el$3 = _el$.firstChild.firstChild, _el$4 = _el$3.nextSibling, _el$5 = _el$4.firstChild, _el$7 = _el$5.firstChild.nextSibling, _el$8 = _el$5.nextSibling, _el$0 = _el$8.firstChild.nextSibling, _el$1 = _el$8.nextSibling, _el$11 = _el$1.firstChild.nextSibling, _el$12 = _el$1.nextSibling, _el$14 = _el$12.firstChild.nextSibling, _el$15 = _el$12.nextSibling, _el$17 = _el$15.firstChild.nextSibling, _el$18 = _el$15.nextSibling, _el$20 = _el$18.firstChild.nextSibling, _el$21 = _el$20.firstChild, _el$22 = _el$21.nextSibling, _el$23 = _el$22.nextSibling, _el$24 = _el$18.nextSibling;
+			var _el$ = _tmpl$$4(), _el$3 = _el$.firstChild.firstChild, _el$4 = _el$3.nextSibling, _el$5 = _el$4.firstChild, _el$7 = _el$5.firstChild.nextSibling, _el$8 = _el$5.nextSibling, _el$0 = _el$8.firstChild.nextSibling, _el$1 = _el$8.nextSibling, _el$11 = _el$1.firstChild.nextSibling, _el$12 = _el$1.nextSibling, _el$14 = _el$12.firstChild.nextSibling, _el$15 = _el$12.nextSibling, _el$17 = _el$15.firstChild.nextSibling, _el$18 = _el$15.nextSibling, _el$20 = _el$18.firstChild.nextSibling, _el$21 = _el$20.firstChild, _el$22 = _el$21.nextSibling, _el$23 = _el$22.nextSibling, _el$24 = _el$18.nextSibling;
 			insert(_el$3, () => props.initialChore ? "Edit Rotating Chore" : "Add Rotating Chore");
 			_el$4.addEventListener("submit", handleSubmit);
 			_el$7.$$input = (e) => setName(e.currentTarget.value);
 			insert(_el$0, createComponent(For, {
 				get each() {
-					return props.choreData.people;
+					return choreData().people;
 				},
 				children: (person) => (() => {
-					var _el$25 = _tmpl$2$2(), _el$26 = _el$25.firstChild;
+					var _el$25 = _tmpl$2$4(), _el$26 = _el$25.firstChild;
 					_el$26.$$input = (e) => handleRotationChange(person.id, e.currentTarget.checked);
 					insert(_el$25, () => person.name, null);
 					createRenderEffect(() => _el$26.checked = rotation().includes(person.id));
@@ -2273,9 +2271,9 @@
 					return rotation();
 				},
 				children: (personId, index) => {
-					const person = props.choreData.people.find((p) => p.id === personId);
+					const person = choreData().people.find((p) => p.id === personId);
 					return (() => {
-						var _el$27 = _tmpl$3$2();
+						var _el$27 = _tmpl$3$3();
 						insert(_el$27, () => person ? person.name : "Unknown");
 						createRenderEffect(() => _el$27.value = index());
 						return _el$27;
@@ -2288,7 +2286,7 @@
 					return Object.values(DayOfWeek);
 				},
 				children: (day) => (() => {
-					var _el$28 = _tmpl$2$2(), _el$29 = _el$28.firstChild;
+					var _el$28 = _tmpl$2$4(), _el$29 = _el$28.firstChild;
 					_el$29.$$input = (e) => handleSkipDayChange(day, e.currentTarget.checked);
 					_el$29.value = day;
 					insert(_el$28, () => day.charAt(0).toUpperCase() + day.slice(1), null);
@@ -2299,7 +2297,7 @@
 			_el$20.$$input = (e) => setSkipDayVisibility(e.currentTarget.value);
 			insert(_el$4, createComponent(Show, {
 				get when() {
-					return memo(() => !!props.pinRequired)() && !props.cachedPin;
+					return memo(() => !!pinRequired())() && !adminPin();
 				},
 				get children() {
 					return createComponent(PinField, {
@@ -2340,11 +2338,13 @@
 	delegateEvents(["input"]);
 	//#endregion
 	//#region src/admin/settings-modal.tsx
-	var _tmpl$$1 = /* @__PURE__ */ template(`<div class="mb-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800"><strong>Note:</strong> This PIN is a basic deterrent only. It is stored in plain text in the module's data file. It is <strong>not</strong> intended for high-security environments. Do not expose the admin panel outside your local network. See the module README for more details.`), _tmpl$2$1 = /* @__PURE__ */ template(`<div class=mb-3><label for=currentPin class="mb-2 block font-medium text-amber-900">Current PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=currentPin placeholder="Enter current PIN to save changes"required class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"><button type=button class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100">`), _tmpl$3$1 = /* @__PURE__ */ template(`<label class="mb-3 flex cursor-pointer items-center gap-2"><input type=checkbox class="size-4.5 cursor-pointer">Change PIN`), _tmpl$4$1 = /* @__PURE__ */ template(`<div class=mb-3><label for=newPin class="mb-2 block font-medium text-slate-900"> <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=newPin required class="flex-1 rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><button type=button class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 transition-colors hover:bg-slate-100">`), _tmpl$5$1 = /* @__PURE__ */ template(`<div class=mb-3><label for=confirmPin class="mb-2 block font-medium text-slate-900">Confirm PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=confirmPin placeholder="Confirm PIN"required class="flex-1 rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><button type=button class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 transition-colors hover:bg-slate-100">`), _tmpl$6$1 = /* @__PURE__ */ template(`<small class="block text-sm text-slate-500">PIN can be any combination of letters, numbers, or symbols. There is no length limit.`), _tmpl$7$1 = /* @__PURE__ */ template(`<div class=mb-3><label for=currentPin class="mb-2 block font-medium text-amber-900">Current PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=currentPin placeholder="Enter current PIN to disable protection"required class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"><button type=button class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100">`), _tmpl$8$1 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><h3 class="mb-5 text-2xl text-indigo-600">Settings</h3><form><div class=mb-5><label for=dailyResetTime class="mb-3 block font-medium text-slate-900">Daily Reset Time (24-hour format, HH:mm)</label><input type=time id=dailyResetTime required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><small class="text-sm text-slate-500">Time when daily chore reset occurs. Default: 03:00</small><br><small class="text-sm text-slate-500"><strong>Tip:</strong> Set to at least 03:00 to avoid daylight savings time changes (no roll forward/back occurs after 3am)</small></div><div class=mb-5><label class="flex cursor-pointer items-center gap-2"><input type=checkbox id=historyEnabled class="size-4.5 cursor-pointer">Enable History Tracking</label><small class="mt-2 block text-sm text-slate-500">Track daily chore completions (keeps last 14 days)</small></div><div class="mb-5 rounded-lg border border-slate-200 bg-slate-50 p-4"><h4 class="mb-3 font-medium text-slate-900">Admin PIN Protection</h4><label class="mb-4 flex cursor-pointer items-center gap-2"><input type=checkbox class="size-4.5 cursor-pointer">Enable PIN Protection</label><small class="block text-sm text-slate-500">When enabled, a PIN is required for all admin actions including backup, restore, and modifying people or chores.</small></div><div class="mt-6 flex justify-end gap-2.5">`);
+	var _tmpl$$3 = /* @__PURE__ */ template(`<div class="mb-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800"><strong>Note:</strong> This PIN is a basic deterrent only. It is stored in plain text in the module's data file. It is <strong>not</strong> intended for high-security environments. Do not expose the admin panel outside your local network. See the module README for more details.`), _tmpl$2$3 = /* @__PURE__ */ template(`<div class=mb-3><label for=currentPin class="mb-2 block font-medium text-amber-900">Current PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=currentPin placeholder="Enter current PIN to save changes"required class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"><button type=button class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100">`), _tmpl$3$2 = /* @__PURE__ */ template(`<label class="mb-3 flex cursor-pointer items-center gap-2"><input type=checkbox class="size-4.5 cursor-pointer">Change PIN`), _tmpl$4$2 = /* @__PURE__ */ template(`<div class=mb-3><label for=newPin class="mb-2 block font-medium text-slate-900"> <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=newPin required class="flex-1 rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><button type=button class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 transition-colors hover:bg-slate-100">`), _tmpl$5$1 = /* @__PURE__ */ template(`<div class=mb-3><label for=confirmPin class="mb-2 block font-medium text-slate-900">Confirm PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=confirmPin placeholder="Confirm PIN"required class="flex-1 rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><button type=button class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 transition-colors hover:bg-slate-100">`), _tmpl$6$1 = /* @__PURE__ */ template(`<small class="block text-sm text-slate-500">PIN can be any combination of letters, numbers, or symbols. There is no length limit.`), _tmpl$7$1 = /* @__PURE__ */ template(`<div class=mb-3><label for=currentPin class="mb-2 block font-medium text-amber-900">Current PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=currentPin placeholder="Enter current PIN to disable protection"required class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"><button type=button class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100">`), _tmpl$8$1 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><h3 class="mb-5 text-2xl text-indigo-600">Settings</h3><form><div class=mb-5><label for=dailyResetTime class="mb-3 block font-medium text-slate-900">Daily Reset Time (24-hour format, HH:mm)</label><input type=time id=dailyResetTime required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><small class="text-sm text-slate-500">Time when daily chore reset occurs. Default: 03:00</small><br><small class="text-sm text-slate-500"><strong>Tip:</strong> Set to at least 03:00 to avoid daylight savings time changes (no roll forward/back occurs after 3am)</small></div><div class=mb-5><label class="flex cursor-pointer items-center gap-2"><input type=checkbox id=historyEnabled class="size-4.5 cursor-pointer">Enable History Tracking</label><small class="mt-2 block text-sm text-slate-500">Track daily chore completions (keeps last 14 days)</small></div><div class="mb-5 rounded-lg border border-slate-200 bg-slate-50 p-4"><h4 class="mb-3 font-medium text-slate-900">Admin PIN Protection</h4><label class="mb-4 flex cursor-pointer items-center gap-2"><input type=checkbox class="size-4.5 cursor-pointer">Enable PIN Protection</label><small class="block text-sm text-slate-500">When enabled, a PIN is required for all admin actions including backup, restore, and modifying people or chores.</small></div><div class="mt-6 flex justify-end gap-2.5">`);
 	var SettingsModal = (props) => {
-		const [dailyResetTime, setDailyResetTime] = createSignal(props.initialSettings.dailyResetTime);
-		const [historyEnabled, setHistoryEnabled] = createSignal(props.initialSettings.historyEnabled);
-		const [pinEnabled, setPinEnabled] = createSignal(!!props.initialSettings.adminPin);
+		const { choreData } = useAdminContext();
+		const settings = () => choreData().settings;
+		const [dailyResetTime, setDailyResetTime] = createSignal(settings().dailyResetTime);
+		const [historyEnabled, setHistoryEnabled] = createSignal(settings().historyEnabled);
+		const [pinEnabled, setPinEnabled] = createSignal(!!settings().adminPin);
 		const [currentPin, setCurrentPin] = createSignal("");
 		const [newPin, setNewPin] = createSignal("");
 		const [confirmPin, setConfirmPin] = createSignal("");
@@ -2352,7 +2352,7 @@
 		const [showCurrentPin, setShowCurrentPin] = createSignal(false);
 		const [showNewPin, setShowNewPin] = createSignal(false);
 		const [showConfirmPin, setShowConfirmPin] = createSignal(false);
-		const hasPin = () => !!props.initialSettings.adminPin;
+		const hasPin = () => !!settings().adminPin;
 		const handleSubmit = async (event) => {
 			event.preventDefault();
 			const isEnabled = pinEnabled();
@@ -2408,14 +2408,14 @@
 				},
 				get children() {
 					return [
-						_tmpl$$1(),
+						_tmpl$$3(),
 						createComponent(Show, {
 							get when() {
 								return hasPin();
 							},
 							get children() {
 								return [(() => {
-									var _el$14 = _tmpl$2$1(), _el$17 = _el$14.firstChild.nextSibling.firstChild, _el$18 = _el$17.nextSibling;
+									var _el$14 = _tmpl$2$3(), _el$17 = _el$14.firstChild.nextSibling.firstChild, _el$18 = _el$17.nextSibling;
 									_el$17.$$input = (e) => setCurrentPin(e.currentTarget.value);
 									_el$18.$$click = () => setShowCurrentPin(!showCurrentPin());
 									insert(_el$18, () => showCurrentPin() ? "🙈" : "👁");
@@ -2423,7 +2423,7 @@
 									createRenderEffect(() => _el$17.value = currentPin());
 									return _el$14;
 								})(), (() => {
-									var _el$19 = _tmpl$3$1(), _el$20 = _el$19.firstChild;
+									var _el$19 = _tmpl$3$2(), _el$20 = _el$19.firstChild;
 									_el$20.$$input = (e) => {
 										setChangePin(e.currentTarget.checked);
 										setNewPin("");
@@ -2441,7 +2441,7 @@
 							get children() {
 								return [
 									(() => {
-										var _el$21 = _tmpl$4$1(), _el$22 = _el$21.firstChild, _el$23 = _el$22.firstChild, _el$25 = _el$22.nextSibling.firstChild, _el$26 = _el$25.nextSibling;
+										var _el$21 = _tmpl$4$2(), _el$22 = _el$21.firstChild, _el$23 = _el$22.firstChild, _el$25 = _el$22.nextSibling.firstChild, _el$26 = _el$25.nextSibling;
 										insert(_el$22, () => hasPin() ? "New PIN" : "Set PIN", _el$23);
 										_el$25.$$input = (e) => setNewPin(e.currentTarget.value);
 										_el$26.$$click = () => setShowNewPin(!showNewPin());
@@ -2507,15 +2507,15 @@
 	};
 	delegateEvents(["input", "click"]);
 	//#endregion
-	//#region src/admin/admin.tsx
-	var _tmpl$ = /* @__PURE__ */ template(`<p class="text-sm font-medium text-slate-600 italic">Retrying... (attempt <!>)`), _tmpl$2 = /* @__PURE__ */ template(`<div class="animate-loading-pulse bg-[radial-gradient(circle,#2563eb,#ffffff)] bg-size-[200%_200%] bg-center px-8 py-16 text-center text-slate-500"><div class="inline-block rounded-xl bg-white/30 p-8 shadow-md"><p class="mb-2.5 text-xl font-semibold text-slate-900">Magic Mirror is starting up, please wait...`), _tmpl$3 = /* @__PURE__ */ template(`<section class=mb-10 id=rotatingChoresSection><div class="mb-5 flex items-center justify-between"><h2 class="m-0 border-b-2 border-indigo-600 pb-2.5 text-2xl text-indigo-600">Rotating Chores</h2></div><div id=rotatingChoresList class="mt-5 grid gap-4">`), _tmpl$4 = /* @__PURE__ */ template(`<main class=p-8><section class=mb-10 data-testid=people-section><div class="mb-5 flex items-center justify-between"><h2 class="m-0 border-b-2 border-indigo-600 pb-2.5 text-2xl text-indigo-600">People</h2><div class="flex items-center gap-2"></div></div><div id=peopleList class="mt-5 grid gap-4"></div></section><section class=mb-10><h2 class="m-0 border-b-2 border-indigo-600 pb-2.5 text-2xl text-indigo-600">System State</h2><div class="rounded-lg border border-slate-200 bg-slate-50 p-5"><p class="mb-4 text-base"><strong class=text-indigo-600>Last Reset Date:</strong> <span id=lastResetDate></span></p><div class="mt-4 flex flex-row items-start gap-4"><div class="flex items-center gap-2">`), _tmpl$5 = /* @__PURE__ */ template(`<div class="mx-auto max-w-5xl overflow-hidden rounded-xl bg-white shadow-2xl"data-testid=admin-container><header class="flex flex-wrap items-center justify-between gap-4 bg-slate-100 p-8 text-slate-900"><h1 class="text-3xl font-semibold">Family Chores Admin</h1><div class="flex gap-2.5"><label for=restoreFile class="cursor-pointer rounded-lg border-none bg-gray-600 px-5 py-2.5 text-sm font-medium text-white transition-all hover:-translate-y-0.5 hover:bg-gray-700 hover:shadow-md">Restore Backup</label><input type=file id=restoreFile accept=.json hidden>`), _tmpl$6 = /* @__PURE__ */ template(`<div class="mt-4 border-t border-slate-200 pt-4">`), _tmpl$7 = /* @__PURE__ */ template(`<div class="rounded-lg border border-slate-200 bg-slate-50 p-5 transition-all hover:border-indigo-600 hover:shadow-md"data-testid=person-card><div class="mb-4 flex items-center justify-between"><div class=flex-1><h3 class="mb-1.5 text-xl text-slate-900"> <span class="inline-block size-6 rounded-full border-2 border-black/10 align-middle"></span></h3><p class="text-sm text-slate-500">ID: </p></div><div class="flex gap-2.5"></div></div><div class="mt-4 flex items-center justify-between border-t border-slate-200 pt-4"><h4 class="m-0 text-lg text-indigo-600">'s Personal Chores</h4><div class="flex gap-2">`), _tmpl$8 = /* @__PURE__ */ template(`<div class="mt-4 border-t border-slate-200 pt-4"><p class="my-2.5 text-slate-500 italic">No personal chores yet.`), _tmpl$9 = /* @__PURE__ */ template(`<p class="mt-1.25 text-sm text-indigo-600">Deadline: `), _tmpl$0 = /* @__PURE__ */ template(`<div class="mb-2.5 flex items-center justify-between rounded-lg border border-slate-200 bg-white p-2.5 last:mb-0"><div><h4 class="mb-1.5 text-base text-slate-900"></h4><p class="mt-1.25 text-sm text-slate-500">Skip days: </p></div><div class="flex gap-2">`);
-	var API_BASE = "/MMM-FamilyChores";
+	//#region src/admin/main-page.tsx
+	var _tmpl$$2 = /* @__PURE__ */ template(`<header class="flex flex-wrap items-center justify-between gap-4 bg-slate-100 p-8 text-slate-900"><h1 class="text-3xl font-semibold">Family Chores Admin</h1><div class="flex gap-2.5"><label for=restoreFile class="cursor-pointer rounded-lg border-none bg-gray-600 px-5 py-2.5 text-sm font-medium text-white transition-all hover:-translate-y-0.5 hover:bg-gray-700 hover:shadow-md">Restore Backup</label><input type=file id=restoreFile accept=.json hidden>`), _tmpl$2$2 = /* @__PURE__ */ template(`<section class=mb-10 id=rotatingChoresSection><div class="mb-5 flex items-center justify-between"><h2 class="m-0 border-b-2 border-indigo-600 pb-2.5 text-2xl text-indigo-600">Rotating Chores</h2></div><div id=rotatingChoresList class="mt-5 grid gap-4">`), _tmpl$3$1 = /* @__PURE__ */ template(`<main class=p-8><section class=mb-10 data-testid=people-section><div class="mb-5 flex items-center justify-between"><h2 class="m-0 border-b-2 border-indigo-600 pb-2.5 text-2xl text-indigo-600">People</h2><div class="flex items-center gap-2"></div></div><div id=peopleList class="mt-5 grid gap-4"></div></section><section class=mb-10><h2 class="m-0 border-b-2 border-indigo-600 pb-2.5 text-2xl text-indigo-600">System State</h2><div class="rounded-lg border border-slate-200 bg-slate-50 p-5"><p class="mb-4 text-base"><strong class=text-indigo-600>Last Reset Date:</strong> <span id=lastResetDate></span></p><div class="mt-4 flex flex-row items-start gap-4"><div class="flex items-center gap-2">`), _tmpl$4$1 = /* @__PURE__ */ template(`<div class="mt-4 border-t border-slate-200 pt-4">`), _tmpl$5 = /* @__PURE__ */ template(`<div class="rounded-lg border border-slate-200 bg-slate-50 p-5 transition-all hover:border-indigo-600 hover:shadow-md"data-testid=person-card><div class="mb-4 flex items-center justify-between"><div class=flex-1><h3 class="mb-1.5 text-xl text-slate-900"> <span class="inline-block size-6 rounded-full border-2 border-black/10 align-middle"></span></h3><p class="text-sm text-slate-500">ID: </p></div><div class="flex gap-2.5"></div></div><div class="mt-4 flex items-center justify-between border-t border-slate-200 pt-4"><h4 class="m-0 text-lg text-indigo-600">'s Personal Chores</h4><div class="flex gap-2">`), _tmpl$6 = /* @__PURE__ */ template(`<div class="mt-4 border-t border-slate-200 pt-4"><p class="my-2.5 text-slate-500 italic">No personal chores yet.`), _tmpl$7 = /* @__PURE__ */ template(`<p class="mt-1.25 text-sm text-indigo-600">Deadline: `), _tmpl$8 = /* @__PURE__ */ template(`<div class="mb-2.5 flex items-center justify-between rounded-lg border border-slate-200 bg-white p-2.5 last:mb-0"><div><h4 class="mb-1.5 text-base text-slate-900"></h4><p class="mt-1.25 text-sm text-slate-500">Skip days: </p></div><div class="flex gap-2">`);
+	var API_BASE$1 = "/MMM-FamilyChores";
 	var formatSkipDays = (skipDays) => {
 		if (!skipDays || skipDays.length === 0) return "None";
 		return skipDays.map((d) => d.charAt(0).toUpperCase() + d.slice(1)).join(", ");
 	};
-	var Admin = () => {
-		const [choreData, setChoreData] = createSignal(null);
+	var MainPage = () => {
+		const { choreData, loadData, pinRequired, requestPin, cachePin, adminPin } = useAdminContext();
 		const [personModalOpen, setPersonModalOpen] = createSignal(false);
 		const [personalChoreModalOpen, setPersonalChoreModalOpen] = createSignal(false);
 		const [rotatingChoreModalOpen, setRotatingChoreModalOpen] = createSignal(false);
@@ -2526,6 +2526,521 @@
 		const [editingChorePerson, setEditingChorePerson] = createSignal(null);
 		const [copyChoresFromPerson, setCopyChoresFromPerson] = createSignal(null);
 		const [historyPerson, setHistoryPerson] = createSignal(null);
+		const openPersonModal = (person = null) => {
+			setEditingPerson(person);
+			setPersonModalOpen(true);
+		};
+		const closePersonModal = async () => {
+			setPersonModalOpen(false);
+			setEditingPerson(null);
+			await loadData();
+		};
+		const openPersonalChoreModal = (person, chore = null) => {
+			setEditingChore(chore);
+			setEditingChorePerson(person);
+			setPersonalChoreModalOpen(true);
+		};
+		const closePersonalChoreModal = async () => {
+			setPersonalChoreModalOpen(false);
+			setEditingChore(null);
+			setEditingChorePerson(null);
+			await loadData();
+		};
+		const openRotatingChoreModal = (chore = null) => {
+			setEditingChore(chore);
+			setRotatingChoreModalOpen(true);
+		};
+		const closeRotatingChoreModal = async () => {
+			setRotatingChoreModalOpen(false);
+			setEditingChore(null);
+			await loadData();
+		};
+		const openCopyChoresModal = (person) => {
+			setCopyChoresFromPerson(person);
+			setCopyChoresModalOpen(true);
+		};
+		const closeCopyChoresModal = async () => {
+			setCopyChoresModalOpen(false);
+			setCopyChoresFromPerson(null);
+			await loadData();
+		};
+		const closeSettingsModal = async () => {
+			setSettingsModalOpen(false);
+			await loadData();
+		};
+		const handleDownloadBackup = async () => {
+			try {
+				let pin = adminPin();
+				let rememberPin = false;
+				if (pinRequired() && !pin) {
+					const result = await requestPin("Download Backup", "Enter admin PIN to download backup");
+					if (!result.pin) return;
+					pin = result.pin;
+					rememberPin = result.remember;
+				}
+				const blob = await downloadBackup(pin || void 0);
+				if (rememberPin) cachePin(pin);
+				const url = window.URL.createObjectURL(blob);
+				const a = document.createElement("a");
+				a.href = url;
+				a.download = "family-chores-backup.json";
+				document.body.appendChild(a);
+				a.click();
+				window.URL.revokeObjectURL(url);
+				document.body.removeChild(a);
+			} catch (error) {
+				console.error("Error downloading backup:", error);
+				alert(`Failed to download backup: ${error instanceof Error ? error.message : "Please try again."}`);
+			}
+		};
+		const handleRestore = async (e) => {
+			const file = e.target.files?.[0];
+			if (!file) return;
+			let pin = adminPin();
+			let rememberPin = false;
+			if (pinRequired() && !pin) {
+				const result = await requestPin("Restore Backup", "Enter admin PIN to restore data");
+				if (!result.pin) {
+					e.target.value = "";
+					return;
+				}
+				pin = result.pin;
+				rememberPin = result.remember;
+			}
+			try {
+				const text = await file.text();
+				const data = JSON.parse(text);
+				data.pin = pin || void 0;
+				if (!(await fetch(`${API_BASE$1}/restore`, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify(data)
+				})).ok) throw new Error("Failed to restore data");
+				if (rememberPin) cachePin(pin);
+				alert("Data restored successfully!");
+				await loadData();
+			} catch (error) {
+				console.error("Error restoring data:", error);
+				alert("Failed to restore data. Please check the file format and try again.");
+			}
+			e.target.value = "";
+		};
+		const handleDeletePerson = async (personId) => {
+			if (!confirm("Are you sure you want to delete this person? This will also remove all their assigned chores.")) return;
+			let pin = adminPin();
+			let rememberPin = false;
+			if (pinRequired() && !pin) {
+				const result = await requestPin("Admin PIN Required", "Enter admin PIN to delete this person");
+				if (!result.pin) return;
+				pin = result.pin;
+				rememberPin = result.remember;
+			}
+			try {
+				await deletePerson(personId, pin || void 0);
+				if (rememberPin) cachePin(pin);
+				await loadData();
+			} catch (error) {
+				console.error("Error deleting person:", error);
+				alert(`Failed to delete person: ${error instanceof Error ? error.message : "Unknown error"}`);
+			}
+		};
+		const handleDeleteChore = async (choreId) => {
+			if (!confirm("Are you sure you want to delete this chore?")) return;
+			let pin = adminPin();
+			let rememberPin = false;
+			if (pinRequired() && !pin) {
+				const result = await requestPin("Admin PIN Required", "Enter admin PIN to delete this chore");
+				if (!result.pin) return;
+				pin = result.pin;
+				rememberPin = result.remember;
+			}
+			try {
+				await deleteChore(choreId, pin || void 0);
+				if (rememberPin) cachePin(pin);
+				await loadData();
+			} catch (error) {
+				console.error("Error deleting chore:", error);
+				alert(`Failed to delete chore: ${error instanceof Error ? error.message : "Unknown error"}`);
+			}
+		};
+		const handleForceReset = async () => {
+			if (!confirm("Are you sure you want to force a daily reset? This will reset all chore states for the new day.")) return;
+			let pin = adminPin();
+			let rememberPin = false;
+			if (pinRequired() && !pin) {
+				const result = await requestPin("Admin PIN Required", "Enter admin PIN to force daily reset");
+				if (!result.pin) return;
+				pin = result.pin;
+				rememberPin = result.remember;
+			}
+			try {
+				const yesterday = /* @__PURE__ */ new Date();
+				yesterday.setDate(yesterday.getDate() - 1);
+				const yesterdayStr = getLocalDateString(yesterday);
+				const data = {
+					...choreData(),
+					lastResetDate: yesterdayStr
+				};
+				if (!(await fetch(`${API_BASE$1}/restore`, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						...data,
+						pin: pin || void 0
+					})
+				})).ok) throw new Error("Failed to force reset");
+				if (rememberPin) cachePin(pin);
+				alert("Daily reset triggered successfully! The data will be updated on the next sync.");
+				await loadData();
+			} catch (error) {
+				console.error("Error forcing reset:", error);
+				alert("Failed to force reset. Please try again.");
+			}
+		};
+		const getPersonalChores = (personId) => {
+			return choreData().chores.filter((chore) => chore.type === ChoreType.PERSONAL && chore.assignedTo === personId);
+		};
+		const getRotatingChores = () => {
+			return choreData().chores.filter((chore) => chore.type === ChoreType.ROTATING);
+		};
+		return [
+			(() => {
+				var _el$ = _tmpl$$2(), _el$3 = _el$.firstChild.nextSibling, _el$4 = _el$3.firstChild, _el$5 = _el$4.nextSibling;
+				insert(_el$3, createComponent(Button, {
+					type: "button",
+					variant: "secondary",
+					id: "backupBtn",
+					onClick: handleDownloadBackup,
+					children: "Download Backup"
+				}), _el$4);
+				_el$5.$$input = handleRestore;
+				insert(_el$3, createComponent(Button, {
+					type: "button",
+					variant: "secondary",
+					id: "settingsBtn",
+					onClick: () => setSettingsModalOpen(true),
+					children: "⚙️ Settings"
+				}), null);
+				return _el$;
+			})(),
+			(() => {
+				var _el$6 = _tmpl$3$1(), _el$7 = _el$6.firstChild, _el$8 = _el$7.firstChild, _el$0 = _el$8.firstChild.nextSibling, _el$1 = _el$8.nextSibling, _el$14 = _el$7.nextSibling, _el$17 = _el$14.firstChild.nextSibling.firstChild, _el$20 = _el$17.firstChild.nextSibling.nextSibling, _el$22 = _el$17.nextSibling.firstChild;
+				insert(_el$0, createComponent(Button, {
+					type: "button",
+					variant: "primary",
+					id: "addPersonBtn",
+					onClick: () => openPersonModal(),
+					children: "Add Person"
+				}), null);
+				insert(_el$0, createComponent(Show, {
+					get when() {
+						return choreData().people.length === 0;
+					},
+					get children() {
+						return createComponent(Tooltip, {
+							text: "Add at least one person before you can create chores",
+							"class": "ml-2 text-base",
+							children: "ℹ️"
+						});
+					}
+				}), null);
+				insert(_el$1, createComponent(For, {
+					get each() {
+						return choreData().people;
+					},
+					children: (person) => (() => {
+						var _el$23 = _tmpl$5(), _el$24 = _el$23.firstChild, _el$25 = _el$24.firstChild, _el$26 = _el$25.firstChild, _el$27 = _el$26.firstChild, _el$28 = _el$27.nextSibling, _el$29 = _el$26.nextSibling;
+						_el$29.firstChild;
+						var _el$31 = _el$25.nextSibling, _el$33 = _el$24.nextSibling.firstChild, _el$34 = _el$33.firstChild, _el$35 = _el$33.nextSibling;
+						insert(_el$26, () => escapeHtml(person.name), _el$27);
+						insert(_el$29, () => person.id, null);
+						insert(_el$31, createComponent(Button, {
+							type: "button",
+							variant: "secondary",
+							size: "sm",
+							onClick: () => openPersonModal(person),
+							children: "Edit"
+						}), null);
+						insert(_el$31, createComponent(Button, {
+							type: "button",
+							variant: "secondary",
+							size: "sm",
+							onClick: () => setHistoryPerson(person),
+							children: "History"
+						}), null);
+						insert(_el$31, createComponent(Button, {
+							type: "button",
+							variant: "danger",
+							size: "sm",
+							onClick: () => handleDeletePerson(person.id),
+							children: "Delete"
+						}), null);
+						insert(_el$33, () => escapeHtml(person.name), _el$34);
+						insert(_el$35, createComponent(Button, {
+							type: "button",
+							variant: "primary",
+							size: "sm",
+							onClick: () => {
+								openPersonalChoreModal(person, null);
+							},
+							children: "Add Chore"
+						}), null);
+						insert(_el$35, createComponent(Show, {
+							get when() {
+								return memo(() => getPersonalChores(person.id).length > 0)() && choreData().people.length > 1;
+							},
+							get children() {
+								return createComponent(Button, {
+									type: "button",
+									variant: "secondary",
+									size: "sm",
+									onClick: () => {
+										openCopyChoresModal(person);
+									},
+									children: "Copy Chores"
+								});
+							}
+						}), null);
+						insert(_el$23, createComponent(Show, {
+							get when() {
+								return getPersonalChores(person.id).length > 0;
+							},
+							get fallback() {
+								return _tmpl$6();
+							},
+							get children() {
+								var _el$36 = _tmpl$4$1();
+								insert(_el$36, createComponent(For, {
+									get each() {
+										return getPersonalChores(person.id);
+									},
+									children: (chore) => (() => {
+										var _el$38 = _tmpl$8(), _el$39 = _el$38.firstChild, _el$40 = _el$39.firstChild, _el$43 = _el$40.nextSibling;
+										_el$43.firstChild;
+										var _el$45 = _el$39.nextSibling;
+										insert(_el$40, () => escapeHtml(chore.name));
+										insert(_el$39, createComponent(Show, {
+											get when() {
+												return chore.deadline;
+											},
+											get children() {
+												var _el$41 = _tmpl$7();
+												_el$41.firstChild;
+												insert(_el$41, () => chore.deadline, null);
+												return _el$41;
+											}
+										}), _el$43);
+										insert(_el$43, () => formatSkipDays(chore.skipDays), null);
+										insert(_el$45, createComponent(Button, {
+											type: "button",
+											variant: "secondary",
+											size: "sm",
+											onClick: () => {
+												openPersonalChoreModal(person, chore);
+											},
+											children: "Edit"
+										}), null);
+										insert(_el$45, createComponent(Button, {
+											type: "button",
+											variant: "danger",
+											size: "sm",
+											onClick: () => handleDeleteChore(chore.id),
+											children: "Delete"
+										}), null);
+										return _el$38;
+									})()
+								}));
+								return _el$36;
+							}
+						}), null);
+						createRenderEffect((_$p) => style(_el$28, `background-color: ${person.color}`, _$p));
+						return _el$23;
+					})()
+				}));
+				insert(_el$6, createComponent(Show, {
+					get when() {
+						return choreData().people.length > 0;
+					},
+					get children() {
+						var _el$10 = _tmpl$2$2(), _el$11 = _el$10.firstChild;
+						_el$11.firstChild;
+						var _el$13 = _el$11.nextSibling;
+						insert(_el$11, createComponent(Button, {
+							type: "button",
+							variant: "primary",
+							id: "addRotatingChoreBtn",
+							onClick: () => openRotatingChoreModal(),
+							children: "Add Rotating Chore"
+						}), null);
+						insert(_el$13, createComponent(For, {
+							get each() {
+								return getRotatingChores();
+							},
+							children: (chore) => createComponent(RotatingChoreCard, {
+								chore,
+								get people() {
+									return choreData().people;
+								},
+								onEdit: openRotatingChoreModal,
+								onDelete: handleDeleteChore
+							})
+						}));
+						return _el$10;
+					}
+				}), _el$14);
+				insert(_el$20, () => choreData().lastResetDate || "Never");
+				insert(_el$22, createComponent(Button, {
+					type: "button",
+					variant: "warning",
+					id: "resetDailyBtn",
+					onClick: handleForceReset,
+					children: "Force Daily Reset"
+				}), null);
+				insert(_el$22, createComponent(Tooltip, {
+					text: "WARNING: This will un-check all chores and rotate assignment on rotating chores to the next person. It does respect skip days if today is a skip day. Useful for testing or immediately advancing chore assignments.",
+					position: "above",
+					align: "center",
+					multiline: true,
+					"class": "ml-2 text-base",
+					children: "ℹ️"
+				}), null);
+				return _el$6;
+			})(),
+			createComponent(Show, {
+				get when() {
+					return personModalOpen();
+				},
+				get children() {
+					return createComponent(PersonModal, {
+						get initialPerson() {
+							return editingPerson() ?? void 0;
+						},
+						closeModal: closePersonModal
+					});
+				}
+			}),
+			createComponent(Show, {
+				get when() {
+					return personalChoreModalOpen();
+				},
+				get children() {
+					return createComponent(PersonalChoreModal, {
+						get person() {
+							return editingChorePerson();
+						},
+						get initialChore() {
+							return editingChore();
+						},
+						closeModal: closePersonalChoreModal
+					});
+				}
+			}),
+			createComponent(Show, {
+				get when() {
+					return rotatingChoreModalOpen();
+				},
+				get children() {
+					return createComponent(RotatingChoreModal, {
+						get initialChore() {
+							return editingChore();
+						},
+						closeModal: closeRotatingChoreModal
+					});
+				}
+			}),
+			createComponent(Show, {
+				get when() {
+					return memo(() => !!copyChoresModalOpen())() && copyChoresFromPerson();
+				},
+				get children() {
+					return createComponent(CopyChoresModal, {
+						get fromPerson() {
+							return copyChoresFromPerson();
+						},
+						closeModal: closeCopyChoresModal
+					});
+				}
+			}),
+			createComponent(Show, {
+				get when() {
+					return historyPerson();
+				},
+				get children() {
+					return createComponent(ChoreHistoryModal, {
+						get person() {
+							return historyPerson();
+						},
+						closeModal: () => setHistoryPerson(null)
+					});
+				}
+			}),
+			createComponent(Show, {
+				get when() {
+					return settingsModalOpen();
+				},
+				get children() {
+					return createComponent(SettingsModal, { closeModal: closeSettingsModal });
+				}
+			})
+		];
+	};
+	delegateEvents(["input"]);
+	//#endregion
+	//#region src/admin/pin-prompt-modal.tsx
+	var _tmpl$$1 = /* @__PURE__ */ template(`<button type=button class="cursor-help text-sm text-indigo-600 underline">Forgot PIN?`), _tmpl$2$1 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="w-[90%] max-w-[400px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><h3 class="mb-2 text-xl text-indigo-600"></h3><p class="mb-5 text-sm text-slate-600"></p><form><div class=mb-5><label for=pinPromptInput class="mb-2 block font-medium text-amber-900">PIN</label><div class="flex gap-2"><input id=pinPromptInput placeholder="Enter PIN"required autofocus class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"><button type=button class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100"></button></div></div><label class="mb-5 flex cursor-pointer items-center gap-2"><input type=checkbox class="size-4.5 cursor-pointer">Remember PIN for 10 minutes<span title="PIN is remembered for 10 minutes or until you refresh or close the window"class="ml-1 cursor-help text-slate-400">&#9432;</span></label><div class=mb-5></div><div class="flex justify-end gap-2.5">`);
+	var PinPromptModal = (props) => {
+		const [pin, setPin] = createSignal("");
+		const [showPin, setShowPin] = createSignal(false);
+		const [remember, setRemember] = createSignal(false);
+		const handleSubmit = (event) => {
+			event.preventDefault();
+			if (pin().trim() === "") return;
+			props.onConfirm(pin().trim(), remember());
+		};
+		return (() => {
+			var _el$ = _tmpl$2$1(), _el$3 = _el$.firstChild.firstChild, _el$4 = _el$3.nextSibling, _el$5 = _el$4.nextSibling, _el$6 = _el$5.firstChild, _el$9 = _el$6.firstChild.nextSibling.firstChild, _el$0 = _el$9.nextSibling, _el$1 = _el$6.nextSibling, _el$10 = _el$1.firstChild, _el$11 = _el$1.nextSibling, _el$13 = _el$11.nextSibling;
+			insert(_el$3, () => props.title);
+			insert(_el$4, () => props.message);
+			_el$5.addEventListener("submit", handleSubmit);
+			_el$9.$$input = (e) => setPin(e.currentTarget.value);
+			_el$0.$$click = () => setShowPin(!showPin());
+			insert(_el$0, () => showPin() ? "🙈" : "👁");
+			_el$10.$$input = (e) => setRemember(e.currentTarget.checked);
+			insert(_el$11, createComponent(Tooltip, {
+				text: "SSH into the MagicMirror and edit the adminPin value in the module's data file directly",
+				position: "above",
+				align: "left",
+				multiline: true,
+				get children() {
+					return _tmpl$$1();
+				}
+			}));
+			insert(_el$13, createComponent(Button, {
+				type: "button",
+				variant: "secondary",
+				get onClick() {
+					return props.onCancel;
+				},
+				children: "Cancel"
+			}), null);
+			insert(_el$13, createComponent(Button, {
+				type: "submit",
+				variant: "primary",
+				children: "Confirm"
+			}), null);
+			createRenderEffect(() => setAttribute(_el$9, "type", showPin() ? "text" : "password"));
+			createRenderEffect(() => _el$9.value = pin());
+			createRenderEffect(() => _el$10.checked = remember());
+			return _el$;
+		})();
+	};
+	delegateEvents(["input", "click"]);
+	//#endregion
+	//#region src/admin/admin.tsx
+	var _tmpl$ = /* @__PURE__ */ template(`<header class="flex flex-wrap items-center justify-between gap-4 bg-slate-100 p-8 text-slate-900"><h1 class="text-3xl font-semibold">Family Chores Admin`), _tmpl$2 = /* @__PURE__ */ template(`<p class="text-sm font-medium text-slate-600 italic">Retrying... (attempt <!>)`), _tmpl$3 = /* @__PURE__ */ template(`<div class="animate-loading-pulse bg-[radial-gradient(circle,#2563eb,#ffffff)] bg-size-[200%_200%] bg-center px-8 py-16 text-center text-slate-500"><div class="inline-block rounded-xl bg-white/30 p-8 shadow-md"><p class="mb-2.5 text-xl font-semibold text-slate-900">Magic Mirror is starting up, please wait...`), _tmpl$4 = /* @__PURE__ */ template(`<div class="mx-auto max-w-5xl overflow-hidden rounded-xl bg-white shadow-2xl"data-testid=admin-container>`);
+	var API_BASE = "/MMM-FamilyChores";
+	var Admin = () => {
+		const [choreData, setChoreData] = createSignal(null);
 		const [loading, setLoading] = createSignal(true);
 		const [retryCount, setRetryCount] = createSignal(0);
 		const [adminPin, setAdminPin] = createSignal("");
@@ -2584,224 +3099,41 @@
 		onMount(() => {
 			loadData();
 		});
-		const openPersonModal = (person = null) => {
-			setEditingPerson(person);
-			setPersonModalOpen(true);
-		};
-		const closePersonModal = async () => {
-			setPersonModalOpen(false);
-			setEditingPerson(null);
-			await loadData();
-		};
-		const openPersonalChoreModal = (person, chore = null) => {
-			setEditingChore(chore);
-			setEditingChorePerson(person);
-			setPersonalChoreModalOpen(true);
-		};
-		const closePersonalChoreModal = async () => {
-			setPersonalChoreModalOpen(false);
-			setEditingChore(null);
-			setEditingChorePerson(null);
-			await loadData();
-		};
-		const openRotatingChoreModal = (chore = null) => {
-			setEditingChore(chore);
-			setRotatingChoreModalOpen(true);
-		};
-		const closeRotatingChoreModal = async () => {
-			setRotatingChoreModalOpen(false);
-			setEditingChore(null);
-			await loadData();
-		};
-		const openCopyChoresModal = (person) => {
-			setCopyChoresFromPerson(person);
-			setCopyChoresModalOpen(true);
-		};
-		const closeCopyChoresModal = async () => {
-			setCopyChoresModalOpen(false);
-			setCopyChoresFromPerson(null);
-			await loadData();
-		};
-		const openSettingsModal = () => {
-			setSettingsModalOpen(true);
-		};
-		const closeSettingsModal = async () => {
-			setSettingsModalOpen(false);
-			await loadData();
-		};
-		const handleDeletePerson = async (personId) => {
-			if (!confirm("Are you sure you want to delete this person? This will also remove all their assigned chores.")) return;
-			let pin = adminPin();
-			let rememberPin = false;
-			if (pinRequired() && !pin) {
-				const result = await requestPin("Admin PIN Required", "Enter admin PIN to delete this person");
-				if (!result.pin) return;
-				pin = result.pin;
-				rememberPin = result.remember;
-			}
-			try {
-				await deletePerson(personId, pin || void 0);
-				if (rememberPin) cachePin(pin);
-				await loadData();
-			} catch (error) {
-				console.error("Error deleting person:", error);
-				alert(`Failed to delete person: ${error instanceof Error ? error.message : "Unknown error"}`);
-			}
-		};
-		const handleDeleteChore = async (choreId) => {
-			if (!confirm("Are you sure you want to delete this chore?")) return;
-			let pin = adminPin();
-			let rememberPin = false;
-			if (pinRequired() && !pin) {
-				const result = await requestPin("Admin PIN Required", "Enter admin PIN to delete this chore");
-				if (!result.pin) return;
-				pin = result.pin;
-				rememberPin = result.remember;
-			}
-			try {
-				await deleteChore(choreId, pin || void 0);
-				if (rememberPin) cachePin(pin);
-				await loadData();
-			} catch (error) {
-				console.error("Error deleting chore:", error);
-				alert(`Failed to delete chore: ${error instanceof Error ? error.message : "Unknown error"}`);
-			}
-		};
-		const handleDownloadBackup = async () => {
-			try {
-				let pin = adminPin();
-				let rememberPin = false;
-				if (pinRequired() && !pin) {
-					const result = await requestPin("Download Backup", "Enter admin PIN to download backup");
-					if (!result.pin) return;
-					pin = result.pin;
-					rememberPin = result.remember;
-				}
-				const blob = await downloadBackup(pin || void 0);
-				if (rememberPin) cachePin(pin);
-				const url = window.URL.createObjectURL(blob);
-				const a = document.createElement("a");
-				a.href = url;
-				a.download = "family-chores-backup.json";
-				document.body.appendChild(a);
-				a.click();
-				window.URL.revokeObjectURL(url);
-				document.body.removeChild(a);
-			} catch (error) {
-				console.error("Error downloading backup:", error);
-				alert(`Failed to download backup: ${error instanceof Error ? error.message : "Please try again."}`);
-			}
-		};
-		const handleRestore = async (e) => {
-			const file = e.target.files?.[0];
-			if (!file) return;
-			let pin = adminPin();
-			let rememberPin = false;
-			if (pinRequired() && !pin) {
-				const result = await requestPin("Restore Backup", "Enter admin PIN to restore data");
-				if (!result.pin) {
-					e.target.value = "";
-					return;
-				}
-				pin = result.pin;
-				rememberPin = result.remember;
-			}
-			try {
-				const text = await file.text();
-				const data = JSON.parse(text);
-				data.pin = pin || void 0;
-				if (!(await fetch(`${API_BASE}/restore`, {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify(data)
-				})).ok) throw new Error("Failed to restore data");
-				if (rememberPin) cachePin(pin);
-				alert("Data restored successfully!");
-				await loadData();
-			} catch (error) {
-				console.error("Error restoring data:", error);
-				alert("Failed to restore data. Please check the file format and try again.");
-			}
-			e.target.value = "";
-		};
-		const handleForceReset = async () => {
-			if (!confirm("Are you sure you want to force a daily reset? This will reset all chore states for the new day.")) return;
-			let pin = adminPin();
-			let rememberPin = false;
-			if (pinRequired() && !pin) {
-				const result = await requestPin("Admin PIN Required", "Enter admin PIN to force daily reset");
-				if (!result.pin) return;
-				pin = result.pin;
-				rememberPin = result.remember;
-			}
-			try {
+		const contextValue = {
+			choreData: () => {
 				const data = choreData();
-				if (!data) return;
-				const yesterday = /* @__PURE__ */ new Date();
-				yesterday.setDate(yesterday.getDate() - 1);
-				data.lastResetDate = getLocalDateString(yesterday);
-				if (!(await fetch(`${API_BASE}/restore`, {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({
-						...data,
-						pin: pin || void 0
-					})
-				})).ok) throw new Error("Failed to force reset");
-				if (rememberPin) cachePin(pin);
-				alert("Daily reset triggered successfully! The data will be updated on the next sync.");
-				await loadData();
-			} catch (error) {
-				console.error("Error forcing reset:", error);
-				alert("Failed to force reset. Please try again.");
-			}
-		};
-		const getPersonalChores = (personId) => {
-			const data = choreData();
-			if (!data) return [];
-			return data.chores.filter((chore) => chore.type === ChoreType.PERSONAL && chore.assignedTo === personId);
-		};
-		const getRotatingChores = () => {
-			const data = choreData();
-			if (!data) return [];
-			return data.chores.filter((chore) => chore.type === ChoreType.ROTATING);
+				if (!data) throw new Error("choreData is null when creating context");
+				return data;
+			},
+			loadData,
+			pinRequired,
+			requestPin,
+			cachePin,
+			adminPin
 		};
 		return (() => {
-			var _el$ = _tmpl$5(), _el$4 = _el$.firstChild.firstChild.nextSibling, _el$5 = _el$4.firstChild, _el$6 = _el$5.nextSibling;
-			insert(_el$4, createComponent(Button, {
-				type: "button",
-				variant: "secondary",
-				id: "backupBtn",
-				onClick: handleDownloadBackup,
-				children: "Download Backup"
-			}), _el$5);
-			_el$6.$$input = handleRestore;
-			insert(_el$4, createComponent(Button, {
-				type: "button",
-				variant: "secondary",
-				id: "settingsBtn",
-				onClick: openSettingsModal,
-				children: "⚙️ Settings"
-			}), null);
+			var _el$ = _tmpl$4();
 			insert(_el$, createComponent(Show, {
 				get when() {
 					return loading();
 				},
 				get children() {
-					var _el$7 = _tmpl$2(), _el$8 = _el$7.firstChild;
-					_el$8.firstChild;
-					insert(_el$8, createComponent(Show, {
-						get when() {
-							return retryCount() > 0;
-						},
-						get children() {
-							var _el$0 = _tmpl$(), _el$11 = _el$0.firstChild.nextSibling;
-							_el$11.nextSibling;
-							insert(_el$0, retryCount, _el$11);
-							return _el$0;
-						}
-					}), null);
-					return _el$7;
+					return [_tmpl$(), (() => {
+						var _el$3 = _tmpl$3(), _el$4 = _el$3.firstChild;
+						_el$4.firstChild;
+						insert(_el$4, createComponent(Show, {
+							get when() {
+								return retryCount() > 0;
+							},
+							get children() {
+								var _el$6 = _tmpl$2(), _el$9 = _el$6.firstChild.nextSibling;
+								_el$9.nextSibling;
+								insert(_el$6, retryCount, _el$9);
+								return _el$6;
+							}
+						}), null);
+						return _el$3;
+					})()];
 				}
 			}), null);
 			insert(_el$, createComponent(Show, {
@@ -2809,315 +3141,11 @@
 					return choreData();
 				},
 				get children() {
-					var _el$12 = _tmpl$4(), _el$13 = _el$12.firstChild, _el$14 = _el$13.firstChild, _el$16 = _el$14.firstChild.nextSibling, _el$17 = _el$14.nextSibling, _el$22 = _el$13.nextSibling, _el$25 = _el$22.firstChild.nextSibling.firstChild, _el$28 = _el$25.firstChild.nextSibling.nextSibling, _el$30 = _el$25.nextSibling.firstChild;
-					insert(_el$16, createComponent(Button, {
-						type: "button",
-						variant: "primary",
-						id: "addPersonBtn",
-						onClick: () => openPersonModal(),
-						children: "Add Person"
-					}), null);
-					insert(_el$16, createComponent(Show, {
-						get when() {
-							return choreData()?.people.length === 0;
-						},
+					return createComponent(AdminContext.Provider, {
+						value: contextValue,
 						get children() {
-							return createComponent(Tooltip, {
-								text: "Add at least one person before you can create chores",
-								"class": "ml-2 text-base",
-								children: "ℹ️"
-							});
+							return createComponent(MainPage, {});
 						}
-					}), null);
-					insert(_el$17, createComponent(For, {
-						get each() {
-							return choreData()?.people ?? [];
-						},
-						children: (person) => (() => {
-							var _el$31 = _tmpl$7(), _el$32 = _el$31.firstChild, _el$33 = _el$32.firstChild, _el$34 = _el$33.firstChild, _el$35 = _el$34.firstChild, _el$36 = _el$35.nextSibling, _el$37 = _el$34.nextSibling;
-							_el$37.firstChild;
-							var _el$39 = _el$33.nextSibling, _el$41 = _el$32.nextSibling.firstChild, _el$42 = _el$41.firstChild, _el$43 = _el$41.nextSibling;
-							insert(_el$34, () => escapeHtml(person.name), _el$35);
-							insert(_el$37, () => person.id, null);
-							insert(_el$39, createComponent(Button, {
-								type: "button",
-								variant: "secondary",
-								size: "sm",
-								onClick: () => openPersonModal(person),
-								children: "Edit"
-							}), null);
-							insert(_el$39, createComponent(Button, {
-								type: "button",
-								variant: "secondary",
-								size: "sm",
-								onClick: () => setHistoryPerson(person),
-								children: "History"
-							}), null);
-							insert(_el$39, createComponent(Button, {
-								type: "button",
-								variant: "danger",
-								size: "sm",
-								onClick: () => handleDeletePerson(person.id),
-								children: "Delete"
-							}), null);
-							insert(_el$41, () => escapeHtml(person.name), _el$42);
-							insert(_el$43, createComponent(Button, {
-								type: "button",
-								variant: "primary",
-								size: "sm",
-								onClick: () => {
-									openPersonalChoreModal(person, null);
-								},
-								children: "Add Chore"
-							}), null);
-							insert(_el$43, createComponent(Show, {
-								get when() {
-									return memo(() => getPersonalChores(person.id).length > 0)() && (choreData()?.people.length ?? 0) > 1;
-								},
-								get children() {
-									return createComponent(Button, {
-										type: "button",
-										variant: "secondary",
-										size: "sm",
-										onClick: () => {
-											openCopyChoresModal(person);
-										},
-										children: "Copy Chores"
-									});
-								}
-							}), null);
-							insert(_el$31, createComponent(Show, {
-								get when() {
-									return getPersonalChores(person.id).length > 0;
-								},
-								get fallback() {
-									return _tmpl$8();
-								},
-								get children() {
-									var _el$44 = _tmpl$6();
-									insert(_el$44, createComponent(For, {
-										get each() {
-											return getPersonalChores(person.id);
-										},
-										children: (chore) => (() => {
-											var _el$46 = _tmpl$0(), _el$47 = _el$46.firstChild, _el$48 = _el$47.firstChild, _el$51 = _el$48.nextSibling;
-											_el$51.firstChild;
-											var _el$53 = _el$47.nextSibling;
-											insert(_el$48, () => escapeHtml(chore.name));
-											insert(_el$47, createComponent(Show, {
-												get when() {
-													return chore.deadline;
-												},
-												get children() {
-													var _el$49 = _tmpl$9();
-													_el$49.firstChild;
-													insert(_el$49, () => chore.deadline, null);
-													return _el$49;
-												}
-											}), _el$51);
-											insert(_el$51, () => formatSkipDays(chore.skipDays), null);
-											insert(_el$53, createComponent(Button, {
-												type: "button",
-												variant: "secondary",
-												size: "sm",
-												onClick: () => {
-													openPersonalChoreModal(person, chore);
-												},
-												children: "Edit"
-											}), null);
-											insert(_el$53, createComponent(Button, {
-												type: "button",
-												variant: "danger",
-												size: "sm",
-												onClick: () => handleDeleteChore(chore.id),
-												children: "Delete"
-											}), null);
-											return _el$46;
-										})()
-									}));
-									return _el$44;
-								}
-							}), null);
-							createRenderEffect((_$p) => style(_el$36, `background-color: ${person.color}`, _$p));
-							return _el$31;
-						})()
-					}));
-					insert(_el$12, createComponent(Show, {
-						get when() {
-							return (choreData()?.people?.length ?? 0) > 0;
-						},
-						get children() {
-							var _el$18 = _tmpl$3(), _el$19 = _el$18.firstChild;
-							_el$19.firstChild;
-							var _el$21 = _el$19.nextSibling;
-							insert(_el$19, createComponent(Button, {
-								type: "button",
-								variant: "primary",
-								id: "addRotatingChoreBtn",
-								onClick: () => openRotatingChoreModal(),
-								children: "Add Rotating Chore"
-							}), null);
-							insert(_el$21, createComponent(For, {
-								get each() {
-									return getRotatingChores();
-								},
-								children: (chore) => createComponent(RotatingChoreCard, {
-									chore,
-									get people() {
-										return choreData()?.people ?? [];
-									},
-									onEdit: openRotatingChoreModal,
-									onDelete: handleDeleteChore
-								})
-							}));
-							return _el$18;
-						}
-					}), _el$22);
-					insert(_el$28, () => choreData()?.lastResetDate || "Never");
-					insert(_el$30, createComponent(Button, {
-						type: "button",
-						variant: "warning",
-						id: "resetDailyBtn",
-						onClick: handleForceReset,
-						children: "Force Daily Reset"
-					}), null);
-					insert(_el$30, createComponent(Tooltip, {
-						text: "WARNING: This will un-check all chores and rotate assignment on rotating chores to the next person. It does respect skip days if today is a skip day. Useful for testing or immediately advancing chore assignments.",
-						position: "above",
-						align: "center",
-						multiline: true,
-						"class": "ml-2 text-base",
-						children: "ℹ️"
-					}), null);
-					return _el$12;
-				}
-			}), null);
-			insert(_el$, createComponent(Show, {
-				get when() {
-					return personModalOpen();
-				},
-				get children() {
-					return createComponent(PersonModal, {
-						get initialPerson() {
-							return editingPerson() ?? void 0;
-						},
-						get pinRequired() {
-							return pinRequired();
-						},
-						closeModal: closePersonModal,
-						onPinRemembered: cachePin,
-						get cachedPin() {
-							return adminPin();
-						}
-					});
-				}
-			}), null);
-			insert(_el$, createComponent(Show, {
-				get when() {
-					return personalChoreModalOpen();
-				},
-				get children() {
-					return createComponent(PersonalChoreModal, {
-						get person() {
-							return editingChorePerson();
-						},
-						get initialChore() {
-							return editingChore();
-						},
-						get pinRequired() {
-							return pinRequired();
-						},
-						closeModal: closePersonalChoreModal,
-						onPinRemembered: cachePin,
-						get cachedPin() {
-							return adminPin();
-						}
-					});
-				}
-			}), null);
-			insert(_el$, createComponent(Show, {
-				get when() {
-					return memo(() => !!rotatingChoreModalOpen())() && choreData();
-				},
-				get children() {
-					return createComponent(RotatingChoreModal, {
-						get initialChore() {
-							return editingChore();
-						},
-						get choreData() {
-							return choreData() ?? {
-								people: [],
-								chores: [],
-								dailyCompletions: [],
-								settings: {
-									dailyResetTime: "03:00",
-									historyEnabled: true
-								}
-							};
-						},
-						get pinRequired() {
-							return pinRequired();
-						},
-						closeModal: closeRotatingChoreModal,
-						onPinRemembered: cachePin,
-						get cachedPin() {
-							return adminPin();
-						}
-					});
-				}
-			}), null);
-			insert(_el$, createComponent(Show, {
-				get when() {
-					return memo(() => !!(copyChoresModalOpen() && copyChoresFromPerson()))() && choreData();
-				},
-				get children() {
-					return createComponent(CopyChoresModal, {
-						get fromPerson() {
-							return copyChoresFromPerson();
-						},
-						get choreData() {
-							return choreData();
-						},
-						get pinRequired() {
-							return pinRequired();
-						},
-						closeModal: closeCopyChoresModal,
-						onPinRemembered: cachePin,
-						get cachedPin() {
-							return adminPin();
-						}
-					});
-				}
-			}), null);
-			insert(_el$, createComponent(Show, {
-				get when() {
-					return memo(() => !!historyPerson())() && choreData();
-				},
-				get children() {
-					return createComponent(ChoreHistoryModal, {
-						get person() {
-							return historyPerson();
-						},
-						get choreData() {
-							return choreData();
-						},
-						closeModal: () => setHistoryPerson(null)
-					});
-				}
-			}), null);
-			insert(_el$, createComponent(Show, {
-				get when() {
-					return memo(() => !!settingsModalOpen())() && choreData();
-				},
-				get children() {
-					return createComponent(SettingsModal, {
-						get initialSettings() {
-							return choreData()?.settings ?? {
-								dailyResetTime: "03:00",
-								historyEnabled: true
-							};
-						},
-						closeModal: closeSettingsModal
 					});
 				}
 			}), null);
@@ -3141,7 +3169,6 @@
 			return _el$;
 		})();
 	};
-	delegateEvents(["input"]);
 	//#endregion
 	//#region src/admin/app.tsx
 	var appElement = document.getElementById("app");

@@ -4,18 +4,17 @@ import { createPerson, updatePerson } from '../api';
 import type { Person } from '../types/chore-types';
 import type { CreatePersonRequest, UpdatePersonRequest } from '../types/request-types';
 import { generatePastelColor } from '../utils/browser';
+import { useAdminContext } from './admin-context';
 import { Button } from './button';
 import { PinField } from './pin-field';
 
 interface PersonModalProps {
   initialPerson?: Person;
-  pinRequired: boolean;
   closeModal: () => void;
-  onPinRemembered?: (pin: string) => void;
-  cachedPin?: string;
 }
 
 export const PersonModal: Component<PersonModalProps> = (props) => {
+  const { loadData, pinRequired, adminPin, cachePin } = useAdminContext();
   const [name, setName] = createSignal(props.initialPerson?.name ?? '');
   const [color, setColor] = createSignal(props.initialPerson?.color ?? generatePastelColor());
   const [pin, setPin] = createSignal('');
@@ -24,27 +23,33 @@ export const PersonModal: Component<PersonModalProps> = (props) => {
   const handleSubmit = async (event: Event) => {
     event.preventDefault();
     try {
-      const pinToUse = props.cachedPin || pin();
+      const pinToUse = adminPin() || pin();
       if (props.initialPerson?.id) {
         const body: UpdatePersonRequest = {
           name: name(),
           color: color(),
-          pin: props.pinRequired ? pinToUse || undefined : undefined,
+          pin: pinRequired() ? pinToUse || undefined : undefined,
         };
         await updatePerson(props.initialPerson.id, body);
       } else {
         const body: CreatePersonRequest = {
           name: name(),
           color: color(),
-          pin: props.pinRequired ? pinToUse || undefined : undefined,
+          pin: pinRequired() ? pinToUse || undefined : undefined,
         };
         await createPerson(body);
       }
 
-      if (!props.cachedPin && rememberPin() && pin()) {
-        props.onPinRemembered?.(pin());
+      if (!adminPin() && rememberPin() && pin()) {
+        cachePin(pin());
       }
 
+      try {
+        await loadData();
+      } catch (loadError) {
+        console.error('Error reloading data after save:', loadError);
+        alert('Person saved, but failed to refresh the list. Please refresh the page.');
+      }
       props.closeModal();
     } catch (error) {
       console.error('Error saving person:', error);
@@ -95,7 +100,7 @@ export const PersonModal: Component<PersonModalProps> = (props) => {
               </Button>
             </div>
           </div>
-          <Show when={props.pinRequired && !props.cachedPin}>
+          <Show when={pinRequired() && !adminPin()}>
             <PinField
               pin={pin()}
               onPinChange={setPin}

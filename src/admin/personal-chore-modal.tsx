@@ -8,19 +8,18 @@ import {
   SkipDayVisibility as SkipDayVisibilityEnum,
 } from '../types/chore-types';
 import type { CreateChoreRequest, UpdateChoreRequest } from '../types/request-types';
+import { useAdminContext } from './admin-context';
 import { Button } from './button';
 import { PinField } from './pin-field';
 
 interface PersonalChoreModalProps {
   person: Person | null;
   initialChore?: PersonalChore;
-  pinRequired: boolean;
   closeModal: () => void;
-  onPinRemembered?: (pin: string) => void;
-  cachedPin?: string;
 }
 
 export const PersonalChoreModal: Component<PersonalChoreModalProps> = (props) => {
+  const { pinRequired, adminPin, cachePin } = useAdminContext();
   const [name, setName] = createSignal(props.initialChore?.name ?? '');
   const [deadline, setDeadline] = createSignal(props.initialChore?.deadline ?? '');
   const [skipDayVisibility, setSkipDayVisibility] = createSignal<SkipDayVisibility>(
@@ -46,7 +45,8 @@ export const PersonalChoreModal: Component<PersonalChoreModalProps> = (props) =>
       return;
     }
     try {
-      const pinToUse = props.cachedPin || pin();
+      const cachedPin = adminPin();
+      const pinToUse = cachedPin || pin();
       if (props.initialChore?.id) {
         const body: UpdateChoreRequest = {
           name: name(),
@@ -55,7 +55,7 @@ export const PersonalChoreModal: Component<PersonalChoreModalProps> = (props) =>
           deadline: deadline() || undefined,
           skipDays: skipDays(),
           skipDayVisibility: skipDayVisibility(),
-          pin: props.pinRequired ? pinToUse || undefined : undefined,
+          pin: pinRequired() ? pinToUse || undefined : undefined,
         };
         await updateChore(props.initialChore.id, body);
       } else {
@@ -66,13 +66,13 @@ export const PersonalChoreModal: Component<PersonalChoreModalProps> = (props) =>
           deadline: deadline() || undefined,
           skipDays: skipDays(),
           skipDayVisibility: skipDayVisibility(),
-          pin: props.pinRequired ? pinToUse || undefined : undefined,
+          pin: pinRequired() ? pinToUse || undefined : undefined,
         };
         await createChore(body);
       }
 
-      if (!props.cachedPin && rememberPin() && pin()) {
-        props.onPinRemembered?.(pin());
+      if (!cachedPin && rememberPin() && pin()) {
+        cachePin(pin());
       }
 
       props.closeModal();
@@ -181,7 +181,7 @@ export const PersonalChoreModal: Component<PersonalChoreModalProps> = (props) =>
                   <option value={SkipDayVisibilityEnum.SHOW_IF_OVERDUE}>Show If Overdue</option>
                 </select>
               </div>
-              <Show when={props.pinRequired && !props.cachedPin}>
+              <Show when={pinRequired() && !adminPin()}>
                 <PinField
                   pin={pin()}
                   onPinChange={setPin}

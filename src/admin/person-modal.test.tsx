@@ -4,11 +4,12 @@ import { page } from 'vitest/browser';
 import { createPerson, updatePerson } from '../api';
 import type { Person } from '../types/chore-types';
 import { PersonModal } from './person-modal';
+import { MockAdminProvider } from './test-utils';
 
 // Mock API functions
 vi.mock('../api', () => ({
-  createPerson: vi.fn(),
-  updatePerson: vi.fn(),
+  createPerson: vi.fn().mockResolvedValue(undefined),
+  updatePerson: vi.fn().mockResolvedValue(undefined),
 }));
 
 // Mock color utility
@@ -22,7 +23,9 @@ describe('PersonModal', () => {
       const closeModal = vi.fn();
 
       const { container } = render(() => (
-        <PersonModal initialPerson={undefined} pinRequired={false} closeModal={closeModal} />
+        <MockAdminProvider>
+          <PersonModal initialPerson={undefined} closeModal={closeModal} />
+        </MockAdminProvider>
       ));
 
       expect(container.querySelector('h3')?.textContent).toBe('Add Person');
@@ -34,7 +37,9 @@ describe('PersonModal', () => {
       const closeModal = vi.fn();
 
       const { container } = render(() => (
-        <PersonModal initialPerson={undefined} pinRequired={false} closeModal={closeModal} />
+        <MockAdminProvider>
+          <PersonModal initialPerson={undefined} closeModal={closeModal} />
+        </MockAdminProvider>
       ));
 
       const colorInput = container.querySelector('#personColor') as HTMLInputElement;
@@ -48,7 +53,9 @@ describe('PersonModal', () => {
       const initialPerson: Person = { id: 'p1', name: 'Alice', color: '#FF6B6B' };
 
       const { container } = render(() => (
-        <PersonModal initialPerson={initialPerson} pinRequired={false} closeModal={closeModal} />
+        <MockAdminProvider>
+          <PersonModal initialPerson={initialPerson} closeModal={closeModal} />
+        </MockAdminProvider>
       ));
 
       expect(container.querySelector('h3')?.textContent).toBe('Edit Person');
@@ -64,7 +71,9 @@ describe('PersonModal', () => {
       const initialPerson: Person = { id: 'p1', name: 'Alice', color: '#FF6B6B' };
 
       render(() => (
-        <PersonModal initialPerson={initialPerson} pinRequired={false} closeModal={closeModal} />
+        <MockAdminProvider>
+          <PersonModal initialPerson={initialPerson} closeModal={closeModal} />
+        </MockAdminProvider>
       ));
 
       const saveButton = page.getByRole('button', { name: 'Save' });
@@ -72,7 +81,7 @@ describe('PersonModal', () => {
       await saveButton.click();
 
       expect(closeModal).toHaveBeenCalled();
-      expect(updatePerson).toHaveBeenCalled();
+      expect(updatePerson).toHaveBeenCalledWith('p1', expect.any(Object));
     });
   });
 
@@ -81,7 +90,9 @@ describe('PersonModal', () => {
       const closeModal = vi.fn();
 
       render(() => (
-        <PersonModal initialPerson={undefined} pinRequired={false} closeModal={closeModal} />
+        <MockAdminProvider>
+          <PersonModal initialPerson={undefined} closeModal={closeModal} />
+        </MockAdminProvider>
       ));
 
       const cancelButton = page.getByRole('button', { name: 'Cancel' });
@@ -96,7 +107,9 @@ describe('PersonModal', () => {
       const closeModal = vi.fn();
 
       render(() => (
-        <PersonModal initialPerson={undefined} pinRequired={false} closeModal={closeModal} />
+        <MockAdminProvider>
+          <PersonModal initialPerson={undefined} closeModal={closeModal} />
+        </MockAdminProvider>
       ));
 
       // Fill in the name field
@@ -114,7 +127,9 @@ describe('PersonModal', () => {
       const closeModal = vi.fn();
 
       const { container } = render(() => (
-        <PersonModal initialPerson={undefined} pinRequired={true} closeModal={closeModal} />
+        <MockAdminProvider pinRequired={true}>
+          <PersonModal initialPerson={undefined} closeModal={closeModal} />
+        </MockAdminProvider>
       ));
 
       const pinInput = container.querySelector('#adminPin') as HTMLInputElement;
@@ -132,7 +147,9 @@ describe('PersonModal', () => {
       const closeModal = vi.fn();
 
       render(() => (
-        <PersonModal initialPerson={undefined} pinRequired={true} closeModal={closeModal} />
+        <MockAdminProvider pinRequired={true}>
+          <PersonModal initialPerson={undefined} closeModal={closeModal} />
+        </MockAdminProvider>
       ));
 
       await page.getByLabelText('Name').fill('Test Person');
@@ -153,12 +170,9 @@ describe('PersonModal', () => {
       const closeModal = vi.fn();
 
       const { container } = render(() => (
-        <PersonModal
-          initialPerson={undefined}
-          pinRequired={true}
-          closeModal={closeModal}
-          cachedPin="5678"
-        />
+        <MockAdminProvider pinRequired={true} initialAdminPin="5678">
+          <PersonModal initialPerson={undefined} closeModal={closeModal} />
+        </MockAdminProvider>
       ));
 
       const pinInput = container.querySelector('#adminPin');
@@ -167,16 +181,11 @@ describe('PersonModal', () => {
 
     it('should use cachedPin in request when provided', async () => {
       const closeModal = vi.fn();
-      const onPinRemembered = vi.fn();
 
       render(() => (
-        <PersonModal
-          initialPerson={undefined}
-          pinRequired={true}
-          closeModal={closeModal}
-          cachedPin="5678"
-          onPinRemembered={onPinRemembered}
-        />
+        <MockAdminProvider pinRequired={true} initialAdminPin="5678">
+          <PersonModal initialPerson={undefined} closeModal={closeModal} />
+        </MockAdminProvider>
       ));
 
       await page.getByLabelText('Name').fill('Test Person');
@@ -190,7 +199,6 @@ describe('PersonModal', () => {
           pin: '5678',
         })
       );
-      expect(onPinRemembered).not.toHaveBeenCalled();
     });
   });
 });
