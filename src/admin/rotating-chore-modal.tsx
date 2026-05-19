@@ -1,5 +1,5 @@
 import type { Component } from 'solid-js';
-import { createSignal, For } from 'solid-js';
+import { createSignal, For, Show } from 'solid-js';
 import { createChore, updateChore } from '../api';
 import type { FamilyChoresData, RotatingChore, SkipDayVisibility } from '../types/chore-types';
 import {
@@ -9,11 +9,14 @@ import {
 } from '../types/chore-types';
 import type { CreateChoreRequest, UpdateChoreRequest } from '../types/request-types';
 import { Button } from './button';
+import { PinField } from './pin-field';
 
 interface RotatingChoreModalProps {
   initialChore?: RotatingChore;
   choreData: FamilyChoresData;
+  pinRequired: boolean;
   closeModal: () => void;
+  onPinRemembered?: (pin: string) => void;
 }
 
 export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) => {
@@ -24,6 +27,8 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
   );
   const [skipDays, setSkipDays] = createSignal<DayOfWeek[]>(props.initialChore?.skipDays ?? []);
   const [rotation, setRotation] = createSignal<string[]>(props.initialChore?.rotation ?? []);
+  const [pin, setPin] = createSignal('');
+  const [rememberPin, setRememberPin] = createSignal(false);
 
   const handleSkipDayChange = (day: DayOfWeek, checked: boolean) => {
     if (checked) {
@@ -52,6 +57,7 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
           deadline: deadline() || undefined,
           skipDays: skipDays(),
           skipDayVisibility: skipDayVisibility(),
+          pin: props.pinRequired ? pin() || undefined : undefined,
         };
         await updateChore(props.initialChore.id, body);
       } else {
@@ -62,8 +68,13 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
           deadline: deadline() || undefined,
           skipDays: skipDays(),
           skipDayVisibility: skipDayVisibility(),
+          pin: props.pinRequired ? pin() || undefined : undefined,
         };
         await createChore(body);
+      }
+
+      if (rememberPin() && pin()) {
+        props.onPinRemembered?.(pin());
       }
 
       props.closeModal();
@@ -184,6 +195,14 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
               <option value={SkipDayVisibilityEnum.SHOW_IF_OVERDUE}>Show If Overdue</option>
             </select>
           </div>
+          <Show when={props.pinRequired}>
+            <PinField
+              pin={pin()}
+              onPinChange={setPin}
+              remember={rememberPin()}
+              onRememberChange={setRememberPin}
+            />
+          </Show>
           <div class="mt-6 flex justify-end gap-2.5">
             <Button type="button" variant="secondary" onClick={() => props.closeModal()}>
               Cancel

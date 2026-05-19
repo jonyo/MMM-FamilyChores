@@ -13,3 +13,19 @@ export const updateSettings = async (data: UpdateSettingsRequest): Promise<Setti
   });
   return (await handleResponse(response)) as Settings;
 };
+
+/**
+ * Download backup JSON. Requires PIN if adminPin is configured.
+ */
+export const downloadBackup = async (pin?: string): Promise<Blob> => {
+  const query = pin ? `?pin=${encodeURIComponent(pin)}` : '';
+  const response = await fetch(`${API_BASE_URL}/backup${query}`);
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    if (errorData?.error) {
+      throw new Error(errorData.error);
+    }
+    throw new Error(`Request failed with status ${response.status}`);
+  }
+  return response.blob();
+};

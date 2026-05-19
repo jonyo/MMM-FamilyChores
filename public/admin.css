@@ -63,6 +63,14 @@ To make changes:
     --color-red-500: #ef4444;
     --color-red-600: #dc2626;
     --color-red-700: #b91c1c;
+    --color-amber-50: oklch(98.7% .022 95.277);
+    --color-amber-100: oklch(96.2% .059 95.617);
+    --color-amber-200: oklch(92.4% .12 95.746);
+    --color-amber-300: oklch(87.9% .169 91.605);
+    --color-amber-600: oklch(66.6% .179 58.318);
+    --color-amber-700: oklch(55.5% .163 48.998);
+    --color-amber-800: oklch(47.3% .137 46.201);
+    --color-amber-900: oklch(41.4% .112 45.904);
     --color-yellow-500: #eab308;
     --color-yellow-600: #ca8a04;
     --color-green-500: #22c55e;
@@ -75,8 +83,10 @@ To make changes:
     --color-slate-100: #f1f5f9;
     --color-slate-200: #e2e8f0;
     --color-slate-300: #cbd5e1;
+    --color-slate-400: #94a3b8;
     --color-slate-500: #64748b;
     --color-slate-600: #475569;
+    --color-slate-800: #1e293b;
     --color-slate-900: #0f172a;
     --color-gray-600: #4b5563;
     --color-gray-700: #374151;
@@ -529,12 +539,20 @@ To make changes:
     margin-block: calc(var(--spacing) * 2.5);
   }
 
+  .mt-1 {
+    margin-top: calc(var(--spacing) * 1);
+  }
+
   .mt-1\.25 {
     margin-top: calc(var(--spacing) * 1.25);
   }
 
   .mt-2 {
     margin-top: calc(var(--spacing) * 2);
+  }
+
+  .mt-3 {
+    margin-top: calc(var(--spacing) * 3);
   }
 
   .mt-4 {
@@ -575,6 +593,10 @@ To make changes:
 
   .mb-10 {
     margin-bottom: calc(var(--spacing) * 10);
+  }
+
+  .ml-1 {
+    margin-left: calc(var(--spacing) * 1);
   }
 
   .ml-2 {
@@ -672,6 +694,10 @@ To make changes:
     max-width: 95vw;
   }
 
+  .max-w-\[400px\] {
+    max-width: 400px;
+  }
+
   .max-w-\[500px\] {
     max-width: 500px;
   }
@@ -703,6 +729,10 @@ To make changes:
 
   .animate-loading-pulse {
     animation: var(--animate-loading-pulse);
+  }
+
+  .cursor-help {
+    cursor: help;
   }
 
   .cursor-pointer {
@@ -810,6 +840,14 @@ To make changes:
     border-style: none;
   }
 
+  .border-amber-200 {
+    border-color: var(--color-amber-200);
+  }
+
+  .border-amber-300 {
+    border-color: var(--color-amber-300);
+  }
+
   .border-black\/10 {
     border-color: #0000001a;
   }
@@ -830,6 +868,10 @@ To make changes:
 
   .border-slate-300 {
     border-color: var(--color-slate-300);
+  }
+
+  .bg-amber-50 {
+    background-color: var(--color-amber-50);
   }
 
   .bg-black\/50 {
@@ -916,6 +958,10 @@ To make changes:
     padding: calc(var(--spacing) * 3);
   }
 
+  .p-4 {
+    padding: calc(var(--spacing) * 4);
+  }
+
   .p-5 {
     padding: calc(var(--spacing) * 5);
   }
@@ -946,6 +992,10 @@ To make changes:
 
   .py-1\.5 {
     padding-block: calc(var(--spacing) * 1.5);
+  }
+
+  .py-2 {
+    padding-block: calc(var(--spacing) * 2);
   }
 
   .py-2\.5 {
@@ -1039,6 +1089,18 @@ To make changes:
     white-space: nowrap;
   }
 
+  .text-amber-700 {
+    color: var(--color-amber-700);
+  }
+
+  .text-amber-800 {
+    color: var(--color-amber-800);
+  }
+
+  .text-amber-900 {
+    color: var(--color-amber-900);
+  }
+
   .text-gray-900 {
     color: var(--color-gray-900);
   }
@@ -1055,12 +1117,20 @@ To make changes:
     color: var(--color-red-600);
   }
 
+  .text-slate-400 {
+    color: var(--color-slate-400);
+  }
+
   .text-slate-500 {
     color: var(--color-slate-500);
   }
 
   .text-slate-600 {
     color: var(--color-slate-600);
+  }
+
+  .text-slate-800 {
+    color: var(--color-slate-800);
   }
 
   .text-slate-900 {
@@ -1081,6 +1151,10 @@ To make changes:
 
   .italic {
     font-style: italic;
+  }
+
+  .underline {
+    text-decoration-line: underline;
   }
 
   .shadow {
@@ -1145,6 +1219,10 @@ To make changes:
       border-color: var(--color-indigo-600);
     }
 
+    .hover\:bg-amber-100:hover {
+      background-color: var(--color-amber-100);
+    }
+
     .hover\:bg-gray-700:hover {
       background-color: var(--color-gray-700);
     }
@@ -1161,6 +1239,10 @@ To make changes:
       background-color: var(--color-red-700);
     }
 
+    .hover\:bg-slate-100:hover {
+      background-color: var(--color-slate-100);
+    }
+
     .hover\:bg-yellow-600:hover {
       background-color: var(--color-yellow-600);
     }
@@ -1169,6 +1251,10 @@ To make changes:
       --tw-shadow: 0 4px 6px -1px var(--tw-shadow-color, #0000001a), 0 2px 4px -2px var(--tw-shadow-color, #0000001a);
       box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
     }
+  }
+
+  .focus\:border-amber-600:focus {
+    border-color: var(--color-amber-600);
   }
 
   .focus\:border-indigo-600:focus {

@@ -3,7 +3,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DailyCompletion, FamilyChoresData, Person } from '../types/chore-types';
 import { ChoreType, SkipDayVisibility } from '../types/chore-types';
 import { ChoreHistoryModal } from './chore-history-modal';
-import '../../public/admin.css';
 
 describe('ChoreHistoryModal', () => {
   const mockPerson: Person = {

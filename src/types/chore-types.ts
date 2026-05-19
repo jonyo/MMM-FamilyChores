@@ -129,6 +129,10 @@ export interface Settings {
    * Enable/disable history tracking (default: true)
    */
   historyEnabled: boolean;
+  /**
+   * PIN for protecting admin actions. null or undefined = no PIN required.
+   */
+  adminPin?: string | null;
 }
 
 export interface FamilyChoresData {

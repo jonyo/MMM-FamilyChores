@@ -1,7 +1,6 @@
 import { render } from '@solidjs/testing-library';
 import { describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
-import '../../public/admin.css';
 import { createChore, updateChore } from '../api';
 import type { FamilyChoresData } from '../types/chore-types';
 import { DayOfWeek, SkipDayVisibility } from '../types/chore-types';
@@ -36,6 +35,7 @@ describe('RotatingChoreModal', () => {
         <RotatingChoreModal
           initialChore={undefined}
           choreData={mockChoreData}
+          pinRequired={false}
           closeModal={closeModal}
         />
       ));
@@ -53,6 +53,7 @@ describe('RotatingChoreModal', () => {
         <RotatingChoreModal
           initialChore={undefined}
           choreData={mockChoreData}
+          pinRequired={false}
           closeModal={closeModal}
         />
       ));
@@ -72,6 +73,7 @@ describe('RotatingChoreModal', () => {
         <RotatingChoreModal
           initialChore={undefined}
           choreData={mockChoreData}
+          pinRequired={false}
           closeModal={closeModal}
         />
       ));
@@ -108,6 +110,7 @@ describe('RotatingChoreModal', () => {
         <RotatingChoreModal
           initialChore={initialChore}
           choreData={mockChoreData}
+          pinRequired={false}
           closeModal={closeModal}
         />
       ));
@@ -144,6 +147,7 @@ describe('RotatingChoreModal', () => {
         <RotatingChoreModal
           initialChore={initialChore}
           choreData={mockChoreData}
+          pinRequired={false}
           closeModal={closeModal}
         />
       ));

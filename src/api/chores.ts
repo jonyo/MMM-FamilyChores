@@ -25,9 +25,10 @@ export const updateChore = async (id: string, data: UpdateChoreRequest): Promise
   return handleResponse(response);
 };
 
-export const deleteChore = async (id: string): Promise<void> => {
+export const deleteChore = async (id: string, pin?: string): Promise<void> => {
   validateId(id);
-  const response = await fetch(`${API_BASE_URL}/chores/${id}`, {
+  const query = pin ? `?pin=${encodeURIComponent(pin)}` : '';
+  const response = await fetch(`${API_BASE_URL}/chores/${id}${query}`, {
     method: 'DELETE',
   });
   await handleResponse(response);

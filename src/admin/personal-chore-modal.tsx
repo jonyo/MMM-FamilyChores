@@ -9,11 +9,14 @@ import {
 } from '../types/chore-types';
 import type { CreateChoreRequest, UpdateChoreRequest } from '../types/request-types';
 import { Button } from './button';
+import { PinField } from './pin-field';
 
 interface PersonalChoreModalProps {
   person: Person | null;
   initialChore?: PersonalChore;
+  pinRequired: boolean;
   closeModal: () => void;
+  onPinRemembered?: (pin: string) => void;
 }
 
 export const PersonalChoreModal: Component<PersonalChoreModalProps> = (props) => {
@@ -23,6 +26,8 @@ export const PersonalChoreModal: Component<PersonalChoreModalProps> = (props) =>
     props.initialChore?.skipDayVisibility ?? SkipDayVisibilityEnum.HIDE
   );
   const [skipDays, setSkipDays] = createSignal<DayOfWeek[]>(props.initialChore?.skipDays ?? []);
+  const [pin, setPin] = createSignal('');
+  const [rememberPin, setRememberPin] = createSignal(false);
 
   const handleSkipDayChange = (day: DayOfWeek, checked: boolean) => {
     if (checked) {
@@ -48,6 +53,7 @@ export const PersonalChoreModal: Component<PersonalChoreModalProps> = (props) =>
           deadline: deadline() || undefined,
           skipDays: skipDays(),
           skipDayVisibility: skipDayVisibility(),
+          pin: props.pinRequired ? pin() || undefined : undefined,
         };
         await updateChore(props.initialChore.id, body);
       } else {
@@ -58,8 +64,13 @@ export const PersonalChoreModal: Component<PersonalChoreModalProps> = (props) =>
           deadline: deadline() || undefined,
           skipDays: skipDays(),
           skipDayVisibility: skipDayVisibility(),
+          pin: props.pinRequired ? pin() || undefined : undefined,
         };
         await createChore(body);
+      }
+
+      if (rememberPin() && pin()) {
+        props.onPinRemembered?.(pin());
       }
 
       props.closeModal();
@@ -168,6 +179,14 @@ export const PersonalChoreModal: Component<PersonalChoreModalProps> = (props) =>
                   <option value={SkipDayVisibilityEnum.SHOW_IF_OVERDUE}>Show If Overdue</option>
                 </select>
               </div>
+              <Show when={props.pinRequired}>
+                <PinField
+                  pin={pin()}
+                  onPinChange={setPin}
+                  remember={rememberPin()}
+                  onRememberChange={setRememberPin}
+                />
+              </Show>
               <div class="mt-6 flex justify-end gap-2.5">
                 <Button type="button" variant="secondary" onClick={() => props.closeModal()}>
                   Cancel

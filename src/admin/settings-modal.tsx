@@ -1,5 +1,5 @@
 import type { Component } from 'solid-js';
-import { createSignal } from 'solid-js';
+import { createSignal, Show } from 'solid-js';
 import { updateSettings } from '../api';
 import type { Settings } from '../types/chore-types';
 import type { UpdateSettingsRequest } from '../types/request-types';
@@ -13,14 +13,59 @@ interface SettingsModalProps {
 export const SettingsModal: Component<SettingsModalProps> = (props) => {
   const [dailyResetTime, setDailyResetTime] = createSignal(props.initialSettings.dailyResetTime);
   const [historyEnabled, setHistoryEnabled] = createSignal(props.initialSettings.historyEnabled);
+  const [pinEnabled, setPinEnabled] = createSignal(!!props.initialSettings.adminPin);
+  const [currentPin, setCurrentPin] = createSignal('');
+  const [newPin, setNewPin] = createSignal('');
+  const [confirmPin, setConfirmPin] = createSignal('');
+  const [changePin, setChangePin] = createSignal(false);
+  const [showCurrentPin, setShowCurrentPin] = createSignal(false);
+  const [showNewPin, setShowNewPin] = createSignal(false);
+  const [showConfirmPin, setShowConfirmPin] = createSignal(false);
+
+  const hasPin = () => !!props.initialSettings.adminPin;
 
   const handleSubmit = async (event: Event) => {
     event.preventDefault();
+
+    const isEnabled = pinEnabled();
+    const hadPin = hasPin();
+
+    if (hadPin && isEnabled && currentPin() === '') {
+      alert('Current PIN is required to save settings');
+      return;
+    }
+
+    if (isEnabled && (!hadPin || changePin())) {
+      if (newPin() === '') {
+        alert('PIN cannot be empty when PIN protection is enabled');
+        return;
+      }
+      if (newPin() !== confirmPin()) {
+        alert('New PIN and confirmation do not match');
+        return;
+      }
+    }
+
+    if (hadPin && !isEnabled && currentPin() === '') {
+      alert('Current PIN is required to disable PIN protection');
+      return;
+    }
+
     try {
       const body: UpdateSettingsRequest = {
         dailyResetTime: dailyResetTime(),
         historyEnabled: historyEnabled(),
+        pin: hadPin ? currentPin() || undefined : undefined,
       };
+
+      if (!isEnabled) {
+        body.adminPin = null;
+      } else if (!hadPin) {
+        body.adminPin = newPin();
+      } else if (changePin() && newPin()) {
+        body.adminPin = newPin();
+      }
+
       await updateSettings(body);
       props.closeModal();
     } catch (error) {
@@ -68,6 +113,151 @@ export const SettingsModal: Component<SettingsModalProps> = (props) => {
             </label>
             <small class="mt-2 block text-sm text-slate-500">
               Track daily chore completions (keeps last 14 days)
+            </small>
+          </div>
+          <div class="mb-5 rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <h4 class="mb-3 font-medium text-slate-900">Admin PIN Protection</h4>
+            <label class="mb-4 flex cursor-pointer items-center gap-2">
+              <input
+                type="checkbox"
+                checked={pinEnabled()}
+                onInput={(e) => {
+                  setPinEnabled(e.currentTarget.checked);
+                  setChangePin(false);
+                  setNewPin('');
+                  setConfirmPin('');
+                }}
+                class="size-4.5 cursor-pointer"
+              />
+              Enable PIN Protection
+            </label>
+
+            <Show when={pinEnabled()}>
+              <Show when={hasPin()}>
+                <div class="mb-3">
+                  <label for="currentPin" class="mb-2 block font-medium text-amber-900">
+                    Current PIN <span class="text-amber-700">*</span>
+                  </label>
+                  <div class="flex gap-2">
+                    <input
+                      type={showCurrentPin() ? 'text' : 'password'}
+                      id="currentPin"
+                      value={currentPin()}
+                      onInput={(e) => setCurrentPin(e.currentTarget.value)}
+                      placeholder="Enter current PIN to save changes"
+                      required
+                      class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowCurrentPin(!showCurrentPin())}
+                      class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100"
+                    >
+                      {showCurrentPin() ? '🙈' : '👁'}
+                    </button>
+                  </div>
+                </div>
+
+                <label class="mb-3 flex cursor-pointer items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={changePin()}
+                    onInput={(e) => {
+                      setChangePin(e.currentTarget.checked);
+                      setNewPin('');
+                      setConfirmPin('');
+                    }}
+                    class="size-4.5 cursor-pointer"
+                  />
+                  Change PIN
+                </label>
+              </Show>
+
+              <Show when={!hasPin() || changePin()}>
+                <div class="mb-3">
+                  <label for="newPin" class="mb-2 block font-medium text-slate-900">
+                    {hasPin() ? 'New PIN' : 'Set PIN'} <span class="text-amber-700">*</span>
+                  </label>
+                  <div class="flex gap-2">
+                    <input
+                      type={showNewPin() ? 'text' : 'password'}
+                      id="newPin"
+                      value={newPin()}
+                      onInput={(e) => setNewPin(e.currentTarget.value)}
+                      placeholder={
+                        hasPin() ? 'Enter new PIN' : 'Enter PIN to protect admin actions'
+                      }
+                      required
+                      class="flex-1 rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPin(!showNewPin())}
+                      class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 transition-colors hover:bg-slate-100"
+                    >
+                      {showNewPin() ? '🙈' : '👁'}
+                    </button>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label for="confirmPin" class="mb-2 block font-medium text-slate-900">
+                    Confirm PIN <span class="text-amber-700">*</span>
+                  </label>
+                  <div class="flex gap-2">
+                    <input
+                      type={showConfirmPin() ? 'text' : 'password'}
+                      id="confirmPin"
+                      value={confirmPin()}
+                      onInput={(e) => setConfirmPin(e.currentTarget.value)}
+                      placeholder="Confirm PIN"
+                      required
+                      class="flex-1 rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPin(!showConfirmPin())}
+                      class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 transition-colors hover:bg-slate-100"
+                    >
+                      {showConfirmPin() ? '🙈' : '👁'}
+                    </button>
+                  </div>
+                </div>
+                <small class="block text-sm text-slate-500">
+                  PIN can be any combination of letters, numbers, or symbols. There is no length
+                  limit.
+                </small>
+              </Show>
+            </Show>
+
+            <Show when={!pinEnabled() && hasPin()}>
+              <div class="mb-3">
+                <label for="currentPin" class="mb-2 block font-medium text-amber-900">
+                  Current PIN <span class="text-amber-700">*</span>
+                </label>
+                <div class="flex gap-2">
+                  <input
+                    type={showCurrentPin() ? 'text' : 'password'}
+                    id="currentPin"
+                    value={currentPin()}
+                    onInput={(e) => setCurrentPin(e.currentTarget.value)}
+                    placeholder="Enter current PIN to disable protection"
+                    required
+                    class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrentPin(!showCurrentPin())}
+                    class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100"
+                  >
+                    {showCurrentPin() ? '🙈' : '👁'}
+                  </button>
+                </div>
+              </div>
+            </Show>
+
+            <small class="block text-sm text-slate-500">
+              When enabled, a PIN is required for all admin actions including backup, restore, and
+              modifying people or chores.
             </small>
           </div>
           <div class="mt-6 flex justify-end gap-2.5">

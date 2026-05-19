@@ -1,6 +1,6 @@
 import type { Component } from 'solid-js';
 import { createSignal, For, onMount, Show } from 'solid-js';
-import { deleteChore, deletePerson } from '../api';
+import { deleteChore, deletePerson, downloadBackup } from '../api';
 import type {
   Chore,
   DayOfWeek,
@@ -17,6 +17,7 @@ import { ChoreHistoryModal } from './chore-history-modal';
 import { CopyChoresModal } from './copy-chores-modal';
 import { PersonModal } from './person-modal';
 import { PersonalChoreModal } from './personal-chore-modal';
+import { PinPromptModal } from './pin-prompt-modal';
 import { RotatingChoreCard } from './rotating-chore';
 import { RotatingChoreModal } from './rotating-chore-modal';
 import { SettingsModal } from './settings-modal';
@@ -45,6 +46,52 @@ export const Admin: Component<Record<string, never>> = () => {
   const [historyPerson, setHistoryPerson] = createSignal<Person | null>(null);
   const [loading, setLoading] = createSignal(true);
   const [retryCount, setRetryCount] = createSignal(0);
+  const [adminPin, setAdminPin] = createSignal('');
+  const [pinPromptOpen, setPinPromptOpen] = createSignal(false);
+  const [pinPromptTitle, setPinPromptTitle] = createSignal('');
+  const [pinPromptMessage, setPinPromptMessage] = createSignal('');
+
+  let pinPromiseResolve: ((pin: string | null) => void) | null = null;
+  let pinTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  const pinRequired = () => !!choreData()?.settings?.adminPin;
+
+  const requestPin = (title: string, message: string): Promise<string | null> => {
+    return new Promise((resolve) => {
+      pinPromiseResolve = resolve;
+      setPinPromptTitle(title);
+      setPinPromptMessage(message);
+      setPinPromptOpen(true);
+    });
+  };
+
+  const cachePin = (pin: string) => {
+    setAdminPin(pin);
+    if (pinTimeout) clearTimeout(pinTimeout);
+    pinTimeout = setTimeout(
+      () => {
+        setAdminPin('');
+        pinTimeout = null;
+      },
+      10 * 60 * 1000
+    );
+  };
+
+  const handlePinConfirm = (pin: string, remember: boolean) => {
+    setPinPromptOpen(false);
+    pinPromiseResolve?.(pin);
+    pinPromiseResolve = null;
+
+    if (remember) {
+      cachePin(pin);
+    }
+  };
+
+  const handlePinCancel = () => {
+    setPinPromptOpen(false);
+    pinPromiseResolve?.(null);
+    pinPromiseResolve = null;
+  };
 
   // Load data from API
   const loadData = async () => {
@@ -137,8 +184,18 @@ export const Admin: Component<Record<string, never>> = () => {
       return;
     }
 
+    let pin = adminPin();
+    if (pinRequired() && !pin) {
+      const enteredPin = await requestPin(
+        'Admin PIN Required',
+        'Enter admin PIN to delete this person'
+      );
+      if (!enteredPin) return;
+      pin = enteredPin;
+    }
+
     try {
-      await deletePerson(personId);
+      await deletePerson(personId, pin || undefined);
       await loadData();
     } catch (error) {
       console.error('Error deleting person:', error);
@@ -151,8 +208,18 @@ export const Admin: Component<Record<string, never>> = () => {
       return;
     }
 
+    let pin = adminPin();
+    if (pinRequired() && !pin) {
+      const enteredPin = await requestPin(
+        'Admin PIN Required',
+        'Enter admin PIN to delete this chore'
+      );
+      if (!enteredPin) return;
+      pin = enteredPin;
+    }
+
     try {
-      await deleteChore(choreId);
+      await deleteChore(choreId, pin || undefined);
       await loadData();
     } catch (error) {
       console.error('Error deleting chore:', error);
@@ -163,23 +230,30 @@ export const Admin: Component<Record<string, never>> = () => {
   // Backup/restore handlers
   const handleDownloadBackup = async () => {
     try {
-      const response = await fetch(`${API_BASE}/backup`);
-      if (!response.ok) throw new Error('Failed to create backup');
+      let pin = adminPin();
+      if (pinRequired() && !pin) {
+        const enteredPin = await requestPin(
+          'Download Backup',
+          'Enter admin PIN to download backup'
+        );
+        if (!enteredPin) return;
+        pin = enteredPin;
+      }
 
-      const blob = await response.blob();
+      const blob = await downloadBackup(pin || undefined);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download =
-        response.headers.get('Content-Disposition')?.match(/filename="(.+)"/)?.[1] ||
-        'family-chores-backup.json';
+      a.download = 'family-chores-backup.json';
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
       console.error('Error downloading backup:', error);
-      alert('Failed to download backup. Please try again.');
+      alert(
+        `Failed to download backup: ${error instanceof Error ? error.message : 'Please try again.'}`
+      );
     }
   };
 
@@ -187,9 +261,20 @@ export const Admin: Component<Record<string, never>> = () => {
     const file = (e.target as HTMLInputElement).files?.[0];
     if (!file) return;
 
+    let pin = adminPin();
+    if (pinRequired() && !pin) {
+      const enteredPin = await requestPin('Restore Backup', 'Enter admin PIN to restore data');
+      if (!enteredPin) {
+        (e.target as HTMLInputElement).value = '';
+        return;
+      }
+      pin = enteredPin;
+    }
+
     try {
       const text = await file.text();
-      const data = JSON.parse(text);
+      const data = JSON.parse(text) as Record<string, unknown>;
+      data.pin = pin || undefined;
 
       const response = await fetch(`${API_BASE}/restore`, {
         method: 'POST',
@@ -219,6 +304,16 @@ export const Admin: Component<Record<string, never>> = () => {
       return;
     }
 
+    let pin = adminPin();
+    if (pinRequired() && !pin) {
+      const enteredPin = await requestPin(
+        'Admin PIN Required',
+        'Enter admin PIN to force daily reset'
+      );
+      if (!enteredPin) return;
+      pin = enteredPin;
+    }
+
     try {
       const data = choreData();
       if (!data) return;
@@ -233,7 +328,7 @@ export const Admin: Component<Record<string, never>> = () => {
       const response = await fetch(`${API_BASE}/restore`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, pin: pin || undefined }),
       });
 
       if (!response.ok) throw new Error('Failed to force reset');
@@ -534,13 +629,20 @@ export const Admin: Component<Record<string, never>> = () => {
 
       {/* Modals */}
       <Show when={personModalOpen()}>
-        <PersonModal initialPerson={editingPerson() ?? undefined} closeModal={closePersonModal} />
+        <PersonModal
+          initialPerson={editingPerson() ?? undefined}
+          pinRequired={pinRequired()}
+          closeModal={closePersonModal}
+          onPinRemembered={cachePin}
+        />
       </Show>
       <Show when={personalChoreModalOpen()}>
         <PersonalChoreModal
           person={editingChorePerson()}
           initialChore={editingChore() as PersonalChore | undefined}
+          pinRequired={pinRequired()}
           closeModal={closePersonalChoreModal}
+          onPinRemembered={cachePin}
         />
       </Show>
       <Show when={rotatingChoreModalOpen() && choreData()}>
@@ -557,14 +659,18 @@ export const Admin: Component<Record<string, never>> = () => {
               },
             }
           }
+          pinRequired={pinRequired()}
           closeModal={closeRotatingChoreModal}
+          onPinRemembered={cachePin}
         />
       </Show>
       <Show when={copyChoresModalOpen() && copyChoresFromPerson() && choreData()}>
         <CopyChoresModal
           fromPerson={copyChoresFromPerson() as Person}
           choreData={choreData() as FamilyChoresData}
+          pinRequired={pinRequired()}
           closeModal={closeCopyChoresModal}
+          onPinRemembered={cachePin}
         />
       </Show>
       <Show when={historyPerson() && choreData()}>
@@ -583,6 +689,14 @@ export const Admin: Component<Record<string, never>> = () => {
             }
           }
           closeModal={closeSettingsModal}
+        />
+      </Show>
+      <Show when={pinPromptOpen()}>
+        <PinPromptModal
+          title={pinPromptTitle()}
+          message={pinPromptMessage()}
+          onConfirm={handlePinConfirm}
+          onCancel={handlePinCancel}
         />
       </Show>
     </div>

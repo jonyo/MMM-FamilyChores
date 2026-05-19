@@ -110,6 +110,28 @@ describe('chores API', () => {
       expect(result).toEqual(mockChore);
     });
 
+    it('should include PIN in request body when provided', async () => {
+      const mockRequest: CreateChoreRequest = {
+        name: 'Take out trash',
+        type: ChoreType.PERSONAL,
+        assignedTo: 'p1',
+        pin: 'secret123',
+      };
+
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ id: 'c1' }),
+      } as Response);
+
+      await createChore(mockRequest);
+
+      expect(fetch).toHaveBeenCalledWith('/MMM-FamilyChores/chores', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(mockRequest),
+      });
+    });
+
     it('should throw error when API returns error response', async () => {
       const mockRequest: CreateChoreRequest = {
         name: 'Take out trash',
@@ -188,6 +210,26 @@ describe('chores API', () => {
       expect(result).toEqual(mockChore);
     });
 
+    it('should include PIN in update request when provided', async () => {
+      const mockRequest: UpdateChoreRequest = {
+        name: 'Updated name',
+        pin: 'secret123',
+      };
+
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ id: 'c1' }),
+      } as Response);
+
+      await updateChore('c1', mockRequest);
+
+      expect(fetch).toHaveBeenCalledWith('/MMM-FamilyChores/chores/c1', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(mockRequest),
+      });
+    });
+
     it('should throw error when API returns error response', async () => {
       const mockRequest: UpdateChoreRequest = { name: 'Updated name' };
 
@@ -218,6 +260,19 @@ describe('chores API', () => {
       await expect(deleteChore('c1')).resolves.not.toThrow();
 
       expect(fetch).toHaveBeenCalledWith('/MMM-FamilyChores/chores/c1', {
+        method: 'DELETE',
+      });
+    });
+
+    it('should delete a chore with PIN query param', async () => {
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({}),
+      } as Response);
+
+      await expect(deleteChore('c1', 'secret123')).resolves.not.toThrow();
+
+      expect(fetch).toHaveBeenCalledWith('/MMM-FamilyChores/chores/c1?pin=secret123', {
         method: 'DELETE',
       });
     });
@@ -274,6 +329,28 @@ describe('chores API', () => {
       } as Response);
 
       await expect(copyChores(mockRequest)).resolves.not.toThrow();
+
+      expect(fetch).toHaveBeenCalledWith('/MMM-FamilyChores/copy-chores', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(mockRequest),
+      });
+    });
+
+    it('should include PIN in copy chores request when provided', async () => {
+      const mockRequest: CopyChoresRequest = {
+        fromPersonId: 'p1',
+        toPersonId: 'p2',
+        choreIds: ['c1'],
+        pin: 'secret123',
+      };
+
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: true,
+        json: async () => [{ id: 'c2' }],
+      } as Response);
+
+      await copyChores(mockRequest);
 
       expect(fetch).toHaveBeenCalledWith('/MMM-FamilyChores/copy-chores', {
         method: 'POST',

@@ -1,3 +1,4 @@
+import tailwindcss from '@tailwindcss/vite';
 import { playwright } from '@vitest/browser-playwright';
 import solidPlugin from 'vite-plugin-solid';
 import { defineConfig } from 'vitest/config';
@@ -22,7 +23,7 @@ export default defineConfig({
       },
       // Browser project for frontend tests
       {
-        plugins: [solidPlugin()],
+        plugins: [solidPlugin(), tailwindcss()],
         test: {
           name: 'browser',
           include: [

@@ -1,7 +1,6 @@
 import { render } from '@solidjs/testing-library';
 import { describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
-import '../../public/admin.css';
 import { copyChores } from '../api';
 import type { FamilyChoresData, Person } from '../types/chore-types';
 import { ChoreType, SkipDayVisibility } from '../types/chore-types';
@@ -56,6 +55,7 @@ describe('CopyChoresModal', () => {
         <CopyChoresModal
           fromPerson={mockFromPerson}
           choreData={mockChoreData}
+          pinRequired={false}
           closeModal={closeModal}
         />
       ));
@@ -76,6 +76,7 @@ describe('CopyChoresModal', () => {
         <CopyChoresModal
           fromPerson={mockFromPerson}
           choreData={mockChoreData}
+          pinRequired={false}
           closeModal={closeModal}
         />
       ));
@@ -103,6 +104,7 @@ describe('CopyChoresModal', () => {
         <CopyChoresModal
           fromPerson={mockFromPerson}
           choreData={emptyChoreData}
+          pinRequired={false}
           closeModal={closeModal}
         />
       ));
@@ -129,6 +131,7 @@ describe('CopyChoresModal', () => {
         <CopyChoresModal
           fromPerson={mockFromPerson}
           choreData={singlePersonChoreData}
+          pinRequired={false}
           closeModal={closeModal}
         />
       ));
@@ -145,6 +148,7 @@ describe('CopyChoresModal', () => {
         <CopyChoresModal
           fromPerson={mockFromPerson}
           choreData={mockChoreData}
+          pinRequired={false}
           closeModal={closeModal}
         />
       ));
@@ -162,6 +166,7 @@ describe('CopyChoresModal', () => {
         <CopyChoresModal
           fromPerson={mockFromPerson}
           choreData={mockChoreData}
+          pinRequired={false}
           closeModal={closeModal}
         />
       ));
@@ -184,6 +189,7 @@ describe('CopyChoresModal', () => {
         <CopyChoresModal
           fromPerson={mockFromPerson}
           choreData={mockChoreData}
+          pinRequired={false}
           closeModal={closeModal}
         />
       ));
@@ -203,6 +209,7 @@ describe('CopyChoresModal', () => {
         <CopyChoresModal
           fromPerson={mockFromPerson}
           choreData={mockChoreData}
+          pinRequired={false}
           closeModal={closeModal}
         />
       ));
@@ -224,6 +231,7 @@ describe('CopyChoresModal', () => {
         <CopyChoresModal
           fromPerson={mockFromPerson}
           choreData={mockChoreData}
+          pinRequired={false}
           closeModal={closeModal}
         />
       ));
@@ -249,6 +257,7 @@ describe('CopyChoresModal', () => {
         <CopyChoresModal
           fromPerson={mockFromPerson}
           choreData={mockChoreData}
+          pinRequired={false}
           closeModal={closeModal}
         />
       ));
@@ -277,6 +286,7 @@ describe('CopyChoresModal', () => {
         <CopyChoresModal
           fromPerson={mockFromPerson}
           choreData={mockChoreData}
+          pinRequired={false}
           closeModal={closeModal}
         />
       ));

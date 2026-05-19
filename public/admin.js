@@ -1152,9 +1152,10 @@
 			body: JSON.stringify(data)
 		}));
 	};
-	var deleteChore = async (id) => {
+	var deleteChore = async (id, pin) => {
 		validateId(id);
-		await handleResponse(await fetch(`${API_BASE_URL}/chores/${id}`, { method: "DELETE" }));
+		const query = pin ? `?pin=${encodeURIComponent(pin)}` : "";
+		await handleResponse(await fetch(`${API_BASE_URL}/chores/${id}${query}`, { method: "DELETE" }));
 	};
 	var copyChores = async (data) => {
 		try {
@@ -1191,9 +1192,10 @@
 			body: JSON.stringify(data)
 		}));
 	};
-	var deletePerson = async (id) => {
+	var deletePerson = async (id, pin) => {
 		validateId(id);
-		await handleResponse(await fetch(`${API_BASE_URL}/people/${id}`, { method: "DELETE" }));
+		const query = pin ? `?pin=${encodeURIComponent(pin)}` : "";
+		await handleResponse(await fetch(`${API_BASE_URL}/people/${id}${query}`, { method: "DELETE" }));
 	};
 	//#endregion
 	//#region src/api/settings.ts
@@ -1206,6 +1208,19 @@
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify(data)
 		}));
+	};
+	/**
+	* Download backup JSON. Requires PIN if adminPin is configured.
+	*/
+	var downloadBackup = async (pin) => {
+		const query = pin ? `?pin=${encodeURIComponent(pin)}` : "";
+		const response = await fetch(`${API_BASE_URL}/backup${query}`);
+		if (!response.ok) {
+			const errorData = await response.json().catch(() => ({}));
+			if (errorData?.error) throw new Error(errorData.error);
+			throw new Error(`Request failed with status ${response.status}`);
+		}
+		return response.blob();
 	};
 	//#endregion
 	//#region src/types/chore-types.ts
@@ -1358,10 +1373,10 @@
 	};
 	//#endregion
 	//#region src/admin/button.tsx
-	var _tmpl$$9 = /* @__PURE__ */ template(`<button class="cursor-pointer rounded-lg border-none px-5 py-2.5 text-sm font-medium transition-all hover:-translate-y-0.5 hover:shadow-md">`);
+	var _tmpl$$11 = /* @__PURE__ */ template(`<button class="cursor-pointer rounded-lg border-none px-5 py-2.5 text-sm font-medium transition-all hover:-translate-y-0.5 hover:shadow-md">`);
 	var Button = (props) => {
 		return (() => {
-			var _el$ = _tmpl$$9();
+			var _el$ = _tmpl$$11();
 			_el$.$$click = (event) => props.onClick?.(event);
 			insert(_el$, () => props.children);
 			createRenderEffect((_p$) => {
@@ -1394,7 +1409,7 @@
 	delegateEvents(["click"]);
 	//#endregion
 	//#region src/admin/tooltip.tsx
-	var _tmpl$$8 = /* @__PURE__ */ template(`<span>`);
+	var _tmpl$$10 = /* @__PURE__ */ template(`<span>`);
 	var Tooltip = (rawProps) => {
 		const props = mergeProps({
 			position: "above",
@@ -1404,7 +1419,7 @@
 			classList: {}
 		}, rawProps);
 		return (() => {
-			var _el$ = _tmpl$$8();
+			var _el$ = _tmpl$$10();
 			insert(_el$, () => props.children);
 			createRenderEffect((_p$) => {
 				var _v$ = {
@@ -1436,7 +1451,7 @@
 	};
 	//#endregion
 	//#region src/admin/chore-history-modal.tsx
-	var _tmpl$$7 = /* @__PURE__ */ template(`<div class="py-4 text-center text-slate-500">Loading history...`), _tmpl$2$5 = /* @__PURE__ */ template(`<div class="py-4 text-center text-red-600">Error: `), _tmpl$3$4 = /* @__PURE__ */ template(`<div class=overflow-x-auto><table class="w-full border-collapse border border-slate-200"data-testid=history-table><thead><tr><th class="border border-slate-200 p-2.5 text-left text-base font-medium whitespace-nowrap text-slate-900">Chore</th></tr></thead><tbody>`), _tmpl$4$2 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"data-testid=modal><div class="max-h-[90vh] w-[90%] max-w-[95vw] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"data-testid=modal-content><h3 class="mb-5 text-2xl text-indigo-600">'s Chore History</h3><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$5$2 = /* @__PURE__ */ template(`<th class="relative h-[100px] w-[50px] overflow-visible border border-slate-200 p-2.5 text-left text-base font-medium text-slate-900"><span class="absolute top-1/2 left-1/2 -translate-1/2 -rotate-90 whitespace-nowrap">`), _tmpl$6$2 = /* @__PURE__ */ template(`<tr><td class="border border-slate-200 p-2.5 text-base whitespace-nowrap text-slate-900">`), _tmpl$7$1 = /* @__PURE__ */ template(`<td class="border border-slate-200 p-2.5 text-center">`), _tmpl$8$1 = /* @__PURE__ */ template(`<span style=opacity:0;width:32px;height:32px;display:inline-block>`);
+	var _tmpl$$9 = /* @__PURE__ */ template(`<div class="py-4 text-center text-slate-500">Loading history...`), _tmpl$2$8 = /* @__PURE__ */ template(`<div class="py-4 text-center text-red-600">Error: `), _tmpl$3$6 = /* @__PURE__ */ template(`<div class=overflow-x-auto><table class="w-full border-collapse border border-slate-200"data-testid=history-table><thead><tr><th class="border border-slate-200 p-2.5 text-left text-base font-medium whitespace-nowrap text-slate-900">Chore</th></tr></thead><tbody>`), _tmpl$4$3 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"data-testid=modal><div class="max-h-[90vh] w-[90%] max-w-[95vw] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"data-testid=modal-content><h3 class="mb-5 text-2xl text-indigo-600">'s Chore History</h3><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$5$3 = /* @__PURE__ */ template(`<th class="relative h-[100px] w-[50px] overflow-visible border border-slate-200 p-2.5 text-left text-base font-medium text-slate-900"><span class="absolute top-1/2 left-1/2 -translate-1/2 -rotate-90 whitespace-nowrap">`), _tmpl$6$3 = /* @__PURE__ */ template(`<tr><td class="border border-slate-200 p-2.5 text-base whitespace-nowrap text-slate-900">`), _tmpl$7$2 = /* @__PURE__ */ template(`<td class="border border-slate-200 p-2.5 text-center">`), _tmpl$8$1 = /* @__PURE__ */ template(`<span style=opacity:0;width:32px;height:32px;display:inline-block>`);
 	var ChoreHistoryModal = (props) => {
 		const [history, setHistory] = createSignal([]);
 		const [loading, setLoading] = createSignal(true);
@@ -1481,14 +1496,14 @@
 			return chore.skipDays.includes(day.dayName);
 		};
 		return (() => {
-			var _el$ = _tmpl$4$2(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.firstChild, _el$12 = _el$3.nextSibling;
+			var _el$ = _tmpl$4$3(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.firstChild, _el$12 = _el$3.nextSibling;
 			insert(_el$3, () => escapeHtml(props.person.name), _el$4);
 			insert(_el$2, createComponent(Show, {
 				get when() {
 					return loading();
 				},
 				get children() {
-					return _tmpl$$7();
+					return _tmpl$$9();
 				}
 			}), _el$12);
 			insert(_el$2, createComponent(Show, {
@@ -1496,7 +1511,7 @@
 					return error();
 				},
 				get children() {
-					var _el$6 = _tmpl$2$5();
+					var _el$6 = _tmpl$2$8();
 					_el$6.firstChild;
 					insert(_el$6, () => escapeHtml(error() ?? "Unknown error"), null);
 					return _el$6;
@@ -1507,7 +1522,7 @@
 					return memo(() => !!!loading())() && !error();
 				},
 				get children() {
-					var _el$8 = _tmpl$3$4(), _el$0 = _el$8.firstChild.firstChild, _el$1 = _el$0.firstChild;
+					var _el$8 = _tmpl$3$6(), _el$0 = _el$8.firstChild.firstChild, _el$1 = _el$0.firstChild;
 					_el$1.firstChild;
 					var _el$11 = _el$0.nextSibling;
 					insert(_el$1, createComponent(For, {
@@ -1515,7 +1530,7 @@
 							return getDays();
 						},
 						children: (day) => (() => {
-							var _el$13 = _tmpl$5$2(), _el$14 = _el$13.firstChild;
+							var _el$13 = _tmpl$5$3(), _el$14 = _el$13.firstChild;
 							insert(_el$14, () => day.display);
 							return _el$13;
 						})()
@@ -1525,7 +1540,7 @@
 							return getPersonChores();
 						},
 						children: (chore) => (() => {
-							var _el$15 = _tmpl$6$2(), _el$16 = _el$15.firstChild;
+							var _el$15 = _tmpl$6$3(), _el$16 = _el$15.firstChild;
 							insert(_el$16, () => escapeHtml(chore.name), null);
 							insert(_el$16, createComponent(Show, {
 								get when() {
@@ -1561,7 +1576,7 @@
 										return "";
 									};
 									return (() => {
-										var _el$17 = _tmpl$7$1();
+										var _el$17 = _tmpl$7$2();
 										_el$17.classList.toggle("bg-slate-100", !!skipDay);
 										insert(_el$17, createComponent(Switch, {
 											get fallback() {
@@ -1648,8 +1663,53 @@
 		})();
 	};
 	//#endregion
+	//#region src/admin/pin-field.tsx
+	var _tmpl$$8 = /* @__PURE__ */ template(`<label class="mt-3 flex cursor-pointer items-center gap-2"><input type=checkbox class="size-4.5 cursor-pointer">Remember PIN for 10 minutes<span title="PIN is remembered for 10 minutes or until you refresh or close the window"class="ml-1 cursor-help text-slate-400">&#9432;`), _tmpl$2$7 = /* @__PURE__ */ template(`<button type=button class="cursor-help text-sm text-indigo-600 underline">Forgot PIN?`), _tmpl$3$5 = /* @__PURE__ */ template(`<div class="mb-5 rounded-lg border border-amber-200 bg-amber-50 p-4"><label for=adminPin class="mb-2 block font-medium text-amber-900">Admin PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=adminPin placeholder="Enter admin PIN"required class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"><button type=button class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100"></button></div><small class="mt-1 block text-sm text-amber-700">PIN is required to make changes</small><div class=mt-1>`);
+	/**
+	* Reusable PIN input field for admin modals.
+	*/
+	var PinField = (props) => {
+		const [showPin, setShowPin] = createSignal(false);
+		return (() => {
+			var _el$ = _tmpl$3$5(), _el$3 = _el$.firstChild.nextSibling, _el$4 = _el$3.firstChild, _el$5 = _el$4.nextSibling, _el$8 = _el$3.nextSibling, _el$9 = _el$8.nextSibling;
+			_el$4.$$input = (e) => props.onPinChange(e.currentTarget.value);
+			_el$5.$$click = () => setShowPin(!showPin());
+			insert(_el$5, createComponent(Show, {
+				get when() {
+					return showPin();
+				},
+				fallback: "👁",
+				children: "🙈"
+			}));
+			insert(_el$, createComponent(Show, {
+				get when() {
+					return props.onRememberChange;
+				},
+				get children() {
+					var _el$6 = _tmpl$$8(), _el$7 = _el$6.firstChild;
+					_el$7.$$input = (e) => props.onRememberChange?.(e.currentTarget.checked);
+					createRenderEffect(() => _el$7.checked = props.remember ?? false);
+					return _el$6;
+				}
+			}), _el$8);
+			insert(_el$9, createComponent(Tooltip, {
+				text: "SSH into the MagicMirror and edit the adminPin value in the module's data file directly",
+				position: "above",
+				align: "left",
+				multiline: true,
+				get children() {
+					return _tmpl$2$7();
+				}
+			}));
+			createRenderEffect(() => setAttribute(_el$4, "type", showPin() ? "text" : "password"));
+			createRenderEffect(() => _el$4.value = props.pin);
+			return _el$;
+		})();
+	};
+	delegateEvents(["input", "click"]);
+	//#endregion
 	//#region src/admin/copy-chores-modal.tsx
-	var _tmpl$$6 = /* @__PURE__ */ template(`<div class="my-2.5 text-slate-500 italic"data-testid=empty-message><p>No other people available to copy chores to.`), _tmpl$2$4 = /* @__PURE__ */ template(`<form><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Select Person to Copy To</div><select id=toPerson required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option value>-- Select a person --</option></select></div><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Select Chores to Copy</div><div class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3"data-testid=checkbox-list></div></div><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$3$3 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><h3 class="mb-5 text-2xl text-indigo-600">Copy Chores</h3><div class="mb-5 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-base"data-testid=copy-from-display><span class="inline-block size-6 rounded-full border-2 border-black/10 align-middle"data-testid=person-color-badge></span><strong>From:</strong> `), _tmpl$4$1 = /* @__PURE__ */ template(`<div class="my-2.5 text-slate-500 italic"data-testid=empty-message><p>No personal chores to copy for <!>.`), _tmpl$5$1 = /* @__PURE__ */ template(`<option>`), _tmpl$6$1 = /* @__PURE__ */ template(`<label class="flex cursor-pointer items-center gap-2 font-normal"><input type=checkbox class="size-4.5 cursor-pointer">`);
+	var _tmpl$$7 = /* @__PURE__ */ template(`<div class="my-2.5 text-slate-500 italic"data-testid=empty-message><p>No other people available to copy chores to.`), _tmpl$2$6 = /* @__PURE__ */ template(`<form><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Select Person to Copy To</div><select id=toPerson required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option value>-- Select a person --</option></select></div><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Select Chores to Copy</div><div class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3"data-testid=checkbox-list></div></div><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$3$4 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><h3 class="mb-5 text-2xl text-indigo-600">Copy Chores</h3><div class="mb-5 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-base"data-testid=copy-from-display><span class="inline-block size-6 rounded-full border-2 border-black/10 align-middle"data-testid=person-color-badge></span><strong>From:</strong> `), _tmpl$4$2 = /* @__PURE__ */ template(`<div class="my-2.5 text-slate-500 italic"data-testid=empty-message><p>No personal chores to copy for <!>.`), _tmpl$5$2 = /* @__PURE__ */ template(`<option>`), _tmpl$6$2 = /* @__PURE__ */ template(`<label class="flex cursor-pointer items-center gap-2 font-normal"><input type=checkbox class="size-4.5 cursor-pointer">`);
 	var CopyChoresModal = (props) => {
 		const personalChores = createMemo(() => {
 			return props.choreData.chores.filter((chore) => chore.type === ChoreType.PERSONAL && chore.assignedTo === props.fromPerson.id);
@@ -1660,6 +1720,8 @@
 		const [selectedChoreIds, setSelectedChoreIds] = createSignal([]);
 		const [toPersonId, setToPersonId] = createSignal("");
 		const [loading, setLoading] = createSignal(false);
+		const [pin, setPin] = createSignal("");
+		const [rememberPin, setRememberPin] = createSignal(false);
 		onMount(() => {
 			setSelectedChoreIds(personalChores().map((chore) => chore.id));
 		});
@@ -1682,8 +1744,10 @@
 				await copyChores({
 					fromPersonId: props.fromPerson.id,
 					toPersonId: toPersonId(),
-					choreIds: selectedChoreIds()
+					choreIds: selectedChoreIds(),
+					pin: props.pinRequired ? pin() || void 0 : void 0
 				});
+				if (rememberPin() && pin()) props.onPinRemembered?.(pin());
 				props.closeModal();
 			} catch (error) {
 				console.error("Error copying chores:", error);
@@ -1693,7 +1757,7 @@
 			}
 		};
 		return (() => {
-			var _el$ = _tmpl$3$3(), _el$2 = _el$.firstChild, _el$4 = _el$2.firstChild.nextSibling, _el$5 = _el$4.firstChild;
+			var _el$ = _tmpl$3$4(), _el$2 = _el$.firstChild, _el$4 = _el$2.firstChild.nextSibling, _el$5 = _el$4.firstChild;
 			_el$5.nextSibling.nextSibling;
 			insert(_el$4, () => escapeHtml(props.fromPerson.name), null);
 			insert(_el$2, createComponent(Show, {
@@ -1702,7 +1766,7 @@
 				},
 				get fallback() {
 					return (() => {
-						var _el$17 = _tmpl$4$1(), _el$18 = _el$17.firstChild, _el$21 = _el$18.firstChild.nextSibling;
+						var _el$17 = _tmpl$4$2(), _el$18 = _el$17.firstChild, _el$21 = _el$18.firstChild.nextSibling;
 						_el$21.nextSibling;
 						insert(_el$18, () => escapeHtml(props.fromPerson.name), _el$21);
 						insert(_el$17, createComponent(Button, {
@@ -1720,7 +1784,7 @@
 							return availablePeople().length === 0;
 						},
 						get children() {
-							var _el$8 = _tmpl$$6();
+							var _el$8 = _tmpl$$7();
 							_el$8.firstChild;
 							insert(_el$8, createComponent(Button, {
 								type: "button",
@@ -1735,7 +1799,7 @@
 							return availablePeople().length > 0;
 						},
 						get children() {
-							var _el$0 = _tmpl$2$4(), _el$1 = _el$0.firstChild, _el$11 = _el$1.firstChild.nextSibling;
+							var _el$0 = _tmpl$2$6(), _el$1 = _el$0.firstChild, _el$11 = _el$1.firstChild.nextSibling;
 							_el$11.firstChild;
 							var _el$13 = _el$1.nextSibling, _el$15 = _el$13.firstChild.nextSibling, _el$16 = _el$13.nextSibling;
 							_el$0.addEventListener("submit", handleSubmit);
@@ -1745,7 +1809,7 @@
 									return availablePeople();
 								},
 								children: (person) => (() => {
-									var _el$22 = _tmpl$5$1();
+									var _el$22 = _tmpl$5$2();
 									insert(_el$22, () => escapeHtml(person.name));
 									createRenderEffect(() => _el$22.value = person.id);
 									return _el$22;
@@ -1756,7 +1820,7 @@
 									return personalChores();
 								},
 								children: (chore) => (() => {
-									var _el$23 = _tmpl$6$1(), _el$24 = _el$23.firstChild;
+									var _el$23 = _tmpl$6$2(), _el$24 = _el$23.firstChild;
 									_el$24.$$input = (e) => handleChoreToggle(chore.id, e.currentTarget.checked);
 									insert(_el$23, () => escapeHtml(chore.name), null);
 									createRenderEffect(() => _el$24.value = chore.id);
@@ -1764,6 +1828,23 @@
 									return _el$23;
 								})()
 							}));
+							insert(_el$0, createComponent(Show, {
+								get when() {
+									return props.pinRequired;
+								},
+								get children() {
+									return createComponent(PinField, {
+										get pin() {
+											return pin();
+										},
+										onPinChange: setPin,
+										get remember() {
+											return rememberPin();
+										},
+										onRememberChange: setRememberPin
+									});
+								}
+							}), _el$16);
 							insert(_el$16, createComponent(Button, {
 								type: "button",
 								variant: "secondary",
@@ -1793,23 +1874,28 @@
 	delegateEvents(["input"]);
 	//#endregion
 	//#region src/admin/person-modal.tsx
-	var _tmpl$$5 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><h3 class="mb-5 text-2xl text-indigo-600"></h3><form><div class=mb-5><label for=personName class="mb-3 block font-medium text-slate-900">Name</label><input type=text id=personName required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><label for=personColor class="mb-3 block font-medium text-slate-900">Color</label><div class="flex items-center gap-2.5"><input type=color id=personColor required class="h-10 w-15 cursor-pointer rounded-lg border border-slate-300"></div></div><div class="mt-6 flex justify-end gap-2.5">`);
+	var _tmpl$$6 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><h3 class="mb-5 text-2xl text-indigo-600"></h3><form><div class=mb-5><label for=personName class="mb-3 block font-medium text-slate-900">Name</label><input type=text id=personName required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><label for=personColor class="mb-3 block font-medium text-slate-900">Color</label><div class="flex items-center gap-2.5"><input type=color id=personColor required class="h-10 w-15 cursor-pointer rounded-lg border border-slate-300"></div></div><div class="mt-6 flex justify-end gap-2.5">`);
 	var PersonModal = (props) => {
 		const [name, setName] = createSignal(props.initialPerson?.name ?? "");
 		const [color, setColor] = createSignal(props.initialPerson?.color ?? generatePastelColor());
+		const [pin, setPin] = createSignal("");
+		const [rememberPin, setRememberPin] = createSignal(false);
 		const handleSubmit = async (event) => {
 			event.preventDefault();
 			try {
 				if (props.initialPerson?.id) {
 					const body = {
 						name: name(),
-						color: color()
+						color: color(),
+						pin: props.pinRequired ? pin() || void 0 : void 0
 					};
 					await updatePerson(props.initialPerson.id, body);
 				} else await createPerson({
 					name: name(),
-					color: color()
+					color: color(),
+					pin: props.pinRequired ? pin() || void 0 : void 0
 				});
+				if (rememberPin() && pin()) props.onPinRemembered?.(pin());
 				props.closeModal();
 			} catch (error) {
 				console.error("Error saving person:", error);
@@ -1817,7 +1903,7 @@
 			}
 		};
 		return (() => {
-			var _el$ = _tmpl$$5(), _el$3 = _el$.firstChild.firstChild, _el$4 = _el$3.nextSibling, _el$5 = _el$4.firstChild, _el$7 = _el$5.firstChild.nextSibling, _el$8 = _el$5.nextSibling, _el$0 = _el$8.firstChild.nextSibling, _el$1 = _el$0.firstChild, _el$10 = _el$8.nextSibling;
+			var _el$ = _tmpl$$6(), _el$3 = _el$.firstChild.firstChild, _el$4 = _el$3.nextSibling, _el$5 = _el$4.firstChild, _el$7 = _el$5.firstChild.nextSibling, _el$8 = _el$5.nextSibling, _el$0 = _el$8.firstChild.nextSibling, _el$1 = _el$0.firstChild, _el$10 = _el$8.nextSibling;
 			insert(_el$3, () => props.initialPerson ? "Edit Person" : "Add Person");
 			_el$4.addEventListener("submit", handleSubmit);
 			_el$7.$$input = (e) => setName(e.currentTarget.value);
@@ -1829,6 +1915,23 @@
 				onClick: () => setColor(generatePastelColor()),
 				children: "Randomize"
 			}), null);
+			insert(_el$4, createComponent(Show, {
+				get when() {
+					return props.pinRequired;
+				},
+				get children() {
+					return createComponent(PinField, {
+						get pin() {
+							return pin();
+						},
+						onPinChange: setPin,
+						get remember() {
+							return rememberPin();
+						},
+						onRememberChange: setRememberPin
+					});
+				}
+			}), _el$10);
 			insert(_el$10, createComponent(Button, {
 				type: "button",
 				variant: "secondary",
@@ -1850,12 +1953,14 @@
 	delegateEvents(["input"]);
 	//#endregion
 	//#region src/admin/personal-chore-modal.tsx
-	var _tmpl$$4 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><h3 class="mb-5 text-2xl text-indigo-600">Error</h3><p>Person not found. Please refresh the page.`), _tmpl$2$3 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"data-testid=modal><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"data-testid=modal-content><h3 class="mb-5 text-2xl text-indigo-600"></h3><div class="mb-5 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-base"data-testid=assigned-person-display><span class="inline-block size-6 rounded-full border-2 border-black/10 align-middle"data-testid=person-color-badge></span><strong>Assigned to:</strong> </div><form><div class=mb-5><label for=choreName class="mb-3 block font-medium text-slate-900">Chore Name</label><input type=text id=choreName required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><label for=deadline class="mb-3 block font-medium text-slate-900">Deadline (optional)</label><input type=time id=deadline class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Skip Days</div><div class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3"></div></div><div class=mb-5><label for=skipDayVisibility class="mb-3 block font-medium text-slate-900">Skip Day Visibility</label><select id=skipDayVisibility class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option>Hide</option><option>Show Always</option><option>Show If Overdue</option></select></div><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$3$2 = /* @__PURE__ */ template(`<label class="flex cursor-pointer items-center gap-2 font-normal"><input type=checkbox class="size-4.5 cursor-pointer">`);
+	var _tmpl$$5 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><h3 class="mb-5 text-2xl text-indigo-600">Error</h3><p>Person not found. Please refresh the page.`), _tmpl$2$5 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"data-testid=modal><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"data-testid=modal-content><h3 class="mb-5 text-2xl text-indigo-600"></h3><div class="mb-5 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-base"data-testid=assigned-person-display><span class="inline-block size-6 rounded-full border-2 border-black/10 align-middle"data-testid=person-color-badge></span><strong>Assigned to:</strong> </div><form><div class=mb-5><label for=choreName class="mb-3 block font-medium text-slate-900">Chore Name</label><input type=text id=choreName required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><label for=deadline class="mb-3 block font-medium text-slate-900">Deadline (optional)</label><input type=time id=deadline class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Skip Days</div><div class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3"></div></div><div class=mb-5><label for=skipDayVisibility class="mb-3 block font-medium text-slate-900">Skip Day Visibility</label><select id=skipDayVisibility class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option>Hide</option><option>Show Always</option><option>Show If Overdue</option></select></div><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$3$3 = /* @__PURE__ */ template(`<label class="flex cursor-pointer items-center gap-2 font-normal"><input type=checkbox class="size-4.5 cursor-pointer">`);
 	var PersonalChoreModal = (props) => {
 		const [name, setName] = createSignal(props.initialChore?.name ?? "");
 		const [deadline, setDeadline] = createSignal(props.initialChore?.deadline ?? "");
 		const [skipDayVisibility, setSkipDayVisibility] = createSignal(props.initialChore?.skipDayVisibility ?? SkipDayVisibility.HIDE);
 		const [skipDays, setSkipDays] = createSignal(props.initialChore?.skipDays ?? []);
+		const [pin, setPin] = createSignal("");
+		const [rememberPin, setRememberPin] = createSignal(false);
 		const handleSkipDayChange = (day, checked) => {
 			if (checked) setSkipDays([...skipDays(), day]);
 			else setSkipDays(skipDays().filter((d) => d !== day));
@@ -1875,7 +1980,8 @@
 						assignedTo: person.id,
 						deadline: deadline() || void 0,
 						skipDays: skipDays(),
-						skipDayVisibility: skipDayVisibility()
+						skipDayVisibility: skipDayVisibility(),
+						pin: props.pinRequired ? pin() || void 0 : void 0
 					};
 					await updateChore(props.initialChore.id, body);
 				} else await createChore({
@@ -1884,8 +1990,10 @@
 					assignedTo: person.id,
 					deadline: deadline() || void 0,
 					skipDays: skipDays(),
-					skipDayVisibility: skipDayVisibility()
+					skipDayVisibility: skipDayVisibility(),
+					pin: props.pinRequired ? pin() || void 0 : void 0
 				});
+				if (rememberPin() && pin()) props.onPinRemembered?.(pin());
 				props.closeModal();
 			} catch (error) {
 				console.error("Error saving chore:", error);
@@ -1899,7 +2007,7 @@
 			keyed: true,
 			get fallback() {
 				return (() => {
-					var _el$ = _tmpl$$4(), _el$2 = _el$.firstChild;
+					var _el$ = _tmpl$$5(), _el$2 = _el$.firstChild;
 					_el$2.firstChild.nextSibling;
 					insert(_el$2, createComponent(Button, {
 						type: "button",
@@ -1911,7 +2019,7 @@
 				})();
 			},
 			children: (person) => (() => {
-				var _el$5 = _tmpl$2$3(), _el$7 = _el$5.firstChild.firstChild, _el$8 = _el$7.nextSibling, _el$9 = _el$8.firstChild;
+				var _el$5 = _tmpl$2$5(), _el$7 = _el$5.firstChild.firstChild, _el$8 = _el$7.nextSibling, _el$9 = _el$8.firstChild;
 				_el$9.nextSibling.nextSibling;
 				var _el$10 = _el$8.nextSibling, _el$11 = _el$10.firstChild, _el$13 = _el$11.firstChild.nextSibling, _el$14 = _el$11.nextSibling, _el$16 = _el$14.firstChild.nextSibling, _el$17 = _el$14.nextSibling, _el$19 = _el$17.firstChild.nextSibling, _el$20 = _el$17.nextSibling, _el$22 = _el$20.firstChild.nextSibling, _el$23 = _el$22.firstChild, _el$24 = _el$23.nextSibling, _el$25 = _el$24.nextSibling, _el$26 = _el$20.nextSibling;
 				insert(_el$7, () => props.initialChore ? "Edit Personal Chore" : "Add Personal Chore");
@@ -1924,7 +2032,7 @@
 						return Object.values(DayOfWeek);
 					},
 					children: (day) => (() => {
-						var _el$27 = _tmpl$3$2(), _el$28 = _el$27.firstChild;
+						var _el$27 = _tmpl$3$3(), _el$28 = _el$27.firstChild;
 						_el$28.$$input = (e) => handleSkipDayChange(day, e.currentTarget.checked);
 						_el$28.value = day;
 						insert(_el$27, () => day.charAt(0).toUpperCase() + day.slice(1), null);
@@ -1933,6 +2041,23 @@
 					})()
 				}));
 				_el$22.$$input = (e) => setSkipDayVisibility(e.currentTarget.value);
+				insert(_el$10, createComponent(Show, {
+					get when() {
+						return props.pinRequired;
+					},
+					get children() {
+						return createComponent(PinField, {
+							get pin() {
+								return pin();
+							},
+							onPinChange: setPin,
+							get remember() {
+								return rememberPin();
+							},
+							onRememberChange: setRememberPin
+						});
+					}
+				}), _el$26);
 				insert(_el$26, createComponent(Button, {
 					type: "button",
 					variant: "secondary",
@@ -1959,8 +2084,58 @@
 	};
 	delegateEvents(["input"]);
 	//#endregion
+	//#region src/admin/pin-prompt-modal.tsx
+	var _tmpl$$4 = /* @__PURE__ */ template(`<button type=button class="cursor-help text-sm text-indigo-600 underline">Forgot PIN?`), _tmpl$2$4 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="w-[90%] max-w-[400px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><h3 class="mb-2 text-xl text-indigo-600"></h3><p class="mb-5 text-sm text-slate-600"></p><form><div class=mb-5><label for=pinPromptInput class="mb-2 block font-medium text-amber-900">PIN</label><div class="flex gap-2"><input id=pinPromptInput placeholder="Enter PIN"required autofocus class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"><button type=button class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100"></button></div></div><label class="mb-5 flex cursor-pointer items-center gap-2"><input type=checkbox class="size-4.5 cursor-pointer">Remember PIN for 10 minutes<span title="PIN is remembered for 10 minutes or until you refresh or close the window"class="ml-1 cursor-help text-slate-400">&#9432;</span></label><div class=mb-5></div><div class="flex justify-end gap-2.5">`);
+	var PinPromptModal = (props) => {
+		const [pin, setPin] = createSignal("");
+		const [showPin, setShowPin] = createSignal(false);
+		const [remember, setRemember] = createSignal(false);
+		const handleSubmit = (event) => {
+			event.preventDefault();
+			if (pin().trim() === "") return;
+			props.onConfirm(pin().trim(), remember());
+		};
+		return (() => {
+			var _el$ = _tmpl$2$4(), _el$3 = _el$.firstChild.firstChild, _el$4 = _el$3.nextSibling, _el$5 = _el$4.nextSibling, _el$6 = _el$5.firstChild, _el$9 = _el$6.firstChild.nextSibling.firstChild, _el$0 = _el$9.nextSibling, _el$1 = _el$6.nextSibling, _el$10 = _el$1.firstChild, _el$11 = _el$1.nextSibling, _el$13 = _el$11.nextSibling;
+			insert(_el$3, () => props.title);
+			insert(_el$4, () => props.message);
+			_el$5.addEventListener("submit", handleSubmit);
+			_el$9.$$input = (e) => setPin(e.currentTarget.value);
+			_el$0.$$click = () => setShowPin(!showPin());
+			insert(_el$0, () => showPin() ? "🙈" : "👁");
+			_el$10.$$input = (e) => setRemember(e.currentTarget.checked);
+			insert(_el$11, createComponent(Tooltip, {
+				text: "SSH into the MagicMirror and edit the adminPin value in the module's data file directly",
+				position: "above",
+				align: "left",
+				multiline: true,
+				get children() {
+					return _tmpl$$4();
+				}
+			}));
+			insert(_el$13, createComponent(Button, {
+				type: "button",
+				variant: "secondary",
+				get onClick() {
+					return props.onCancel;
+				},
+				children: "Cancel"
+			}), null);
+			insert(_el$13, createComponent(Button, {
+				type: "submit",
+				variant: "primary",
+				children: "Confirm"
+			}), null);
+			createRenderEffect(() => setAttribute(_el$9, "type", showPin() ? "text" : "password"));
+			createRenderEffect(() => _el$9.value = pin());
+			createRenderEffect(() => _el$10.checked = remember());
+			return _el$;
+		})();
+	};
+	delegateEvents(["input", "click"]);
+	//#endregion
 	//#region src/admin/rotating-chore.tsx
-	var _tmpl$$3 = /* @__PURE__ */ template(`<p class="mt-1.25 text-sm text-indigo-600">Deadline: `), _tmpl$2$2 = /* @__PURE__ */ template(`<div class="rounded-lg border border-slate-200 bg-slate-50 p-5 transition-all hover:border-indigo-600 hover:shadow-md"><div class=flex-1><h3 class="mb-1.5 text-xl text-slate-900"> <span class="ml-2 inline-block rounded bg-indigo-100 px-2 py-1 text-xs font-medium text-indigo-700">Rotating</span></h3><p class="text-sm text-slate-500">Current: </p><p class="text-sm text-slate-500">Rotation: </p><p class="mt-1.25 text-sm text-slate-500">Skip days: </p></div><div class="flex gap-2.5">`);
+	var _tmpl$$3 = /* @__PURE__ */ template(`<p class="mt-1.25 text-sm text-indigo-600">Deadline: `), _tmpl$2$3 = /* @__PURE__ */ template(`<div class="rounded-lg border border-slate-200 bg-slate-50 p-5 transition-all hover:border-indigo-600 hover:shadow-md"><div class=flex-1><h3 class="mb-1.5 text-xl text-slate-900"> <span class="ml-2 inline-block rounded bg-indigo-100 px-2 py-1 text-xs font-medium text-indigo-700">Rotating</span></h3><p class="text-sm text-slate-500">Current: </p><p class="text-sm text-slate-500">Rotation: </p><p class="mt-1.25 text-sm text-slate-500">Skip days: </p></div><div class="flex gap-2.5">`);
 	/** Format skip days for display */
 	var formatSkipDays$1 = (skipDays) => {
 		if (!skipDays || skipDays.length === 0) return "None";
@@ -1983,7 +2158,7 @@
 			return currentPerson ? escapeHtml(currentPerson.name) : "Unassigned";
 		});
 		return (() => {
-			var _el$ = _tmpl$2$2(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.firstChild, _el$5 = _el$3.nextSibling;
+			var _el$ = _tmpl$2$3(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.firstChild, _el$5 = _el$3.nextSibling;
 			_el$5.firstChild;
 			var _el$7 = _el$5.nextSibling;
 			_el$7.firstChild;
@@ -2024,13 +2199,15 @@
 	};
 	//#endregion
 	//#region src/admin/rotating-chore-modal.tsx
-	var _tmpl$$2 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><h3 class="mb-5 text-2xl text-indigo-600"></h3><form><div class=mb-5><label for=choreName class="mb-3 block font-medium text-slate-900">Chore Name</label><input type=text id=choreName required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Rotation (select people)</div><div class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3"data-testid=checkbox-list></div></div><div class=mb-5><label for=rotatingIndex class="mb-3 block font-medium text-slate-900">Starting Index (current person)</label><select id=rotatingIndex class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></select></div><div class=mb-5><label for=deadline class="mb-3 block font-medium text-slate-900">Deadline (optional)</label><input type=time id=deadline class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Skip Days</div><div class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3"data-testid=skip-days-checkbox-list></div></div><div class=mb-5><label for=skipDayVisibility class="mb-3 block font-medium text-slate-900">Skip Day Visibility</label><select id=skipDayVisibility class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option>Hide</option><option>Show Always</option><option>Show If Overdue</option></select></div><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$2$1 = /* @__PURE__ */ template(`<label class="flex cursor-pointer items-center gap-2 font-normal"><input type=checkbox class="size-4.5 cursor-pointer">`), _tmpl$3$1 = /* @__PURE__ */ template(`<option>`);
+	var _tmpl$$2 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><h3 class="mb-5 text-2xl text-indigo-600"></h3><form><div class=mb-5><label for=choreName class="mb-3 block font-medium text-slate-900">Chore Name</label><input type=text id=choreName required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Rotation (select people)</div><div class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3"data-testid=checkbox-list></div></div><div class=mb-5><label for=rotatingIndex class="mb-3 block font-medium text-slate-900">Starting Index (current person)</label><select id=rotatingIndex class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></select></div><div class=mb-5><label for=deadline class="mb-3 block font-medium text-slate-900">Deadline (optional)</label><input type=time id=deadline class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Skip Days</div><div class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3"data-testid=skip-days-checkbox-list></div></div><div class=mb-5><label for=skipDayVisibility class="mb-3 block font-medium text-slate-900">Skip Day Visibility</label><select id=skipDayVisibility class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option>Hide</option><option>Show Always</option><option>Show If Overdue</option></select></div><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$2$2 = /* @__PURE__ */ template(`<label class="flex cursor-pointer items-center gap-2 font-normal"><input type=checkbox class="size-4.5 cursor-pointer">`), _tmpl$3$2 = /* @__PURE__ */ template(`<option>`);
 	var RotatingChoreModal = (props) => {
 		const [name, setName] = createSignal(props.initialChore?.name ?? "");
 		const [deadline, setDeadline] = createSignal(props.initialChore?.deadline ?? "");
 		const [skipDayVisibility, setSkipDayVisibility] = createSignal(props.initialChore?.skipDayVisibility ?? SkipDayVisibility.HIDE);
 		const [skipDays, setSkipDays] = createSignal(props.initialChore?.skipDays ?? []);
 		const [rotation, setRotation] = createSignal(props.initialChore?.rotation ?? []);
+		const [pin, setPin] = createSignal("");
+		const [rememberPin, setRememberPin] = createSignal(false);
 		const handleSkipDayChange = (day, checked) => {
 			if (checked) setSkipDays([...skipDays(), day]);
 			else setSkipDays(skipDays().filter((d) => d !== day));
@@ -2049,7 +2226,8 @@
 						rotation: rotation(),
 						deadline: deadline() || void 0,
 						skipDays: skipDays(),
-						skipDayVisibility: skipDayVisibility()
+						skipDayVisibility: skipDayVisibility(),
+						pin: props.pinRequired ? pin() || void 0 : void 0
 					};
 					await updateChore(props.initialChore.id, body);
 				} else await createChore({
@@ -2058,8 +2236,10 @@
 					rotation: rotation(),
 					deadline: deadline() || void 0,
 					skipDays: skipDays(),
-					skipDayVisibility: skipDayVisibility()
+					skipDayVisibility: skipDayVisibility(),
+					pin: props.pinRequired ? pin() || void 0 : void 0
 				});
+				if (rememberPin() && pin()) props.onPinRemembered?.(pin());
 				props.closeModal();
 			} catch (error) {
 				console.error("Error saving chore:", error);
@@ -2076,7 +2256,7 @@
 					return props.choreData.people;
 				},
 				children: (person) => (() => {
-					var _el$25 = _tmpl$2$1(), _el$26 = _el$25.firstChild;
+					var _el$25 = _tmpl$2$2(), _el$26 = _el$25.firstChild;
 					_el$26.$$input = (e) => handleRotationChange(person.id, e.currentTarget.checked);
 					insert(_el$25, () => person.name, null);
 					createRenderEffect(() => _el$26.checked = rotation().includes(person.id));
@@ -2091,7 +2271,7 @@
 				children: (personId, index) => {
 					const person = props.choreData.people.find((p) => p.id === personId);
 					return (() => {
-						var _el$27 = _tmpl$3$1();
+						var _el$27 = _tmpl$3$2();
 						insert(_el$27, () => person ? person.name : "Unknown");
 						createRenderEffect(() => _el$27.value = index());
 						return _el$27;
@@ -2104,7 +2284,7 @@
 					return Object.values(DayOfWeek);
 				},
 				children: (day) => (() => {
-					var _el$28 = _tmpl$2$1(), _el$29 = _el$28.firstChild;
+					var _el$28 = _tmpl$2$2(), _el$29 = _el$28.firstChild;
 					_el$29.$$input = (e) => handleSkipDayChange(day, e.currentTarget.checked);
 					_el$29.value = day;
 					insert(_el$28, () => day.charAt(0).toUpperCase() + day.slice(1), null);
@@ -2113,6 +2293,23 @@
 				})()
 			}));
 			_el$20.$$input = (e) => setSkipDayVisibility(e.currentTarget.value);
+			insert(_el$4, createComponent(Show, {
+				get when() {
+					return props.pinRequired;
+				},
+				get children() {
+					return createComponent(PinField, {
+						get pin() {
+							return pin();
+						},
+						onPinChange: setPin,
+						get remember() {
+							return rememberPin();
+						},
+						onRememberChange: setRememberPin
+					});
+				}
+			}), _el$24);
 			insert(_el$24, createComponent(Button, {
 				type: "button",
 				variant: "secondary",
@@ -2139,17 +2336,51 @@
 	delegateEvents(["input"]);
 	//#endregion
 	//#region src/admin/settings-modal.tsx
-	var _tmpl$$1 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><h3 class="mb-5 text-2xl text-indigo-600">Settings</h3><form><div class=mb-5><label for=dailyResetTime class="mb-3 block font-medium text-slate-900">Daily Reset Time (24-hour format, HH:mm)</label><input type=time id=dailyResetTime required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><small class="text-sm text-slate-500">Time when daily chore reset occurs. Default: 03:00</small><br><small class="text-sm text-slate-500"><strong>Tip:</strong> Set to at least 03:00 to avoid daylight savings time changes (no roll forward/back occurs after 3am)</small></div><div class=mb-5><label class="flex cursor-pointer items-center gap-2"><input type=checkbox id=historyEnabled class="size-4.5 cursor-pointer">Enable History Tracking</label><small class="mt-2 block text-sm text-slate-500">Track daily chore completions (keeps last 14 days)</small></div><div class="mt-6 flex justify-end gap-2.5">`);
+	var _tmpl$$1 = /* @__PURE__ */ template(`<div class=mb-3><label for=currentPin class="mb-2 block font-medium text-amber-900">Current PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=currentPin placeholder="Enter current PIN to save changes"required class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"><button type=button class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100">`), _tmpl$2$1 = /* @__PURE__ */ template(`<label class="mb-3 flex cursor-pointer items-center gap-2"><input type=checkbox class="size-4.5 cursor-pointer">Change PIN`), _tmpl$3$1 = /* @__PURE__ */ template(`<div class=mb-3><label for=newPin class="mb-2 block font-medium text-slate-900"> <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=newPin required class="flex-1 rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><button type=button class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 transition-colors hover:bg-slate-100">`), _tmpl$4$1 = /* @__PURE__ */ template(`<div class=mb-3><label for=confirmPin class="mb-2 block font-medium text-slate-900">Confirm PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=confirmPin placeholder="Confirm PIN"required class="flex-1 rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><button type=button class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 transition-colors hover:bg-slate-100">`), _tmpl$5$1 = /* @__PURE__ */ template(`<small class="block text-sm text-slate-500">PIN can be any combination of letters, numbers, or symbols. There is no length limit.`), _tmpl$6$1 = /* @__PURE__ */ template(`<div class=mb-3><label for=currentPin class="mb-2 block font-medium text-amber-900">Current PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=currentPin placeholder="Enter current PIN to disable protection"required class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"><button type=button class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100">`), _tmpl$7$1 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><h3 class="mb-5 text-2xl text-indigo-600">Settings</h3><form><div class=mb-5><label for=dailyResetTime class="mb-3 block font-medium text-slate-900">Daily Reset Time (24-hour format, HH:mm)</label><input type=time id=dailyResetTime required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><small class="text-sm text-slate-500">Time when daily chore reset occurs. Default: 03:00</small><br><small class="text-sm text-slate-500"><strong>Tip:</strong> Set to at least 03:00 to avoid daylight savings time changes (no roll forward/back occurs after 3am)</small></div><div class=mb-5><label class="flex cursor-pointer items-center gap-2"><input type=checkbox id=historyEnabled class="size-4.5 cursor-pointer">Enable History Tracking</label><small class="mt-2 block text-sm text-slate-500">Track daily chore completions (keeps last 14 days)</small></div><div class="mb-5 rounded-lg border border-slate-200 bg-slate-50 p-4"><h4 class="mb-3 font-medium text-slate-900">Admin PIN Protection</h4><label class="mb-4 flex cursor-pointer items-center gap-2"><input type=checkbox class="size-4.5 cursor-pointer">Enable PIN Protection</label><small class="block text-sm text-slate-500">When enabled, a PIN is required for all admin actions including backup, restore, and modifying people or chores.</small></div><div class="mt-6 flex justify-end gap-2.5">`);
 	var SettingsModal = (props) => {
 		const [dailyResetTime, setDailyResetTime] = createSignal(props.initialSettings.dailyResetTime);
 		const [historyEnabled, setHistoryEnabled] = createSignal(props.initialSettings.historyEnabled);
+		const [pinEnabled, setPinEnabled] = createSignal(!!props.initialSettings.adminPin);
+		const [currentPin, setCurrentPin] = createSignal("");
+		const [newPin, setNewPin] = createSignal("");
+		const [confirmPin, setConfirmPin] = createSignal("");
+		const [changePin, setChangePin] = createSignal(false);
+		const [showCurrentPin, setShowCurrentPin] = createSignal(false);
+		const [showNewPin, setShowNewPin] = createSignal(false);
+		const [showConfirmPin, setShowConfirmPin] = createSignal(false);
+		const hasPin = () => !!props.initialSettings.adminPin;
 		const handleSubmit = async (event) => {
 			event.preventDefault();
+			const isEnabled = pinEnabled();
+			const hadPin = hasPin();
+			if (hadPin && isEnabled && currentPin() === "") {
+				alert("Current PIN is required to save settings");
+				return;
+			}
+			if (isEnabled && (!hadPin || changePin())) {
+				if (newPin() === "") {
+					alert("PIN cannot be empty when PIN protection is enabled");
+					return;
+				}
+				if (newPin() !== confirmPin()) {
+					alert("New PIN and confirmation do not match");
+					return;
+				}
+			}
+			if (hadPin && !isEnabled && currentPin() === "") {
+				alert("Current PIN is required to disable PIN protection");
+				return;
+			}
 			try {
-				await updateSettings({
+				const body = {
 					dailyResetTime: dailyResetTime(),
-					historyEnabled: historyEnabled()
-				});
+					historyEnabled: historyEnabled(),
+					pin: hadPin ? currentPin() || void 0 : void 0
+				};
+				if (!isEnabled) body.adminPin = null;
+				else if (!hadPin) body.adminPin = newPin();
+				else if (changePin() && newPin()) body.adminPin = newPin();
+				await updateSettings(body);
 				props.closeModal();
 			} catch (error) {
 				console.error("Error saving settings:", error);
@@ -2157,27 +2388,116 @@
 			}
 		};
 		return (() => {
-			var _el$ = _tmpl$$1(), _el$4 = _el$.firstChild.firstChild.nextSibling, _el$5 = _el$4.firstChild, _el$7 = _el$5.firstChild.nextSibling, _el$8 = _el$5.nextSibling, _el$0 = _el$8.firstChild.firstChild, _el$1 = _el$8.nextSibling;
+			var _el$ = _tmpl$7$1(), _el$4 = _el$.firstChild.firstChild.nextSibling, _el$5 = _el$4.firstChild, _el$7 = _el$5.firstChild.nextSibling, _el$8 = _el$5.nextSibling, _el$0 = _el$8.firstChild.firstChild, _el$1 = _el$8.nextSibling, _el$11 = _el$1.firstChild.nextSibling, _el$12 = _el$11.firstChild, _el$37 = _el$11.nextSibling, _el$38 = _el$1.nextSibling;
 			_el$4.addEventListener("submit", handleSubmit);
 			_el$7.$$input = (e) => setDailyResetTime(e.currentTarget.value);
 			_el$0.$$input = (e) => setHistoryEnabled(e.currentTarget.checked);
-			insert(_el$1, createComponent(Button, {
+			_el$12.$$input = (e) => {
+				setPinEnabled(e.currentTarget.checked);
+				setChangePin(false);
+				setNewPin("");
+				setConfirmPin("");
+			};
+			insert(_el$1, createComponent(Show, {
+				get when() {
+					return pinEnabled();
+				},
+				get children() {
+					return [createComponent(Show, {
+						get when() {
+							return hasPin();
+						},
+						get children() {
+							return [(() => {
+								var _el$13 = _tmpl$$1(), _el$16 = _el$13.firstChild.nextSibling.firstChild, _el$17 = _el$16.nextSibling;
+								_el$16.$$input = (e) => setCurrentPin(e.currentTarget.value);
+								_el$17.$$click = () => setShowCurrentPin(!showCurrentPin());
+								insert(_el$17, () => showCurrentPin() ? "🙈" : "👁");
+								createRenderEffect(() => setAttribute(_el$16, "type", showCurrentPin() ? "text" : "password"));
+								createRenderEffect(() => _el$16.value = currentPin());
+								return _el$13;
+							})(), (() => {
+								var _el$18 = _tmpl$2$1(), _el$19 = _el$18.firstChild;
+								_el$19.$$input = (e) => {
+									setChangePin(e.currentTarget.checked);
+									setNewPin("");
+									setConfirmPin("");
+								};
+								createRenderEffect(() => _el$19.checked = changePin());
+								return _el$18;
+							})()];
+						}
+					}), createComponent(Show, {
+						get when() {
+							return !hasPin() || changePin();
+						},
+						get children() {
+							return [
+								(() => {
+									var _el$20 = _tmpl$3$1(), _el$21 = _el$20.firstChild, _el$22 = _el$21.firstChild, _el$24 = _el$21.nextSibling.firstChild, _el$25 = _el$24.nextSibling;
+									insert(_el$21, () => hasPin() ? "New PIN" : "Set PIN", _el$22);
+									_el$24.$$input = (e) => setNewPin(e.currentTarget.value);
+									_el$25.$$click = () => setShowNewPin(!showNewPin());
+									insert(_el$25, () => showNewPin() ? "🙈" : "👁");
+									createRenderEffect((_p$) => {
+										var _v$ = showNewPin() ? "text" : "password", _v$2 = hasPin() ? "Enter new PIN" : "Enter PIN to protect admin actions";
+										_v$ !== _p$.e && setAttribute(_el$24, "type", _p$.e = _v$);
+										_v$2 !== _p$.t && setAttribute(_el$24, "placeholder", _p$.t = _v$2);
+										return _p$;
+									}, {
+										e: void 0,
+										t: void 0
+									});
+									createRenderEffect(() => _el$24.value = newPin());
+									return _el$20;
+								})(),
+								(() => {
+									var _el$26 = _tmpl$4$1(), _el$29 = _el$26.firstChild.nextSibling.firstChild, _el$30 = _el$29.nextSibling;
+									_el$29.$$input = (e) => setConfirmPin(e.currentTarget.value);
+									_el$30.$$click = () => setShowConfirmPin(!showConfirmPin());
+									insert(_el$30, () => showConfirmPin() ? "🙈" : "👁");
+									createRenderEffect(() => setAttribute(_el$29, "type", showConfirmPin() ? "text" : "password"));
+									createRenderEffect(() => _el$29.value = confirmPin());
+									return _el$26;
+								})(),
+								_tmpl$5$1()
+							];
+						}
+					})];
+				}
+			}), _el$37);
+			insert(_el$1, createComponent(Show, {
+				get when() {
+					return memo(() => !!!pinEnabled())() && hasPin();
+				},
+				get children() {
+					var _el$32 = _tmpl$6$1(), _el$35 = _el$32.firstChild.nextSibling.firstChild, _el$36 = _el$35.nextSibling;
+					_el$35.$$input = (e) => setCurrentPin(e.currentTarget.value);
+					_el$36.$$click = () => setShowCurrentPin(!showCurrentPin());
+					insert(_el$36, () => showCurrentPin() ? "🙈" : "👁");
+					createRenderEffect(() => setAttribute(_el$35, "type", showCurrentPin() ? "text" : "password"));
+					createRenderEffect(() => _el$35.value = currentPin());
+					return _el$32;
+				}
+			}), _el$37);
+			insert(_el$38, createComponent(Button, {
 				type: "button",
 				variant: "secondary",
 				onClick: () => props.closeModal(),
 				children: "Cancel"
 			}), null);
-			insert(_el$1, createComponent(Button, {
+			insert(_el$38, createComponent(Button, {
 				type: "submit",
 				variant: "primary",
 				children: "Save"
 			}), null);
 			createRenderEffect(() => _el$7.value = dailyResetTime());
 			createRenderEffect(() => _el$0.checked = historyEnabled());
+			createRenderEffect(() => _el$12.checked = pinEnabled());
 			return _el$;
 		})();
 	};
-	delegateEvents(["input"]);
+	delegateEvents(["input", "click"]);
 	//#endregion
 	//#region src/admin/admin.tsx
 	var _tmpl$ = /* @__PURE__ */ template(`<p class="text-sm font-medium text-slate-600 italic">Retrying... (attempt <!>)`), _tmpl$2 = /* @__PURE__ */ template(`<div class="animate-loading-pulse bg-[radial-gradient(circle,#2563eb,#ffffff)] bg-size-[200%_200%] bg-center px-8 py-16 text-center text-slate-500"><div class="inline-block rounded-xl bg-white/30 p-8 shadow-md"><p class="mb-2.5 text-xl font-semibold text-slate-900">Magic Mirror is starting up, please wait...`), _tmpl$3 = /* @__PURE__ */ template(`<section class=mb-10 id=rotatingChoresSection><div class="mb-5 flex items-center justify-between"><h2 class="m-0 border-b-2 border-indigo-600 pb-2.5 text-2xl text-indigo-600">Rotating Chores</h2></div><div id=rotatingChoresList class="mt-5 grid gap-4">`), _tmpl$4 = /* @__PURE__ */ template(`<main class=p-8><section class=mb-10 data-testid=people-section><div class="mb-5 flex items-center justify-between"><h2 class="m-0 border-b-2 border-indigo-600 pb-2.5 text-2xl text-indigo-600">People</h2><div class="flex items-center gap-2"></div></div><div id=peopleList class="mt-5 grid gap-4"></div></section><section class=mb-10><h2 class="m-0 border-b-2 border-indigo-600 pb-2.5 text-2xl text-indigo-600">System State</h2><div class="rounded-lg border border-slate-200 bg-slate-50 p-5"><p class="mb-4 text-base"><strong class=text-indigo-600>Last Reset Date:</strong> <span id=lastResetDate></span></p><div class="mt-4 flex flex-row items-start gap-4"><div class="flex items-center gap-2">`), _tmpl$5 = /* @__PURE__ */ template(`<div class="mx-auto max-w-5xl overflow-hidden rounded-xl bg-white shadow-2xl"data-testid=admin-container><header class="flex flex-wrap items-center justify-between gap-4 bg-slate-100 p-8 text-slate-900"><h1 class="text-3xl font-semibold">Family Chores Admin</h1><div class="flex gap-2.5"><label for=restoreFile class="cursor-pointer rounded-lg border-none bg-gray-600 px-5 py-2.5 text-sm font-medium text-white transition-all hover:-translate-y-0.5 hover:bg-gray-700 hover:shadow-md">Restore Backup</label><input type=file id=restoreFile accept=.json hidden>`), _tmpl$6 = /* @__PURE__ */ template(`<div class="mt-4 border-t border-slate-200 pt-4">`), _tmpl$7 = /* @__PURE__ */ template(`<div class="rounded-lg border border-slate-200 bg-slate-50 p-5 transition-all hover:border-indigo-600 hover:shadow-md"data-testid=person-card><div class="mb-4 flex items-center justify-between"><div class=flex-1><h3 class="mb-1.5 text-xl text-slate-900"> <span class="inline-block size-6 rounded-full border-2 border-black/10 align-middle"></span></h3><p class="text-sm text-slate-500">ID: </p></div><div class="flex gap-2.5"></div></div><div class="mt-4 flex items-center justify-between border-t border-slate-200 pt-4"><h4 class="m-0 text-lg text-indigo-600">'s Personal Chores</h4><div class="flex gap-2">`), _tmpl$8 = /* @__PURE__ */ template(`<div class="mt-4 border-t border-slate-200 pt-4"><p class="my-2.5 text-slate-500 italic">No personal chores yet.`), _tmpl$9 = /* @__PURE__ */ template(`<p class="mt-1.25 text-sm text-indigo-600">Deadline: `), _tmpl$0 = /* @__PURE__ */ template(`<div class="mb-2.5 flex items-center justify-between rounded-lg border border-slate-200 bg-white p-2.5 last:mb-0"><div><h4 class="mb-1.5 text-base text-slate-900"></h4><p class="mt-1.25 text-sm text-slate-500">Skip days: </p></div><div class="flex gap-2">`);
@@ -2200,6 +2520,40 @@
 		const [historyPerson, setHistoryPerson] = createSignal(null);
 		const [loading, setLoading] = createSignal(true);
 		const [retryCount, setRetryCount] = createSignal(0);
+		const [adminPin, setAdminPin] = createSignal("");
+		const [pinPromptOpen, setPinPromptOpen] = createSignal(false);
+		const [pinPromptTitle, setPinPromptTitle] = createSignal("");
+		const [pinPromptMessage, setPinPromptMessage] = createSignal("");
+		let pinPromiseResolve = null;
+		let pinTimeout = null;
+		const pinRequired = () => !!choreData()?.settings?.adminPin;
+		const requestPin = (title, message) => {
+			return new Promise((resolve) => {
+				pinPromiseResolve = resolve;
+				setPinPromptTitle(title);
+				setPinPromptMessage(message);
+				setPinPromptOpen(true);
+			});
+		};
+		const cachePin = (pin) => {
+			setAdminPin(pin);
+			if (pinTimeout) clearTimeout(pinTimeout);
+			pinTimeout = setTimeout(() => {
+				setAdminPin("");
+				pinTimeout = null;
+			}, 600 * 1e3);
+		};
+		const handlePinConfirm = (pin, remember) => {
+			setPinPromptOpen(false);
+			pinPromiseResolve?.(pin);
+			pinPromiseResolve = null;
+			if (remember) cachePin(pin);
+		};
+		const handlePinCancel = () => {
+			setPinPromptOpen(false);
+			pinPromiseResolve?.(null);
+			pinPromiseResolve = null;
+		};
 		const loadData = async () => {
 			try {
 				const response = await fetch(`${API_BASE}/data`);
@@ -2264,8 +2618,14 @@
 		};
 		const handleDeletePerson = async (personId) => {
 			if (!confirm("Are you sure you want to delete this person? This will also remove all their assigned chores.")) return;
+			let pin = adminPin();
+			if (pinRequired() && !pin) {
+				const enteredPin = await requestPin("Admin PIN Required", "Enter admin PIN to delete this person");
+				if (!enteredPin) return;
+				pin = enteredPin;
+			}
 			try {
-				await deletePerson(personId);
+				await deletePerson(personId, pin || void 0);
 				await loadData();
 			} catch (error) {
 				console.error("Error deleting person:", error);
@@ -2274,8 +2634,14 @@
 		};
 		const handleDeleteChore = async (choreId) => {
 			if (!confirm("Are you sure you want to delete this chore?")) return;
+			let pin = adminPin();
+			if (pinRequired() && !pin) {
+				const enteredPin = await requestPin("Admin PIN Required", "Enter admin PIN to delete this chore");
+				if (!enteredPin) return;
+				pin = enteredPin;
+			}
 			try {
-				await deleteChore(choreId);
+				await deleteChore(choreId, pin || void 0);
 				await loadData();
 			} catch (error) {
 				console.error("Error deleting chore:", error);
@@ -2284,28 +2650,42 @@
 		};
 		const handleDownloadBackup = async () => {
 			try {
-				const response = await fetch(`${API_BASE}/backup`);
-				if (!response.ok) throw new Error("Failed to create backup");
-				const blob = await response.blob();
+				let pin = adminPin();
+				if (pinRequired() && !pin) {
+					const enteredPin = await requestPin("Download Backup", "Enter admin PIN to download backup");
+					if (!enteredPin) return;
+					pin = enteredPin;
+				}
+				const blob = await downloadBackup(pin || void 0);
 				const url = window.URL.createObjectURL(blob);
 				const a = document.createElement("a");
 				a.href = url;
-				a.download = response.headers.get("Content-Disposition")?.match(/filename="(.+)"/)?.[1] || "family-chores-backup.json";
+				a.download = "family-chores-backup.json";
 				document.body.appendChild(a);
 				a.click();
 				window.URL.revokeObjectURL(url);
 				document.body.removeChild(a);
 			} catch (error) {
 				console.error("Error downloading backup:", error);
-				alert("Failed to download backup. Please try again.");
+				alert(`Failed to download backup: ${error instanceof Error ? error.message : "Please try again."}`);
 			}
 		};
 		const handleRestore = async (e) => {
 			const file = e.target.files?.[0];
 			if (!file) return;
+			let pin = adminPin();
+			if (pinRequired() && !pin) {
+				const enteredPin = await requestPin("Restore Backup", "Enter admin PIN to restore data");
+				if (!enteredPin) {
+					e.target.value = "";
+					return;
+				}
+				pin = enteredPin;
+			}
 			try {
 				const text = await file.text();
 				const data = JSON.parse(text);
+				data.pin = pin || void 0;
 				if (!(await fetch(`${API_BASE}/restore`, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
@@ -2321,6 +2701,12 @@
 		};
 		const handleForceReset = async () => {
 			if (!confirm("Are you sure you want to force a daily reset? This will reset all chore states for the new day.")) return;
+			let pin = adminPin();
+			if (pinRequired() && !pin) {
+				const enteredPin = await requestPin("Admin PIN Required", "Enter admin PIN to force daily reset");
+				if (!enteredPin) return;
+				pin = enteredPin;
+			}
 			try {
 				const data = choreData();
 				if (!data) return;
@@ -2330,7 +2716,10 @@
 				if (!(await fetch(`${API_BASE}/restore`, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify(data)
+					body: JSON.stringify({
+						...data,
+						pin: pin || void 0
+					})
 				})).ok) throw new Error("Failed to force reset");
 				alert("Daily reset triggered successfully! The data will be updated on the next sync.");
 				await loadData();
@@ -2584,7 +2973,11 @@
 						get initialPerson() {
 							return editingPerson() ?? void 0;
 						},
-						closeModal: closePersonModal
+						get pinRequired() {
+							return pinRequired();
+						},
+						closeModal: closePersonModal,
+						onPinRemembered: cachePin
 					});
 				}
 			}), null);
@@ -2600,7 +2993,11 @@
 						get initialChore() {
 							return editingChore();
 						},
-						closeModal: closePersonalChoreModal
+						get pinRequired() {
+							return pinRequired();
+						},
+						closeModal: closePersonalChoreModal,
+						onPinRemembered: cachePin
 					});
 				}
 			}), null);
@@ -2624,7 +3021,11 @@
 								}
 							};
 						},
-						closeModal: closeRotatingChoreModal
+						get pinRequired() {
+							return pinRequired();
+						},
+						closeModal: closeRotatingChoreModal,
+						onPinRemembered: cachePin
 					});
 				}
 			}), null);
@@ -2640,7 +3041,11 @@
 						get choreData() {
 							return choreData();
 						},
-						closeModal: closeCopyChoresModal
+						get pinRequired() {
+							return pinRequired();
+						},
+						closeModal: closeCopyChoresModal,
+						onPinRemembered: cachePin
 					});
 				}
 			}), null);
@@ -2673,6 +3078,23 @@
 							};
 						},
 						closeModal: closeSettingsModal
+					});
+				}
+			}), null);
+			insert(_el$, createComponent(Show, {
+				get when() {
+					return pinPromptOpen();
+				},
+				get children() {
+					return createComponent(PinPromptModal, {
+						get title() {
+							return pinPromptTitle();
+						},
+						get message() {
+							return pinPromptMessage();
+						},
+						onConfirm: handlePinConfirm,
+						onCancel: handlePinCancel
 					});
 				}
 			}), null);

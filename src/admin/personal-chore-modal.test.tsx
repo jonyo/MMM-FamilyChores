@@ -1,7 +1,6 @@
 import { render } from '@solidjs/testing-library';
 import { describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
-import '../../public/admin.css';
 import { createChore, updateChore } from '../api';
 import type { Person, PersonalChore } from '../types/chore-types';
 import { ChoreType, DayOfWeek, SkipDayVisibility } from '../types/chore-types';
@@ -21,7 +20,12 @@ describe('PersonalChoreModal', () => {
       const closeModal = vi.fn();
 
       const { container } = render(() => (
-        <PersonalChoreModal person={mockPerson} initialChore={undefined} closeModal={closeModal} />
+        <PersonalChoreModal
+          person={mockPerson}
+          initialChore={undefined}
+          pinRequired={false}
+          closeModal={closeModal}
+        />
       ));
 
       expect(container.querySelector('h3')?.textContent).toBe('Add Personal Chore');
@@ -37,7 +41,12 @@ describe('PersonalChoreModal', () => {
       const closeModal = vi.fn();
 
       const { container } = render(() => (
-        <PersonalChoreModal person={mockPerson} initialChore={undefined} closeModal={closeModal} />
+        <PersonalChoreModal
+          person={mockPerson}
+          initialChore={undefined}
+          pinRequired={false}
+          closeModal={closeModal}
+        />
       ));
 
       const colorBadge = container.querySelector(
@@ -50,7 +59,12 @@ describe('PersonalChoreModal', () => {
       const closeModal = vi.fn();
 
       render(() => (
-        <PersonalChoreModal person={mockPerson} initialChore={undefined} closeModal={closeModal} />
+        <PersonalChoreModal
+          person={mockPerson}
+          initialChore={undefined}
+          pinRequired={false}
+          closeModal={closeModal}
+        />
       ));
 
       const cancelButton = page.getByRole('button', { name: 'Cancel' });
@@ -65,7 +79,12 @@ describe('PersonalChoreModal', () => {
       const closeModal = vi.fn();
 
       render(() => (
-        <PersonalChoreModal person={mockPerson} initialChore={undefined} closeModal={closeModal} />
+        <PersonalChoreModal
+          person={mockPerson}
+          initialChore={undefined}
+          pinRequired={false}
+          closeModal={closeModal}
+        />
       ));
 
       // Fill in the chore name
@@ -99,6 +118,7 @@ describe('PersonalChoreModal', () => {
         <PersonalChoreModal
           person={mockPerson}
           initialChore={initialChore}
+          pinRequired={false}
           closeModal={closeModal}
         />
       ));
@@ -134,6 +154,7 @@ describe('PersonalChoreModal', () => {
         <PersonalChoreModal
           person={mockPerson}
           initialChore={initialChore}
+          pinRequired={false}
           closeModal={closeModal}
         />
       ));
