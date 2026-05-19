@@ -2,9 +2,9 @@ import { render } from '@solidjs/testing-library';
 import { describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import { copyChores } from '../api';
-import type { FamilyChoresData, Person } from '../types/chore-types';
-import { ChoreType, SkipDayVisibility } from '../types/chore-types';
+import type { Person } from '../types/chore-types';
 import { CopyChoresModal } from './copy-chores-modal';
+import { MockAdminProvider, mockPersonalChore } from './test-utils';
 
 // Mock API functions
 vi.mock('../api', () => ({
@@ -14,50 +14,29 @@ vi.mock('../api', () => ({
 describe('CopyChoresModal', () => {
   const mockFromPerson: Person = { id: 'p1', name: 'Alice', color: '#FF6B6B' };
   const mockToPerson: Person = { id: 'p2', name: 'Bob', color: '#4ECDC4' };
-  const mockChoreData: FamilyChoresData = {
-    people: [mockFromPerson, mockToPerson],
-    chores: [
-      {
-        id: 'c1',
-        name: 'Take out trash',
-        type: ChoreType.PERSONAL,
-        assignedTo: 'p1',
-        skipDays: [],
-        skipDayVisibility: SkipDayVisibility.HIDE,
-        caughtUp: true,
-        completedToday: false,
-        deadline: '21:00',
-      },
-      {
-        id: 'c2',
-        name: 'Do dishes',
-        type: ChoreType.PERSONAL,
-        assignedTo: 'p1',
-        skipDays: [],
-        skipDayVisibility: SkipDayVisibility.HIDE,
-        caughtUp: true,
-        completedToday: false,
-      },
-    ],
-    dailyCompletions: [],
-    lastResetDate: '2024-01-01',
-    settings: {
-      dailyResetTime: '03:00',
-      historyEnabled: true,
-    },
-  };
 
   describe('Rendering', () => {
     it('should render modal with chores available', () => {
       const closeModal = vi.fn();
 
       const { container } = render(() => (
-        <CopyChoresModal
-          fromPerson={mockFromPerson}
-          choreData={mockChoreData}
-          pinRequired={false}
-          closeModal={closeModal}
-        />
+        <MockAdminProvider
+          choreDataOverride={{
+            people: [mockFromPerson, mockToPerson],
+            chores: [
+              {
+                ...mockPersonalChore,
+                id: 'c1',
+                name: 'Take out trash',
+                assignedTo: 'p1',
+                deadline: '21:00',
+              },
+              { ...mockPersonalChore, id: 'c2', name: 'Do dishes', assignedTo: 'p1' },
+            ],
+          }}
+        >
+          <CopyChoresModal fromPerson={mockFromPerson} closeModal={closeModal} />
+        </MockAdminProvider>
       ));
 
       expect(container.querySelector('h3')?.textContent).toBe('Copy Chores');
@@ -73,12 +52,23 @@ describe('CopyChoresModal', () => {
       const closeModal = vi.fn();
 
       const { container } = render(() => (
-        <CopyChoresModal
-          fromPerson={mockFromPerson}
-          choreData={mockChoreData}
-          pinRequired={false}
-          closeModal={closeModal}
-        />
+        <MockAdminProvider
+          choreDataOverride={{
+            people: [mockFromPerson, mockToPerson],
+            chores: [
+              {
+                ...mockPersonalChore,
+                id: 'c1',
+                name: 'Take out trash',
+                assignedTo: 'p1',
+                deadline: '21:00',
+              },
+              { ...mockPersonalChore, id: 'c2', name: 'Do dishes', assignedTo: 'p1' },
+            ],
+          }}
+        >
+          <CopyChoresModal fromPerson={mockFromPerson} closeModal={closeModal} />
+        </MockAdminProvider>
       ));
 
       const colorBadge = container.querySelector(
@@ -89,24 +79,16 @@ describe('CopyChoresModal', () => {
 
     it('should show empty state when no personal chores', () => {
       const closeModal = vi.fn();
-      const emptyChoreData: FamilyChoresData = {
-        people: [mockFromPerson, mockToPerson],
-        chores: [],
-        dailyCompletions: [],
-        lastResetDate: '2024-01-01',
-        settings: {
-          dailyResetTime: '03:00',
-          historyEnabled: true,
-        },
-      };
 
       const { container } = render(() => (
-        <CopyChoresModal
-          fromPerson={mockFromPerson}
-          choreData={emptyChoreData}
-          pinRequired={false}
-          closeModal={closeModal}
-        />
+        <MockAdminProvider
+          choreDataOverride={{
+            people: [mockFromPerson, mockToPerson],
+            chores: [],
+          }}
+        >
+          <CopyChoresModal fromPerson={mockFromPerson} closeModal={closeModal} />
+        </MockAdminProvider>
       ));
 
       expect(container.querySelector('[data-testid="empty-message"]')?.textContent).toContain(
@@ -116,24 +98,25 @@ describe('CopyChoresModal', () => {
 
     it('should show empty state when no other people available', () => {
       const closeModal = vi.fn();
-      const singlePersonChoreData: FamilyChoresData = {
-        people: [mockFromPerson],
-        chores: mockChoreData.chores,
-        dailyCompletions: [],
-        lastResetDate: '2024-01-01',
-        settings: {
-          dailyResetTime: '03:00',
-          historyEnabled: true,
-        },
-      };
 
       const { container } = render(() => (
-        <CopyChoresModal
-          fromPerson={mockFromPerson}
-          choreData={singlePersonChoreData}
-          pinRequired={false}
-          closeModal={closeModal}
-        />
+        <MockAdminProvider
+          choreDataOverride={{
+            people: [mockFromPerson],
+            chores: [
+              {
+                ...mockPersonalChore,
+                id: 'c1',
+                name: 'Take out trash',
+                assignedTo: 'p1',
+                deadline: '21:00',
+              },
+              { ...mockPersonalChore, id: 'c2', name: 'Do dishes', assignedTo: 'p1' },
+            ],
+          }}
+        >
+          <CopyChoresModal fromPerson={mockFromPerson} closeModal={closeModal} />
+        </MockAdminProvider>
       ));
 
       expect(container.querySelector('[data-testid="empty-message"]')?.textContent).toContain(
@@ -145,12 +128,23 @@ describe('CopyChoresModal', () => {
       const closeModal = vi.fn();
 
       const { container } = render(() => (
-        <CopyChoresModal
-          fromPerson={mockFromPerson}
-          choreData={mockChoreData}
-          pinRequired={false}
-          closeModal={closeModal}
-        />
+        <MockAdminProvider
+          choreDataOverride={{
+            people: [mockFromPerson, mockToPerson],
+            chores: [
+              {
+                ...mockPersonalChore,
+                id: 'c1',
+                name: 'Take out trash',
+                assignedTo: 'p1',
+                deadline: '21:00',
+              },
+              { ...mockPersonalChore, id: 'c2', name: 'Do dishes', assignedTo: 'p1' },
+            ],
+          }}
+        >
+          <CopyChoresModal fromPerson={mockFromPerson} closeModal={closeModal} />
+        </MockAdminProvider>
       ));
 
       const checkboxes = container.querySelectorAll('input[type="checkbox"]');
@@ -163,12 +157,23 @@ describe('CopyChoresModal', () => {
       const closeModal = vi.fn();
 
       const { container } = render(() => (
-        <CopyChoresModal
-          fromPerson={mockFromPerson}
-          choreData={mockChoreData}
-          pinRequired={false}
-          closeModal={closeModal}
-        />
+        <MockAdminProvider
+          choreDataOverride={{
+            people: [mockFromPerson, mockToPerson],
+            chores: [
+              {
+                ...mockPersonalChore,
+                id: 'c1',
+                name: 'Take out trash',
+                assignedTo: 'p1',
+                deadline: '21:00',
+              },
+              { ...mockPersonalChore, id: 'c2', name: 'Do dishes', assignedTo: 'p1' },
+            ],
+          }}
+        >
+          <CopyChoresModal fromPerson={mockFromPerson} closeModal={closeModal} />
+        </MockAdminProvider>
       ));
 
       const select = container.querySelector('#toPerson') as HTMLSelectElement;
@@ -186,12 +191,23 @@ describe('CopyChoresModal', () => {
       const closeModal = vi.fn();
 
       render(() => (
-        <CopyChoresModal
-          fromPerson={mockFromPerson}
-          choreData={mockChoreData}
-          pinRequired={false}
-          closeModal={closeModal}
-        />
+        <MockAdminProvider
+          choreDataOverride={{
+            people: [mockFromPerson, mockToPerson],
+            chores: [
+              {
+                ...mockPersonalChore,
+                id: 'c1',
+                name: 'Take out trash',
+                assignedTo: 'p1',
+                deadline: '21:00',
+              },
+              { ...mockPersonalChore, id: 'c2', name: 'Do dishes', assignedTo: 'p1' },
+            ],
+          }}
+        >
+          <CopyChoresModal fromPerson={mockFromPerson} closeModal={closeModal} />
+        </MockAdminProvider>
       ));
 
       const cancelButton = page.getByRole('button', { name: 'Cancel' });
@@ -206,12 +222,23 @@ describe('CopyChoresModal', () => {
       const closeModal = vi.fn();
 
       const { container } = render(() => (
-        <CopyChoresModal
-          fromPerson={mockFromPerson}
-          choreData={mockChoreData}
-          pinRequired={false}
-          closeModal={closeModal}
-        />
+        <MockAdminProvider
+          choreDataOverride={{
+            people: [mockFromPerson, mockToPerson],
+            chores: [
+              {
+                ...mockPersonalChore,
+                id: 'c1',
+                name: 'Take out trash',
+                assignedTo: 'p1',
+                deadline: '21:00',
+              },
+              { ...mockPersonalChore, id: 'c2', name: 'Do dishes', assignedTo: 'p1' },
+            ],
+          }}
+        >
+          <CopyChoresModal fromPerson={mockFromPerson} closeModal={closeModal} />
+        </MockAdminProvider>
       ));
 
       const checkbox = page.getByLabelText('Take out trash');
@@ -228,12 +255,23 @@ describe('CopyChoresModal', () => {
       vi.mocked(copyChores).mockResolvedValueOnce(undefined);
 
       render(() => (
-        <CopyChoresModal
-          fromPerson={mockFromPerson}
-          choreData={mockChoreData}
-          pinRequired={false}
-          closeModal={closeModal}
-        />
+        <MockAdminProvider
+          choreDataOverride={{
+            people: [mockFromPerson, mockToPerson],
+            chores: [
+              {
+                ...mockPersonalChore,
+                id: 'c1',
+                name: 'Take out trash',
+                assignedTo: 'p1',
+                deadline: '21:00',
+              },
+              { ...mockPersonalChore, id: 'c2', name: 'Do dishes', assignedTo: 'p1' },
+            ],
+          }}
+        >
+          <CopyChoresModal fromPerson={mockFromPerson} closeModal={closeModal} />
+        </MockAdminProvider>
       ));
 
       const select = page.getByRole('combobox');
@@ -254,12 +292,23 @@ describe('CopyChoresModal', () => {
       vi.mocked(copyChores).mockResolvedValueOnce(undefined);
 
       render(() => (
-        <CopyChoresModal
-          fromPerson={mockFromPerson}
-          choreData={mockChoreData}
-          pinRequired={false}
-          closeModal={closeModal}
-        />
+        <MockAdminProvider
+          choreDataOverride={{
+            people: [mockFromPerson, mockToPerson],
+            chores: [
+              {
+                ...mockPersonalChore,
+                id: 'c1',
+                name: 'Take out trash',
+                assignedTo: 'p1',
+                deadline: '21:00',
+              },
+              { ...mockPersonalChore, id: 'c2', name: 'Do dishes', assignedTo: 'p1' },
+            ],
+          }}
+        >
+          <CopyChoresModal fromPerson={mockFromPerson} closeModal={closeModal} />
+        </MockAdminProvider>
       ));
 
       const checkbox = page.getByLabelText('Take out trash');
@@ -283,12 +332,23 @@ describe('CopyChoresModal', () => {
       vi.mocked(copyChores).mockRejectedValueOnce(new Error('API Error'));
 
       render(() => (
-        <CopyChoresModal
-          fromPerson={mockFromPerson}
-          choreData={mockChoreData}
-          pinRequired={false}
-          closeModal={closeModal}
-        />
+        <MockAdminProvider
+          choreDataOverride={{
+            people: [mockFromPerson, mockToPerson],
+            chores: [
+              {
+                ...mockPersonalChore,
+                id: 'c1',
+                name: 'Take out trash',
+                assignedTo: 'p1',
+                deadline: '21:00',
+              },
+              { ...mockPersonalChore, id: 'c2', name: 'Do dishes', assignedTo: 'p1' },
+            ],
+          }}
+        >
+          <CopyChoresModal fromPerson={mockFromPerson} closeModal={closeModal} />
+        </MockAdminProvider>
       ));
 
       const select = page.getByRole('combobox');
@@ -307,12 +367,25 @@ describe('CopyChoresModal', () => {
       const closeModal = vi.fn();
 
       const { container } = render(() => (
-        <CopyChoresModal
-          fromPerson={mockFromPerson}
-          choreData={mockChoreData}
+        <MockAdminProvider
+          choreDataOverride={{
+            people: [mockFromPerson, mockToPerson],
+            chores: [
+              {
+                ...mockPersonalChore,
+                id: 'c1',
+                name: 'Take out trash',
+                assignedTo: 'p1',
+                deadline: '21:00',
+              },
+              { ...mockPersonalChore, id: 'c2', name: 'Do dishes', assignedTo: 'p1' },
+            ],
+            settings: { dailyResetTime: '03:00', historyEnabled: true },
+          }}
           pinRequired={true}
-          closeModal={closeModal}
-        />
+        >
+          <CopyChoresModal fromPerson={mockFromPerson} closeModal={closeModal} />
+        </MockAdminProvider>
       ));
 
       expect(container.querySelector('#adminPin')).toBeTruthy();
@@ -322,13 +395,26 @@ describe('CopyChoresModal', () => {
       const closeModal = vi.fn();
 
       const { container } = render(() => (
-        <CopyChoresModal
-          fromPerson={mockFromPerson}
-          choreData={mockChoreData}
+        <MockAdminProvider
+          choreDataOverride={{
+            people: [mockFromPerson, mockToPerson],
+            chores: [
+              {
+                ...mockPersonalChore,
+                id: 'c1',
+                name: 'Take out trash',
+                assignedTo: 'p1',
+                deadline: '21:00',
+              },
+              { ...mockPersonalChore, id: 'c2', name: 'Do dishes', assignedTo: 'p1' },
+            ],
+            settings: { dailyResetTime: '03:00', historyEnabled: true },
+          }}
           pinRequired={true}
-          closeModal={closeModal}
-          cachedPin="5678"
-        />
+          initialCachedPin="1234"
+        >
+          <CopyChoresModal fromPerson={mockFromPerson} closeModal={closeModal} />
+        </MockAdminProvider>
       ));
 
       expect(container.querySelector('#adminPin')).toBeFalsy();
@@ -336,22 +422,33 @@ describe('CopyChoresModal', () => {
 
     it('should use cachedPin in request and not call onPinRemembered', async () => {
       const closeModal = vi.fn();
-      const onPinRemembered = vi.fn();
+      vi.mocked(copyChores).mockResolvedValueOnce(undefined);
 
       render(() => (
-        <CopyChoresModal
-          fromPerson={mockFromPerson}
-          choreData={mockChoreData}
+        <MockAdminProvider
+          choreDataOverride={{
+            people: [mockFromPerson, mockToPerson],
+            chores: [
+              {
+                ...mockPersonalChore,
+                id: 'c1',
+                name: 'Take out trash',
+                assignedTo: 'p1',
+                deadline: '21:00',
+              },
+              { ...mockPersonalChore, id: 'c2', name: 'Do dishes', assignedTo: 'p1' },
+            ],
+            settings: { dailyResetTime: '03:00', historyEnabled: true },
+          }}
           pinRequired={true}
-          closeModal={closeModal}
-          cachedPin="5678"
-          onPinRemembered={onPinRemembered}
-        />
+          initialCachedPin="1234"
+        >
+          <CopyChoresModal fromPerson={mockFromPerson} closeModal={closeModal} />
+        </MockAdminProvider>
       ));
 
       const select = page.getByRole('combobox');
       await select.selectOptions('p2');
-
       const copyButton = page.getByRole('button', { name: 'Copy' });
       await copyButton.click();
 
@@ -359,10 +456,9 @@ describe('CopyChoresModal', () => {
         expect.objectContaining({
           fromPersonId: 'p1',
           toPersonId: 'p2',
-          pin: '5678',
+          pin: '1234',
         })
       );
-      expect(onPinRemembered).not.toHaveBeenCalled();
       expect(closeModal).toHaveBeenCalled();
     });
   });

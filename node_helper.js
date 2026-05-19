@@ -749,23 +749,6 @@ function createAdminHandlers(context) {
 				res.status(500).json(apiErr("Failed to copy chores"));
 			}
 		},
-		getHistory: (req, res) => {
-			const choreData = context.getChoreData();
-			if (!choreData) {
-				res.status(500).json(apiErr("No data available"));
-				return;
-			}
-			if (!choreData.settings?.historyEnabled) {
-				res.json([]);
-				return;
-			}
-			const personId = req.query?.personId;
-			const dailyCompletions = choreData.dailyCompletions || [];
-			const sortedCompletions = [...personId ? dailyCompletions.filter((dc) => dc.personId === personId) : dailyCompletions].sort((a, b) => {
-				return new Date(b.date).getTime() - new Date(a.date).getTime();
-			});
-			res.json(sortedCompletions);
-		},
 		putSettings: (req, res) => {
 			if (!validatePin(req, res, context)) return;
 			try {
@@ -1127,7 +1110,6 @@ var node_helper_default = node_helper.create({
 		this.expressApp?.get("/MMM-FamilyChores/backup", handlers.getBackup);
 		this.expressApp?.post("/MMM-FamilyChores/restore", handlers.postRestore);
 		this.expressApp?.post("/MMM-FamilyChores/copy-chores", handlers.postCopyChores);
-		this.expressApp?.get("/MMM-FamilyChores/history", handlers.getHistory);
 		this.expressApp?.put("/MMM-FamilyChores/settings", handlers.putSettings);
 		logger.info("Admin routes configured for MMM-FamilyChores");
 	}

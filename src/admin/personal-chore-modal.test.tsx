@@ -5,6 +5,7 @@ import { createChore, updateChore } from '../api';
 import type { Person, PersonalChore } from '../types/chore-types';
 import { ChoreType, DayOfWeek, SkipDayVisibility } from '../types/chore-types';
 import { PersonalChoreModal } from './personal-chore-modal';
+import { MockAdminProvider } from './test-utils';
 
 // Mock API functions
 vi.mock('../api', () => ({
@@ -20,12 +21,13 @@ describe('PersonalChoreModal', () => {
       const closeModal = vi.fn();
 
       const { container } = render(() => (
-        <PersonalChoreModal
-          person={mockPerson}
-          initialChore={undefined}
-          pinRequired={false}
-          closeModal={closeModal}
-        />
+        <MockAdminProvider>
+          <PersonalChoreModal
+            person={mockPerson}
+            initialChore={undefined}
+            closeModal={closeModal}
+          />
+        </MockAdminProvider>
       ));
 
       expect(container.querySelector('h3')?.textContent).toBe('Add Personal Chore');
@@ -41,12 +43,13 @@ describe('PersonalChoreModal', () => {
       const closeModal = vi.fn();
 
       const { container } = render(() => (
-        <PersonalChoreModal
-          person={mockPerson}
-          initialChore={undefined}
-          pinRequired={false}
-          closeModal={closeModal}
-        />
+        <MockAdminProvider>
+          <PersonalChoreModal
+            person={mockPerson}
+            initialChore={undefined}
+            closeModal={closeModal}
+          />
+        </MockAdminProvider>
       ));
 
       const colorBadge = container.querySelector(
@@ -59,12 +62,13 @@ describe('PersonalChoreModal', () => {
       const closeModal = vi.fn();
 
       render(() => (
-        <PersonalChoreModal
-          person={mockPerson}
-          initialChore={undefined}
-          pinRequired={false}
-          closeModal={closeModal}
-        />
+        <MockAdminProvider>
+          <PersonalChoreModal
+            person={mockPerson}
+            initialChore={undefined}
+            closeModal={closeModal}
+          />
+        </MockAdminProvider>
       ));
 
       const cancelButton = page.getByRole('button', { name: 'Cancel' });
@@ -79,12 +83,13 @@ describe('PersonalChoreModal', () => {
       const closeModal = vi.fn();
 
       render(() => (
-        <PersonalChoreModal
-          person={mockPerson}
-          initialChore={undefined}
-          pinRequired={false}
-          closeModal={closeModal}
-        />
+        <MockAdminProvider>
+          <PersonalChoreModal
+            person={mockPerson}
+            initialChore={undefined}
+            closeModal={closeModal}
+          />
+        </MockAdminProvider>
       ));
 
       // Fill in the chore name
@@ -115,12 +120,13 @@ describe('PersonalChoreModal', () => {
       };
 
       const { container } = render(() => (
-        <PersonalChoreModal
-          person={mockPerson}
-          initialChore={initialChore}
-          pinRequired={false}
-          closeModal={closeModal}
-        />
+        <MockAdminProvider>
+          <PersonalChoreModal
+            person={mockPerson}
+            initialChore={initialChore}
+            closeModal={closeModal}
+          />
+        </MockAdminProvider>
       ));
 
       expect(container.querySelector('h3')?.textContent).toBe('Edit Personal Chore');
@@ -151,12 +157,13 @@ describe('PersonalChoreModal', () => {
       };
 
       render(() => (
-        <PersonalChoreModal
-          person={mockPerson}
-          initialChore={initialChore}
-          pinRequired={false}
-          closeModal={closeModal}
-        />
+        <MockAdminProvider>
+          <PersonalChoreModal
+            person={mockPerson}
+            initialChore={initialChore}
+            closeModal={closeModal}
+          />
+        </MockAdminProvider>
       ));
 
       const saveButton = page.getByRole('button', { name: 'Save' });
@@ -173,12 +180,13 @@ describe('PersonalChoreModal', () => {
       const closeModal = vi.fn();
 
       const { container } = render(() => (
-        <PersonalChoreModal
-          person={mockPerson}
-          initialChore={undefined}
-          pinRequired={true}
-          closeModal={closeModal}
-        />
+        <MockAdminProvider pinRequired={true}>
+          <PersonalChoreModal
+            person={mockPerson}
+            initialChore={undefined}
+            closeModal={closeModal}
+          />
+        </MockAdminProvider>
       ));
 
       expect(container.querySelector('#adminPin')).toBeTruthy();
@@ -188,31 +196,29 @@ describe('PersonalChoreModal', () => {
       const closeModal = vi.fn();
 
       const { container } = render(() => (
-        <PersonalChoreModal
-          person={mockPerson}
-          initialChore={undefined}
-          pinRequired={true}
-          closeModal={closeModal}
-          cachedPin="5678"
-        />
+        <MockAdminProvider pinRequired={true} initialCachedPin="5678">
+          <PersonalChoreModal
+            person={mockPerson}
+            initialChore={undefined}
+            closeModal={closeModal}
+          />
+        </MockAdminProvider>
       ));
 
       expect(container.querySelector('#adminPin')).toBeFalsy();
     });
 
-    it('should use cachedPin in request and not call onPinRemembered', async () => {
+    it('should use cachedPin in request', async () => {
       const closeModal = vi.fn();
-      const onPinRemembered = vi.fn();
 
       render(() => (
-        <PersonalChoreModal
-          person={mockPerson}
-          initialChore={undefined}
-          pinRequired={true}
-          closeModal={closeModal}
-          cachedPin="5678"
-          onPinRemembered={onPinRemembered}
-        />
+        <MockAdminProvider pinRequired={true} initialCachedPin="5678">
+          <PersonalChoreModal
+            person={mockPerson}
+            initialChore={undefined}
+            closeModal={closeModal}
+          />
+        </MockAdminProvider>
       ));
 
       await page.getByLabelText('Chore Name').fill('Test Chore');
@@ -226,7 +232,6 @@ describe('PersonalChoreModal', () => {
           pin: '5678',
         })
       );
-      expect(onPinRemembered).not.toHaveBeenCalled();
       expect(closeModal).toHaveBeenCalled();
     });
   });

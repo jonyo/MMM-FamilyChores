@@ -1,48 +1,14 @@
 import { render, screen } from '@solidjs/testing-library';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { DailyCompletion, FamilyChoresData, Person } from '../types/chore-types';
-import { ChoreType, SkipDayVisibility } from '../types/chore-types';
+import type { DailyCompletion, Person } from '../types/chore-types';
 import { ChoreHistoryModal } from './chore-history-modal';
+import { MockAdminProvider, mockPersonalChore } from './test-utils';
 
 describe('ChoreHistoryModal', () => {
   const mockPerson: Person = {
     id: 'p1',
     name: 'Alice',
     color: '#FF6B6B',
-  };
-
-  const mockChoreData: FamilyChoresData = {
-    people: [mockPerson],
-    chores: [
-      {
-        id: 'c1',
-        name: 'Clean room',
-        type: ChoreType.PERSONAL,
-        assignedTo: 'p1',
-        skipDays: [],
-        skipDayVisibility: SkipDayVisibility.HIDE,
-        deadline: '18:00',
-        caughtUp: true,
-        completedToday: false,
-      },
-      {
-        id: 'c2',
-        name: 'Do dishes',
-        type: ChoreType.PERSONAL,
-        assignedTo: 'p1',
-        skipDays: [],
-        skipDayVisibility: SkipDayVisibility.HIDE,
-        deadline: '18:00',
-        caughtUp: true,
-        completedToday: false,
-      },
-    ],
-    dailyCompletions: [],
-    lastResetDate: '2024-01-01',
-    settings: {
-      dailyResetTime: '03:00',
-      historyEnabled: true,
-    },
   };
 
   const mockHistory: DailyCompletion[] = [
@@ -78,9 +44,20 @@ describe('ChoreHistoryModal', () => {
 
   it('renders modal with person name', () => {
     const closeModal = vi.fn();
+    const loadDataMock = vi.fn().mockResolvedValue(undefined);
 
     const { container } = render(() => (
-      <ChoreHistoryModal person={mockPerson} choreData={mockChoreData} closeModal={closeModal} />
+      <MockAdminProvider
+        choreDataOverride={{
+          chores: [
+            { ...mockPersonalChore, id: 'c1', name: 'Clean room' },
+            { ...mockPersonalChore, id: 'c2', name: 'Do dishes' },
+          ],
+        }}
+        loadDataMock={loadDataMock}
+      >
+        <ChoreHistoryModal person={mockPerson} closeModal={closeModal} />
+      </MockAdminProvider>
     ));
 
     expect(container.querySelector('[data-testid="modal"]')).toBeInTheDocument();
@@ -89,44 +66,42 @@ describe('ChoreHistoryModal', () => {
 
   it('shows loading state initially', () => {
     const closeModal = vi.fn();
+    const loadDataMock = vi.fn().mockImplementation(() => new Promise<void>(() => {}));
 
     render(() => (
-      <ChoreHistoryModal person={mockPerson} choreData={mockChoreData} closeModal={closeModal} />
+      <MockAdminProvider
+        choreDataOverride={{
+          chores: [
+            { ...mockPersonalChore, id: 'c1', name: 'Clean room' },
+            { ...mockPersonalChore, id: 'c2', name: 'Do dishes' },
+          ],
+        }}
+        loadDataMock={loadDataMock}
+      >
+        <ChoreHistoryModal person={mockPerson} closeModal={closeModal} />
+      </MockAdminProvider>
     ));
 
     expect(screen.getByText('Loading history...')).toBeInTheDocument();
   });
 
-  it('shows error state when API fails', async () => {
-    const closeModal = vi.fn();
-    globalThis.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: false,
-        json: () => Promise.resolve({ error: 'Failed to fetch history' }),
-      } as Response)
-    );
-
-    render(() => (
-      <ChoreHistoryModal person={mockPerson} choreData={mockChoreData} closeModal={closeModal} />
-    ));
-
-    // Wait for async operations
-    await vi.advanceTimersByTimeAsync(100);
-
-    expect(screen.getByText('Error: Failed to fetch history')).toBeInTheDocument();
-  });
-
   it('renders history table when data loads successfully', async () => {
     const closeModal = vi.fn();
-    globalThis.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve(mockHistory),
-      } as Response)
-    );
+    const loadDataMock = vi.fn().mockResolvedValue(undefined);
 
     const { container } = render(() => (
-      <ChoreHistoryModal person={mockPerson} choreData={mockChoreData} closeModal={closeModal} />
+      <MockAdminProvider
+        choreDataOverride={{
+          chores: [
+            { ...mockPersonalChore, id: 'c1', name: 'Clean room', assignedTo: 'p1' },
+            { ...mockPersonalChore, id: 'c2', name: 'Do dishes', assignedTo: 'p1' },
+          ],
+          dailyCompletions: mockHistory,
+        }}
+        loadDataMock={loadDataMock}
+      >
+        <ChoreHistoryModal person={mockPerson} closeModal={closeModal} />
+      </MockAdminProvider>
     ));
 
     // Wait for async operations
@@ -139,15 +114,21 @@ describe('ChoreHistoryModal', () => {
 
   it('shows completion badges for completed chores', async () => {
     const closeModal = vi.fn();
-    globalThis.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve(mockHistory),
-      } as Response)
-    );
+    const loadDataMock = vi.fn().mockResolvedValue(undefined);
 
     const { container } = render(() => (
-      <ChoreHistoryModal person={mockPerson} choreData={mockChoreData} closeModal={closeModal} />
+      <MockAdminProvider
+        choreDataOverride={{
+          chores: [
+            { ...mockPersonalChore, id: 'c1', name: 'Clean room', assignedTo: 'p1' },
+            { ...mockPersonalChore, id: 'c2', name: 'Do dishes', assignedTo: 'p1' },
+          ],
+          dailyCompletions: mockHistory,
+        }}
+        loadDataMock={loadDataMock}
+      >
+        <ChoreHistoryModal person={mockPerson} closeModal={closeModal} />
+      </MockAdminProvider>
     ));
 
     // Wait for async operations
@@ -161,15 +142,21 @@ describe('ChoreHistoryModal', () => {
 
   it('shows on-time completion in green', async () => {
     const closeModal = vi.fn();
-    globalThis.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve(mockHistory),
-      } as Response)
-    );
+    const loadDataMock = vi.fn().mockResolvedValue(undefined);
 
     const { container } = render(() => (
-      <ChoreHistoryModal person={mockPerson} choreData={mockChoreData} closeModal={closeModal} />
+      <MockAdminProvider
+        choreDataOverride={{
+          chores: [
+            { ...mockPersonalChore, id: 'c1', name: 'Clean room', assignedTo: 'p1' },
+            { ...mockPersonalChore, id: 'c2', name: 'Do dishes', assignedTo: 'p1' },
+          ],
+          dailyCompletions: mockHistory,
+        }}
+        loadDataMock={loadDataMock}
+      >
+        <ChoreHistoryModal person={mockPerson} closeModal={closeModal} />
+      </MockAdminProvider>
     ));
 
     // Wait for async operations
@@ -181,15 +168,21 @@ describe('ChoreHistoryModal', () => {
 
   it('shows late completion in yellow', async () => {
     const closeModal = vi.fn();
-    globalThis.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve(mockHistory),
-      } as Response)
-    );
+    const loadDataMock = vi.fn().mockResolvedValue(undefined);
 
     const { container } = render(() => (
-      <ChoreHistoryModal person={mockPerson} choreData={mockChoreData} closeModal={closeModal} />
+      <MockAdminProvider
+        choreDataOverride={{
+          chores: [
+            { ...mockPersonalChore, id: 'c1', name: 'Clean room', assignedTo: 'p1' },
+            { ...mockPersonalChore, id: 'c2', name: 'Do dishes', assignedTo: 'p1' },
+          ],
+          dailyCompletions: mockHistory,
+        }}
+        loadDataMock={loadDataMock}
+      >
+        <ChoreHistoryModal person={mockPerson} closeModal={closeModal} />
+      </MockAdminProvider>
     ));
 
     // Wait for async operations
@@ -201,15 +194,21 @@ describe('ChoreHistoryModal', () => {
 
   it('calls closeModal when close button is clicked', async () => {
     const closeModal = vi.fn();
-    globalThis.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve(mockHistory),
-      } as Response)
-    );
+    const loadDataMock = vi.fn().mockResolvedValue(undefined);
 
     const { container } = render(() => (
-      <ChoreHistoryModal person={mockPerson} choreData={mockChoreData} closeModal={closeModal} />
+      <MockAdminProvider
+        choreDataOverride={{
+          chores: [
+            { ...mockPersonalChore, id: 'c1', name: 'Clean room' },
+            { ...mockPersonalChore, id: 'c2', name: 'Do dishes' },
+          ],
+          dailyCompletions: mockHistory,
+        }}
+        loadDataMock={loadDataMock}
+      >
+        <ChoreHistoryModal person={mockPerson} closeModal={closeModal} />
+      </MockAdminProvider>
     ));
 
     // Wait for async operations
@@ -223,58 +222,47 @@ describe('ChoreHistoryModal', () => {
     expect(closeModal).toHaveBeenCalledTimes(1);
   });
 
-  it('filters history by person ID', async () => {
+  it('calls loadData when modal opens', async () => {
     const closeModal = vi.fn();
-    globalThis.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve(mockHistory),
-      } as Response)
-    );
+    const loadDataMock = vi.fn().mockResolvedValue(undefined);
 
     render(() => (
-      <ChoreHistoryModal person={mockPerson} choreData={mockChoreData} closeModal={closeModal} />
+      <MockAdminProvider
+        choreDataOverride={{
+          chores: [
+            { ...mockPersonalChore, id: 'c1', name: 'Clean room' },
+            { ...mockPersonalChore, id: 'c2', name: 'Do dishes' },
+          ],
+        }}
+        loadDataMock={loadDataMock}
+      >
+        <ChoreHistoryModal person={mockPerson} closeModal={closeModal} />
+      </MockAdminProvider>
     ));
 
     // Wait for async operations
     await vi.advanceTimersByTimeAsync(100);
 
-    expect(globalThis.fetch).toHaveBeenCalledWith('/MMM-FamilyChores/history?personId=p1');
+    expect(loadDataMock).toHaveBeenCalledTimes(1);
   });
 
   it('shows only personal chores for the person', async () => {
     const closeModal = vi.fn();
-    const choreDataWithOtherPerson: FamilyChoresData = {
-      ...mockChoreData,
-      chores: [
-        ...mockChoreData.chores,
-        {
-          id: 'c3',
-          name: 'Other chore',
-          type: ChoreType.PERSONAL,
-          assignedTo: 'p2', // Different person
-          skipDays: [],
-          skipDayVisibility: SkipDayVisibility.HIDE,
-          deadline: '18:00',
-          caughtUp: true,
-          completedToday: false,
-        },
-      ],
-    };
-
-    globalThis.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve(mockHistory),
-      } as Response)
-    );
+    const loadDataMock = vi.fn().mockResolvedValue(undefined);
 
     render(() => (
-      <ChoreHistoryModal
-        person={mockPerson}
-        choreData={choreDataWithOtherPerson}
-        closeModal={closeModal}
-      />
+      <MockAdminProvider
+        choreDataOverride={{
+          chores: [
+            { ...mockPersonalChore, id: 'c1', name: 'Clean room', assignedTo: 'p1' },
+            { ...mockPersonalChore, id: 'c2', name: 'Do dishes', assignedTo: 'p1' },
+            { ...mockPersonalChore, id: 'c3', name: 'Other chore', assignedTo: 'p2' },
+          ],
+        }}
+        loadDataMock={loadDataMock}
+      >
+        <ChoreHistoryModal person={mockPerson} closeModal={closeModal} />
+      </MockAdminProvider>
     ));
 
     // Wait for async operations

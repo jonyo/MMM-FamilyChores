@@ -67,7 +67,6 @@ export interface AdminHandlers {
   getBackup: (req: Request, res: Response) => void;
   postRestore: (req: Request, res: Response) => void;
   postCopyChores: (req: Request, res: Response) => void;
-  getHistory: (req: Request, res: Response) => void;
   putSettings: (req: Request, res: Response) => void;
 }
 
@@ -491,34 +490,6 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         Log.error(`Error copying chores: ${error}`);
         res.status(500).json(apiErr('Failed to copy chores'));
       }
-    },
-
-    getHistory: (req, res) => {
-      const choreData = context.getChoreData();
-      if (!choreData) {
-        res.status(500).json(apiErr('No data available'));
-        return;
-      }
-
-      if (!choreData.settings?.historyEnabled) {
-        res.json([]);
-        return;
-      }
-
-      const personId = (req.query as { personId?: string })?.personId;
-      const dailyCompletions = choreData.dailyCompletions || [];
-
-      // Filter by personId if provided
-      const filteredCompletions = personId
-        ? dailyCompletions.filter((dc) => dc.personId === personId)
-        : dailyCompletions;
-
-      // Sort by date descending (newest first)
-      const sortedCompletions = [...filteredCompletions].sort((a, b) => {
-        return new Date(b.date).getTime() - new Date(a.date).getTime();
-      });
-
-      res.json(sortedCompletions);
     },
 
     putSettings: (req, res) => {

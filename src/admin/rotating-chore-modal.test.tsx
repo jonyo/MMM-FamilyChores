@@ -2,9 +2,9 @@ import { render } from '@solidjs/testing-library';
 import { describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import { createChore, updateChore } from '../api';
-import type { FamilyChoresData } from '../types/chore-types';
 import { DayOfWeek, SkipDayVisibility } from '../types/chore-types';
 import { RotatingChoreModal } from './rotating-chore-modal';
+import { MockAdminProvider } from './test-utils';
 
 // Mock API functions
 vi.mock('../api', () => ({
@@ -13,31 +13,14 @@ vi.mock('../api', () => ({
 }));
 
 describe('RotatingChoreModal', () => {
-  const mockChoreData: FamilyChoresData = {
-    people: [
-      { id: 'p1', name: 'Alice', color: '#FF6B6B' },
-      { id: 'p2', name: 'Bob', color: '#4ECDC4' },
-      { id: 'p3', name: 'Charlie', color: '#45B7D1' },
-    ],
-    chores: [],
-    dailyCompletions: [],
-    settings: {
-      dailyResetTime: '03:00',
-      historyEnabled: true,
-    },
-  };
-
   describe('Create Chore Mode', () => {
     it('should render create form when no initial chore', () => {
       const closeModal = vi.fn();
 
       const { container } = render(() => (
-        <RotatingChoreModal
-          initialChore={undefined}
-          choreData={mockChoreData}
-          pinRequired={false}
-          closeModal={closeModal}
-        />
+        <MockAdminProvider>
+          <RotatingChoreModal initialChore={undefined} closeModal={closeModal} />
+        </MockAdminProvider>
       ));
 
       expect(container.querySelector('h3')?.textContent).toBe('Add Rotating Chore');
@@ -50,12 +33,9 @@ describe('RotatingChoreModal', () => {
       const closeModal = vi.fn();
 
       render(() => (
-        <RotatingChoreModal
-          initialChore={undefined}
-          choreData={mockChoreData}
-          pinRequired={false}
-          closeModal={closeModal}
-        />
+        <MockAdminProvider>
+          <RotatingChoreModal initialChore={undefined} closeModal={closeModal} />
+        </MockAdminProvider>
       ));
 
       const cancelButton = page.getByRole('button', { name: 'Cancel' });
@@ -70,12 +50,9 @@ describe('RotatingChoreModal', () => {
       const closeModal = vi.fn();
 
       render(() => (
-        <RotatingChoreModal
-          initialChore={undefined}
-          choreData={mockChoreData}
-          pinRequired={false}
-          closeModal={closeModal}
-        />
+        <MockAdminProvider>
+          <RotatingChoreModal initialChore={undefined} closeModal={closeModal} />
+        </MockAdminProvider>
       ));
 
       // Fill in the chore name
@@ -107,12 +84,9 @@ describe('RotatingChoreModal', () => {
       } as import('../types/chore-types').RotatingChore;
 
       const { container } = render(() => (
-        <RotatingChoreModal
-          initialChore={initialChore}
-          choreData={mockChoreData}
-          pinRequired={false}
-          closeModal={closeModal}
-        />
+        <MockAdminProvider>
+          <RotatingChoreModal initialChore={initialChore} closeModal={closeModal} />
+        </MockAdminProvider>
       ));
 
       expect(container.querySelector('h3')?.textContent).toBe('Edit Rotating Chore');
@@ -144,12 +118,9 @@ describe('RotatingChoreModal', () => {
       } as import('../types/chore-types').RotatingChore;
 
       render(() => (
-        <RotatingChoreModal
-          initialChore={initialChore}
-          choreData={mockChoreData}
-          pinRequired={false}
-          closeModal={closeModal}
-        />
+        <MockAdminProvider>
+          <RotatingChoreModal initialChore={initialChore} closeModal={closeModal} />
+        </MockAdminProvider>
       ));
 
       const saveButton = page.getByRole('button', { name: 'Save' });
@@ -166,12 +137,12 @@ describe('RotatingChoreModal', () => {
       const closeModal = vi.fn();
 
       const { container } = render(() => (
-        <RotatingChoreModal
-          initialChore={undefined}
-          choreData={mockChoreData}
+        <MockAdminProvider
+          choreDataOverride={{ settings: { dailyResetTime: '03:00', historyEnabled: true } }}
           pinRequired={true}
-          closeModal={closeModal}
-        />
+        >
+          <RotatingChoreModal initialChore={undefined} closeModal={closeModal} />
+        </MockAdminProvider>
       ));
 
       expect(container.querySelector('#adminPin')).toBeTruthy();
@@ -181,13 +152,13 @@ describe('RotatingChoreModal', () => {
       const closeModal = vi.fn();
 
       const { container } = render(() => (
-        <RotatingChoreModal
-          initialChore={undefined}
-          choreData={mockChoreData}
+        <MockAdminProvider
+          choreDataOverride={{ settings: { dailyResetTime: '03:00', historyEnabled: true } }}
           pinRequired={true}
-          closeModal={closeModal}
-          cachedPin="5678"
-        />
+          initialCachedPin="1234"
+        >
+          <RotatingChoreModal initialChore={undefined} closeModal={closeModal} />
+        </MockAdminProvider>
       ));
 
       expect(container.querySelector('#adminPin')).toBeFalsy();
@@ -195,17 +166,15 @@ describe('RotatingChoreModal', () => {
 
     it('should use cachedPin in request and not call onPinRemembered', async () => {
       const closeModal = vi.fn();
-      const onPinRemembered = vi.fn();
 
       render(() => (
-        <RotatingChoreModal
-          initialChore={undefined}
-          choreData={mockChoreData}
+        <MockAdminProvider
+          choreDataOverride={{ settings: { dailyResetTime: '03:00', historyEnabled: true } }}
           pinRequired={true}
-          closeModal={closeModal}
-          cachedPin="5678"
-          onPinRemembered={onPinRemembered}
-        />
+          initialCachedPin="1234"
+        >
+          <RotatingChoreModal initialChore={undefined} closeModal={closeModal} />
+        </MockAdminProvider>
       ));
 
       await page.getByLabelText('Chore Name').fill('Test Rotating Chore');
@@ -216,10 +185,9 @@ describe('RotatingChoreModal', () => {
       expect(createChore).toHaveBeenCalledWith(
         expect.objectContaining({
           name: 'Test Rotating Chore',
-          pin: '5678',
+          pin: '1234',
         })
       );
-      expect(onPinRemembered).not.toHaveBeenCalled();
       expect(closeModal).toHaveBeenCalled();
     });
   });

@@ -1,26 +1,24 @@
 import type { Component } from 'solid-js';
 import { createSignal, For, Show } from 'solid-js';
 import { createChore, updateChore } from '../api';
-import type { FamilyChoresData, RotatingChore, SkipDayVisibility } from '../types/chore-types';
+import type { RotatingChore, SkipDayVisibility } from '../types/chore-types';
 import {
   ChoreType,
   DayOfWeek,
   SkipDayVisibility as SkipDayVisibilityEnum,
 } from '../types/chore-types';
 import type { CreateChoreRequest, UpdateChoreRequest } from '../types/request-types';
+import { useAdminContext } from './admin-context';
 import { Button } from './button';
 import { PinField } from './pin-field';
 
 interface RotatingChoreModalProps {
   initialChore?: RotatingChore;
-  choreData: FamilyChoresData;
-  pinRequired: boolean;
   closeModal: () => void;
-  onPinRemembered?: (pin: string) => void;
-  cachedPin?: string;
 }
 
 export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) => {
+  const { choreData, pinRequired, setCachedPin, cachedPin } = useAdminContext();
   const [name, setName] = createSignal(props.initialChore?.name ?? '');
   const [deadline, setDeadline] = createSignal(props.initialChore?.deadline ?? '');
   const [skipDayVisibility, setSkipDayVisibility] = createSignal<SkipDayVisibility>(
@@ -50,7 +48,7 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
   const handleSubmit = async (event: Event) => {
     event.preventDefault();
     try {
-      const pinToUse = props.cachedPin || pin();
+      const pinToUse = cachedPin() || pin();
       if (props.initialChore?.id) {
         const body: UpdateChoreRequest = {
           name: name(),
@@ -59,7 +57,7 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
           deadline: deadline() || undefined,
           skipDays: skipDays(),
           skipDayVisibility: skipDayVisibility(),
-          pin: props.pinRequired ? pinToUse || undefined : undefined,
+          pin: pinRequired() ? pinToUse || undefined : undefined,
         };
         await updateChore(props.initialChore.id, body);
       } else {
@@ -70,13 +68,13 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
           deadline: deadline() || undefined,
           skipDays: skipDays(),
           skipDayVisibility: skipDayVisibility(),
-          pin: props.pinRequired ? pinToUse || undefined : undefined,
+          pin: pinRequired() ? pinToUse || undefined : undefined,
         };
         await createChore(body);
       }
 
-      if (!props.cachedPin && rememberPin() && pin()) {
-        props.onPinRemembered?.(pin());
+      if (!cachedPin() && rememberPin() && pin()) {
+        setCachedPin(pin());
       }
 
       props.closeModal();
@@ -112,7 +110,7 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
               class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3"
               data-testid="checkbox-list"
             >
-              <For each={props.choreData.people}>
+              <For each={choreData().people}>
                 {(person) => (
                   <label class="flex cursor-pointer items-center gap-2 font-normal">
                     <input
@@ -142,7 +140,7 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
             >
               <For each={rotation()}>
                 {(personId, index) => {
-                  const person = props.choreData.people.find((p) => p.id === personId);
+                  const person = choreData().people.find((p) => p.id === personId);
                   return <option value={index()}>{person ? person.name : 'Unknown'}</option>;
                 }}
               </For>
@@ -197,7 +195,7 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
               <option value={SkipDayVisibilityEnum.SHOW_IF_OVERDUE}>Show If Overdue</option>
             </select>
           </div>
-          <Show when={props.pinRequired && !props.cachedPin}>
+          <Show when={pinRequired() && !cachedPin()}>
             <PinField
               pin={pin()}
               onPinChange={setPin}

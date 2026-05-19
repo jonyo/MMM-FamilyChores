@@ -1,13 +1,6 @@
 import type { Component } from 'solid-js';
-import { createSignal, For, Match, onMount, Show, Switch } from 'solid-js';
-import { getHistory } from '../api';
-import type {
-  Chore,
-  DailyCompletion,
-  DayOfWeek,
-  FamilyChoresData,
-  Person,
-} from '../types/chore-types';
+import { createMemo, createSignal, For, Match, onMount, Show, Switch } from 'solid-js';
+import type { Chore, DayOfWeek, Person } from '../types/chore-types';
 import { escapeHtml } from '../utils/browser';
 import {
   getLocalDateString,
@@ -16,12 +9,12 @@ import {
   getLocalDayOfMonth,
   getLocalMonthNameShort,
 } from '../utils/date';
+import { useAdminContext } from './admin-context';
 import { Button } from './button';
 import { Tooltip } from './tooltip';
 
 interface ChoreHistoryModalProps {
   person: Person;
-  choreData: FamilyChoresData;
   closeModal: () => void;
 }
 
@@ -39,19 +32,18 @@ interface DayInfo {
 }
 
 export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
-  const [history, setHistory] = createSignal<DailyCompletion[]>([]);
+  const { choreData, loadData } = useAdminContext();
   const [loading, setLoading] = createSignal(true);
-  const [error, setError] = createSignal<string | null>(null);
 
   onMount(async () => {
-    try {
-      const data = await getHistory(props.person.id);
-      setHistory(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load history');
-    } finally {
-      setLoading(false);
-    }
+    await loadData();
+    setLoading(false);
+  });
+
+  // Derive this person's history from the shared chore data
+  const personHistory = createMemo(() => {
+    const completions = choreData().dailyCompletions ?? [];
+    return completions.filter((dc) => dc.personId === props.person.id);
   });
 
   // Get last 14 completed days with pre-computed display data (excludes today)
@@ -80,7 +72,8 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
 
   // Get chores for a person (personal + rotating where person is in rotation)
   const getPersonChores = () => {
-    return props.choreData.chores.filter((chore) => {
+    const data = choreData();
+    return data.chores.filter((chore) => {
       if (chore.type === 'personal' && chore.assignedTo === props.person.id) {
         return true;
       }
@@ -93,7 +86,7 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
 
   // Get completion details for a chore on a specific date
   const getCompletionDetails = (choreId: string, date: string) => {
-    return history().find((dc) => dc.choreId === choreId && dc.date === date);
+    return personHistory().find((dc) => dc.choreId === choreId && dc.date === date);
   };
 
   // Check if a date is a skip day for a chore
@@ -119,12 +112,7 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
         <Show when={loading()}>
           <div class="py-4 text-center text-slate-500">Loading history...</div>
         </Show>
-        <Show when={error()}>
-          <div class="py-4 text-center text-red-600">
-            Error: {escapeHtml(error() ?? 'Unknown error')}
-          </div>
-        </Show>
-        <Show when={!loading() && !error()}>
+        <Show when={!loading()}>
           <div class="overflow-x-auto">
             <table
               class="w-full border-collapse border border-slate-200"

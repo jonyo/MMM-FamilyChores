@@ -1118,10 +1118,6 @@ To make changes:
     color: var(--color-indigo-700);
   }
 
-  .text-red-600 {
-    color: var(--color-red-600);
-  }
-
   .text-slate-400 {
     color: var(--color-slate-400);
   }
