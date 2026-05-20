@@ -188,6 +188,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  padding: 3px 0;
   background: none;
   border-radius: 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.15);
@@ -219,6 +220,38 @@
   cursor: pointer;
   flex-shrink: 0;
   transform: scale(1.5);
+}
+
+/* Incomplete by Person - Compact Inline Style */
+.MMM-FamilyChores .incomplete-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.MMM-FamilyChores .incomplete-person-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 1rem;
+}
+
+.MMM-FamilyChores .incomplete-person-row:last-child {
+  border-bottom: none;
+}
+
+.MMM-FamilyChores .incomplete-person-row .person-name {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.MMM-FamilyChores .incomplete-person-row .incomplete-count {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #fff;
 }
 
 /* Overdue by Person - Compact Inline Style */

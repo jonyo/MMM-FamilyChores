@@ -286,7 +286,7 @@
 				else if (chore.type === ChoreType.ROTATING && chore.rotation && chore.rotatingIndex !== void 0) personId = chore.rotation[chore.rotatingIndex];
 				if (personId) {
 					if (!choresByPerson.has(personId)) choresByPerson.set(personId, []);
-					choresByPerson.get(personId).push(chore);
+					choresByPerson.get(personId)?.push(chore);
 				}
 			});
 			let html = "";
@@ -303,6 +303,28 @@
 				});
 				if (remainingCount > 0) html += `<div class="overdue-more">...${remainingCount} more</div>`;
 				html += "</div>";
+				html += "</div>";
+			});
+			return html;
+		},
+		renderIncompleteByPerson(incompleteChores, choreData) {
+			const choresByPerson = /* @__PURE__ */ new Map();
+			incompleteChores.forEach((chore) => {
+				let personId;
+				if (chore.type === ChoreType.PERSONAL) personId = chore.assignedTo;
+				else if (chore.type === ChoreType.ROTATING && chore.rotation && chore.rotatingIndex !== void 0) personId = chore.rotation[chore.rotatingIndex];
+				if (personId) {
+					if (!choresByPerson.has(personId)) choresByPerson.set(personId, []);
+					choresByPerson.get(personId)?.push(chore);
+				}
+			});
+			let html = "";
+			choreData.people.forEach((person) => {
+				const count = (choresByPerson.get(person.id) || []).length;
+				const celebrationEmoji = count === 0 ? "🎉" : "";
+				html += `<div class="incomplete-person-row">`;
+				html += `<span class="person-name" style="color: ${person.color}">${escapeHtml(person.name)}</span>`;
+				html += `<span class="incomplete-count">${celebrationEmoji} ${count}</span>`;
 				html += "</div>";
 			});
 			return html;
@@ -332,8 +354,8 @@
 			if (summaryConfig.showIncomplete && incompleteChores.length > 0) {
 				html += "<div class=\"summary-section incomplete-section\">";
 				html += `<h3 class="section-title incomplete-title">${summaryConfig.incompleteTitle}</h3>`;
-				html += "<div class=\"chore-list\">";
-				html += incompleteChores.map((chore) => this.renderChoreItem(chore, choreData)).join("");
+				html += "<div class=\"incomplete-list\">";
+				html += this.renderIncompleteByPerson(incompleteChores, choreData);
 				html += "</div>";
 				html += "</div>";
 			}

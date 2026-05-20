@@ -151,7 +151,13 @@ Show only one person's personal chores plus their current rotating assignments:
 
 #### Summary View
 
-Show all incomplete chores, rotating assignments, and behind schedule chores in organized sections:
+Show all incomplete chores, rotating assignments, and behind schedule chores in organized sections with a compact, space-efficient layout:
+
+- **Incomplete Chores**: Displays each person with their count of incomplete tasks (includes both personal and rotating chores assigned to them). People with 0 incomplete chores show a celebration emoji (🎉).
+- **Today's Rotation**: Shows rotating chores in a compact inline format with chore name, assigned person, and checkbox on each line.
+- **Overdue**: Groups overdue chores by person, showing the person name followed by up to 3 overdue chore names. If a person has more than 4 overdue chores, displays "...X more" after the first 3.
+
+Sections automatically arrange side-by-side when there's horizontal space, or stack vertically depending on what position is used in the config.
 
 ```javascript
 {
