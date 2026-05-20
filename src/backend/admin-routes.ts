@@ -131,6 +131,7 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         context.saveChoreData();
         context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
 
+        Log.info(`Person added: ${newPerson.name} (${newPerson.id})`);
         res.json(newPerson);
       } catch (error) {
         Log.error(`Error adding person: ${error}`);
@@ -174,6 +175,7 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         context.saveChoreData();
         context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
 
+        Log.info(`Person updated: ${updatedPerson.name} (${updatedPerson.id})`);
         res.json(person);
       } catch (error) {
         Log.error(`Error updating person: ${error}`);
@@ -219,6 +221,7 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         context.saveChoreData();
         context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
 
+        Log.info(`Person deleted: ${id}`);
         res.json({ success: true });
       } catch (error) {
         Log.error(`Error deleting person: ${error}`);
@@ -278,6 +281,9 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         context.saveChoreData();
         context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
 
+        Log.info(
+          `Chore added: ${String(newChore.name)} (${String(newChore.id)}, type=${String(newChore.type)})`
+        );
         res.json(newChore);
       } catch (error) {
         Log.error(`Error adding chore: ${error}`);
@@ -346,6 +352,7 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         context.saveChoreData();
         context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
 
+        Log.info(`Chore updated: ${chore.name} (${chore.id})`);
         res.json(chore);
       } catch (error) {
         Log.error(`Error updating chore: ${error}`);
@@ -374,6 +381,7 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         context.saveChoreData();
         context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
 
+        Log.info(`Chore deleted: ${id}`);
         res.json({ success: true });
       } catch (error) {
         Log.error(`Error deleting chore: ${error}`);
@@ -394,6 +402,7 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         res.setHeader('Content-Type', 'application/json');
         res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
         res.send(JSON.stringify(choreData, null, 2));
+        Log.info(`Backup downloaded: ${filename}`);
       } catch (error) {
         Log.error(`Error creating backup: ${error}`);
         res.status(500).json(apiErr('Failed to create backup'));
@@ -478,6 +487,9 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         context.saveChoreData();
         context.sendNotification(SocketNotifications.CHORE_DATA, context.getChoreData());
 
+        Log.info(
+          `Data restored: ${validPeople.length} people, ${validChores.length} chores, ${validCompletions.length} completions`
+        );
         res.json({ success: true, message: 'Data restored successfully' });
       } catch (error) {
         Log.error(`Error restoring data: ${error}`);
@@ -539,6 +551,9 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         context.saveChoreData();
         context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
 
+        Log.info(
+          `Chores copied: ${newChores.length} chore(s) from ${fromPersonId} to ${toPersonId}`
+        );
         res.json(newChores);
       } catch (error) {
         Log.error(`Error copying chores: ${error}`);
@@ -583,6 +598,7 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         context.saveChoreData();
         context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
 
+        Log.info(`Rotations advanced: ${advanced} chore(s)`);
         res.json({ success: true, advanced });
       } catch (error) {
         Log.error(`Error advancing rotations: ${error}`);
@@ -620,6 +636,10 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
 
         context.saveChoreData();
         context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
+
+        Log.info(
+          `Settings updated: historyEnabled=${choreData.settings.historyEnabled}, adminPin=${choreData.settings.adminPin ? 'set' : 'unset'}`
+        );
 
         // Redact PIN in response
         const responseSettings = { ...choreData.settings };
