@@ -218,16 +218,15 @@
         </div>
       </div>
     `;
-			wrapper.addEventListener("change", (event) => {
+			if (this.checkboxChangeListener) wrapper.removeEventListener("change", this.checkboxChangeListener);
+			this.checkboxChangeListener = (event) => {
 				const target = event.target;
 				if (target.type === "checkbox") {
-					const choreItem = target.closest(".chore-item");
-					if (choreItem) {
-						const choreId = choreItem.getAttribute("data-chore-id");
-						if (choreId) this.toggleChoreCompletion(choreId, target.checked);
-					}
+					const choreId = target.getAttribute("data-chore-id");
+					if (choreId) this.toggleChoreCompletion(choreId, target.checked);
 				}
-			});
+			};
+			wrapper.addEventListener("change", this.checkboxChangeListener);
 			return wrapper;
 		},
 		toggleChoreCompletion(choreId, completed) {
@@ -247,10 +246,10 @@
 			const deadlineStatus = getDeadlineStatus(chore.deadline, chore.completedToday, chore.caughtUp);
 			const deadlineClass = deadlineStatus === DeadlineStatus.COMPLETED ? "completed" : deadlineStatus;
 			const checkedAttr = chore.completedToday ? "checked" : "";
-			let html = `<div class="chore-item ${deadlineClass}" data-chore-id="${chore.id}">`;
+			let html = `<div class="chore-item ${deadlineClass}">`;
 			html += `<label class="chore-label" for="chore-${chore.id}">`;
 			html += "<div class=\"chore-checkbox\">";
-			html += `<input type="checkbox" id="chore-${chore.id}" ${checkedAttr} />`;
+			html += `<input type="checkbox" id="chore-${chore.id}" data-chore-id="${chore.id}" ${checkedAttr} />`;
 			html += "</div>";
 			html += "<div class=\"chore-details\">";
 			html += `<div class="chore-name">${escapeHtml(chore.name)}</div>`;
@@ -268,10 +267,10 @@
 			const personName = currentRotationPerson ? currentRotationPerson.name : "Unassigned";
 			const personColor = currentRotationPerson ? currentRotationPerson.color : "#ccc";
 			const checkedAttr = chore.completedToday ? "checked" : "";
-			let html = `<div class="rotating-inline" data-chore-id="${chore.id}">`;
+			let html = `<div class="rotating-inline">`;
 			html += `<span class="chore-name">${escapeHtml(chore.name)}</span>`;
 			html += `<span class="person-name" style="color: ${personColor}">${escapeHtml(personName)}</span>`;
-			html += `<input type="checkbox" class="inline-checkbox" ${checkedAttr} />`;
+			html += `<input type="checkbox" class="inline-checkbox" data-chore-id="${chore.id}" ${checkedAttr} />`;
 			html += "</div>";
 			return html;
 		},
@@ -374,16 +373,15 @@
 			}
 			html += "</div>";
 			wrapper.innerHTML = html;
-			wrapper.addEventListener("change", (event) => {
+			if (this.checkboxChangeListener) wrapper.removeEventListener("change", this.checkboxChangeListener);
+			this.checkboxChangeListener = (event) => {
 				const target = event.target;
 				if (target.type === "checkbox") {
-					const choreItem = target.closest(".chore-item, .rotating-inline");
-					if (choreItem) {
-						const choreId = choreItem.getAttribute("data-chore-id");
-						if (choreId) this.toggleChoreCompletion(choreId, target.checked);
-					}
+					const choreId = target.getAttribute("data-chore-id");
+					if (choreId) this.toggleChoreCompletion(choreId, target.checked);
 				}
-			});
+			};
+			wrapper.addEventListener("change", this.checkboxChangeListener);
 			return wrapper;
 		},
 		socketNotificationReceived(notificationIdentifier, payload) {

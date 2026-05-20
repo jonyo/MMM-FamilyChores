@@ -36,6 +36,9 @@ export interface FamilyChoresModule extends Omit<MagicMirrorModule<Config>, 'get
   // Override getTranslations to match MagicMirror's expected type
   getTranslations?: () => { [key: string]: string };
 
+  // Store event listener to prevent accumulation
+  checkboxChangeListener?: (event: Event) => void;
+
   // Custom methods specific to our module
   loadData: () => void;
   scheduleUpdate: () => void;
