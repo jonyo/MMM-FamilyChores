@@ -226,6 +226,19 @@ src/api/
 └── index.ts       # Barrel exports
 ```
 
+### escapeHtml for User-Entered Text
+
+**ALWAYS call `escapeHtml()` when displaying user-entered text in JSX/HTML.**
+
+This module is for household use, not a high-security context — but `escapeHtml` is still required for correct display, not just safety. If a family member names a chore `<Sunday Chores>`, it must render as literal text, not be interpreted as an HTML tag and disappear or break the layout.
+
+- Import from `src/utils/browser`: `import { escapeHtml } from '../utils/browser';`
+- Apply at the point of display, not at the point of storage
+- Required for: person names, chore names, or any other field the user can type into
+- Not required for: IDs, enum values, system-generated values, or static strings
+- Examples: `{escapeHtml(person.name)}`, `{escapeHtml(chore.name)}`
+- This applies to all admin components, frontend templates, and anywhere user data is rendered
+
 ### Admin Panel Styling
 
 **Tailwind CSS v4 with CSS-First Configuration:**

@@ -449,6 +449,7 @@ function createAdminHandlers(context) {
 				choreData.people.push(newPerson);
 				context.saveChoreData();
 				context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
+				logger.info(`Person added: ${newPerson.name} (${newPerson.id})`);
 				res.json(newPerson);
 			} catch (error) {
 				logger.error(`Error adding person: ${error}`);
@@ -483,6 +484,7 @@ function createAdminHandlers(context) {
 				Object.assign(person, updatedPerson);
 				context.saveChoreData();
 				context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
+				logger.info(`Person updated: ${updatedPerson.name} (${updatedPerson.id})`);
 				res.json(person);
 			} catch (error) {
 				logger.error(`Error updating person: ${error}`);
@@ -515,6 +517,7 @@ function createAdminHandlers(context) {
 				});
 				context.saveChoreData();
 				context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
+				logger.info(`Person deleted: ${id}`);
 				res.json({ success: true });
 			} catch (error) {
 				logger.error(`Error deleting person: ${error}`);
@@ -553,6 +556,7 @@ function createAdminHandlers(context) {
 				choreData.chores.push(newChore);
 				context.saveChoreData();
 				context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
+				logger.info(`Chore added: ${String(newChore.name)} (${String(newChore.id)}, type=${String(newChore.type)})`);
 				res.json(newChore);
 			} catch (error) {
 				logger.error(`Error adding chore: ${error}`);
@@ -598,6 +602,7 @@ function createAdminHandlers(context) {
 				Object.assign(chore, updatedChore);
 				context.saveChoreData();
 				context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
+				logger.info(`Chore updated: ${chore.name} (${chore.id})`);
 				res.json(chore);
 			} catch (error) {
 				logger.error(`Error updating chore: ${error}`);
@@ -621,6 +626,7 @@ function createAdminHandlers(context) {
 				choreData.chores.splice(choreIndex, 1);
 				context.saveChoreData();
 				context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
+				logger.info(`Chore deleted: ${id}`);
 				res.json({ success: true });
 			} catch (error) {
 				logger.error(`Error deleting chore: ${error}`);
@@ -639,6 +645,7 @@ function createAdminHandlers(context) {
 				res.setHeader("Content-Type", "application/json");
 				res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
 				res.send(JSON.stringify(choreData, null, 2));
+				logger.info(`Backup downloaded: ${filename}`);
 			} catch (error) {
 				logger.error(`Error creating backup: ${error}`);
 				res.status(500).json(apiErr("Failed to create backup"));
@@ -704,6 +711,7 @@ function createAdminHandlers(context) {
 				});
 				context.saveChoreData();
 				context.sendNotification(SocketNotifications.CHORE_DATA, context.getChoreData());
+				logger.info(`Data restored: ${validPeople.length} people, ${validChores.length} chores, ${validCompletions.length} completions`);
 				res.json({
 					success: true,
 					message: "Data restored successfully"
@@ -753,10 +761,46 @@ function createAdminHandlers(context) {
 				}
 				context.saveChoreData();
 				context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
+				logger.info(`Chores copied: ${newChores.length} chore(s) from ${fromPersonId} to ${toPersonId}`);
 				res.json(newChores);
 			} catch (error) {
 				logger.error(`Error copying chores: ${error}`);
 				res.status(500).json(apiErr("Failed to copy chores"));
+			}
+		},
+		postAdvanceRotations: (req, res) => {
+			if (!validatePin(req, res, context)) return;
+			try {
+				const choreData = context.getChoreData();
+				if (!choreData) {
+					res.status(500).json(apiErr("No data available"));
+					return;
+				}
+				if (getLocalDateString() > choreData.lastResetDate) {
+					res.status(503).json(apiErr("Daily midnight reset is in progress. Please try again in a moment. If this persists you may need to restart MagicMirror."));
+					return;
+				}
+				const rotatingChores = choreData.chores.filter((c) => c.type === ChoreType.ROTATING);
+				let advanced = 0;
+				for (const chore of rotatingChores) {
+					if (chore.type !== ChoreType.ROTATING) continue;
+					const rotation = chore.rotation ?? [];
+					if (rotation.length < 2) continue;
+					chore.rotatingIndex = ((chore.rotatingIndex ?? 0) + 1) % rotation.length;
+					chore.completedToday = false;
+					chore.caughtUp = true;
+					advanced++;
+				}
+				context.saveChoreData();
+				context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
+				logger.info(`Rotations advanced: ${advanced} chore(s)`);
+				res.json({
+					success: true,
+					advanced
+				});
+			} catch (error) {
+				logger.error(`Error advancing rotations: ${error}`);
+				res.status(500).json(apiErr("Failed to advance rotations"));
 			}
 		},
 		putSettings: (req, res) => {
@@ -773,6 +817,7 @@ function createAdminHandlers(context) {
 				if (adminPin !== void 0) choreData.settings.adminPin = adminPin || null;
 				context.saveChoreData();
 				context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
+				logger.info(`Settings updated: historyEnabled=${choreData.settings.historyEnabled}, adminPin=${choreData.settings.adminPin ? "set" : "unset"}`);
 				const responseSettings = { ...choreData.settings };
 				if (responseSettings.adminPin) responseSettings.adminPin = true;
 				res.json(responseSettings);
@@ -1121,6 +1166,7 @@ var node_helper_default = node_helper.create({
 		this.expressApp?.post("/MMM-FamilyChores/restore", handlers.postRestore);
 		this.expressApp?.post("/MMM-FamilyChores/copy-chores", handlers.postCopyChores);
 		this.expressApp?.put("/MMM-FamilyChores/settings", handlers.putSettings);
+		this.expressApp?.post("/MMM-FamilyChores/advance-rotations", handlers.postAdvanceRotations);
 		logger.info("Admin routes configured for MMM-FamilyChores");
 	}
 });

@@ -11,3 +11,12 @@
 export interface ApiErrorBody {
   error: string;
 }
+
+/**
+ * Success response body for POST /advance-rotations
+ */
+export interface AdvanceRotationsResponse {
+  success: true;
+  /** Number of chores that were advanced */
+  advanced: number;
+}

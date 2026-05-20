@@ -771,4 +771,88 @@ describe('createAdminHandlers', () => {
       expect(res.statusCode).toBe(500);
     });
   });
+
+  describe('postAdvanceRotations', () => {
+    it('advances all rotating chores with 2+ people and returns count', () => {
+      const { context, mockSave, mockNotify, getData } = makeContext();
+      const { postAdvanceRotations } = createAdminHandlers(context);
+      const res = createMockRes();
+      postAdvanceRotations({ body: {}, params: {} }, res);
+      expect(res.statusCode).toBe(200);
+      const body = res.jsonBody as { success: boolean; advanced: number };
+      expect(body.success).toBe(true);
+      expect(body.advanced).toBe(1);
+      // rotatingIndex should have advanced from 0 to 1
+      const rotating = getData()?.chores.find((c) => c.id === cid2) as RotatingChore | undefined;
+      expect(rotating?.rotatingIndex).toBe(1);
+      expect(rotating?.completedToday).toBe(false);
+      expect(rotating?.caughtUp).toBe(true);
+      expect(mockSave).toHaveBeenCalled();
+      expect(mockNotify).toHaveBeenCalledWith(SocketNotifications.CHORE_DATA, expect.anything());
+    });
+
+    it('wraps rotation index around correctly', () => {
+      const data = makeBaseData();
+      const rotating = data.chores.find((c) => c.id === cid2) as RotatingChore;
+      rotating.rotatingIndex = 1; // already at last person
+      const { context, getData } = makeContext(data);
+      const { postAdvanceRotations } = createAdminHandlers(context);
+      const res = createMockRes();
+      postAdvanceRotations({ body: {}, params: {} }, res);
+      expect(res.statusCode).toBe(200);
+      const advanced = getData()?.chores.find((c) => c.id === cid2) as RotatingChore | undefined;
+      expect(advanced?.rotatingIndex).toBe(0);
+    });
+
+    it('skips rotating chores with only 1 person in rotation', () => {
+      const data = makeBaseData();
+      const rotating = data.chores.find((c) => c.id === cid2) as RotatingChore;
+      rotating.rotation = [pid1];
+      rotating.rotatingIndex = 0;
+      const { context, getData } = makeContext(data);
+      const { postAdvanceRotations } = createAdminHandlers(context);
+      const res = createMockRes();
+      postAdvanceRotations({ body: {}, params: {} }, res);
+      expect(res.statusCode).toBe(200);
+      const body = res.jsonBody as { advanced: number };
+      expect(body.advanced).toBe(0);
+      const unchanged = getData()?.chores.find((c) => c.id === cid2) as RotatingChore | undefined;
+      expect(unchanged?.rotatingIndex).toBe(0);
+    });
+
+    it('returns 503 when daily reset is pending', () => {
+      const data = makeBaseData();
+      // Set lastResetDate to yesterday so today > lastResetDate
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      data.lastResetDate = yesterday.toISOString().split('T')[0];
+      const { context, mockSave } = makeContext(data);
+      const { postAdvanceRotations } = createAdminHandlers(context);
+      const res = createMockRes();
+      postAdvanceRotations({ body: {}, params: {} }, res);
+      expect(res.statusCode).toBe(503);
+      expect(res.jsonBody).toMatchObject({ error: expect.any(String) });
+      expect(mockSave).not.toHaveBeenCalled();
+    });
+
+    it('returns 500 when data is null', () => {
+      const { context, mockSave } = makeContext(null);
+      const { postAdvanceRotations } = createAdminHandlers(context);
+      const res = createMockRes();
+      postAdvanceRotations({ body: {}, params: {} }, res);
+      expect(res.statusCode).toBe(500);
+      expect(mockSave).not.toHaveBeenCalled();
+    });
+
+    it('returns 403 with wrong PIN', () => {
+      const data = makeBaseData();
+      data.settings.adminPin = 'secret';
+      const { context, mockSave } = makeContext(data);
+      const { postAdvanceRotations } = createAdminHandlers(context);
+      const res = createMockRes();
+      postAdvanceRotations({ body: { pin: 'wrong' }, params: {} }, res);
+      expect(res.statusCode).toBe(403);
+      expect(mockSave).not.toHaveBeenCalled();
+    });
+  });
 });
