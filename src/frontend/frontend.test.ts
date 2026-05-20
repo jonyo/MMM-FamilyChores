@@ -1530,11 +1530,6 @@ describe('Frontend Tests', () => {
       // Should not error, just log debug
     });
 
-    it('should handle PIN_ERROR notification', () => {
-      module.socketNotificationReceived('PIN_ERROR', { message: 'Invalid PIN' });
-      // Should not error, just log warning
-    });
-
     it('should handle unknown notification', () => {
       module.socketNotificationReceived('UNKNOWN_NOTIFICATION', {});
       // Should not error, just log warning

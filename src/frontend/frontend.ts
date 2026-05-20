@@ -504,9 +504,6 @@ const familyChoresModule: FamilyChoresModule = {
         // Refresh data to get updated state
         this.loadData();
         break;
-      case SocketNotifications.PIN_ERROR:
-        Log.warn('PIN error received');
-        break;
       default:
         Log.warn(`${this.name} received unknown socket notification: '${notificationIdentifier}'`);
     }

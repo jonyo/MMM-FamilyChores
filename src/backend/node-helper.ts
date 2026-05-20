@@ -12,14 +12,9 @@ import type {
 } from '../types/chore-types';
 import type { Config } from '../types/config';
 import type {
-  CaughtUpResetPayload,
-  CaughtUpResetResultPayload,
-  ChoreReassignPayload,
-  ChoreReassignResultPayload,
   ChoreTogglePayload,
   ChoreUpdateResultPayload,
   NodeHelperIncomingSocketPayload,
-  PinErrorPayload,
 } from '../types/socket-payload-types';
 import { getLocalDateString, getLocalDayName, getLocalTimeString } from '../utils/date';
 import { generateUUID } from '../utils/uuid';
@@ -44,8 +39,6 @@ interface FamilyChoresNodeHelper extends Partial<NodeHelper.NodeHelperModule> {
   checkAndPerformDailyReset(): void;
   transitionChoresForNewDay(): void;
   handleChoreToggle(payload: ChoreTogglePayload): void;
-  handleChoreReassign(payload: ChoreReassignPayload): void;
-  handleCaughtUpReset(payload: CaughtUpResetPayload): void;
   logIncompleteChore(chore: Chore, date: string): void;
   trackDailyCompletion(chore: Chore, completed: boolean): void;
 }
@@ -79,12 +72,6 @@ const nodeHelper: FamilyChoresNodeHelper = {
         break;
       case SocketNotifications.CHORE_TOGGLE:
         this.handleChoreToggle(payload as ChoreTogglePayload);
-        break;
-      case SocketNotifications.CHORE_REASSIGN:
-        this.handleChoreReassign(payload as ChoreReassignPayload);
-        break;
-      case SocketNotifications.CAUGHTUP_RESET:
-        this.handleCaughtUpReset(payload as CaughtUpResetPayload);
         break;
       default:
         Log.warn(`Node helper received unknown notification: '${notificationIdentifier}'`);
@@ -413,94 +400,6 @@ const nodeHelper: FamilyChoresNodeHelper = {
         );
       }
     }
-  },
-
-  // Handle chore reassignment
-  handleChoreReassign(payload: ChoreReassignPayload): void {
-    if (!this.choreData) return;
-
-    if (this.config?.adminPin && payload.pin !== this.config.adminPin) {
-      const pinError: PinErrorPayload = { message: 'Invalid PIN' };
-      this.sendSocketNotification?.(SocketNotifications.PIN_ERROR, pinError);
-      return;
-    }
-
-    const chore = this.choreData.chores.find((c: Chore) => c.id === payload.choreId);
-    if (!chore) {
-      Log.error(`Chore not found: ${payload.choreId}`);
-      return;
-    }
-
-    // Early exit: check if assignment is already as requested
-    let currentAssignment: string | undefined;
-    if (chore.type === 'personal') {
-      currentAssignment = chore.assignedTo;
-    } else if (chore.type === 'rotating' && chore.rotation) {
-      const currentIndex = chore.rotatingIndex ?? 0;
-      currentAssignment = chore.rotation[currentIndex];
-    }
-
-    if (currentAssignment === payload.newPersonId) {
-      Log.debug(
-        `Chore ${payload.choreId} is already assigned to ${payload.newPersonId}, skipping reassignment`
-      );
-      return;
-    }
-
-    if (chore.type === 'personal') {
-      chore.assignedTo = payload.newPersonId;
-    } else if (chore.type === 'rotating' && chore.rotation) {
-      const currentIndex = chore.rotation.indexOf(payload.newPersonId);
-      if (currentIndex !== -1) {
-        chore.rotatingIndex = currentIndex;
-      }
-    }
-
-    this.saveChoreData();
-    const reassignResult: ChoreReassignResultPayload = {
-      choreId: payload.choreId,
-      newPersonId: payload.newPersonId,
-    };
-    this.sendSocketNotification?.(SocketNotifications.CHORE_REASSIGN_RESULT, reassignResult);
-    this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
-  },
-
-  // Handle caughtUp reset for a person (admin only - PIN protected)
-  handleCaughtUpReset(payload: CaughtUpResetPayload): void {
-    if (!this.choreData) return;
-
-    if (this.config?.adminPin && payload.pin !== this.config.adminPin) {
-      const pinError: PinErrorPayload = { message: 'Invalid PIN' };
-      this.sendSocketNotification?.(SocketNotifications.PIN_ERROR, pinError);
-      return;
-    }
-
-    // Find all chores assigned to this person and reset their caughtUp status
-    let resetCount = 0;
-    for (const chore of this.choreData.chores) {
-      let isAssignedToPerson = false;
-      if (chore.type === 'personal') {
-        isAssignedToPerson = chore.assignedTo === payload.personId;
-      } else if (chore.type === 'rotating' && chore.rotation) {
-        const currentIndex = chore.rotatingIndex ?? 0;
-        isAssignedToPerson = chore.rotation[currentIndex] === payload.personId;
-      }
-
-      if (isAssignedToPerson) {
-        chore.caughtUp = true;
-        resetCount++;
-      }
-    }
-
-    Log.info(`Reset caughtUp status for person ${payload.personId}, affected ${resetCount} chores`);
-
-    this.saveChoreData();
-    const caughtUpResult: CaughtUpResetResultPayload = {
-      personId: payload.personId,
-      resetCount,
-    };
-    this.sendSocketNotification?.(SocketNotifications.CAUGHTUP_RESET_RESULT, caughtUpResult);
-    this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
   },
 
   /**

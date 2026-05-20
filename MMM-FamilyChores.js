@@ -6,14 +6,9 @@
 	var SocketNotifications = {
 		CONFIG_REQUEST: "CONFIG_REQUEST",
 		CHORE_TOGGLE: "CHORE_TOGGLE",
-		CHORE_REASSIGN: "CHORE_REASSIGN",
-		CAUGHTUP_RESET: "CAUGHTUP_RESET",
 		CONFIG_RESPONSE: "CONFIG_RESPONSE",
 		CHORE_DATA: "CHORE_DATA",
-		CHORE_UPDATE_RESULT: "CHORE_UPDATE_RESULT",
-		CHORE_REASSIGN_RESULT: "CHORE_REASSIGN_RESULT",
-		CAUGHTUP_RESET_RESULT: "CAUGHTUP_RESET_RESULT",
-		PIN_ERROR: "PIN_ERROR"
+		CHORE_UPDATE_RESULT: "CHORE_UPDATE_RESULT"
 	};
 	//#endregion
 	//#region src/types/chore-types.ts
@@ -397,9 +392,6 @@
 				case SocketNotifications.CHORE_UPDATE_RESULT:
 					Log.debug("Received chore update result");
 					this.loadData();
-					break;
-				case SocketNotifications.PIN_ERROR:
-					Log.warn("PIN error received");
 					break;
 				default: Log.warn(`${this.name} received unknown socket notification: '${notificationIdentifier}'`);
 			}

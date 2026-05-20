@@ -23,59 +23,15 @@ export interface ChoreTogglePayload {
   completed: boolean;
 }
 
-export interface ChoreReassignPayload {
-  /**
-   * ID of the chore to reassign
-   */
-  choreId: UUID;
-  /**
-   * ID of the person to assign the chore to
-   */
-  newPersonId: UUID;
-  /**
-   * Optional PIN for admin actions
-   */
-  pin?: string;
-}
-
-export interface CaughtUpResetPayload {
-  /**
-   * ID of the person to reset caughtUp status for
-   */
-  personId: UUID;
-  /**
-   * Optional PIN for admin actions
-   */
-  pin?: string;
-}
-
 /**
  * Union of payloads the node helper accepts on `socketNotificationReceived`
  * (excluding unknown notifications).
  */
-export type NodeHelperIncomingSocketPayload =
-  | Config
-  | ChoreTogglePayload
-  | ChoreReassignPayload
-  | CaughtUpResetPayload;
+export type NodeHelperIncomingSocketPayload = Config | ChoreTogglePayload;
 
 // --- node_helper → frontend ---
 
 export interface ChoreUpdateResultPayload {
   choreId: UUID;
   completed: boolean;
-}
-
-export interface ChoreReassignResultPayload {
-  choreId: UUID;
-  newPersonId: UUID;
-}
-
-export interface CaughtUpResetResultPayload {
-  personId: UUID;
-  resetCount: number;
-}
-
-export interface PinErrorPayload {
-  message: string;
 }
