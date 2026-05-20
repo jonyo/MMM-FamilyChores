@@ -106,9 +106,17 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
         class="max-h-[90vh] w-[90%] max-w-[95vw] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"
         data-testid="modal-content"
       >
-        <h3 class="mb-5 text-2xl text-indigo-600">
-          {escapeHtml(props.person.name)}'s Chore History
-        </h3>
+        <div class="mb-5 flex items-center justify-between">
+          <h3 class="text-2xl text-indigo-600">{escapeHtml(props.person.name)}'s Chore History</h3>
+          <button
+            type="button"
+            class="ml-4 text-2xl leading-none text-slate-400 hover:text-slate-600"
+            aria-label="Close"
+            onClick={() => props.closeModal()}
+          >
+            ×
+          </button>
+        </div>
         <Show when={!loading() && !choreData().settings?.historyEnabled}>
           <div class="mb-5 rounded-md border border-amber-200 bg-amber-50 p-4">
             <div class="flex">

@@ -24,7 +24,17 @@ export const PinPromptModal: Component<PinPromptModalProps> = (props) => {
   return (
     <div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50">
       <div class="w-[90%] max-w-[400px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200">
-        <h3 class="mb-2 text-xl text-indigo-600">{props.title}</h3>
+        <div class="mb-2 flex items-center justify-between">
+          <h3 class="text-xl text-indigo-600">{props.title}</h3>
+          <button
+            type="button"
+            class="ml-4 text-2xl leading-none text-slate-400 hover:text-slate-600"
+            aria-label="Close"
+            onClick={() => props.onCancel()}
+          >
+            ×
+          </button>
+        </div>
         <p class="mb-5 text-sm text-slate-600">{props.message}</p>
         <form onSubmit={handleSubmit}>
           <div class="mb-5">
