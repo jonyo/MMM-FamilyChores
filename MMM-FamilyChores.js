@@ -278,6 +278,35 @@
 			html += "</div>";
 			return html;
 		},
+		renderOverdueByPerson(overdueChores, choreData) {
+			const choresByPerson = /* @__PURE__ */ new Map();
+			overdueChores.forEach((chore) => {
+				let personId;
+				if (chore.type === ChoreType.PERSONAL) personId = chore.assignedTo;
+				else if (chore.type === ChoreType.ROTATING && chore.rotation && chore.rotatingIndex !== void 0) personId = chore.rotation[chore.rotatingIndex];
+				if (personId) {
+					if (!choresByPerson.has(personId)) choresByPerson.set(personId, []);
+					choresByPerson.get(personId).push(chore);
+				}
+			});
+			let html = "";
+			choresByPerson.forEach((chores, personId) => {
+				const person = choreData.people.find((p) => p.id === personId);
+				if (!person) return;
+				const displayChores = chores.length <= 4 ? chores : chores.slice(0, 3);
+				const remainingCount = chores.length <= 4 ? 0 : chores.length - 3;
+				html += `<div class="overdue-person-group">`;
+				html += `<div class="overdue-person-name" style="color: ${person.color}">${escapeHtml(person.name)}</div>`;
+				html += "<div class=\"overdue-chores-list\">";
+				displayChores.forEach((chore) => {
+					html += `<div class="overdue-chore-item" data-chore-id="${chore.id}">${escapeHtml(chore.name)}</div>`;
+				});
+				if (remainingCount > 0) html += `<div class="overdue-more">...${remainingCount} more</div>`;
+				html += "</div>";
+				html += "</div>";
+			});
+			return html;
+		},
 		renderSummaryView(wrapper) {
 			if (!this.choreData) {
 				wrapper.innerHTML = "<div class=\"module-content loading\">Loading...</div>";
@@ -319,8 +348,8 @@
 			if (summaryConfig.showOverdue && overdueChores.length > 0) {
 				html += "<div class=\"summary-section overdue-section\">";
 				html += `<h3 class="section-title overdue-title">${summaryConfig.overdueTitle}</h3>`;
-				html += "<div class=\"chore-list\">";
-				html += overdueChores.map((chore) => this.renderChoreItem(chore, choreData)).join("");
+				html += "<div class=\"overdue-list\">";
+				html += this.renderOverdueByPerson(overdueChores, choreData);
 				html += "</div>";
 				html += "</div>";
 			}
