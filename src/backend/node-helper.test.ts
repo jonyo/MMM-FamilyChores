@@ -4,8 +4,6 @@ import type { Chore, FamilyChoresData, PersonalChore, RotatingChore } from '../t
 import { ChoreType, SkipDayVisibility } from '../types/chore-types';
 import type { Config } from '../types/config';
 import type {
-  CaughtUpResetPayload,
-  ChoreReassignPayload,
   ChoreTogglePayload,
   NodeHelperIncomingSocketPayload,
 } from '../types/socket-payload-types';
@@ -25,8 +23,6 @@ const { nodeHelperInstance, setNodeHelperInstance } = vi.hoisted(() => {
     transitionChoresForNewDay: () => void;
     checkAndPerformDailyReset: () => void;
     handleChoreToggle: (payload: ChoreTogglePayload) => void;
-    handleChoreReassign: (payload: ChoreReassignPayload) => void;
-    handleCaughtUpReset: (payload: CaughtUpResetPayload) => void;
     trackDailyCompletion: (chore: Chore, completed: boolean) => void;
     setupAdminRoutes: () => void;
     expressApp?: {
@@ -270,81 +266,6 @@ describe('Node Helper Tests', () => {
 
       // Should not call saveChoreData due to early exit
       expect(mockSaveChoreData).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('handleChoreReassign', () => {
-    it('should reassign personal chore', () => {
-      const payload = { choreId: '3', newPersonId: '2', pin: undefined };
-
-      nodeHelper.handleChoreReassign(payload);
-
-      const updatedChore = nodeHelper.choreData?.chores.find((c: Chore) => c.id === '3');
-      expect((updatedChore as PersonalChore).assignedTo).toBe('2');
-      expect(mockSaveChoreData).toHaveBeenCalled();
-    });
-
-    it('should update rotating chore index', () => {
-      const payload = { choreId: '1', newPersonId: '3', pin: undefined };
-
-      nodeHelper.handleChoreReassign(payload);
-
-      const chore = nodeHelper.choreData?.chores.find((c: Chore) => c.id === '1');
-      expect((chore as RotatingChore).rotatingIndex).toBe(2);
-      expect(mockSaveChoreData).toHaveBeenCalled();
-    });
-
-    it('should early exit when personal chore is already assigned to target person', () => {
-      const payload = { choreId: '3', newPersonId: '1', pin: undefined }; // Already assigned to '1'
-
-      nodeHelper.handleChoreReassign(payload);
-
-      expect(mockSaveChoreData).not.toHaveBeenCalled();
-    });
-
-    it('should early exit when rotating chore is already assigned to target person', () => {
-      const payload = { choreId: '1', newPersonId: '1', pin: undefined }; // Already at index 0
-
-      nodeHelper.handleChoreReassign(payload);
-
-      expect(mockSaveChoreData).not.toHaveBeenCalled();
-    });
-
-    it('should return early when chore not found', () => {
-      const payload = { choreId: '999', newPersonId: '2', pin: undefined };
-
-      nodeHelper.handleChoreReassign(payload);
-
-      expect(mockSaveChoreData).not.toHaveBeenCalled();
-    });
-
-    it('should require PIN when adminPin is configured', () => {
-      expect(nodeHelper.choreData).not.toBeNull();
-      if (!nodeHelper.choreData) return;
-      nodeHelper.config = { adminPin: '1234', dataFile: 'test-data.json' };
-
-      const payload = { choreId: '3', newPersonId: '2', pin: 'wrong' };
-      nodeHelper.handleChoreReassign(payload);
-
-      expect(mockSendSocketNotification).toHaveBeenCalledWith('PIN_ERROR', {
-        message: 'Invalid PIN',
-      });
-      expect(mockSaveChoreData).not.toHaveBeenCalled();
-    });
-
-    it('should reassign when PIN matches adminPin', () => {
-      expect(nodeHelper.choreData).not.toBeNull();
-      if (!nodeHelper.choreData) return;
-      nodeHelper.config = { adminPin: '1234', dataFile: 'test-data.json' };
-
-      const payload = { choreId: '3', newPersonId: '2', pin: '1234' };
-      nodeHelper.handleChoreReassign(payload);
-
-      const updatedChore = nodeHelper.choreData.chores.find(
-        (c: Chore) => c.id === '3'
-      ) as PersonalChore;
-      expect(updatedChore.assignedTo).toBe('2');
-      expect(mockSaveChoreData).toHaveBeenCalled();
     });
   });
 
@@ -683,111 +604,6 @@ describe('Node Helper Tests', () => {
         );
         expect(incompleteEntry).toBeDefined();
       });
-    });
-  });
-
-  describe('handleCaughtUpReset', () => {
-    it('should reset caughtUp to true for personal chores assigned to person', () => {
-      expect(nodeHelper.choreData).not.toBeNull();
-      if (!nodeHelper.choreData) return;
-      // Chore 3 is assigned to person '1' (personal chore)
-      const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '3') as PersonalChore;
-      if (!chore) return;
-      chore.caughtUp = false;
-
-      const payload = { personId: '1', pin: undefined };
-      nodeHelper.handleCaughtUpReset(payload);
-
-      expect(chore.caughtUp).toBe(true);
-      expect(mockSaveChoreData).toHaveBeenCalled();
-    });
-
-    it('should reset caughtUp to true for rotating chores where person is current assignee', () => {
-      expect(nodeHelper.choreData).not.toBeNull();
-      if (!nodeHelper.choreData) return;
-      // Chore 1 is rotating with index 0 (person '1' is current)
-      const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1') as RotatingChore;
-      if (!chore) return;
-      chore.caughtUp = false;
-
-      const payload = { personId: '1', pin: undefined };
-      nodeHelper.handleCaughtUpReset(payload);
-
-      expect(chore.caughtUp).toBe(true);
-      expect(mockSaveChoreData).toHaveBeenCalled();
-    });
-
-    it('should not affect rotating chores where person is not current assignee', () => {
-      expect(nodeHelper.choreData).not.toBeNull();
-      if (!nodeHelper.choreData) return;
-      // Chore 1 is rotating with index 0 (person '1' is current, not '2')
-      const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1') as RotatingChore;
-      if (!chore) return;
-      chore.caughtUp = false;
-
-      const payload = { personId: '2', pin: undefined };
-      nodeHelper.handleCaughtUpReset(payload);
-
-      // Should not change caughtUp for chore 1 since person 2 is not assigned
-      expect(chore.caughtUp).toBe(false);
-    });
-
-    it('should require PIN when adminPin is configured', () => {
-      expect(nodeHelper.choreData).not.toBeNull();
-      if (!nodeHelper.choreData) return;
-      nodeHelper.config = { adminPin: '1234', dataFile: 'test-data.json' };
-      const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1') as RotatingChore;
-      if (!chore) return;
-      chore.caughtUp = false;
-
-      const payload = { personId: '1', pin: 'wrongpin' };
-      nodeHelper.handleCaughtUpReset(payload);
-
-      // Should send PIN error and not save
-      expect(mockSendSocketNotification).toHaveBeenCalledWith('PIN_ERROR', {
-        message: 'Invalid PIN',
-      });
-      expect(chore.caughtUp).toBe(false);
-      expect(mockSaveChoreData).not.toHaveBeenCalled();
-    });
-
-    it('should succeed with correct PIN when adminPin is configured', () => {
-      expect(nodeHelper.choreData).not.toBeNull();
-      if (!nodeHelper.choreData) return;
-      nodeHelper.config = { adminPin: '1234', dataFile: 'test-data.json' };
-      const chore = nodeHelper.choreData.chores.find((c: Chore) => c.id === '1') as RotatingChore;
-      if (!chore) return;
-      chore.caughtUp = false;
-
-      const payload = { personId: '1', pin: '1234' };
-      nodeHelper.handleCaughtUpReset(payload);
-
-      expect(chore.caughtUp).toBe(true);
-      expect(mockSaveChoreData).toHaveBeenCalled();
-    });
-
-    it('should handle person with no assigned chores', () => {
-      expect(nodeHelper.choreData).not.toBeNull();
-      if (!nodeHelper.choreData) return;
-      // Person '5' (Evan) has no personal chores in default data
-      const payload = { personId: '5', pin: undefined };
-
-      nodeHelper.handleCaughtUpReset(payload);
-
-      // Should still save and notify (just with 0 changes)
-      expect(mockSaveChoreData).toHaveBeenCalled();
-      expect(mockSendSocketNotification).toHaveBeenCalledWith('CAUGHTUP_RESET_RESULT', {
-        personId: '5',
-        resetCount: 0,
-      });
-    });
-
-    it('should handle empty chore data gracefully', () => {
-      nodeHelper.choreData = null;
-      const payload = { personId: '1', pin: undefined };
-
-      // Should not throw
-      expect(() => nodeHelper.handleCaughtUpReset(payload)).not.toThrow();
     });
   });
 

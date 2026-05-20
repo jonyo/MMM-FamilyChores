@@ -382,31 +382,24 @@ This module is for household use, not a high-security context — but `escapeHtm
 - `CONFIG_RESPONSE`: Backend sends configuration and state
 - `CHORE_DATA`: Backend sends updated chore data
 - `CHORE_TOGGLE`: Toggle chore completion status
-- `CHORE_REASSIGN`: Reassign rotating chore
-- `CAUGHTUP_RESET`: Admin reset of caughtUp status for a person
-- `CHORE_UPDATE_RESULT`, `CHORE_REASSIGN_RESULT`, `CAUGHTUP_RESET_RESULT`: Success responses
-- `PIN_ERROR`: Backend reports invalid PIN
+- `CHORE_UPDATE_RESULT`: Backend confirms a chore toggle
 
 **Payload Types:**
 
 - Use proper TypeScript interfaces for all payloads
 - Validate incoming data before processing
-- Include PIN only for reassign action when required
 
 ### Admin Actions
 
 **PIN Protection:**
 
-- Reassign and caughtUp reset actions require valid PIN when configured
-- Toggle actions (mark complete/incomplete) do not require PIN
-- Validate PIN before performing admin operations
-- Return `PIN_ERROR` notification for invalid attempts
+- All admin HTTP API actions require valid PIN when configured
+- Toggle actions (mark complete/incomplete from the mirror UI) do not require PIN
 
 **Available Actions:**
 
-- **Toggle**: Mark chore complete/incomplete (no PIN required)
-- **Reassign**: Move rotating chore to next person (requires PIN)
-- **CaughtUp Reset**: Reset all caughtUp flags to `true` for a person (requires PIN) - useful for vacation returns. **Does NOT rotate** - person picks up at same rotation position.
+- **Toggle**: Mark chore complete/incomplete (no PIN required, via socket)
+- All other admin actions (add/edit/delete people and chores, settings, backup/restore, advance rotations) are HTTP API actions and require PIN when configured
 
 ### CSS and Styling
 
