@@ -759,6 +759,40 @@ function createAdminHandlers(context) {
 				res.status(500).json(apiErr("Failed to copy chores"));
 			}
 		},
+		postAdvanceRotations: (req, res) => {
+			if (!validatePin(req, res, context)) return;
+			try {
+				const choreData = context.getChoreData();
+				if (!choreData) {
+					res.status(500).json(apiErr("No data available"));
+					return;
+				}
+				if (getLocalDateString() > choreData.lastResetDate) {
+					res.status(503).json(apiErr("Daily midnight reset is in progress. Please try again in a moment. If this persists you may need to restart MagicMirror."));
+					return;
+				}
+				const rotatingChores = choreData.chores.filter((c) => c.type === ChoreType.ROTATING);
+				let advanced = 0;
+				for (const chore of rotatingChores) {
+					if (chore.type !== ChoreType.ROTATING) continue;
+					const rotation = chore.rotation ?? [];
+					if (rotation.length < 2) continue;
+					chore.rotatingIndex = ((chore.rotatingIndex ?? 0) + 1) % rotation.length;
+					chore.completedToday = false;
+					chore.caughtUp = true;
+					advanced++;
+				}
+				context.saveChoreData();
+				context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
+				res.json({
+					success: true,
+					advanced
+				});
+			} catch (error) {
+				logger.error(`Error advancing rotations: ${error}`);
+				res.status(500).json(apiErr("Failed to advance rotations"));
+			}
+		},
 		putSettings: (req, res) => {
 			if (!validatePin(req, res, context)) return;
 			try {
@@ -1121,6 +1155,7 @@ var node_helper_default = node_helper.create({
 		this.expressApp?.post("/MMM-FamilyChores/restore", handlers.postRestore);
 		this.expressApp?.post("/MMM-FamilyChores/copy-chores", handlers.postCopyChores);
 		this.expressApp?.put("/MMM-FamilyChores/settings", handlers.putSettings);
+		this.expressApp?.post("/MMM-FamilyChores/advance-rotations", handlers.postAdvanceRotations);
 		logger.info("Admin routes configured for MMM-FamilyChores");
 	}
 });

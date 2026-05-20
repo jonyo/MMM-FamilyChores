@@ -24,7 +24,7 @@ A TypeScript-based MagicMirror² module for family chore tracking with personal 
 
 _Note: This roadmap represents current plans and priorities. Features may be added, removed, or modified based on user feedback and development considerations._
 
-- **PIN-Protected Reassignment**: Admin-only function to reassign rotating chores directly from the mirror display (currently available in admin panel; mirror UI under consideration)
+None at this time. The module is feature-complete for v1.0.
 
 ## Intentionally _Not_ Included
 
@@ -251,6 +251,13 @@ The module includes a web-based admin panel for managing people, chores, setting
 - **Settings**: Enable/disable activity history and set an admin PIN.
 - **Activity History**: View a log of who completed which chores and when (requires `historyEnabled` to be set).
 - **Backup/Restore**: Download the current `data.json` for safekeeping or upload a previously saved backup.
+- **System Actions**: Tools for resetting or resyncing chore state after unusual situations (see below).
+
+### System Actions
+
+The **System Actions** section at the bottom of the admin panel provides tools for situations where the chore state no longer reflects reality — for example, after a vacation, after the mirror has been off for an extended period, or after manually editing `data.json`.
+
+- **Advance All Rotations**: Moves every rotating chore (with 2+ people) to the next person in its rotation. Useful when the mirror was offline and rotations didn't advance naturally. A confirmation modal shows each chore and who it will rotate to before any changes are made.
 
 ### PIN Protection
 
@@ -394,6 +401,16 @@ src/
 ```
 
 ## Troubleshooting
+
+### Rotation State Out of Sync
+
+#### The mirror was off for several days and rotations are all wrong
+
+Use **Advance All Rotations** in the System Actions section of the admin panel to manually step all rotating chores forward one position. If you need to advance multiple steps, you can run it multiple times. You can also edit individual rotating chores directly to set the "current person" radio button to the correct position.
+
+#### Advance All Rotations says "try again in a moment"
+
+This means the daily midnight reset is currently in progress (the module detected the date has changed but hasn't finished updating state yet). Wait a few seconds and try again. If the message persists, restart MagicMirror.
 
 ### History Tracking
 

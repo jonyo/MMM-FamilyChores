@@ -1,8 +1,10 @@
 import type {
+  AdvanceRotationsRequest,
   CopyChoresRequest,
   CreateChoreRequest,
   UpdateChoreRequest,
 } from '../types/request-types';
+import type { AdvanceRotationsResponse } from '../types/response-types';
 import { validateId } from '../utils/validation';
 import { API_BASE_URL, handleResponse } from './client';
 
@@ -51,4 +53,15 @@ export const copyChores = async (data: CopyChoresRequest): Promise<void> => {
     }
     throw error;
   }
+};
+
+export const advanceRotations = async (
+  data: AdvanceRotationsRequest
+): Promise<AdvanceRotationsResponse> => {
+  const response = await fetch(`${API_BASE_URL}/advance-rotations`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response) as Promise<AdvanceRotationsResponse>;
 };

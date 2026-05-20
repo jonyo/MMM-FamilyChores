@@ -5,6 +5,7 @@ import type { Chore, DayOfWeek, Person, PersonalChore, RotatingChore } from '../
 import { ChoreType } from '../types/chore-types';
 import { escapeHtml } from '../utils/browser';
 import { useAdminContext } from './admin-context';
+import { AdvanceRotationsModal } from './advance-rotations-modal';
 import { Button } from './button';
 import { ChoreHistoryModal } from './chore-history-modal';
 import { CopyChoresModal } from './copy-chores-modal';
@@ -59,6 +60,7 @@ export const MainPage: Component = () => {
     pinPromiseResolve = null;
   };
 
+  const [advanceRotationsModalOpen, setAdvanceRotationsModalOpen] = createSignal(false);
   const [personModalOpen, setPersonModalOpen] = createSignal(false);
   const [personalChoreModalOpen, setPersonalChoreModalOpen] = createSignal(false);
   const [rotatingChoreModalOpen, setRotatingChoreModalOpen] = createSignal(false);
@@ -69,6 +71,24 @@ export const MainPage: Component = () => {
   const [editingChorePerson, setEditingChorePerson] = createSignal<Person | null>(null);
   const [copyChoresFromPerson, setCopyChoresFromPerson] = createSignal<Person | null>(null);
   const [historyPerson, setHistoryPerson] = createSignal<Person | null>(null);
+
+  const closeAdvanceRotationsModal = async () => {
+    setAdvanceRotationsModalOpen(false);
+    await loadData();
+  };
+
+  // System action handlers
+  const handleAdvanceRotations = async () => {
+    if (pinRequired() && !cachedPin()) {
+      const result = await requestPin(
+        'Advance All Rotations',
+        'Enter admin PIN to advance all rotations'
+      );
+      if (!result.pin) return;
+      if (result.remember) setCachedPin(result.pin);
+    }
+    setAdvanceRotationsModalOpen(true);
+  };
 
   // Person modal handlers
   const openPersonModal = (person: Person | null = null) => {
@@ -482,7 +502,29 @@ export const MainPage: Component = () => {
           </section>
         </Show>
 
-        {/* System State Section */}
+        {/* System Actions Section */}
+        <section class="mb-10" data-testid="system-actions-section">
+          <div class="mb-5">
+            <h2 class="m-0 border-b-2 border-amber-500 pb-2.5 text-2xl text-amber-600">
+              System Actions
+            </h2>
+            <p class="mt-3 text-sm text-slate-500">
+              Coming back from vacation? Just set up the mirror after it hasn't been used in a
+              while? These tools help you quickly reset or resync the chore state so everything
+              reflects reality again.
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-3">
+            <Button
+              type="button"
+              variant="warning"
+              onClick={handleAdvanceRotations}
+              data-testid="advance-rotations-btn"
+            >
+              ↻ Advance All Rotations
+            </Button>
+          </div>
+        </section>
       </main>
 
       {/* Modals */}
@@ -516,6 +558,12 @@ export const MainPage: Component = () => {
       </Show>
       <Show when={settingsModalOpen()}>
         <SettingsModal closeModal={closeSettingsModal} />
+      </Show>
+      <Show when={advanceRotationsModalOpen()}>
+        <AdvanceRotationsModal
+          rotatingChores={getRotatingChores()}
+          closeModal={closeAdvanceRotationsModal}
+        />
       </Show>
       <Show when={pinPromptOpen()}>
         <PinPromptModal

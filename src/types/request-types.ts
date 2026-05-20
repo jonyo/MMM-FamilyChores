@@ -100,3 +100,8 @@ export interface UpdateSettingsRequest extends PinProtectedRequest {
   historyEnabled?: boolean;
   adminPin?: string | null;
 }
+
+/**
+ * Request body for advancing all rotating chores to the next person in rotation
+ */
+export type AdvanceRotationsRequest = PinProtectedRequest;
