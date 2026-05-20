@@ -214,6 +214,28 @@ Use multiple module instances for different views on separate pages:
 }
 ```
 
+#### MMM-pages Integration
+
+To set up per-person pages with [MMM-pages](https://github.com/edward-shen/MMM-pages), add the `classes` property to each module instance and configure MMM-pages to cycle through them:
+
+```javascript
+{
+  module: 'MMM-pages',
+  config: {
+    // Cycles through alice-page, bob-page, summary-page
+    modules: [
+      ['alice-page'],
+      ['bob-page'],
+      ['summary-page']
+    ],
+    // Optional: navigation module
+    fixed: ['MMM-page-indicator']
+  }
+}
+```
+
+Each module instance only needs `classes` (not `pages` in the MMM-pages array). This keeps your MMM-pages config clean and lets you control page membership from the module itself.
+
 ## Usage
 
 ### Interactive Checkbox Interface
