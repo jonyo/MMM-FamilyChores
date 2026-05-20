@@ -406,5 +406,3 @@
 	});
 	//#endregion
 });
-
-//# sourceMappingURL=MMM-FamilyChores.js.map

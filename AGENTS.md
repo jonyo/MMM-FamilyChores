@@ -108,7 +108,7 @@ git add .               # Add ALL changes including built files
 git commit -m "message" # Commit
 ```
 
-**This is NON-NEGOTIABLE:** Built files (`MMM-FamilyChores.js`, `node_helper.js`, `public/admin.js`, and their source maps) MUST be committed. The module will not work for users without these built files. Never commit source changes without also committing the corresponding built files.
+**This is NON-NEGOTIABLE:** Built files (`MMM-FamilyChores.js`, `node_helper.js`, `public/admin.js`) MUST be committed. The module will not work for users without these built files. Never commit source changes without also committing the corresponding built files.
 
 **Build process:**
 
@@ -201,7 +201,6 @@ src/
 
 - `MMM-FamilyChores.js` - Compiled frontend
 - `node_helper.js` - Compiled backend
-- `*.js.map` - Source maps
 
 Note: These files are committed so that the module works out of the box without needing to run the build process. Be sure to run `pnpm build` before committing any changes to ensure the built files are up to date.
 

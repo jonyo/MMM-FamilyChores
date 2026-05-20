@@ -3522,5 +3522,3 @@
 	else console.error("Failed to find #app element");
 	//#endregion
 })();
-
-//# sourceMappingURL=admin.js.map
