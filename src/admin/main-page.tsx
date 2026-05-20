@@ -12,6 +12,7 @@ import { CopyChoresModal } from './copy-chores-modal';
 import { PersonModal } from './person-modal';
 import { PersonalChoreModal } from './personal-chore-modal';
 import { PinPromptModal } from './pin-prompt-modal';
+import { ResetCaughtUpModal } from './reset-caught-up-modal';
 import { RotatingChoreCard } from './rotating-chore';
 import { RotatingChoreModal } from './rotating-chore-modal';
 import { SettingsModal } from './settings-modal';
@@ -61,6 +62,7 @@ export const MainPage: Component = () => {
   };
 
   const [advanceRotationsModalOpen, setAdvanceRotationsModalOpen] = createSignal(false);
+  const [resetCaughtUpModalOpen, setResetCaughtUpModalOpen] = createSignal(false);
   const [personModalOpen, setPersonModalOpen] = createSignal(false);
   const [personalChoreModalOpen, setPersonalChoreModalOpen] = createSignal(false);
   const [rotatingChoreModalOpen, setRotatingChoreModalOpen] = createSignal(false);
@@ -80,6 +82,17 @@ export const MainPage: Component = () => {
   // System action handlers
   const handleAdvanceRotations = () => {
     setAdvanceRotationsModalOpen(true);
+  };
+
+  const getOverdueChores = () => choreData().chores.filter((c) => !c.caughtUp);
+
+  const handleResetCaughtUp = () => {
+    setResetCaughtUpModalOpen(true);
+  };
+
+  const closeResetCaughtUpModal = async () => {
+    setResetCaughtUpModalOpen(false);
+    await loadData();
   };
 
   // Person modal handlers
@@ -515,6 +528,14 @@ export const MainPage: Component = () => {
             >
               ↻ Advance All Rotations
             </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleResetCaughtUp}
+              data-testid="reset-caught-up-btn"
+            >
+              ✓ Reset All Caught Up
+            </Button>
           </div>
         </section>
       </main>
@@ -556,6 +577,9 @@ export const MainPage: Component = () => {
           rotatingChores={getRotatingChores()}
           closeModal={closeAdvanceRotationsModal}
         />
+      </Show>
+      <Show when={resetCaughtUpModalOpen()}>
+        <ResetCaughtUpModal overdue={getOverdueChores()} closeModal={closeResetCaughtUpModal} />
       </Show>
       <Show when={pinPromptOpen()}>
         <PinPromptModal

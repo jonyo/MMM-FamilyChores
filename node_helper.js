@@ -798,6 +798,31 @@ function createAdminHandlers(context) {
 				res.status(500).json(apiErr("Failed to advance rotations"));
 			}
 		},
+		postResetCaughtUp: (req, res) => {
+			if (!validatePin(req, res, context)) return;
+			try {
+				const choreData = context.getChoreData();
+				if (!choreData) {
+					res.status(500).json(apiErr("No data available"));
+					return;
+				}
+				let reset = 0;
+				for (const chore of choreData.chores) if (!chore.caughtUp) {
+					chore.caughtUp = true;
+					reset++;
+				}
+				context.saveChoreData();
+				context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
+				logger.info(`Caught up status reset: ${reset} chore(s) updated`);
+				res.json({
+					success: true,
+					reset
+				});
+			} catch (error) {
+				logger.error(`Error resetting caught up status: ${error}`);
+				res.status(500).json(apiErr("Failed to reset caught up status"));
+			}
+		},
 		putSettings: (req, res) => {
 			if (!validatePin(req, res, context)) return;
 			try {
@@ -1094,6 +1119,7 @@ var node_helper_default = node_helper.create({
 		this.expressApp?.post("/MMM-FamilyChores/copy-chores", handlers.postCopyChores);
 		this.expressApp?.put("/MMM-FamilyChores/settings", handlers.putSettings);
 		this.expressApp?.post("/MMM-FamilyChores/advance-rotations", handlers.postAdvanceRotations);
+		this.expressApp?.post("/MMM-FamilyChores/reset-caught-up", handlers.postResetCaughtUp);
 		logger.info("Admin routes configured for MMM-FamilyChores");
 	}
 });

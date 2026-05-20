@@ -258,6 +258,7 @@ The module includes a web-based admin panel for managing people, chores, setting
 The **System Actions** section at the bottom of the admin panel provides tools for situations where the chore state no longer reflects reality — for example, after a vacation, after the mirror has been off for an extended period, or after manually editing `data.json`.
 
 - **Advance All Rotations**: Moves every rotating chore (with 2+ people) to the next person in its rotation. Useful when the mirror was offline and rotations didn't advance naturally. A confirmation modal shows each chore and who it will rotate to before any changes are made.
+- **Reset All Caught Up**: Marks every chore as caught up, clearing any overdue indicators. Useful after a vacation or when the mirror has been off and many chores show as overdue even though everyone is actually up to date. Does not change who is assigned to each chore or advance any rotations.
 
 ### PIN Protection
 
@@ -403,6 +404,10 @@ src/
 ## Troubleshooting
 
 ### Rotation State Out of Sync
+
+#### Many chores show as overdue after a vacation or extended downtime
+
+Use **Reset All Caught Up** in the System Actions section of the admin panel. This marks every chore as caught up instantly, clearing all overdue indicators without affecting rotation assignments. If rotations also need adjusting, use **Advance All Rotations** after or instead.
 
 #### The mirror was off for several days and rotations are all wrong
 

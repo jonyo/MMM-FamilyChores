@@ -105,3 +105,8 @@ export interface UpdateSettingsRequest extends PinProtectedRequest {
  * Request body for advancing all rotating chores to the next person in rotation
  */
 export type AdvanceRotationsRequest = PinProtectedRequest;
+
+/**
+ * Request body for resetting all chores to caught up status
+ */
+export type ResetCaughtUpRequest = PinProtectedRequest;

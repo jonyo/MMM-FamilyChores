@@ -855,4 +855,67 @@ describe('createAdminHandlers', () => {
       expect(mockSave).not.toHaveBeenCalled();
     });
   });
+
+  describe('postResetCaughtUp', () => {
+    it('resets all not-caught-up chores and returns count', () => {
+      const data = makeBaseData();
+      // cid1 is already caughtUp:true, cid2 is caughtUp:false
+      const { context, mockSave, mockNotify, getData } = makeContext(data);
+      const { postResetCaughtUp } = createAdminHandlers(context);
+      const res = createMockRes();
+      postResetCaughtUp({ body: {}, params: {} }, res);
+      expect(res.statusCode).toBe(200);
+      const body = res.jsonBody as { success: boolean; reset: number };
+      expect(body.success).toBe(true);
+      expect(body.reset).toBe(1);
+      expect(getData()?.chores.find((c) => c.id === cid1)?.caughtUp).toBe(true);
+      expect(getData()?.chores.find((c) => c.id === cid2)?.caughtUp).toBe(true);
+      expect(mockSave).toHaveBeenCalled();
+      expect(mockNotify).toHaveBeenCalledWith(SocketNotifications.CHORE_DATA, expect.anything());
+    });
+
+    it('returns reset=0 when all chores are already caught up', () => {
+      const data = makeBaseData();
+      for (const chore of data.chores) chore.caughtUp = true;
+      const { context, mockSave } = makeContext(data);
+      const { postResetCaughtUp } = createAdminHandlers(context);
+      const res = createMockRes();
+      postResetCaughtUp({ body: {}, params: {} }, res);
+      expect(res.statusCode).toBe(200);
+      const body = res.jsonBody as { reset: number };
+      expect(body.reset).toBe(0);
+      expect(mockSave).toHaveBeenCalled();
+    });
+
+    it('returns 500 when data is null', () => {
+      const { context, mockSave } = makeContext(null);
+      const { postResetCaughtUp } = createAdminHandlers(context);
+      const res = createMockRes();
+      postResetCaughtUp({ body: {}, params: {} }, res);
+      expect(res.statusCode).toBe(500);
+      expect(mockSave).not.toHaveBeenCalled();
+    });
+
+    it('returns 403 with wrong PIN', () => {
+      const data = makeBaseData();
+      data.settings.adminPin = 'secret';
+      const { context, mockSave } = makeContext(data);
+      const { postResetCaughtUp } = createAdminHandlers(context);
+      const res = createMockRes();
+      postResetCaughtUp({ body: { pin: 'wrong' }, params: {} }, res);
+      expect(res.statusCode).toBe(403);
+      expect(mockSave).not.toHaveBeenCalled();
+    });
+
+    it('succeeds with correct PIN', () => {
+      const data = makeBaseData();
+      data.settings.adminPin = 'secret';
+      const { context, getData } = makeContext(data);
+      const { postResetCaughtUp } = createAdminHandlers(context);
+      const res = createMockRes();
+      postResetCaughtUp({ body: { pin: 'secret' }, params: {} }, res);
+      expect(res.statusCode).toBe(200);
+      expect(getData()?.chores.find((c) => c.id === cid2)?.caughtUp).toBe(true);
+    });
+  });
 });
