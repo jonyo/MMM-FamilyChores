@@ -626,6 +626,10 @@ To make changes:
     margin-left: calc(var(--spacing) * 3);
   }
 
+  .ml-4 {
+    margin-left: calc(var(--spacing) * 4);
+  }
+
   .block {
     display: block;
   }
@@ -1183,6 +1187,11 @@ To make changes:
     line-height: calc(var(--spacing) * 8);
   }
 
+  .leading-none {
+    --tw-leading: 1;
+    line-height: 1;
+  }
+
   .font-medium {
     --tw-font-weight: var(--font-weight-medium);
     font-weight: var(--font-weight-medium);
@@ -1377,6 +1386,10 @@ To make changes:
 
     .hover\:bg-yellow-600:hover {
       background-color: var(--color-yellow-600);
+    }
+
+    .hover\:text-slate-600:hover {
+      color: var(--color-slate-600);
     }
 
     .hover\:shadow-md:hover {

@@ -50,7 +50,17 @@ export const AdvanceRotationsModal: Component<AdvanceRotationsModalProps> = (pro
         class="max-h-[90vh] w-[90%] max-w-[560px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"
         data-testid="advance-rotations-modal"
       >
-        <h3 class="mb-2 text-2xl text-indigo-600">Advance All Rotations</h3>
+        <div class="mb-2 flex items-center justify-between">
+          <h3 class="text-2xl text-indigo-600">Advance All Rotations</h3>
+          <button
+            type="button"
+            class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"
+            aria-label="Close"
+            onClick={() => props.closeModal()}
+          >
+            ×
+          </button>
+        </div>
         <p class="mb-5 text-sm text-slate-500">
           Each rotating chore will move to the next person in its rotation. Completion state will be
           cleared.
