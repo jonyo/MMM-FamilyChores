@@ -85,6 +85,16 @@ None at this time. The module is feature-complete for v1.0.
 
 2. Add the module to your MagicMirror config (see Configuration section below)
 
+3. Open the admin panel in your browser to set up people and chores:
+
+   ```
+   http://192.168.xxx.xxx:8080/modules/MMM-FamilyChores/admin.html
+   ```
+
+   Replace `192.168.xxx.xxx` with the IP address of your MagicMirror device.
+
+   To access the admin panel from another device, you may need to adjust your `address` and `ipWhitelist` settings in MagicMirror's `config.js`. See the [MagicMirror configuration docs](https://docs.magicmirror.builders/configuration/introduction.html) for details.
+
 That's it! The module includes all necessary dependencies in the bundled JavaScript files.
 
 ## Configuration
@@ -339,7 +349,21 @@ Each chore item shows:
 
 ## Admin Panel
 
-The module includes a web-based admin panel for managing people, chores, settings, and viewing activity history. Open it in your browser at the module's admin page (e.g., `http://your-mirror:8080/modules/MMM-FamilyChores/admin.html` if using the default MagicMirror port).
+The module includes a web-based admin panel for managing people, chores, settings, and viewing activity history.
+
+### Accessing the Admin Panel
+
+Open your browser and navigate to:
+
+```
+http://192.168.xxx.xxx:8080/modules/MMM-FamilyChores/admin.html
+```
+
+Replace `192.168.xxx.xxx` with the IP address of the device running MagicMirror (e.g., your Raspberry Pi).
+
+If you are using a custom port or path, adjust accordingly.
+
+**Note:** By default, MagicMirror only accepts connections from the same device. To access the admin panel from your phone or computer, you may need to update `address` and `ipWhitelist` in your MagicMirror `config.js`. See the [MagicMirror configuration docs](https://docs.magicmirror.builders/configuration/introduction.html) for details.
 
 ### Available Actions
 
