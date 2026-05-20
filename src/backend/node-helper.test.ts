@@ -82,7 +82,7 @@ describe('Node Helper Tests', () => {
     nodeHelper.saveChoreData = mockSaveChoreData;
 
     // Set up config
-    nodeHelper.config = { adminPin: null, dataFile: 'test-data.json' };
+    nodeHelper.config = { dataFile: 'test-data.json' };
 
     // Create sample chore data for testing
     nodeHelper.choreData = {
@@ -666,7 +666,6 @@ describe('Node Helper Tests', () => {
       mockConfig = {
         updateInterval: 60000,
         dataFile: 'data.json',
-        adminPin: null,
       };
 
       // Use proper typing instead of any
@@ -837,7 +836,7 @@ describe('Node Helper Tests', () => {
     };
 
     beforeEach(() => {
-      nodeHelper.config = { dataFile: 'data.json', adminPin: null };
+      nodeHelper.config = { dataFile: 'data.json' };
       // Stub out checkAndPerformDailyReset so it doesn't overwrite lastResetDate
       nodeHelper.checkAndPerformDailyReset = vi.fn();
       // Default: file exists with valid data

@@ -22,7 +22,6 @@ const familyChoresModule: FamilyChoresModule = {
   config: {
     updateInterval: 60000,
     dataFile: 'data.json',
-    adminPin: null,
     personFilter: null,
     viewMode: 'personal',
     summary: {
@@ -37,7 +36,6 @@ const familyChoresModule: FamilyChoresModule = {
   defaults: {
     updateInterval: 60000,
     dataFile: 'data.json',
-    adminPin: null,
     personFilter: null,
     viewMode: 'personal',
     summary: {

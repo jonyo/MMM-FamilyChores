@@ -107,7 +107,6 @@
 		config: {
 			updateInterval: 6e4,
 			dataFile: "data.json",
-			adminPin: null,
 			personFilter: null,
 			viewMode: "personal",
 			summary: {
@@ -122,7 +121,6 @@
 		defaults: {
 			updateInterval: 6e4,
 			dataFile: "data.json",
-			adminPin: null,
 			personFilter: null,
 			viewMode: "personal",
 			summary: {
