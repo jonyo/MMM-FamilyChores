@@ -2,6 +2,7 @@ import type { Component } from 'solid-js';
 import { createSignal, For, Show } from 'solid-js';
 import { advanceRotations } from '../api';
 import type { RotatingChore } from '../types/chore-types';
+import { escapeHtml } from '../utils/browser';
 import { useAdminContext } from './admin-context';
 import { Button } from './button';
 import { PinField } from './pin-field';
@@ -17,7 +18,7 @@ export const AdvanceRotationsModal: Component<AdvanceRotationsModalProps> = (pro
   const [rememberPin, setRememberPin] = createSignal(false);
 
   const getPersonName = (id: string) =>
-    choreData().people.find((p) => p.id === id)?.name ?? 'Unknown';
+    escapeHtml(choreData().people.find((p) => p.id === id)?.name ?? 'Unknown');
 
   const advanceable = () => props.rotatingChores.filter((c) => (c.rotation ?? []).length >= 2);
 
@@ -80,7 +81,7 @@ export const AdvanceRotationsModal: Component<AdvanceRotationsModalProps> = (pro
                   data-testid={`rotation-row-${chore.id}`}
                 >
                   <div>
-                    <span class="font-medium text-slate-800">{chore.name}</span>
+                    <span class="font-medium text-slate-800">{escapeHtml(chore.name)}</span>
                     <div class="mt-0.5 text-sm text-slate-500">
                       {getPersonName((chore.rotation ?? [])[chore.rotatingIndex ?? 0] ?? '')}
                     </div>

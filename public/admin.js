@@ -1456,7 +1456,7 @@
 		const { choreData, pinRequired, cachedPin, setCachedPin } = useAdminContext();
 		const [pin, setPin] = createSignal("");
 		const [rememberPin, setRememberPin] = createSignal(false);
-		const getPersonName = (id) => choreData().people.find((p) => p.id === id)?.name ?? "Unknown";
+		const getPersonName = (id) => escapeHtml(choreData().people.find((p) => p.id === id)?.name ?? "Unknown");
 		const advanceable = () => props.rotatingChores.filter((c) => (c.rotation ?? []).length >= 2);
 		const getNextPersonId = (chore) => {
 			const rotation = chore.rotation ?? [];
@@ -1491,7 +1491,7 @@
 						},
 						children: (chore, index) => (() => {
 							var _el$9 = _tmpl$4$6(), _el$0 = _el$9.firstChild, _el$1 = _el$0.firstChild, _el$10 = _el$1.nextSibling, _el$12 = _el$0.nextSibling.nextSibling;
-							insert(_el$1, () => chore.name);
+							insert(_el$1, () => escapeHtml(chore.name));
 							insert(_el$10, () => getPersonName((chore.rotation ?? [])[chore.rotatingIndex ?? 0] ?? ""));
 							insert(_el$12, () => getPersonName(getNextPersonId(chore)));
 							createRenderEffect((_p$) => {
