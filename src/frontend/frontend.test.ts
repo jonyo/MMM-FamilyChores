@@ -1594,7 +1594,6 @@ describe('Frontend Tests', () => {
       // Render the module to page
       const dom = module.getDom();
       document.body.appendChild(dom);
-      module.addCheckboxListeners(dom);
 
       const toggleChoreCompletionSpy = vi.spyOn(module, 'toggleChoreCompletion');
 
@@ -1609,7 +1608,6 @@ describe('Frontend Tests', () => {
       // Render the module to page
       const dom = module.getDom();
       document.body.appendChild(dom);
-      module.addCheckboxListeners(dom);
 
       const toggleChoreCompletionSpy = vi.spyOn(module, 'toggleChoreCompletion');
 
@@ -1624,7 +1622,6 @@ describe('Frontend Tests', () => {
       // Render the module to page
       const dom = module.getDom();
       document.body.appendChild(dom);
-      module.addCheckboxListeners(dom);
 
       const toggleChoreCompletionSpy = vi.spyOn(module, 'toggleChoreCompletion');
 
@@ -1639,7 +1636,6 @@ describe('Frontend Tests', () => {
       // Render the module to page
       const dom = module.getDom();
       document.body.appendChild(dom);
-      module.addCheckboxListeners(dom);
 
       const toggleChoreCompletionSpy = vi.spyOn(module, 'toggleChoreCompletion');
 
