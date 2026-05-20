@@ -1,7 +1,5 @@
 # MMM-FamilyChores
 
-> **⚠️ Work in Progress** - This module is currently under development. We're working toward a stable 1.0 release with all core features implemented and tested. Early adopters are welcome to try it out, but expect changes and potential issues.
-
 A TypeScript-based MagicMirror² module for family chore tracking with personal daily chores, rotating daily chores that cycle through family members, a configurable summary view, and a full-featured admin panel.
 
 ## Current Features
@@ -19,6 +17,48 @@ A TypeScript-based MagicMirror² module for family chore tracking with personal 
 - **PIN Protection**: Optional admin PIN with enable/disable toggle protects destructive actions (delete, reassign, settings changes, backup/restore)
 - **Activity History**: View who completed which chores and when
 - **Backup/Restore**: Download and upload configuration files
+
+## Screenshots
+
+> Screenshots show representative examples of the module's appearance. The mirror display is fully customizable through your MagicMirror `custom.css` file, so your actual layout may differ.
+>
+> Even with default options, the look may change depending on which region you add the module to.
+
+### Mirror Views
+
+**Summary view** showing overdue chores, today's rotating assignments, and remaining personal chores across the family:
+
+![Summary View](docs/summary.png)
+
+**Per-person view** showing a single person's personal chores and their current rotating assignments:
+
+![Alice's Chores](docs/alice.png)
+
+**Overdue indicator** on a per-person view — chores not completed by their deadline show with a yellow warning badge:
+
+![Charlie's Chores with Overdue](docs/charlie.png)
+
+### Admin Panel
+
+The admin panel provides full management of people, chores, settings, and history:
+
+![Admin Panel Overview](docs/admin-top.png)
+
+**Rotating chores** show the current person assigned and can be reassigned directly:
+
+![Admin Rotating Chores](docs/admin-rotating-chores.png)
+
+**Adding a person** — each family member gets a name and a color for visual identification on the mirror:
+
+![Admin Add Person](docs/admin-add-person.png)
+
+**Adding a rotating chore** — configure skip days, visibility behavior, rotation order, and optional deadline:
+
+![Admin Add Rotating Chore](docs/admin-add-rotating-chore.png)
+
+**Activity history** — view a log of who completed which chores and when:
+
+![Admin History](docs/admin-history.png)
 
 ## Planned Roadmap
 
@@ -130,6 +170,41 @@ config: {
     incompleteTitle: 'To Do Today',
     rotatingTitle: 'Weekly Rotation',
     overdueTitle: 'Past Due'
+  }
+}
+```
+
+**Split summary sections across the mirror:**
+
+Use multiple module instances to place each summary section in a different position:
+
+```javascript
+// Incomplete chores in the top left
+{
+  module: 'MMM-FamilyChores',
+  position: 'top_left',
+  header: 'To Do',
+  config: {
+    viewMode: 'summary',
+    summary: {
+      showIncomplete: true,
+      showRotating: false,
+      showOverdue: false
+    }
+  }
+},
+// Rotating assignments in the top right
+{
+  module: 'MMM-FamilyChores',
+  position: 'top_right',
+  header: 'Rotating',
+  config: {
+    viewMode: 'summary',
+    summary: {
+      showIncomplete: false,
+      showRotating: true,
+      showOverdue: false
+    }
   }
 }
 ```
