@@ -171,7 +171,7 @@
 }
 
 .MMM-FamilyChores .summary-section .chore-list {
-  gap: 8px;
+  gap: 2px;
 }
 
 .MMM-FamilyChores .summary-section .chore-item {
@@ -183,29 +183,35 @@
 .MMM-FamilyChores .rotating-inline {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 6px;
-  font-size: 0.95rem;
+  gap: 6px;
+  background: none;
+  border-radius: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 0.7rem;
+}
+
+.MMM-FamilyChores .rotating-inline:last-child {
+  border-bottom: none;
 }
 
 .MMM-FamilyChores .rotating-inline .chore-name {
   font-weight: 500;
   color: #fff;
   flex: 1;
+  font-size: 1rem;
 }
 
 .MMM-FamilyChores .rotating-inline .person-name {
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 1rem;
   white-space: nowrap;
 }
 
 .MMM-FamilyChores .rotating-inline .inline-checkbox {
-  width: 18px;
-  height: 18px;
+  width: 10px;
+  height: 10px;
   accent-color: #4caf50;
   cursor: pointer;
   flex-shrink: 0;
+  transform: scale(1.5);
 }
