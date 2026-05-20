@@ -1,6 +1,6 @@
 import type { Component } from 'solid-js';
 import { createSignal, For, Show } from 'solid-js';
-import { deleteChore, deletePerson, downloadBackup, resetCaughtUp } from '../api';
+import { deleteChore, deletePerson, downloadBackup } from '../api';
 import type { Chore, DayOfWeek, Person, PersonalChore, RotatingChore } from '../types/chore-types';
 import { ChoreType } from '../types/chore-types';
 import { escapeHtml } from '../utils/browser';
@@ -12,6 +12,7 @@ import { CopyChoresModal } from './copy-chores-modal';
 import { PersonModal } from './person-modal';
 import { PersonalChoreModal } from './personal-chore-modal';
 import { PinPromptModal } from './pin-prompt-modal';
+import { ResetCaughtUpModal } from './reset-caught-up-modal';
 import { RotatingChoreCard } from './rotating-chore';
 import { RotatingChoreModal } from './rotating-chore-modal';
 import { SettingsModal } from './settings-modal';
@@ -61,6 +62,7 @@ export const MainPage: Component = () => {
   };
 
   const [advanceRotationsModalOpen, setAdvanceRotationsModalOpen] = createSignal(false);
+  const [resetCaughtUpModalOpen, setResetCaughtUpModalOpen] = createSignal(false);
   const [personModalOpen, setPersonModalOpen] = createSignal(false);
   const [personalChoreModalOpen, setPersonalChoreModalOpen] = createSignal(false);
   const [rotatingChoreModalOpen, setRotatingChoreModalOpen] = createSignal(false);
@@ -82,28 +84,15 @@ export const MainPage: Component = () => {
     setAdvanceRotationsModalOpen(true);
   };
 
-  const handleResetCaughtUp = async () => {
-    if (
-      !window.confirm(
-        'Reset all chores to caught up? This will mark every chore as caught up regardless of current status.'
-      )
-    )
-      return;
-    const pin =
-      pinRequired() && !cachedPin()
-        ? await requestPin('Reset All Caught Up', 'Enter admin PIN to reset caught up status').then(
-            (r) => r.pin
-          )
-        : cachedPin() || undefined;
-    if (pinRequired() && !pin) return;
-    try {
-      await resetCaughtUp({ pin: pinRequired() ? pin || undefined : undefined });
-      await loadData();
-    } catch (error) {
-      alert(
-        `Failed to reset caught up status: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
-    }
+  const getOverdueChores = () => choreData().chores.filter((c) => !c.caughtUp);
+
+  const handleResetCaughtUp = () => {
+    setResetCaughtUpModalOpen(true);
+  };
+
+  const closeResetCaughtUpModal = async () => {
+    setResetCaughtUpModalOpen(false);
+    await loadData();
   };
 
   // Person modal handlers
@@ -588,6 +577,9 @@ export const MainPage: Component = () => {
           rotatingChores={getRotatingChores()}
           closeModal={closeAdvanceRotationsModal}
         />
+      </Show>
+      <Show when={resetCaughtUpModalOpen()}>
+        <ResetCaughtUpModal overdue={getOverdueChores()} closeModal={closeResetCaughtUpModal} />
       </Show>
       <Show when={pinPromptOpen()}>
         <PinPromptModal
