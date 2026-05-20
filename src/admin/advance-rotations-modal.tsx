@@ -54,7 +54,7 @@ export const AdvanceRotationsModal: Component<AdvanceRotationsModalProps> = (pro
           <h3 class="text-2xl text-indigo-600">Advance All Rotations</h3>
           <button
             type="button"
-            class="ml-4 text-2xl leading-none text-slate-400 hover:text-slate-600"
+            class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"
             aria-label="Close"
             onClick={() => props.closeModal()}
           >
