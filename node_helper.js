@@ -1125,5 +1125,3 @@ var node_helper_default = node_helper.create({
 });
 //#endregion
 module.exports = node_helper_default;
-
-//# sourceMappingURL=node_helper.js.map

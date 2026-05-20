@@ -34,7 +34,7 @@ export default defineConfig({
   publicDir: false,
   build: {
     outDir: 'dist/admin',
-    sourcemap: true,
+    sourcemap: false,
     // Readable output makes it easier to spot unexpected changes (e.g. supply-chain injections)
     // in git diffs. There's no performance benefit to minification in this local-only environment.
     minify: false,
