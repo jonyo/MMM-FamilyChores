@@ -1651,6 +1651,31 @@ describe('Frontend Tests', () => {
 
       expect(toggleChoreCompletionSpy).toHaveBeenCalledWith('chore-1', false);
     });
+
+    it('should maintain event delegation after DOM update', async () => {
+      // Render the module to page
+      const dom = module.getDom();
+      document.body.appendChild(dom);
+
+      const toggleChoreCompletionSpy = vi.spyOn(module, 'toggleChoreCompletion');
+
+      // Click checkbox before update
+      const checkbox = page.getByRole('checkbox');
+      await checkbox.click();
+      expect(toggleChoreCompletionSpy).toHaveBeenCalledWith('chore-1', true);
+
+      // Clear previous calls
+      toggleChoreCompletionSpy.mockClear();
+
+      // Simulate DOM update (what MagicMirror does with updateDom)
+      if (module.updateDom) {
+        module.updateDom();
+      }
+
+      // Click checkbox after update - event delegation should still work
+      await checkbox.click();
+      expect(toggleChoreCompletionSpy).toHaveBeenCalledWith('chore-1', false);
+    });
   });
 
   describe('loadData', () => {
