@@ -2,9 +2,10 @@ import type {
   AdvanceRotationsRequest,
   CopyChoresRequest,
   CreateChoreRequest,
+  ResetCaughtUpRequest,
   UpdateChoreRequest,
 } from '../types/request-types';
-import type { AdvanceRotationsResponse } from '../types/response-types';
+import type { AdvanceRotationsResponse, ResetCaughtUpResponse } from '../types/response-types';
 import { validateId } from '../utils/validation';
 import { API_BASE_URL, handleResponse } from './client';
 
@@ -64,4 +65,13 @@ export const advanceRotations = async (
     body: JSON.stringify(data),
   });
   return handleResponse(response) as Promise<AdvanceRotationsResponse>;
+};
+
+export const resetCaughtUp = async (data: ResetCaughtUpRequest): Promise<ResetCaughtUpResponse> => {
+  const response = await fetch(`${API_BASE_URL}/reset-caught-up`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response) as Promise<ResetCaughtUpResponse>;
 };

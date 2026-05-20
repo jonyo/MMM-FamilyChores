@@ -457,6 +457,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
     this.expressApp?.post('/MMM-FamilyChores/copy-chores', handlers.postCopyChores);
     this.expressApp?.put('/MMM-FamilyChores/settings', handlers.putSettings);
     this.expressApp?.post('/MMM-FamilyChores/advance-rotations', handlers.postAdvanceRotations);
+    this.expressApp?.post('/MMM-FamilyChores/reset-caught-up', handlers.postResetCaughtUp);
 
     Log.info('Admin routes configured for MMM-FamilyChores');
   },

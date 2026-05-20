@@ -1222,6 +1222,13 @@
 			body: JSON.stringify(data)
 		}));
 	};
+	var resetCaughtUp = async (data) => {
+		return handleResponse(await fetch(`${API_BASE_URL}/reset-caught-up`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(data)
+		}));
+	};
 	//#endregion
 	//#region src/api/people.ts
 	var createPerson = async (data) => {
@@ -2835,6 +2842,17 @@
 		const handleAdvanceRotations = () => {
 			setAdvanceRotationsModalOpen(true);
 		};
+		const handleResetCaughtUp = async () => {
+			if (!window.confirm("Reset all chores to caught up? This will mark every chore as caught up regardless of current status.")) return;
+			const pin = pinRequired() && !cachedPin() ? await requestPin("Reset All Caught Up", "Enter admin PIN to reset caught up status").then((r) => r.pin) : cachedPin() || void 0;
+			if (pinRequired() && !pin) return;
+			try {
+				await resetCaughtUp({ pin: pinRequired() ? pin || void 0 : void 0 });
+				await loadData();
+			} catch (error) {
+				alert(`Failed to reset caught up status: ${error instanceof Error ? error.message : "Unknown error"}`);
+			}
+		};
 		const openPersonModal = (person = null) => {
 			setEditingPerson(person);
 			setPersonModalOpen(true);
@@ -3169,7 +3187,14 @@
 					onClick: handleAdvanceRotations,
 					"data-testid": "advance-rotations-btn",
 					children: "↻ Advance All Rotations"
-				}));
+				}), null);
+				insert(_el$16, createComponent(Button, {
+					type: "button",
+					variant: "secondary",
+					onClick: handleResetCaughtUp,
+					"data-testid": "reset-caught-up-btn",
+					children: "✓ Reset All Caught Up"
+				}), null);
 				return _el$6;
 			})(),
 			createComponent(Show, {

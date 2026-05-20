@@ -1,6 +1,6 @@
 import type { Component } from 'solid-js';
 import { createSignal, For, Show } from 'solid-js';
-import { deleteChore, deletePerson, downloadBackup } from '../api';
+import { deleteChore, deletePerson, downloadBackup, resetCaughtUp } from '../api';
 import type { Chore, DayOfWeek, Person, PersonalChore, RotatingChore } from '../types/chore-types';
 import { ChoreType } from '../types/chore-types';
 import { escapeHtml } from '../utils/browser';
@@ -80,6 +80,30 @@ export const MainPage: Component = () => {
   // System action handlers
   const handleAdvanceRotations = () => {
     setAdvanceRotationsModalOpen(true);
+  };
+
+  const handleResetCaughtUp = async () => {
+    if (
+      !window.confirm(
+        'Reset all chores to caught up? This will mark every chore as caught up regardless of current status.'
+      )
+    )
+      return;
+    const pin =
+      pinRequired() && !cachedPin()
+        ? await requestPin('Reset All Caught Up', 'Enter admin PIN to reset caught up status').then(
+            (r) => r.pin
+          )
+        : cachedPin() || undefined;
+    if (pinRequired() && !pin) return;
+    try {
+      await resetCaughtUp({ pin: pinRequired() ? pin || undefined : undefined });
+      await loadData();
+    } catch (error) {
+      alert(
+        `Failed to reset caught up status: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
   };
 
   // Person modal handlers
@@ -514,6 +538,14 @@ export const MainPage: Component = () => {
               data-testid="advance-rotations-btn"
             >
               ↻ Advance All Rotations
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleResetCaughtUp}
+              data-testid="reset-caught-up-btn"
+            >
+              ✓ Reset All Caught Up
             </Button>
           </div>
         </section>

@@ -20,3 +20,12 @@ export interface AdvanceRotationsResponse {
   /** Number of chores that were advanced */
   advanced: number;
 }
+
+/**
+ * Success response body for POST /reset-caught-up
+ */
+export interface ResetCaughtUpResponse {
+  success: true;
+  /** Number of chores that were reset */
+  reset: number;
+}

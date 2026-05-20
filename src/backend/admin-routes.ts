@@ -81,6 +81,7 @@ export interface AdminHandlers {
   postCopyChores: (req: Request, res: Response) => void;
   putSettings: (req: Request, res: Response) => void;
   postAdvanceRotations: (req: Request, res: Response) => void;
+  postResetCaughtUp: (req: Request, res: Response) => void;
 }
 
 export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers {
@@ -603,6 +604,35 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
       } catch (error) {
         Log.error(`Error advancing rotations: ${error}`);
         res.status(500).json(apiErr('Failed to advance rotations'));
+      }
+    },
+
+    postResetCaughtUp: (req, res) => {
+      if (!validatePin(req, res, context)) return;
+      try {
+        const choreData = context.getChoreData();
+
+        if (!choreData) {
+          res.status(500).json(apiErr('No data available'));
+          return;
+        }
+
+        let reset = 0;
+        for (const chore of choreData.chores) {
+          if (!chore.caughtUp) {
+            chore.caughtUp = true;
+            reset++;
+          }
+        }
+
+        context.saveChoreData();
+        context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
+
+        Log.info(`Caught up status reset: ${reset} chore(s) updated`);
+        res.json({ success: true, reset });
+      } catch (error) {
+        Log.error(`Error resetting caught up status: ${error}`);
+        res.status(500).json(apiErr('Failed to reset caught up status'));
       }
     },
 
