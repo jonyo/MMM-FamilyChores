@@ -141,14 +141,18 @@
 /* Summary View Styles */
 .MMM-FamilyChores .summary-view {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
   gap: 20px;
+  align-items: flex-start;
 }
 
 .MMM-FamilyChores .summary-section {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
   padding: 15px;
+  flex: 1 1 300px;
+  min-width: 250px;
 }
 
 .MMM-FamilyChores .section-title {
@@ -171,7 +175,7 @@
 }
 
 .MMM-FamilyChores .summary-section .chore-list {
-  gap: 8px;
+  gap: 2px;
 }
 
 .MMM-FamilyChores .summary-section .chore-item {
@@ -183,29 +187,124 @@
 .MMM-FamilyChores .rotating-inline {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 6px;
-  font-size: 0.95rem;
+  gap: 6px;
+  padding: 3px 0;
+  background: none;
+  border-radius: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 0.7rem;
+}
+
+.MMM-FamilyChores .rotating-inline:last-child {
+  border-bottom: none;
 }
 
 .MMM-FamilyChores .rotating-inline .chore-name {
   font-weight: 500;
   color: #fff;
   flex: 1;
+  font-size: 1rem;
+  text-align: left;
 }
 
 .MMM-FamilyChores .rotating-inline .person-name {
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 1rem;
   white-space: nowrap;
 }
 
 .MMM-FamilyChores .rotating-inline .inline-checkbox {
-  width: 18px;
-  height: 18px;
+  width: 10px;
+  height: 10px;
   accent-color: #4caf50;
   cursor: pointer;
   flex-shrink: 0;
+  transform: scale(1.5);
+}
+
+/* Incomplete by Person - Compact Inline Style */
+.MMM-FamilyChores .incomplete-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.MMM-FamilyChores .incomplete-person-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 1rem;
+}
+
+.MMM-FamilyChores .incomplete-person-row:last-child {
+  border-bottom: none;
+}
+
+.MMM-FamilyChores .incomplete-person-row .person-name {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.MMM-FamilyChores .incomplete-person-row .incomplete-count {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #fff;
+}
+
+/* Overdue by Person - Compact Inline Style */
+.MMM-FamilyChores .overdue-list {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.MMM-FamilyChores .overdue-person-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255, 193, 7, 0.2);
+  flex: 1 1 200px;
+  min-width: 180px;
+}
+
+.MMM-FamilyChores .overdue-person-group:last-child {
+  border-bottom: none;
+}
+
+.MMM-FamilyChores .overdue-person-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 2px;
+  text-align: left;
+}
+
+.MMM-FamilyChores .overdue-chores-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding-left: 8px;
+}
+
+.MMM-FamilyChores .overdue-chore-item {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #ffc107;
+  padding: 2px 0;
+  text-align: left;
+}
+
+.MMM-FamilyChores .overdue-more {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #ffc107;
+  opacity: 0.8;
+  padding: 2px 0;
+  font-style: italic;
+  text-align: left;
 }

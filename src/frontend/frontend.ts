@@ -307,6 +307,98 @@ const familyChoresModule: FamilyChoresModule = {
     return html;
   },
 
+  // Custom function: render overdue chores grouped by person in compact inline style
+  renderOverdueByPerson(overdueChores: Chore[], choreData: FamilyChoresData): string {
+    // Group overdue chores by person
+    const choresByPerson = new Map<string, Chore[]>();
+    overdueChores.forEach((chore) => {
+      let personId: string | undefined;
+      if (chore.type === ChoreType.PERSONAL) {
+        personId = chore.assignedTo;
+      } else if (
+        chore.type === ChoreType.ROTATING &&
+        chore.rotation &&
+        chore.rotatingIndex !== undefined
+      ) {
+        personId = chore.rotation[chore.rotatingIndex];
+      }
+
+      if (personId) {
+        if (!choresByPerson.has(personId)) {
+          choresByPerson.set(personId, []);
+        }
+        choresByPerson.get(personId)?.push(chore);
+      }
+    });
+
+    let html = '';
+    choresByPerson.forEach((chores, personId) => {
+      const person = choreData.people.find((p) => p.id === personId);
+      if (!person) return;
+
+      // Show all if 4 or fewer, otherwise show 3 and "...X more"
+      const displayChores = chores.length <= 4 ? chores : chores.slice(0, 3);
+      const remainingCount = chores.length <= 4 ? 0 : chores.length - 3;
+
+      html += `<div class="overdue-person-group">`;
+      html += `<div class="overdue-person-name" style="color: ${person.color}">${escapeHtml(person.name)}</div>`;
+      html += '<div class="overdue-chores-list">';
+      displayChores.forEach((chore) => {
+        html += `<div class="overdue-chore-item" data-chore-id="${chore.id}">${escapeHtml(chore.name)}</div>`;
+      });
+
+      if (remainingCount > 0) {
+        html += `<div class="overdue-more">...${remainingCount} more</div>`;
+      }
+
+      html += '</div>';
+      html += '</div>';
+    });
+
+    return html;
+  },
+
+  // Custom function: render incomplete chores grouped by person with counts
+  renderIncompleteByPerson(incompleteChores: Chore[], choreData: FamilyChoresData): string {
+    // Group incomplete chores by person
+    const choresByPerson = new Map<string, Chore[]>();
+    incompleteChores.forEach((chore) => {
+      let personId: string | undefined;
+      if (chore.type === ChoreType.PERSONAL) {
+        personId = chore.assignedTo;
+      } else if (
+        chore.type === ChoreType.ROTATING &&
+        chore.rotation &&
+        chore.rotatingIndex !== undefined
+      ) {
+        personId = chore.rotation[chore.rotatingIndex];
+      }
+
+      if (personId) {
+        if (!choresByPerson.has(personId)) {
+          choresByPerson.set(personId, []);
+        }
+        choresByPerson.get(personId)?.push(chore);
+      }
+    });
+
+    let html = '';
+    // Show all people, including those with 0 incomplete chores
+    choreData.people.forEach((person) => {
+      const chores = choresByPerson.get(person.id) || [];
+      const count = chores.length;
+      // Show multiple emoji options for 0 count so user can choose
+      const celebrationEmoji = count === 0 ? '🎉' : '';
+
+      html += `<div class="incomplete-person-row">`;
+      html += `<span class="person-name" style="color: ${person.color}">${escapeHtml(person.name)}</span>`;
+      html += `<span class="incomplete-count">${celebrationEmoji} ${count}</span>`;
+      html += '</div>';
+    });
+
+    return html;
+  },
+
   // Custom function: render summary view with sections
   renderSummaryView(wrapper: HTMLElement): HTMLElement {
     if (!this.choreData) {
@@ -346,10 +438,8 @@ const familyChoresModule: FamilyChoresModule = {
     if (summaryConfig.showIncomplete && incompleteChores.length > 0) {
       html += '<div class="summary-section incomplete-section">';
       html += `<h3 class="section-title incomplete-title">${summaryConfig.incompleteTitle}</h3>`;
-      html += '<div class="chore-list">';
-      html += incompleteChores
-        .map((chore: Chore) => this.renderChoreItem(chore, choreData))
-        .join('');
+      html += '<div class="incomplete-list">';
+      html += this.renderIncompleteByPerson(incompleteChores, choreData);
       html += '</div>';
       html += '</div>';
     }
@@ -370,8 +460,8 @@ const familyChoresModule: FamilyChoresModule = {
     if (summaryConfig.showOverdue && overdueChores.length > 0) {
       html += '<div class="summary-section overdue-section">';
       html += `<h3 class="section-title overdue-title">${summaryConfig.overdueTitle}</h3>`;
-      html += '<div class="chore-list">';
-      html += overdueChores.map((chore: Chore) => this.renderChoreItem(chore, choreData)).join('');
+      html += '<div class="overdue-list">';
+      html += this.renderOverdueByPerson(overdueChores, choreData);
       html += '</div>';
       html += '</div>';
     }

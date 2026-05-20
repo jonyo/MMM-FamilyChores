@@ -46,6 +46,8 @@ export interface FamilyChoresModule extends Omit<MagicMirrorModule<Config>, 'get
   getSummaryChores: () => Chore[];
   renderChoreItem: (chore: Chore, choreData: FamilyChoresData) => string;
   renderRotatingChoreInline: (chore: Chore, choreData: FamilyChoresData) => string;
+  renderOverdueByPerson: (overdueChores: Chore[], choreData: FamilyChoresData) => string;
+  renderIncompleteByPerson: (incompleteChores: Chore[], choreData: FamilyChoresData) => string;
   renderSummaryView: (wrapper: HTMLElement) => HTMLElement;
 }
 

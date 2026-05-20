@@ -1307,8 +1307,10 @@ describe('Frontend Tests', () => {
 
       // Should show incomplete chores section
       expect(page.getByText('Incomplete Chores')).toBeVisible();
-      expect(page.getByText('Take out trash').first()).toBeVisible();
-      expect(page.getByText('Clean kitchen').first()).toBeVisible();
+      // Shows person names with counts, not individual chore names
+      expect(page.getByText('Alice').first()).toBeVisible();
+      expect(page.getByText('Bob').first()).toBeVisible();
+      expect(page.getByText('Charlie').first()).toBeVisible();
 
       // Should show Current Rotating Assignments section
       expect(page.getByText("Today's Rotation")).toBeVisible();
@@ -1316,8 +1318,8 @@ describe('Frontend Tests', () => {
 
       // Should show overdue section
       expect(page.getByText('Overdue')).toBeVisible();
-      // Appears in incomplete and overdue sections
-      expect(page.getByText('Clean kitchen').elements()).toHaveLength(2);
+      // Clean kitchen appears in overdue section (not in incomplete which shows counts)
+      expect(page.getByText('Clean kitchen').elements()).toHaveLength(1);
 
       // Should not show completed personal chores
       expect(page.getByText('Vacuum living room').elements()).toHaveLength(0);
@@ -1357,8 +1359,10 @@ describe('Frontend Tests', () => {
 
       // Should only show incomplete chores
       expect(page.getByText('Incomplete Chores')).toBeVisible();
-      expect(page.getByText('Take out trash')).toBeVisible();
-      expect(page.getByText('Clean kitchen')).toBeVisible();
+      // Shows person names with counts, not individual chore names
+      expect(page.getByText('Alice')).toBeVisible();
+      expect(page.getByText('Bob')).toBeVisible();
+      expect(page.getByText('Charlie')).toBeVisible();
 
       // Should not show other sections
       expect(page.getByText("Today's Rotation").elements()).toHaveLength(0);
