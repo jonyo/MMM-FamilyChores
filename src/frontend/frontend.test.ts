@@ -73,7 +73,6 @@ describe('Frontend Tests', () => {
     module.config = {
       updateInterval: 60000,
       dataFile: 'data.json',
-      adminPin: null,
       personFilter: null,
     };
   });
@@ -91,7 +90,6 @@ describe('Frontend Tests', () => {
     it('should have correct default configuration', () => {
       expect(module.defaults.updateInterval).toBe(60000);
       expect(module.defaults.dataFile).toBe('data.json');
-      expect(module.defaults.adminPin).toBe(null);
     });
 
     it('should return correct styles', () => {
