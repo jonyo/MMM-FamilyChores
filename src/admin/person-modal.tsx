@@ -61,7 +61,7 @@ export const PersonModal: Component<PersonModalProps> = (props) => {
     <div class="fixed inset-0 z-1000 flex  items-center justify-center bg-black/50">
       <div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200">
         <div class="mb-5 flex items-center justify-between">
-          <h3 class="text-2xl text-indigo-600">
+          <h3 class="text-2xl text-indigo-600" data-testid="modal-title">
             {props.initialPerson ? 'Edit Person' : 'Add Person'}
           </h3>
           <button

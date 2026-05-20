@@ -1,5 +1,6 @@
-import { render, screen } from '@solidjs/testing-library';
+import { render } from '@solidjs/testing-library';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { page } from 'vitest/browser';
 import type { DailyCompletion, Person } from '../types/chore-types';
 import { ChoreHistoryModal } from './chore-history-modal';
 import { MockAdminProvider, mockPersonalChore } from './test-utils';
@@ -42,11 +43,11 @@ describe('ChoreHistoryModal', () => {
     vi.useRealTimers();
   });
 
-  it('renders modal with person name', () => {
+  it('renders modal with person name', async () => {
     const closeModal = vi.fn();
     const loadDataMock = vi.fn().mockResolvedValue(undefined);
 
-    const { container } = render(() => (
+    render(() => (
       <MockAdminProvider
         choreDataOverride={{
           chores: [
@@ -60,11 +61,11 @@ describe('ChoreHistoryModal', () => {
       </MockAdminProvider>
     ));
 
-    expect(container.querySelector('[data-testid="modal"]')).toBeInTheDocument();
-    expect(screen.getByText("Alice's Chore History")).toBeInTheDocument();
+    await expect.element(page.getByTestId('modal')).toBeVisible();
+    await expect.element(page.getByText("Alice's Chore History")).toBeVisible();
   });
 
-  it('shows loading state initially', () => {
+  it('shows loading state initially', async () => {
     const closeModal = vi.fn();
     const loadDataMock = vi.fn().mockImplementation(() => new Promise<void>(() => {}));
 
@@ -82,14 +83,14 @@ describe('ChoreHistoryModal', () => {
       </MockAdminProvider>
     ));
 
-    expect(screen.getByText('Loading history...')).toBeInTheDocument();
+    await expect.element(page.getByText('Loading history...')).toBeVisible();
   });
 
   it('renders history table when data loads successfully', async () => {
     const closeModal = vi.fn();
     const loadDataMock = vi.fn().mockResolvedValue(undefined);
 
-    const { container } = render(() => (
+    render(() => (
       <MockAdminProvider
         choreDataOverride={{
           chores: [
@@ -104,19 +105,18 @@ describe('ChoreHistoryModal', () => {
       </MockAdminProvider>
     ));
 
-    // Wait for async operations
     await vi.advanceTimersByTimeAsync(100);
 
-    expect(container.querySelector('[data-testid="history-table"]')).toBeInTheDocument();
-    expect(screen.getByText('Clean room')).toBeInTheDocument();
-    expect(screen.getByText('Do dishes')).toBeInTheDocument();
+    await expect.element(page.getByTestId('history-table')).toBeVisible();
+    await expect.element(page.getByText('Clean room')).toBeVisible();
+    await expect.element(page.getByText('Do dishes')).toBeVisible();
   });
 
   it('shows completion badges for completed chores', async () => {
     const closeModal = vi.fn();
     const loadDataMock = vi.fn().mockResolvedValue(undefined);
 
-    const { container } = render(() => (
+    render(() => (
       <MockAdminProvider
         choreDataOverride={{
           chores: [
@@ -131,20 +131,18 @@ describe('ChoreHistoryModal', () => {
       </MockAdminProvider>
     ));
 
-    // Wait for async operations
     await vi.advanceTimersByTimeAsync(100);
 
-    const completionBadges = container.querySelectorAll(
-      '[data-testid="completion-ontime"], [data-testid="completion-late"]'
-    );
-    expect(completionBadges.length).toBeGreaterThan(0);
+    const completionBadges = page.getByTestId('completion-ontime').elements();
+    const lateBadges = page.getByTestId('completion-late').elements();
+    expect(completionBadges.length + lateBadges.length).toBeGreaterThan(0);
   });
 
   it('shows on-time completion in green', async () => {
     const closeModal = vi.fn();
     const loadDataMock = vi.fn().mockResolvedValue(undefined);
 
-    const { container } = render(() => (
+    render(() => (
       <MockAdminProvider
         choreDataOverride={{
           chores: [
@@ -159,18 +157,16 @@ describe('ChoreHistoryModal', () => {
       </MockAdminProvider>
     ));
 
-    // Wait for async operations
     await vi.advanceTimersByTimeAsync(100);
 
-    const onTimeBadge = container.querySelector('[data-testid="completion-ontime"]');
-    expect(onTimeBadge).toBeInTheDocument();
+    await expect.element(page.getByTestId('completion-ontime')).toBeVisible();
   });
 
   it('shows late completion in yellow', async () => {
     const closeModal = vi.fn();
     const loadDataMock = vi.fn().mockResolvedValue(undefined);
 
-    const { container } = render(() => (
+    render(() => (
       <MockAdminProvider
         choreDataOverride={{
           chores: [
@@ -185,18 +181,16 @@ describe('ChoreHistoryModal', () => {
       </MockAdminProvider>
     ));
 
-    // Wait for async operations
     await vi.advanceTimersByTimeAsync(100);
 
-    const lateBadge = container.querySelector('[data-testid="completion-late"]');
-    expect(lateBadge).toBeInTheDocument();
+    await expect.element(page.getByTestId('completion-late')).toBeVisible();
   });
 
   it('calls closeModal when close button is clicked', async () => {
     const closeModal = vi.fn();
     const loadDataMock = vi.fn().mockResolvedValue(undefined);
 
-    const { container } = render(() => (
+    render(() => (
       <MockAdminProvider
         choreDataOverride={{
           chores: [
@@ -211,13 +205,9 @@ describe('ChoreHistoryModal', () => {
       </MockAdminProvider>
     ));
 
-    // Wait for async operations
     await vi.advanceTimersByTimeAsync(100);
 
-    const closeButton = container.querySelector(
-      '[data-testid="close-button"]'
-    ) as HTMLButtonElement;
-    closeButton.click();
+    await page.getByTestId('close-button').click();
 
     expect(closeModal).toHaveBeenCalledTimes(1);
   });
@@ -265,12 +255,11 @@ describe('ChoreHistoryModal', () => {
       </MockAdminProvider>
     ));
 
-    // Wait for async operations
     await vi.advanceTimersByTimeAsync(100);
 
     // Should only show p1's chores
-    expect(screen.getByText('Clean room')).toBeInTheDocument();
-    expect(screen.getByText('Do dishes')).toBeInTheDocument();
-    expect(screen.queryByText('Other chore')).not.toBeInTheDocument();
+    await expect.element(page.getByText('Clean room')).toBeVisible();
+    await expect.element(page.getByText('Do dishes')).toBeVisible();
+    expect(page.getByTestId('history-table').element()?.textContent).not.toContain('Other chore');
   });
 });

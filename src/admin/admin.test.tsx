@@ -45,7 +45,7 @@ describe('Admin Component Tests', () => {
       // Verify people are displayed
       await expect.element(page.getByText('People')).toBeVisible();
 
-      const personCards = document.querySelectorAll('[data-testid="person-card"]');
+      const personCards = page.getByTestId('person-card').elements();
       expect(personCards.length).toBe(2);
       expect(personCards[0].textContent).toContain('Alice');
       expect(personCards[1].textContent).toContain('Bob');
@@ -118,14 +118,8 @@ describe('Admin Component Tests', () => {
       render(() => <Admin />);
       await expect.element(page.getByText('Family Chores Admin')).toBeVisible();
 
-      const container = document.querySelector('[data-testid="admin-container"]');
-      expect(container).toBeTruthy();
-
-      const header = document.querySelector('header');
-      expect(header).toBeTruthy();
-
-      const section = document.querySelector('[data-testid="people-section"]');
-      expect(section).toBeTruthy();
+      await expect.element(page.getByTestId('admin-container')).toBeVisible();
+      await expect.element(page.getByTestId('people-section')).toBeVisible();
     });
   });
 
@@ -160,13 +154,16 @@ describe('Admin Component Tests', () => {
       await aliceAddChoreButton.click();
 
       // Verify modal opened and contains the person's name (not "Person not found")
-      const modalContent = document.querySelector('[data-testid="modal-content"]');
-      expect(modalContent).toBeTruthy();
+      await expect.element(page.getByTestId('modal-content')).toBeVisible();
 
       // The modal should show "Assigned to: Alice" not "Person not found"
-      expect(modalContent?.textContent).toContain('Alice');
-      expect(modalContent?.textContent).not.toContain('Person not found');
-      expect(modalContent?.textContent).toContain('Add Personal Chore');
+      await expect.element(page.getByTestId('modal-content')).toHaveTextContent('Alice');
+      expect(page.getByTestId('modal-content').element().textContent).not.toContain(
+        'Person not found'
+      );
+      await expect
+        .element(page.getByTestId('modal-content'))
+        .toHaveTextContent('Add Personal Chore');
     });
   });
 });

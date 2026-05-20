@@ -50,6 +50,46 @@ Ask yourself: "Is this information useful to know about this specific property/f
 
 JSDoc is encouraged but not strictly required when the name and type signature are already self-documenting. Focus JSDoc on non-obvious behavior, constraints, or public API contracts.
 
+### Testing Conventions (Browser Tests)
+
+**Preferred Locators:**
+Always use `page.` locators from `vitest/browser` in this priority order:
+
+1. `page.getByTestId('...')` - For elements with `data-testid` attributes
+2. `page.getByLabelText('...')` - For form inputs with associated labels
+3. `page.getByRole('button', { name: '...' })` - For buttons and interactive elements
+4. `page.getByPlaceholder('...')` - For inputs without labels (fallback)
+5. `page.getByText('...')` - For text content assertions
+
+**Avoid these patterns:**
+- `document.querySelector('#id')` or `document.querySelector('[data-testid="..."]')`
+- `document.querySelectorAll(...)` - use `page.getByTestId().elements()` instead
+- `screen.getByText()` or `screen.queryByText()` from `@solidjs/testing-library`
+- `fireEvent` - use `page.getByRole('button').click()` instead
+
+**Assertion Patterns:**
+- Use `await expect.element(locator).toBeVisible()` for visibility checks
+- **Avoid** `.toBeInTheDocument()` from `@solidjs/testing-library` - use `.toBeVisible()` with `page.` locators instead
+- Use `await expect.element(locator).toHaveTextContent('...')` for text content
+- Use `await expect.element(locator).toHaveValue('...')` for input values
+- Use `await expect.element(locator).not.toBeChecked()` for checkbox state
+- Use `expect(page.getByText('...').elements().length).toBe(0)` for "not exists" checks
+
+**Example:**
+```typescript
+import { render } from '@solidjs/testing-library';
+import { page } from 'vitest/browser';
+
+// Good
+await expect.element(page.getByTestId('modal-title')).toBeVisible();
+await expect.element(page.getByLabelText('Chore Name')).toHaveValue('Do dishes');
+await page.getByRole('button', { name: 'Save' }).click();
+
+// Avoid
+document.querySelector('#choreName');
+screen.getByText('Save').click();
+```
+
 ### Development Workflow
 
 **ALWAYS run these commands before making changes:**
