@@ -78,15 +78,7 @@ export const MainPage: Component = () => {
   };
 
   // System action handlers
-  const handleAdvanceRotations = async () => {
-    if (pinRequired() && !cachedPin()) {
-      const result = await requestPin(
-        'Advance All Rotations',
-        'Enter admin PIN to advance all rotations'
-      );
-      if (!result.pin) return;
-      if (result.remember) setCachedPin(result.pin);
-    }
+  const handleAdvanceRotations = () => {
     setAdvanceRotationsModalOpen(true);
   };
 
