@@ -17,6 +17,21 @@ interface RotatingChoreModalProps {
   closeModal: () => void;
 }
 
+/**
+ * 6-dot grab handle used as the drag initiator for person rows.
+ */
+const GrabHandle: Component = () => (
+  <svg width="12" height="18" viewBox="0 0 12 18" class="text-slate-400">
+    <title>Drag handle</title>
+    <circle cx="3" cy="3" r="1.5" fill="currentColor" />
+    <circle cx="9" cy="3" r="1.5" fill="currentColor" />
+    <circle cx="3" cy="9" r="1.5" fill="currentColor" />
+    <circle cx="9" cy="9" r="1.5" fill="currentColor" />
+    <circle cx="3" cy="15" r="1.5" fill="currentColor" />
+    <circle cx="9" cy="15" r="1.5" fill="currentColor" />
+  </svg>
+);
+
 export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) => {
   const { choreData, pinRequired, setCachedPin, cachedPin } = useAdminContext();
   const [name, setName] = createSignal(props.initialChore?.name ?? '');
@@ -26,8 +41,23 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
   );
   const [skipDays, setSkipDays] = createSignal<DayOfWeek[]>(props.initialChore?.skipDays ?? []);
   const [rotation, setRotation] = createSignal<string[]>(props.initialChore?.rotation ?? []);
+  const [activePersonId, setActivePersonId] = createSignal<string>(
+    props.initialChore
+      ? (props.initialChore.rotation[props.initialChore.rotatingIndex ?? 0] ?? '')
+      : ''
+  );
   const [pin, setPin] = createSignal('');
   const [rememberPin, setRememberPin] = createSignal(false);
+
+  // Drag-and-drop state
+  const [draggedPersonId, setDraggedPersonId] = createSignal<string | null>(null);
+  const [dragOverColumn, setDragOverColumn] = createSignal<'available' | 'rotation' | null>(null);
+  const [dragOverIndex, setDragOverIndex] = createSignal<number | null>(null);
+
+  const availablePeople = () => choreData().people.filter((p) => !rotation().includes(p.id));
+
+  const getPersonName = (id: string) =>
+    choreData().people.find((p) => p.id === id)?.name ?? 'Unknown';
 
   const handleSkipDayChange = (day: DayOfWeek, checked: boolean) => {
     if (checked) {
@@ -37,23 +67,104 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
     }
   };
 
-  const handleRotationChange = (personId: string, checked: boolean) => {
-    if (checked) {
-      setRotation([...rotation(), personId]);
-    } else {
-      setRotation(rotation().filter((id) => id !== personId));
+  const handleDragStart = (personId: string) => (e: DragEvent) => {
+    setDraggedPersonId(personId);
+    e.dataTransfer?.setData('text/plain', personId);
+    if (e.dataTransfer) {
+      e.dataTransfer.effectAllowed = 'move';
     }
+  };
+
+  const handleDragEnd = () => {
+    setDraggedPersonId(null);
+    setDragOverColumn(null);
+    setDragOverIndex(null);
+  };
+
+  const handleColumnDragOver = (e: DragEvent, column: 'available' | 'rotation') => {
+    e.preventDefault();
+    setDragOverColumn(column);
+    if (column === 'rotation') {
+      const container = e.currentTarget as HTMLElement;
+      const children = Array.from(container.querySelectorAll('[data-rotation-item]'));
+      let insertIndex = children.length;
+      for (let i = 0; i < children.length; i++) {
+        const rect = children[i].getBoundingClientRect();
+        const midY = rect.top + rect.height / 2;
+        if (e.clientY < midY) {
+          insertIndex = i;
+          break;
+        }
+      }
+      setDragOverIndex(insertIndex);
+    } else {
+      setDragOverIndex(null);
+    }
+  };
+
+  const handleColumnDrop = (e: DragEvent, column: 'available' | 'rotation') => {
+    e.preventDefault();
+    const personId = e.dataTransfer?.getData('text/plain');
+    if (!personId) return;
+
+    const currentRotation = rotation();
+    const isInRotation = currentRotation.includes(personId);
+
+    if (column === 'rotation') {
+      const container = e.currentTarget as HTMLElement;
+      const children = Array.from(container.querySelectorAll('[data-rotation-item]'));
+      let insertIndex = children.length;
+      for (let i = 0; i < children.length; i++) {
+        const rect = children[i].getBoundingClientRect();
+        const midY = rect.top + rect.height / 2;
+        if (e.clientY < midY) {
+          insertIndex = i;
+          break;
+        }
+      }
+
+      if (isInRotation) {
+        const oldIndex = currentRotation.indexOf(personId);
+        const newRotation = currentRotation.filter((id) => id !== personId);
+        if (oldIndex < insertIndex) {
+          insertIndex--;
+        }
+        newRotation.splice(insertIndex, 0, personId);
+        setRotation(newRotation);
+      } else {
+        const newRotation = [...currentRotation];
+        newRotation.splice(insertIndex, 0, personId);
+        setRotation(newRotation);
+        if (!activePersonId()) {
+          setActivePersonId(personId);
+        }
+      }
+    } else if (column === 'available' && isInRotation) {
+      const newRotation = currentRotation.filter((id) => id !== personId);
+      setRotation(newRotation);
+      if (activePersonId() === personId) {
+        setActivePersonId(newRotation[0] ?? '');
+      }
+    }
+
+    setDraggedPersonId(null);
+    setDragOverColumn(null);
+    setDragOverIndex(null);
   };
 
   const handleSubmit = async (event: Event) => {
     event.preventDefault();
     try {
       const pinToUse = cachedPin() || pin();
+      const currentRotation = rotation();
+      const rotatingIndex = activePersonId() ? currentRotation.indexOf(activePersonId()) : 0;
+
       if (props.initialChore?.id) {
         const body: UpdateChoreRequest = {
           name: name(),
           type: ChoreType.ROTATING,
-          rotation: rotation(),
+          rotation: currentRotation,
+          rotatingIndex,
           deadline: deadline() || undefined,
           skipDays: skipDays(),
           skipDayVisibility: skipDayVisibility(),
@@ -64,7 +175,8 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
         const body: CreateChoreRequest = {
           name: name(),
           type: ChoreType.ROTATING,
-          rotation: rotation(),
+          rotation: currentRotation,
+          rotatingIndex,
           deadline: deadline() || undefined,
           skipDays: skipDays(),
           skipDayVisibility: skipDayVisibility(),
@@ -85,8 +197,8 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
   };
 
   return (
-    <div class="fixed inset-0 z-1000 flex  items-center justify-center bg-black/50">
-      <div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200">
+    <div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50">
+      <div class="max-h-[90vh] w-[90%] max-w-[600px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200">
         <h3 class="mb-5 text-2xl text-indigo-600">
           {props.initialChore ? 'Edit Rotating Chore' : 'Add Rotating Chore'}
         </h3>
@@ -104,48 +216,108 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
               class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"
             />
           </div>
+
           <div class="mb-5">
-            <div class="mb-3 block font-medium text-slate-900">Rotation (select people)</div>
-            <div
-              class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3"
-              data-testid="checkbox-list"
-            >
-              <For each={choreData().people}>
-                {(person) => (
-                  <label class="flex cursor-pointer items-center gap-2 font-normal">
-                    <input
-                      type="checkbox"
-                      checked={rotation().includes(person.id)}
-                      onInput={(e) => handleRotationChange(person.id, e.currentTarget.checked)}
-                      class="size-4.5  cursor-pointer"
-                    />
-                    {person.name}
-                  </label>
-                )}
-              </For>
+            <div class="mb-3 block font-medium text-slate-900">Rotation</div>
+            <div class="flex gap-4">
+              {/* Available People */}
+              <div class="flex-1">
+                <div class="mb-2 text-sm font-medium text-slate-600">Available</div>
+                <ul
+                  class="min-h-[120px] rounded-lg border border-slate-200 bg-slate-50 p-2"
+                  classList={{
+                    'border-indigo-500 bg-indigo-50': dragOverColumn() === 'available',
+                  }}
+                  onDragOver={(e) => handleColumnDragOver(e, 'available')}
+                  onDrop={(e) => handleColumnDrop(e, 'available')}
+                  data-testid="available-column"
+                >
+                  <For each={availablePeople()}>
+                    {(person) => (
+                      <li
+                        class="flex cursor-grab items-center gap-2 rounded p-2 transition-opacity hover:bg-slate-100"
+                        classList={{
+                          'opacity-50': draggedPersonId() === person.id,
+                        }}
+                        draggable={true}
+                        onDragStart={handleDragStart(person.id)}
+                        onDragEnd={handleDragEnd}
+                        data-testid={`available-person-${person.id}`}
+                      >
+                        <span data-drag-handle class="shrink-0">
+                          <GrabHandle />
+                        </span>
+                        <span class="text-sm">{person.name}</span>
+                      </li>
+                    )}
+                  </For>
+                  <Show when={availablePeople().length === 0}>
+                    <li class="list-none p-4 text-center text-sm text-slate-400 italic">
+                      All people in rotation
+                    </li>
+                  </Show>
+                </ul>
+              </div>
+
+              {/* In Rotation */}
+              <div class="flex-1">
+                <div class="mb-2 text-sm font-medium text-slate-600">In Rotation</div>
+                <ul
+                  class="min-h-[120px] rounded-lg border border-slate-200 bg-slate-50 p-2"
+                  classList={{
+                    'border-indigo-500 bg-indigo-50': dragOverColumn() === 'rotation',
+                  }}
+                  onDragOver={(e) => handleColumnDragOver(e, 'rotation')}
+                  onDrop={(e) => handleColumnDrop(e, 'rotation')}
+                  data-testid="rotation-column"
+                >
+                  <For each={rotation()}>
+                    {(personId, index) => (
+                      <li
+                        class="flex items-center gap-2 rounded p-2 transition-opacity hover:bg-slate-100"
+                        classList={{
+                          'border-t-2 border-indigo-500':
+                            dragOverColumn() === 'rotation' && dragOverIndex() === index(),
+                          'border-b-2 border-indigo-500':
+                            dragOverColumn() === 'rotation' &&
+                            dragOverIndex() === rotation().length &&
+                            index() === rotation().length - 1,
+                          'opacity-50': draggedPersonId() === personId,
+                        }}
+                        draggable={true}
+                        onDragStart={handleDragStart(personId)}
+                        onDragEnd={handleDragEnd}
+                        data-rotation-item
+                        data-testid={`rotation-person-${personId}`}
+                      >
+                        <span data-drag-handle class="shrink-0 cursor-grab">
+                          <GrabHandle />
+                        </span>
+                        <label class="flex cursor-pointer items-center gap-2">
+                          <input
+                            type="radio"
+                            name="active-person"
+                            value={personId}
+                            checked={activePersonId() === personId}
+                            onChange={() => setActivePersonId(personId)}
+                            class="size-4 cursor-pointer"
+                            data-testid={`active-person-radio-${personId}`}
+                          />
+                          <span class="text-sm">{getPersonName(personId)}</span>
+                        </label>
+                      </li>
+                    )}
+                  </For>
+                  <Show when={rotation().length === 0}>
+                    <li class="list-none p-4 text-center text-sm text-slate-400 italic">
+                      Drag people here
+                    </li>
+                  </Show>
+                </ul>
+              </div>
             </div>
           </div>
-          <div class="mb-5">
-            <label for="rotatingIndex" class="mb-3 block font-medium text-slate-900">
-              Starting Index (current person)
-            </label>
-            <select
-              id="rotatingIndex"
-              value={props.initialChore?.rotatingIndex ?? 0}
-              onInput={(_e) => {
-                // Store the value but don't track it in state since it's not sent to API
-                // The backend calculates this based on the rotation order
-              }}
-              class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"
-            >
-              <For each={rotation()}>
-                {(personId, index) => {
-                  const person = choreData().people.find((p) => p.id === personId);
-                  return <option value={index()}>{person ? person.name : 'Unknown'}</option>;
-                }}
-              </For>
-            </select>
-          </div>
+
           <div class="mb-5">
             <label for="deadline" class="mb-3 block font-medium text-slate-900">
               Deadline (optional)
@@ -172,7 +344,7 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
                       value={day}
                       checked={skipDays().includes(day)}
                       onInput={(e) => handleSkipDayChange(day, e.currentTarget.checked)}
-                      class="size-4.5  cursor-pointer"
+                      class="size-4.5 cursor-pointer"
                     />
                     {day.charAt(0).toUpperCase() + day.slice(1)}
                   </label>

@@ -40,6 +40,7 @@ export interface CreateChoreRequest extends PinProtectedRequest {
   type: ChoreType;
   assignedTo?: UUID;
   rotation?: UUID[];
+  rotatingIndex?: number;
   deadline?: string;
   skipDays?: DayOfWeek[];
   skipDayVisibility?: SkipDayVisibility;

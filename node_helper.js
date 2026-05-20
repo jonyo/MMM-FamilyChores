@@ -524,7 +524,7 @@ function createAdminHandlers(context) {
 		postChore: (req, res) => {
 			if (!validatePin(req, res, context)) return;
 			try {
-				const { name, type, assignedTo, rotation, deadline, skipDays, skipDayVisibility } = req.body;
+				const { name, type, assignedTo, rotation, rotatingIndex, deadline, skipDays, skipDayVisibility } = req.body;
 				const choreData = context.getChoreData();
 				if (!choreData) {
 					res.status(500).json(apiErr("No data available"));
@@ -543,7 +543,7 @@ function createAdminHandlers(context) {
 				if (type === "personal") newChore.assignedTo = assignedTo;
 				else if (type === "rotating") {
 					newChore.rotation = rotation;
-					newChore.rotatingIndex = 0;
+					newChore.rotatingIndex = rotatingIndex ?? 0;
 				}
 				const validation = validateChore(newChore, choreData.people);
 				if (!validation.valid) {
@@ -563,7 +563,7 @@ function createAdminHandlers(context) {
 			if (!validatePin(req, res, context)) return;
 			try {
 				const { id } = req.params;
-				const { name, type, assignedTo, rotation, deadline, skipDays, skipDayVisibility } = req.body;
+				const { name, type, assignedTo, rotation, rotatingIndex, deadline, skipDays, skipDayVisibility } = req.body;
 				const choreData = context.getChoreData();
 				if (!choreData) {
 					res.status(500).json(apiErr("No data available"));
@@ -588,7 +588,7 @@ function createAdminHandlers(context) {
 				if (chore.type === ChoreType.PERSONAL) updatedChore.assignedTo = assignedTo || chore.assignedTo;
 				else if (chore.type === ChoreType.ROTATING) {
 					updatedChore.rotation = rotation || chore.rotation;
-					updatedChore.rotatingIndex = chore.rotatingIndex ?? 0;
+					updatedChore.rotatingIndex = rotatingIndex !== void 0 ? rotatingIndex : chore.rotatingIndex ?? 0;
 				}
 				const validation = validateChore(updatedChore, choreData.people);
 				if (!validation.valid) {

@@ -77,7 +77,9 @@ To make changes:
     --color-green-500: #22c55e;
     --color-green-600: #16a34a;
     --color-green-700: #15803d;
+    --color-indigo-50: oklch(96.2% .018 272.314);
     --color-indigo-100: oklch(93% .034 272.788);
+    --color-indigo-500: #6366f1;
     --color-indigo-600: #4f46e5;
     --color-indigo-700: #4338ca;
     --color-slate-50: #f8fafc;
@@ -641,6 +643,11 @@ To make changes:
     display: table;
   }
 
+  .size-4 {
+    width: calc(var(--spacing) * 4);
+    height: calc(var(--spacing) * 4);
+  }
+
   .size-4\.5 {
     width: calc(var(--spacing) * 4.5);
     height: calc(var(--spacing) * 4.5);
@@ -675,6 +682,10 @@ To make changes:
 
   .max-h-\[90vh\] {
     max-height: 90vh;
+  }
+
+  .min-h-\[120px\] {
+    min-height: 120px;
   }
 
   .w-8 {
@@ -713,6 +724,10 @@ To make changes:
     max-width: 500px;
   }
 
+  .max-w-\[600px\] {
+    max-width: 600px;
+  }
+
   .flex-1 {
     flex: 1;
   }
@@ -746,12 +761,20 @@ To make changes:
     animation: var(--animate-loading-pulse);
   }
 
+  .cursor-grab {
+    cursor: grab;
+  }
+
   .cursor-help {
     cursor: help;
   }
 
   .cursor-pointer {
     cursor: pointer;
+  }
+
+  .list-none {
+    list-style-type: none;
   }
 
   .flex-col {
@@ -841,6 +864,11 @@ To make changes:
     border-top-width: 1px;
   }
 
+  .border-t-2 {
+    border-top-style: var(--tw-border-style);
+    border-top-width: 2px;
+  }
+
   .border-b-2 {
     border-bottom-style: var(--tw-border-style);
     border-bottom-width: 2px;
@@ -867,6 +895,10 @@ To make changes:
     .border-black\/10 {
       border-color: color-mix(in oklab, var(--color-black) 10%, transparent);
     }
+  }
+
+  .border-indigo-500 {
+    border-color: var(--color-indigo-500);
   }
 
   .border-indigo-600 {
@@ -905,6 +937,10 @@ To make changes:
 
   .bg-green-600 {
     background-color: var(--color-green-600);
+  }
+
+  .bg-indigo-50 {
+    background-color: var(--color-indigo-50);
   }
 
   .bg-indigo-100 {
@@ -959,6 +995,10 @@ To make changes:
 
   .bg-center {
     background-position: center;
+  }
+
+  .p-2 {
+    padding: calc(var(--spacing) * 2);
   }
 
   .p-2\.5 {
@@ -1168,6 +1208,10 @@ To make changes:
     text-decoration-line: underline;
   }
 
+  .opacity-50 {
+    opacity: .5;
+  }
+
   .shadow {
     --tw-shadow: 0 1px 3px 0 var(--tw-shadow-color, #0000001a), 0 1px 2px -1px var(--tw-shadow-color, #0000001a);
     box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
@@ -1201,6 +1245,12 @@ To make changes:
 
   .transition-colors {
     transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to;
+    transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+    transition-duration: var(--tw-duration, var(--default-transition-duration));
+  }
+
+  .transition-opacity {
+    transition-property: opacity;
     transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
     transition-duration: var(--tw-duration, var(--default-transition-duration));
   }
