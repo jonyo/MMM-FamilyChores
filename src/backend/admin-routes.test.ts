@@ -313,6 +313,32 @@ describe('createAdminHandlers', () => {
       expect(getData()?.chores).toHaveLength(3);
     });
 
+    it('uses explicit rotatingIndex when creating a rotating chore', () => {
+      const { context, getData } = makeContext();
+      const { postChore } = createAdminHandlers(context);
+      const res = createMockRes();
+      postChore(
+        {
+          body: {
+            name: 'Rotate',
+            type: 'rotating',
+            rotation: [pid1, pid2],
+            rotatingIndex: 1,
+            skipDays: [],
+            skipDayVisibility: SkipDayVisibility.HIDE,
+          },
+          params: {},
+        },
+        res
+      );
+      expect(res.statusCode).toBe(200);
+      const newChore = getData()?.chores.find((c) => c.name === 'Rotate') as
+        | RotatingChore
+        | undefined;
+      expect(newChore).toBeDefined();
+      expect(newChore?.rotatingIndex).toBe(1);
+    });
+
     it('returns 400 when validation fails (invalid skip day)', () => {
       const { context, mockSave } = makeContext();
       const { postChore } = createAdminHandlers(context);
@@ -372,6 +398,27 @@ describe('createAdminHandlers', () => {
       putChore({ body: { name: 'Renamed' }, params: { id: cid1 } }, res);
       expect(res.statusCode).toBe(200);
       expect(getData()?.chores.find((c) => c.id === cid1)?.name).toBe('Renamed');
+      expect(mockSave).toHaveBeenCalled();
+    });
+
+    it('updates rotatingIndex on an existing rotating chore', () => {
+      const { context, mockSave, getData } = makeContext();
+      const { putChore } = createAdminHandlers(context);
+      const res = createMockRes();
+      putChore(
+        {
+          body: { rotation: [pid2, pid1], rotatingIndex: 1 },
+          params: { id: cid2 },
+        },
+        res
+      );
+      expect(res.statusCode).toBe(200);
+      const updatedChore = getData()?.chores.find((c) => c.id === cid2) as
+        | RotatingChore
+        | undefined;
+      expect(updatedChore).toBeDefined();
+      expect(updatedChore?.rotation).toEqual([pid2, pid1]);
+      expect(updatedChore?.rotatingIndex).toBe(1);
       expect(mockSave).toHaveBeenCalled();
     });
 

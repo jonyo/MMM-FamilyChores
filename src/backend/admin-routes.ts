@@ -228,8 +228,16 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
     postChore: (req, res) => {
       if (!validatePin(req, res, context)) return;
       try {
-        const { name, type, assignedTo, rotation, deadline, skipDays, skipDayVisibility } =
-          req.body as CreateChoreRequest;
+        const {
+          name,
+          type,
+          assignedTo,
+          rotation,
+          rotatingIndex,
+          deadline,
+          skipDays,
+          skipDayVisibility,
+        } = req.body as CreateChoreRequest;
         const choreData = context.getChoreData();
 
         if (!choreData) {
@@ -254,7 +262,7 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
           newChore.assignedTo = assignedTo;
         } else if (type === 'rotating') {
           newChore.rotation = rotation;
-          newChore.rotatingIndex = 0;
+          newChore.rotatingIndex = rotatingIndex ?? 0;
         }
 
         // Validate the constructed chore
@@ -280,8 +288,16 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
       if (!validatePin(req, res, context)) return;
       try {
         const { id } = req.params;
-        const { name, type, assignedTo, rotation, deadline, skipDays, skipDayVisibility } =
-          req.body as UpdateChoreRequest;
+        const {
+          name,
+          type,
+          assignedTo,
+          rotation,
+          rotatingIndex,
+          deadline,
+          skipDays,
+          skipDayVisibility,
+        } = req.body as UpdateChoreRequest;
         const choreData = context.getChoreData();
 
         if (!choreData) {
@@ -313,7 +329,8 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
           updatedChore.assignedTo = assignedTo || chore.assignedTo;
         } else if (chore.type === ChoreType.ROTATING) {
           updatedChore.rotation = rotation || chore.rotation;
-          updatedChore.rotatingIndex = chore.rotatingIndex ?? 0;
+          updatedChore.rotatingIndex =
+            rotatingIndex !== undefined ? rotatingIndex : (chore.rotatingIndex ?? 0);
         }
 
         // Validate the updated chore

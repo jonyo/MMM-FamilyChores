@@ -25,8 +25,23 @@ describe('RotatingChoreModal', () => {
 
       expect(container.querySelector('h3')?.textContent).toBe('Add Rotating Chore');
       expect(container.querySelector('#choreName')).toBeTruthy();
-      expect(container.querySelector('[data-testid="checkbox-list"]')).toBeTruthy();
+      expect(container.querySelector('[data-testid="available-column"]')).toBeTruthy();
+      expect(container.querySelector('[data-testid="rotation-column"]')).toBeTruthy();
       expect(container.querySelector('[data-testid="skip-days-checkbox-list"]')).toBeTruthy();
+    });
+
+    it('should show available people and empty rotation column', () => {
+      const closeModal = vi.fn();
+
+      const { container } = render(() => (
+        <MockAdminProvider>
+          <RotatingChoreModal initialChore={undefined} closeModal={closeModal} />
+        </MockAdminProvider>
+      ));
+
+      expect(container.querySelector('[data-testid="available-person-person-1"]')).toBeTruthy();
+      expect(container.querySelector('[data-testid="available-person-person-2"]')).toBeTruthy();
+      expect(container.querySelector('[data-rotation-item]')).toBeFalsy();
     });
 
     it('should click cancel button', async () => {
@@ -74,7 +89,7 @@ describe('RotatingChoreModal', () => {
         id: 'c1',
         name: 'Do dishes',
         type: 'rotating' as const,
-        rotation: ['p1', 'p2'],
+        rotation: ['person-1', 'person-2'],
         rotatingIndex: 0,
         skipDays: [DayOfWeek.SUNDAY],
         skipDayVisibility: SkipDayVisibility.SHOW_IF_OVERDUE,
@@ -100,6 +115,9 @@ describe('RotatingChoreModal', () => {
       expect(nameInput?.value).toBe('Do dishes');
       expect(deadlineInput?.value).toBe('20:00');
       expect(skipDayVisibilitySelect?.value).toBe('show-if-overdue');
+
+      expect(container.querySelector('[data-testid="rotation-person-person-1"]')).toBeTruthy();
+      expect(container.querySelector('[data-testid="rotation-person-person-2"]')).toBeTruthy();
     });
 
     it('should click save button in edit mode', async () => {
@@ -108,7 +126,7 @@ describe('RotatingChoreModal', () => {
         id: 'c1',
         name: 'Do dishes',
         type: 'rotating' as const,
-        rotation: ['p1', 'p2'],
+        rotation: ['person-1', 'person-2'],
         rotatingIndex: 0,
         skipDays: [DayOfWeek.SUNDAY],
         skipDayVisibility: SkipDayVisibility.SHOW_IF_OVERDUE,
@@ -129,6 +147,93 @@ describe('RotatingChoreModal', () => {
 
       expect(closeModal).toHaveBeenCalled();
       expect(updateChore).toHaveBeenCalled();
+    });
+
+    it('should send rotatingIndex based on selected active person', async () => {
+      const closeModal = vi.fn();
+      const initialChore = {
+        id: 'c1',
+        name: 'Do dishes',
+        type: 'rotating' as const,
+        rotation: ['person-1', 'person-2'],
+        rotatingIndex: 0,
+        skipDays: [],
+        skipDayVisibility: SkipDayVisibility.HIDE,
+        caughtUp: true,
+        completedToday: false,
+      } as import('../types/chore-types').RotatingChore;
+
+      render(() => (
+        <MockAdminProvider>
+          <RotatingChoreModal initialChore={initialChore} closeModal={closeModal} />
+        </MockAdminProvider>
+      ));
+
+      // Select the second person as active
+      const radio = page.getByTestId('active-person-radio-person-2');
+      await radio.click();
+
+      const saveButton = page.getByRole('button', { name: 'Save' });
+      await saveButton.click();
+
+      expect(updateChore).toHaveBeenCalledWith(
+        'c1',
+        expect.objectContaining({
+          rotatingIndex: 1,
+          rotation: ['person-1', 'person-2'],
+        })
+      );
+    });
+  });
+
+  describe('Drag and Drop UI', () => {
+    it('should render drag handles and draggable attributes on available people', () => {
+      const closeModal = vi.fn();
+
+      const { container } = render(() => (
+        <MockAdminProvider>
+          <RotatingChoreModal initialChore={undefined} closeModal={closeModal} />
+        </MockAdminProvider>
+      ));
+
+      const availableItem = container.querySelector(
+        '[data-testid="available-person-person-1"]'
+      ) as HTMLElement;
+      expect(availableItem).toBeTruthy();
+      expect(availableItem.draggable).toBe(true);
+      expect(availableItem.querySelector('[data-drag-handle]')).toBeTruthy();
+    });
+
+    it('should render radio buttons in rotation column for existing rotation', () => {
+      const closeModal = vi.fn();
+      const initialChore = {
+        id: 'c1',
+        name: 'Do dishes',
+        type: 'rotating' as const,
+        rotation: ['person-1', 'person-2'],
+        rotatingIndex: 0,
+        skipDays: [],
+        skipDayVisibility: SkipDayVisibility.HIDE,
+        caughtUp: true,
+        completedToday: false,
+      } as import('../types/chore-types').RotatingChore;
+
+      const { container } = render(() => (
+        <MockAdminProvider>
+          <RotatingChoreModal initialChore={initialChore} closeModal={closeModal} />
+        </MockAdminProvider>
+      ));
+
+      const radio1 = container.querySelector(
+        '[data-testid="active-person-radio-person-1"]'
+      ) as HTMLInputElement;
+      const radio2 = container.querySelector(
+        '[data-testid="active-person-radio-person-2"]'
+      ) as HTMLInputElement;
+      expect(radio1).toBeTruthy();
+      expect(radio2).toBeTruthy();
+      expect(radio1.checked).toBe(true);
+      expect(radio2.checked).toBe(false);
     });
   });
 
