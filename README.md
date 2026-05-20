@@ -1,7 +1,5 @@
 # MMM-FamilyChores
 
-> **⚠️ Work in Progress** - This module is currently under development. We're working toward a stable 1.0 release with all core features implemented and tested. Early adopters are welcome to try it out, but expect changes and potential issues.
-
 A TypeScript-based MagicMirror² module for family chore tracking with personal daily chores, rotating daily chores that cycle through family members, a configurable summary view, and a full-featured admin panel.
 
 ## Current Features
@@ -19,6 +17,48 @@ A TypeScript-based MagicMirror² module for family chore tracking with personal 
 - **PIN Protection**: Optional admin PIN with enable/disable toggle protects destructive actions (delete, reassign, settings changes, backup/restore)
 - **Activity History**: View who completed which chores and when
 - **Backup/Restore**: Download and upload configuration files
+
+## Screenshots
+
+> Screenshots show representative examples of the module's appearance. The mirror display is fully customizable through your MagicMirror `custom.css` file, so your actual layout may differ.
+>
+> Even with default options, the look may change depending on which region you add the module to.
+
+### Mirror Views
+
+**Summary view** showing overdue chores, today's rotating assignments, and remaining personal chores across the family:
+
+![Summary View](docs/summary.png)
+
+**Per-person view** showing a single person's personal chores and their current rotating assignments:
+
+![Alice's Chores](docs/alice.png)
+
+**Overdue indicator** on a per-person view — chores not completed by their deadline show with a yellow warning badge:
+
+![Charlie's Chores with Overdue](docs/charlie.png)
+
+### Admin Panel
+
+The admin panel provides full management of people, chores, settings, and history:
+
+![Admin Panel Overview](docs/admin-top.png)
+
+**Rotating chores** show the current person assigned and can be reassigned directly:
+
+![Admin Rotating Chores](docs/admin-rotating-chores.png)
+
+**Adding a person** — each family member gets a name and a color for visual identification on the mirror:
+
+![Admin Add Person](docs/admin-add-person.png)
+
+**Adding a rotating chore** — configure skip days, visibility behavior, rotation order, and optional deadline:
+
+![Admin Add Rotating Chore](docs/admin-add-rotating-chore.png)
+
+**Activity history** — view a log of who completed which chores and when:
+
+![Admin History](docs/admin-history.png)
 
 ## Planned Roadmap
 
@@ -44,6 +84,16 @@ None at this time. The module is feature-complete for v1.0.
    ```
 
 2. Add the module to your MagicMirror config (see Configuration section below)
+
+3. Open the admin panel in your browser to set up people and chores:
+
+   ```
+   http://192.168.xxx.xxx:8080/modules/MMM-FamilyChores/admin.html
+   ```
+
+   Replace `192.168.xxx.xxx` with the IP address of your MagicMirror device.
+
+   To access the admin panel from another device, you may need to adjust your `address` and `ipWhitelist` settings in MagicMirror's `config.js`. See the [MagicMirror configuration docs](https://docs.magicmirror.builders/configuration/introduction.html) for details.
 
 That's it! The module includes all necessary dependencies in the bundled JavaScript files.
 
@@ -134,6 +184,41 @@ config: {
 }
 ```
 
+**Split summary sections across the mirror:**
+
+Use multiple module instances to place each summary section in a different position:
+
+```javascript
+// Incomplete chores in the top left
+{
+  module: 'MMM-FamilyChores',
+  position: 'top_left',
+  header: 'To Do',
+  config: {
+    viewMode: 'summary',
+    summary: {
+      showIncomplete: true,
+      showRotating: false,
+      showOverdue: false
+    }
+  }
+},
+// Rotating assignments in the top right
+{
+  module: 'MMM-FamilyChores',
+  position: 'top_right',
+  header: 'Rotating',
+  config: {
+    viewMode: 'summary',
+    summary: {
+      showIncomplete: false,
+      showRotating: true,
+      showOverdue: false
+    }
+  }
+}
+```
+
 ### Display Modes
 
 #### Per-Person View
@@ -214,6 +299,28 @@ Use multiple module instances for different views on separate pages:
 }
 ```
 
+#### MMM-pages Integration
+
+To set up per-person pages with [MMM-pages](https://github.com/edward-shen/MMM-pages), add the `classes` property to each module instance and configure MMM-pages to cycle through them:
+
+```javascript
+{
+  module: 'MMM-pages',
+  config: {
+    // Cycles through alice-page, bob-page, summary-page
+    modules: [
+      ['alice-page'],
+      ['bob-page'],
+      ['summary-page']
+    ],
+    // Optional: navigation module
+    fixed: ['MMM-page-indicator']
+  }
+}
+```
+
+Each module instance only needs `classes` (not `pages` in the MMM-pages array). This keeps your MMM-pages config clean and lets you control page membership from the module itself.
+
 ## Usage
 
 ### Interactive Checkbox Interface
@@ -242,7 +349,21 @@ Each chore item shows:
 
 ## Admin Panel
 
-The module includes a web-based admin panel for managing people, chores, settings, and viewing activity history. Open it in your browser at the module's admin page (e.g., `http://your-mirror:8080/modules/MMM-FamilyChores/admin.html` if using the default MagicMirror port).
+The module includes a web-based admin panel for managing people, chores, settings, and viewing activity history.
+
+### Accessing the Admin Panel
+
+Open your browser and navigate to:
+
+```
+http://192.168.xxx.xxx:8080/modules/MMM-FamilyChores/admin.html
+```
+
+Replace `192.168.xxx.xxx` with the IP address of the device running MagicMirror (e.g., your Raspberry Pi).
+
+If you are using a custom port or path, adjust accordingly.
+
+**Note:** By default, MagicMirror only accepts connections from the same device. To access the admin panel from your phone or computer, you may need to update `address` and `ipWhitelist` in your MagicMirror `config.js`. See the [MagicMirror configuration docs](https://docs.magicmirror.builders/configuration/introduction.html) for details.
 
 ### Available Actions
 
