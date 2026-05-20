@@ -6,7 +6,6 @@ import type { Person } from '../types/chore-types';
 import { CopyChoresModal } from './copy-chores-modal';
 import { MockAdminProvider, mockPersonalChore } from './test-utils';
 
-// Mock API functions
 vi.mock('../api', () => ({
   copyChores: vi.fn(),
 }));
@@ -16,10 +15,10 @@ describe('CopyChoresModal', () => {
   const mockToPerson: Person = { id: 'p2', name: 'Bob', color: '#4ECDC4' };
 
   describe('Rendering', () => {
-    it('should render modal with chores available', () => {
+    it('should render modal with chores available', async () => {
       const closeModal = vi.fn();
 
-      const { container } = render(() => (
+      render(() => (
         <MockAdminProvider
           choreDataOverride={{
             people: [mockFromPerson, mockToPerson],
@@ -39,19 +38,18 @@ describe('CopyChoresModal', () => {
         </MockAdminProvider>
       ));
 
-      expect(container.querySelector('h3')?.textContent).toBe('Copy Chores');
-      expect(container.querySelector('[data-testid="copy-from-display"]')).toBeTruthy();
-      expect(container.querySelector('[data-testid="copy-from-display"]')?.textContent).toContain(
-        'From: Alice'
-      );
-      expect(container.querySelector('#toPerson')).toBeTruthy();
-      expect(container.querySelector('[data-testid="checkbox-list"]')).toBeTruthy();
+      await expect.element(page.getByTestId('modal-title')).toBeVisible();
+      expect(page.getByTestId('modal-title').element().textContent).toBe('Copy Chores');
+      await expect.element(page.getByTestId('copy-from-display')).toBeVisible();
+      await expect.element(page.getByTestId('copy-from-display')).toHaveTextContent('From: Alice');
+      expect(page.getByRole('combobox').element()).toBeTruthy();
+      await expect.element(page.getByTestId('checkbox-list')).toBeVisible();
     });
 
-    it('should display from person color badge', () => {
+    it('should display from person color badge', async () => {
       const closeModal = vi.fn();
 
-      const { container } = render(() => (
+      render(() => (
         <MockAdminProvider
           choreDataOverride={{
             people: [mockFromPerson, mockToPerson],
@@ -71,16 +69,15 @@ describe('CopyChoresModal', () => {
         </MockAdminProvider>
       ));
 
-      const colorBadge = container.querySelector(
-        '[data-testid="person-color-badge"]'
-      ) as HTMLElement;
+      await expect.element(page.getByTestId('person-color-badge')).toBeVisible();
+      const colorBadge = page.getByTestId('person-color-badge').element() as HTMLElement;
       expect(colorBadge?.style.backgroundColor).toBe('rgb(255, 107, 107)');
     });
 
-    it('should show empty state when no personal chores', () => {
+    it('should show empty state when no personal chores', async () => {
       const closeModal = vi.fn();
 
-      const { container } = render(() => (
+      render(() => (
         <MockAdminProvider
           choreDataOverride={{
             people: [mockFromPerson, mockToPerson],
@@ -91,15 +88,16 @@ describe('CopyChoresModal', () => {
         </MockAdminProvider>
       ));
 
-      expect(container.querySelector('[data-testid="empty-message"]')?.textContent).toContain(
+      await expect.element(page.getByTestId('empty-message-text')).toBeVisible();
+      expect(page.getByTestId('empty-message-text').element().textContent).toContain(
         'No personal chores to copy for Alice'
       );
     });
 
-    it('should show empty state when no other people available', () => {
+    it('should show empty state when no other people available', async () => {
       const closeModal = vi.fn();
 
-      const { container } = render(() => (
+      render(() => (
         <MockAdminProvider
           choreDataOverride={{
             people: [mockFromPerson],
@@ -119,15 +117,16 @@ describe('CopyChoresModal', () => {
         </MockAdminProvider>
       ));
 
-      expect(container.querySelector('[data-testid="empty-message"]')?.textContent).toContain(
+      await expect.element(page.getByTestId('empty-message-text')).toBeVisible();
+      expect(page.getByTestId('empty-message-text').element().textContent).toContain(
         'No other people available to copy chores to'
       );
     });
 
-    it('should list all personal chores with checkboxes default checked', () => {
+    it('should list all personal chores with checkboxes default checked', async () => {
       const closeModal = vi.fn();
 
-      const { container } = render(() => (
+      render(() => (
         <MockAdminProvider
           choreDataOverride={{
             people: [mockFromPerson, mockToPerson],
@@ -147,16 +146,16 @@ describe('CopyChoresModal', () => {
         </MockAdminProvider>
       ));
 
-      const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+      const checkboxes = page.getByRole('checkbox').elements();
       expect(checkboxes.length).toBe(2);
       expect((checkboxes[0] as HTMLInputElement).checked).toBe(true);
       expect((checkboxes[1] as HTMLInputElement).checked).toBe(true);
     });
 
-    it('should populate dropdown with available people', () => {
+    it('should populate dropdown with available people', async () => {
       const closeModal = vi.fn();
 
-      const { container } = render(() => (
+      render(() => (
         <MockAdminProvider
           choreDataOverride={{
             people: [mockFromPerson, mockToPerson],
@@ -176,7 +175,7 @@ describe('CopyChoresModal', () => {
         </MockAdminProvider>
       ));
 
-      const select = container.querySelector('#toPerson') as HTMLSelectElement;
+      const select = page.getByRole('combobox').element() as HTMLSelectElement;
       const options = select?.querySelectorAll('option');
       expect(options?.length).toBe(2);
       expect(options?.[0]?.value).toBe('');
@@ -211,7 +210,7 @@ describe('CopyChoresModal', () => {
       ));
 
       const cancelButton = page.getByRole('button', { name: 'Cancel' });
-      expect(cancelButton.element()).toBeVisible();
+      await expect.element(cancelButton).toBeVisible();
       await cancelButton.click();
 
       expect(closeModal).toHaveBeenCalled();
@@ -221,7 +220,7 @@ describe('CopyChoresModal', () => {
     it('should uncheck a chore checkbox', async () => {
       const closeModal = vi.fn();
 
-      const { container } = render(() => (
+      render(() => (
         <MockAdminProvider
           choreDataOverride={{
             people: [mockFromPerson, mockToPerson],
@@ -244,10 +243,7 @@ describe('CopyChoresModal', () => {
       const checkbox = page.getByLabelText('Take out trash');
       await checkbox.click();
 
-      const checkboxElement = container.querySelector(
-        'input[type="checkbox"][value="c1"]'
-      ) as HTMLInputElement;
-      expect(checkboxElement.checked).toBe(false);
+      await expect.element(checkbox).not.toBeChecked();
     });
 
     it('should submit form with selected chores', async () => {
@@ -363,10 +359,10 @@ describe('CopyChoresModal', () => {
   });
 
   describe('PIN caching', () => {
-    it('should show PIN field when pinRequired and no cachedPin', () => {
+    it('should show PIN field when pinRequired and no cachedPin', async () => {
       const closeModal = vi.fn();
 
-      const { container } = render(() => (
+      render(() => (
         <MockAdminProvider
           choreDataOverride={{
             people: [mockFromPerson, mockToPerson],
@@ -388,13 +384,13 @@ describe('CopyChoresModal', () => {
         </MockAdminProvider>
       ));
 
-      expect(container.querySelector('#adminPin')).toBeTruthy();
+      await expect.element(page.getByLabelText('Admin PIN')).toBeVisible();
     });
 
-    it('should hide PIN field when cachedPin is provided', () => {
+    it('should hide PIN field when cachedPin is provided', async () => {
       const closeModal = vi.fn();
 
-      const { container } = render(() => (
+      render(() => (
         <MockAdminProvider
           choreDataOverride={{
             people: [mockFromPerson, mockToPerson],
@@ -417,7 +413,7 @@ describe('CopyChoresModal', () => {
         </MockAdminProvider>
       ));
 
-      expect(container.querySelector('#adminPin')).toBeFalsy();
+      expect(page.getByLabelText('Admin PIN').elements().length).toBe(0);
     });
 
     it('should use cachedPin in request and not call onPinRemembered', async () => {

@@ -6,7 +6,6 @@ import { DayOfWeek, SkipDayVisibility } from '../types/chore-types';
 import { RotatingChoreModal } from './rotating-chore-modal';
 import { MockAdminProvider } from './test-utils';
 
-// Mock API functions
 vi.mock('../api', () => ({
   createChore: vi.fn(),
   updateChore: vi.fn(),
@@ -14,34 +13,34 @@ vi.mock('../api', () => ({
 
 describe('RotatingChoreModal', () => {
   describe('Create Chore Mode', () => {
-    it('should render create form when no initial chore', () => {
+    it('should render create form when no initial chore', async () => {
       const closeModal = vi.fn();
 
-      const { container } = render(() => (
+      render(() => (
         <MockAdminProvider>
           <RotatingChoreModal initialChore={undefined} closeModal={closeModal} />
         </MockAdminProvider>
       ));
 
-      expect(container.querySelector('h3')?.textContent).toBe('Add Rotating Chore');
-      expect(container.querySelector('#choreName')).toBeTruthy();
-      expect(container.querySelector('[data-testid="available-column"]')).toBeTruthy();
-      expect(container.querySelector('[data-testid="rotation-column"]')).toBeTruthy();
-      expect(container.querySelector('[data-testid="skip-days-checkbox-list"]')).toBeTruthy();
+      await expect.element(page.getByTestId('modal-title')).toBeVisible();
+      expect(page.getByTestId('modal-title').element().textContent).toBe('Add Rotating Chore');
+      await expect.element(page.getByLabelText('Chore Name')).toBeVisible();
+      await expect.element(page.getByLabelText('Deadline (optional)')).toBeVisible();
+      await expect.element(page.getByTestId('skip-days-checkbox-list')).toBeVisible();
     });
 
-    it('should show available people and empty rotation column', () => {
+    it('should show available people and empty rotation column', async () => {
       const closeModal = vi.fn();
 
-      const { container } = render(() => (
+      render(() => (
         <MockAdminProvider>
           <RotatingChoreModal initialChore={undefined} closeModal={closeModal} />
         </MockAdminProvider>
       ));
 
-      expect(container.querySelector('[data-testid="available-person-person-1"]')).toBeTruthy();
-      expect(container.querySelector('[data-testid="available-person-person-2"]')).toBeTruthy();
-      expect(container.querySelector('[data-rotation-item]')).toBeFalsy();
+      await expect.element(page.getByTestId('available-person-person-1')).toBeVisible();
+      await expect.element(page.getByTestId('available-person-person-2')).toBeVisible();
+      await expect.element(page.getByTestId('empty-rotation-message')).toBeVisible();
     });
 
     it('should click cancel button', async () => {
@@ -54,7 +53,7 @@ describe('RotatingChoreModal', () => {
       ));
 
       const cancelButton = page.getByRole('button', { name: 'Cancel' });
-      expect(cancelButton.element()).toBeVisible();
+      await expect.element(cancelButton).toBeVisible();
       await cancelButton.click();
 
       expect(closeModal).toHaveBeenCalled();
@@ -70,11 +69,10 @@ describe('RotatingChoreModal', () => {
         </MockAdminProvider>
       ));
 
-      // Fill in the chore name
       await page.getByLabelText('Chore Name').fill('Test Rotating Chore');
 
       const addButton = page.getByRole('button', { name: 'Add' });
-      expect(addButton.element()).toBeVisible();
+      await expect.element(addButton).toBeVisible();
       await addButton.click();
 
       expect(closeModal).toHaveBeenCalled();
@@ -83,7 +81,7 @@ describe('RotatingChoreModal', () => {
   });
 
   describe('Edit Chore Mode', () => {
-    it('should render edit form when initial chore provided', () => {
+    it('should render edit form when initial chore provided', async () => {
       const closeModal = vi.fn();
       const initialChore = {
         id: 'c1',
@@ -98,26 +96,27 @@ describe('RotatingChoreModal', () => {
         deadline: '20:00',
       } as import('../types/chore-types').RotatingChore;
 
-      const { container } = render(() => (
+      render(() => (
         <MockAdminProvider>
           <RotatingChoreModal initialChore={initialChore} closeModal={closeModal} />
         </MockAdminProvider>
       ));
 
-      expect(container.querySelector('h3')?.textContent).toBe('Edit Rotating Chore');
+      await expect.element(page.getByTestId('modal-title')).toBeVisible();
+      expect(page.getByTestId('modal-title').element().textContent).toBe('Edit Rotating Chore');
 
-      const nameInput = container.querySelector('#choreName') as HTMLInputElement;
-      const deadlineInput = container.querySelector('#deadline') as HTMLInputElement;
-      const skipDayVisibilitySelect = container.querySelector(
-        '#skipDayVisibility'
-      ) as HTMLSelectElement;
+      await expect.element(page.getByLabelText('Chore Name')).toBeVisible();
+      await expect.element(page.getByLabelText('Deadline (optional)')).toBeVisible();
+      await expect.element(page.getByLabelText('Skip Day Visibility')).toBeVisible();
 
-      expect(nameInput?.value).toBe('Do dishes');
-      expect(deadlineInput?.value).toBe('20:00');
-      expect(skipDayVisibilitySelect?.value).toBe('show-if-overdue');
+      await expect.element(page.getByLabelText('Chore Name')).toHaveValue('Do dishes');
+      await expect.element(page.getByLabelText('Deadline (optional)')).toHaveValue('20:00');
+      await expect
+        .element(page.getByLabelText('Skip Day Visibility'))
+        .toHaveValue('show-if-overdue');
 
-      expect(container.querySelector('[data-testid="rotation-person-person-1"]')).toBeTruthy();
-      expect(container.querySelector('[data-testid="rotation-person-person-2"]')).toBeTruthy();
+      await expect.element(page.getByTestId('rotation-person-person-1')).toBeVisible();
+      await expect.element(page.getByTestId('rotation-person-person-2')).toBeVisible();
     });
 
     it('should click save button in edit mode', async () => {
@@ -142,7 +141,7 @@ describe('RotatingChoreModal', () => {
       ));
 
       const saveButton = page.getByRole('button', { name: 'Save' });
-      expect(saveButton.element()).toBeVisible();
+      await expect.element(saveButton).toBeVisible();
       await saveButton.click();
 
       expect(closeModal).toHaveBeenCalled();
@@ -169,7 +168,6 @@ describe('RotatingChoreModal', () => {
         </MockAdminProvider>
       ));
 
-      // Select the second person as active
       const radio = page.getByTestId('active-person-radio-person-2');
       await radio.click();
 
@@ -187,24 +185,25 @@ describe('RotatingChoreModal', () => {
   });
 
   describe('Drag and Drop UI', () => {
-    it('should render drag handles and draggable attributes on available people', () => {
+    it('should render drag handles and draggable attributes on available people', async () => {
       const closeModal = vi.fn();
 
-      const { container } = render(() => (
+      render(() => (
         <MockAdminProvider>
           <RotatingChoreModal initialChore={undefined} closeModal={closeModal} />
         </MockAdminProvider>
       ));
 
-      const availableItem = container.querySelector(
-        '[data-testid="available-person-person-1"]'
-      ) as HTMLElement;
-      expect(availableItem).toBeTruthy();
-      expect(availableItem.draggable).toBe(true);
-      expect(availableItem.querySelector('[data-drag-handle]')).toBeTruthy();
+      const availableItem = page.getByTestId('available-person-person-1');
+      await expect.element(availableItem).toBeVisible();
+
+      expect((availableItem.element() as HTMLElement).draggable).toBe(true);
+      expect(
+        (availableItem.element() as HTMLElement).querySelector('[data-drag-handle]')
+      ).toBeTruthy();
     });
 
-    it('should render radio buttons in rotation column for existing rotation', () => {
+    it('should render radio buttons in rotation column for existing rotation', async () => {
       const closeModal = vi.fn();
       const initialChore = {
         id: 'c1',
@@ -218,30 +217,27 @@ describe('RotatingChoreModal', () => {
         completedToday: false,
       } as import('../types/chore-types').RotatingChore;
 
-      const { container } = render(() => (
+      render(() => (
         <MockAdminProvider>
           <RotatingChoreModal initialChore={initialChore} closeModal={closeModal} />
         </MockAdminProvider>
       ));
 
-      const radio1 = container.querySelector(
-        '[data-testid="active-person-radio-person-1"]'
-      ) as HTMLInputElement;
-      const radio2 = container.querySelector(
-        '[data-testid="active-person-radio-person-2"]'
-      ) as HTMLInputElement;
-      expect(radio1).toBeTruthy();
-      expect(radio2).toBeTruthy();
-      expect(radio1.checked).toBe(true);
-      expect(radio2.checked).toBe(false);
+      await expect.element(page.getByTestId('active-person-radio-person-1')).toBeVisible();
+      await expect.element(page.getByTestId('active-person-radio-person-2')).toBeVisible();
+
+      const radio1 = page.getByTestId('active-person-radio-person-1').element() as HTMLInputElement;
+      const radio2 = page.getByTestId('active-person-radio-person-2').element() as HTMLInputElement;
+      expect(radio1?.checked).toBe(true);
+      expect(radio2?.checked).toBe(false);
     });
   });
 
   describe('PIN caching', () => {
-    it('should show PIN field when pinRequired and no cachedPin', () => {
+    it('should show PIN field when pinRequired and no cachedPin', async () => {
       const closeModal = vi.fn();
 
-      const { container } = render(() => (
+      render(() => (
         <MockAdminProvider
           choreDataOverride={{ settings: { historyEnabled: true } }}
           pinRequired={true}
@@ -250,13 +246,13 @@ describe('RotatingChoreModal', () => {
         </MockAdminProvider>
       ));
 
-      expect(container.querySelector('#adminPin')).toBeTruthy();
+      await expect.element(page.getByLabelText('Admin PIN')).toBeVisible();
     });
 
-    it('should hide PIN field when cachedPin is provided', () => {
+    it('should hide PIN field when cachedPin is provided', async () => {
       const closeModal = vi.fn();
 
-      const { container } = render(() => (
+      render(() => (
         <MockAdminProvider
           choreDataOverride={{ settings: { historyEnabled: true } }}
           pinRequired={true}
@@ -266,7 +262,7 @@ describe('RotatingChoreModal', () => {
         </MockAdminProvider>
       ));
 
-      expect(container.querySelector('#adminPin')).toBeFalsy();
+      expect(page.getByLabelText('Admin PIN').elements().length).toBe(0);
     });
 
     it('should use cachedPin in request and not call onPinRemembered', async () => {

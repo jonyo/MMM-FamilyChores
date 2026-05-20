@@ -118,7 +118,7 @@ export const PersonalChoreModal: Component<PersonalChoreModalProps> = (props) =>
             data-testid="modal-content"
           >
             <div class="mb-5 flex items-center justify-between">
-              <h3 class="text-2xl text-indigo-600">
+              <h3 class="text-2xl text-indigo-600" data-testid="modal-title">
                 {props.initialChore ? 'Edit Personal Chore' : 'Add Personal Chore'}
               </h3>
               <button

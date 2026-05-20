@@ -52,61 +52,62 @@ const singlePersonChore: RotatingChore = {
 };
 
 describe('AdvanceRotationsModal', () => {
-  it('renders the modal with rotation preview rows', () => {
+  it('renders the modal with rotation preview rows', async () => {
     const closeModal = vi.fn();
-    const { container } = render(() => (
+    render(() => (
       <MockAdminProvider>
         <AdvanceRotationsModal rotatingChores={[mockChore1]} closeModal={closeModal} />
       </MockAdminProvider>
     ));
-    expect(container.querySelector('[data-testid="advance-rotations-modal"]')).toBeTruthy();
-    expect(container.querySelector('[data-testid="rotation-preview-list"]')).toBeTruthy();
-    expect(container.querySelector(`[data-testid="rotation-row-${mockChore1.id}"]`)).toBeTruthy();
+    await expect.element(page.getByTestId('advance-rotations-modal')).toBeVisible();
+    await expect.element(page.getByTestId('rotation-preview-list')).toBeVisible();
+    await expect.element(page.getByTestId(`rotation-row-${mockChore1.id}`)).toBeVisible();
   });
 
-  it('shows current person and next person in each row', () => {
+  it('shows current person and next person in each row', async () => {
     const closeModal = vi.fn();
-    const { container } = render(() => (
+    render(() => (
       <MockAdminProvider>
         <AdvanceRotationsModal rotatingChores={[mockChore1]} closeModal={closeModal} />
       </MockAdminProvider>
     ));
-    const row = container.querySelector(`[data-testid="rotation-row-${mockChore1.id}"]`);
-    expect(row?.textContent).toContain('Walk the Dog');
-    expect(row?.textContent).toContain('Test Person');
-    expect(row?.textContent).toContain('Test Person 2');
+    const row = page.getByTestId(`rotation-row-${mockChore1.id}`);
+    await expect.element(row).toBeVisible();
+    await expect.element(row).toHaveTextContent('Walk the Dog');
+    await expect.element(row).toHaveTextContent('Test Person');
+    await expect.element(row).toHaveTextContent('Test Person 2');
   });
 
-  it('renders multiple chore rows', () => {
+  it('renders multiple chore rows', async () => {
     const closeModal = vi.fn();
-    const { container } = render(() => (
+    render(() => (
       <MockAdminProvider>
         <AdvanceRotationsModal rotatingChores={[mockChore1, mockChore2]} closeModal={closeModal} />
       </MockAdminProvider>
     ));
-    expect(container.querySelector(`[data-testid="rotation-row-${mockChore1.id}"]`)).toBeTruthy();
-    expect(container.querySelector(`[data-testid="rotation-row-${mockChore2.id}"]`)).toBeTruthy();
+    await expect.element(page.getByTestId(`rotation-row-${mockChore1.id}`)).toBeVisible();
+    await expect.element(page.getByTestId(`rotation-row-${mockChore2.id}`)).toBeVisible();
   });
 
-  it('shows no-chores message when all chores have only 1 person', () => {
+  it('shows no-chores message when all chores have only 1 person', async () => {
     const closeModal = vi.fn();
-    const { container } = render(() => (
+    render(() => (
       <MockAdminProvider>
         <AdvanceRotationsModal rotatingChores={[singlePersonChore]} closeModal={closeModal} />
       </MockAdminProvider>
     ));
-    expect(container.querySelector('[data-testid="no-chores-message"]')).toBeTruthy();
-    expect(container.querySelector('[data-testid="rotation-preview-list"]')).toBeFalsy();
+    await expect.element(page.getByTestId('no-chores-message')).toBeVisible();
+    expect(page.getByTestId('rotation-preview-list').elements().length).toBe(0);
   });
 
-  it('shows no-chores message when rotatingChores is empty', () => {
+  it('shows no-chores message when rotatingChores is empty', async () => {
     const closeModal = vi.fn();
-    const { container } = render(() => (
+    render(() => (
       <MockAdminProvider>
         <AdvanceRotationsModal rotatingChores={[]} closeModal={closeModal} />
       </MockAdminProvider>
     ));
-    expect(container.querySelector('[data-testid="no-chores-message"]')).toBeTruthy();
+    await expect.element(page.getByTestId('no-chores-message')).toBeVisible();
   });
 
   it('hides Advance Rotations button when no advanceable chores', () => {
@@ -151,24 +152,24 @@ describe('AdvanceRotationsModal', () => {
     expect(closeModal).toHaveBeenCalled();
   });
 
-  it('shows PIN field when pinRequired and no cachedPin', () => {
+  it('shows PIN field when pinRequired and no cachedPin', async () => {
     const closeModal = vi.fn();
-    const { container } = render(() => (
+    render(() => (
       <MockAdminProvider pinRequired={true}>
         <AdvanceRotationsModal rotatingChores={[mockChore1]} closeModal={closeModal} />
       </MockAdminProvider>
     ));
-    expect(container.querySelector('#adminPin')).toBeTruthy();
+    await expect.element(page.getByLabelText('Admin PIN')).toBeVisible();
   });
 
-  it('hides PIN field when cachedPin is provided', () => {
+  it('hides PIN field when cachedPin is provided', async () => {
     const closeModal = vi.fn();
-    const { container } = render(() => (
+    render(() => (
       <MockAdminProvider pinRequired={true} initialCachedPin="1234">
         <AdvanceRotationsModal rotatingChores={[mockChore1]} closeModal={closeModal} />
       </MockAdminProvider>
     ));
-    expect(container.querySelector('#adminPin')).toBeFalsy();
+    expect(page.getByLabelText('Admin PIN').elements().length).toBe(0);
   });
 
   it('sends cachedPin in API request', async () => {

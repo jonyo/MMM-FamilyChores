@@ -39,60 +39,58 @@ const mockRotatingChore: RotatingChore = {
 };
 
 describe('ResetCaughtUpModal', () => {
-  it('renders the modal', () => {
-    const { container } = render(() => (
+  it('renders the modal', async () => {
+    render(() => (
       <MockAdminProvider>
         <ResetCaughtUpModal overdue={[mockPersonalChore]} closeModal={vi.fn()} />
       </MockAdminProvider>
     ));
-    expect(container.querySelector('[data-testid="reset-caught-up-modal"]')).toBeTruthy();
+    await expect.element(page.getByTestId('reset-caught-up-modal')).toBeVisible();
   });
 
-  it('shows overdue chore rows with chore name and assignee', () => {
-    const { container } = render(() => (
+  it('shows overdue chore rows with chore name and assignee', async () => {
+    render(() => (
       <MockAdminProvider>
         <ResetCaughtUpModal overdue={[mockPersonalChore]} closeModal={vi.fn()} />
       </MockAdminProvider>
     ));
-    expect(container.querySelector('[data-testid="overdue-chores-list"]')).toBeTruthy();
-    const row = container.querySelector(`[data-testid="overdue-row-${mockPersonalChore.id}"]`);
-    expect(row?.textContent).toContain('Do the Dishes');
-    expect(row?.textContent).toContain('Test Person');
+    await expect.element(page.getByTestId('overdue-chores-list')).toBeVisible();
+    const row = page.getByTestId(`overdue-row-${mockPersonalChore.id}`);
+    await expect.element(row).toBeVisible();
+    await expect.element(row).toHaveTextContent('Do the Dishes');
+    await expect.element(row).toHaveTextContent('Test Person');
   });
 
-  it('shows assignee for rotating chore using current rotation index', () => {
-    const { container } = render(() => (
+  it('shows assignee for rotating chore using current rotation index', async () => {
+    render(() => (
       <MockAdminProvider>
         <ResetCaughtUpModal overdue={[mockRotatingChore]} closeModal={vi.fn()} />
       </MockAdminProvider>
     ));
-    const row = container.querySelector(`[data-testid="overdue-row-${mockRotatingChore.id}"]`);
+    const row = page.getByTestId(`overdue-row-${mockRotatingChore.id}`);
+    await expect.element(row).toBeVisible();
     // rotatingIndex=1 → person-2 → "Test Person 2"
-    expect(row?.textContent).toContain('Test Person 2');
+    await expect.element(row).toHaveTextContent('Test Person 2');
   });
 
-  it('renders multiple overdue rows', () => {
-    const { container } = render(() => (
+  it('renders multiple overdue rows', async () => {
+    render(() => (
       <MockAdminProvider>
         <ResetCaughtUpModal overdue={[mockPersonalChore, mockRotatingChore]} closeModal={vi.fn()} />
       </MockAdminProvider>
     ));
-    expect(
-      container.querySelector(`[data-testid="overdue-row-${mockPersonalChore.id}"]`)
-    ).toBeTruthy();
-    expect(
-      container.querySelector(`[data-testid="overdue-row-${mockRotatingChore.id}"]`)
-    ).toBeTruthy();
+    await expect.element(page.getByTestId(`overdue-row-${mockPersonalChore.id}`)).toBeVisible();
+    await expect.element(page.getByTestId(`overdue-row-${mockRotatingChore.id}`)).toBeVisible();
   });
 
-  it('shows all-caught-up message when overdue list is empty', () => {
-    const { container } = render(() => (
+  it('shows all-caught-up message when overdue list is empty', async () => {
+    render(() => (
       <MockAdminProvider>
         <ResetCaughtUpModal overdue={[]} closeModal={vi.fn()} />
       </MockAdminProvider>
     ));
-    expect(container.querySelector('[data-testid="no-overdue-message"]')).toBeTruthy();
-    expect(container.querySelector('[data-testid="overdue-chores-list"]')).toBeFalsy();
+    await expect.element(page.getByTestId('no-overdue-message')).toBeVisible();
+    expect(page.getByTestId('overdue-chores-list').elements().length).toBe(0);
   });
 
   it('hides Reset button when overdue list is empty', () => {
@@ -135,22 +133,22 @@ describe('ResetCaughtUpModal', () => {
     expect(closeModal).toHaveBeenCalled();
   });
 
-  it('shows PIN field when pinRequired and no cachedPin', () => {
-    const { container } = render(() => (
-      <MockAdminProvider pinRequired={true}>
+  it('shows PIN field when pinRequired and no cachedPin', async () => {
+    render(() => (
+      <MockAdminProvider pinRequired={true} initialCachedPin={undefined}>
         <ResetCaughtUpModal overdue={[mockPersonalChore]} closeModal={vi.fn()} />
       </MockAdminProvider>
     ));
-    expect(container.querySelector('#adminPin')).toBeTruthy();
+    await expect.element(page.getByLabelText('Admin PIN')).toBeVisible();
   });
 
-  it('hides PIN field when cachedPin is provided', () => {
-    const { container } = render(() => (
+  it('hides PIN field when cachedPin is provided', async () => {
+    render(() => (
       <MockAdminProvider pinRequired={true} initialCachedPin="1234">
         <ResetCaughtUpModal overdue={[mockPersonalChore]} closeModal={vi.fn()} />
       </MockAdminProvider>
     ));
-    expect(container.querySelector('#adminPin')).toBeFalsy();
+    expect(page.getByLabelText('Admin PIN').elements().length).toBe(0);
   });
 
   it('sends cachedPin in API request', async () => {

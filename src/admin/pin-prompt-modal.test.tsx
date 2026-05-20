@@ -4,11 +4,11 @@ import { page } from 'vitest/browser';
 import { PinPromptModal } from './pin-prompt-modal';
 
 describe('PinPromptModal', () => {
-  it('should render title and message', () => {
+  it('should render title and message', async () => {
     const onConfirm = vi.fn();
     const onCancel = vi.fn();
 
-    const { container } = render(() => (
+    render(() => (
       <PinPromptModal
         title="Test Title"
         message="Enter your PIN"
@@ -17,15 +17,17 @@ describe('PinPromptModal', () => {
       />
     ));
 
-    expect(container.querySelector('h3')?.textContent).toBe('Test Title');
-    expect(container.querySelector('p')?.textContent).toBe('Enter your PIN');
+    await expect.element(page.getByTestId('modal-title')).toBeVisible();
+    expect(page.getByTestId('modal-title').element().textContent).toBe('Test Title');
+    await expect.element(page.getByTestId('modal-message')).toBeVisible();
+    expect(page.getByTestId('modal-message').element().textContent).toBe('Enter your PIN');
   });
 
-  it('should render password input by default', () => {
+  it('should render password input by default', async () => {
     const onConfirm = vi.fn();
     const onCancel = vi.fn();
 
-    const { container } = render(() => (
+    render(() => (
       <PinPromptModal
         title="PIN Required"
         message="Enter PIN"
@@ -34,16 +36,16 @@ describe('PinPromptModal', () => {
       />
     ));
 
-    const input = container.querySelector('#pinPromptInput') as HTMLInputElement;
-    expect(input).toBeTruthy();
-    expect(input.type).toBe('password');
+    const input = page.getByPlaceholder('Enter PIN');
+    await expect.element(input).toBeVisible();
+    expect(input.element().getAttribute('type')).toBe('password');
   });
 
   it('should toggle password visibility', async () => {
     const onConfirm = vi.fn();
     const onCancel = vi.fn();
 
-    const { container } = render(() => (
+    render(() => (
       <PinPromptModal
         title="PIN Required"
         message="Enter PIN"
@@ -52,20 +54,21 @@ describe('PinPromptModal', () => {
       />
     ));
 
-    const input = container.querySelector('#pinPromptInput') as HTMLInputElement;
-    expect(input.type).toBe('password');
+    const input = page.getByPlaceholder('Enter PIN');
+    await expect.element(input).toBeVisible();
+    expect(input.element().getAttribute('type')).toBe('password');
 
     const toggleButton = page.getByRole('button', { name: '👁' });
     await toggleButton.click();
 
-    expect(input.type).toBe('text');
+    expect(input.element().getAttribute('type')).toBe('text');
   });
 
-  it('should show remember PIN checkbox', () => {
+  it('should show remember PIN checkbox', async () => {
     const onConfirm = vi.fn();
     const onCancel = vi.fn();
 
-    const { container } = render(() => (
+    render(() => (
       <PinPromptModal
         title="PIN Required"
         message="Enter PIN"
@@ -74,9 +77,10 @@ describe('PinPromptModal', () => {
       />
     ));
 
-    const checkbox = container.querySelector('input[type="checkbox"]') as HTMLInputElement;
-    expect(checkbox).toBeTruthy();
-    expect(checkbox.checked).toBe(false);
+    await expect.element(page.getByTestId('remember-pin-checkbox')).toBeVisible();
+    expect((page.getByTestId('remember-pin-checkbox').element() as HTMLInputElement)?.checked).toBe(
+      false
+    );
   });
 
   it('should call onConfirm with pin and remember state', async () => {
@@ -105,7 +109,7 @@ describe('PinPromptModal', () => {
     const onConfirm = vi.fn();
     const onCancel = vi.fn();
 
-    const { container } = render(() => (
+    render(() => (
       <PinPromptModal
         title="PIN Required"
         message="Enter PIN"
@@ -116,8 +120,7 @@ describe('PinPromptModal', () => {
 
     await page.getByPlaceholder('Enter PIN').fill('5678');
 
-    const checkbox = container.querySelector('input[type="checkbox"]') as HTMLInputElement;
-    checkbox.click();
+    await page.getByTestId('remember-pin-checkbox').click();
 
     const confirmButton = page.getByRole('button', { name: 'Confirm' });
     await confirmButton.click();

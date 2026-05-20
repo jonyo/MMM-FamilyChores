@@ -1,5 +1,6 @@
-import { render, screen } from '@solidjs/testing-library';
+import { render } from '@solidjs/testing-library';
 import { describe, expect, it, vi } from 'vitest';
+import { page } from 'vitest/browser';
 import type { Person, RotatingChore } from '../types/chore-types';
 import { ChoreType, DayOfWeek, SkipDayVisibility } from '../types/chore-types';
 import { RotatingChoreCard } from './rotating-chore';
@@ -23,7 +24,7 @@ describe('RotatingChoreCard', () => {
     completedToday: false,
   };
 
-  it('renders chore name with rotating badge', () => {
+  it('renders chore name with rotating badge', async () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();
 
@@ -36,11 +37,11 @@ describe('RotatingChoreCard', () => {
       />
     ));
 
-    expect(screen.getByText('Dishes')).toBeInTheDocument();
-    expect(screen.getByText('Rotating')).toBeInTheDocument();
+    await expect.element(page.getByText('Dishes')).toBeVisible();
+    await expect.element(page.getByText('Rotating')).toBeVisible();
   });
 
-  it('displays current assignee', () => {
+  it('displays current assignee', async () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();
 
@@ -53,10 +54,10 @@ describe('RotatingChoreCard', () => {
       />
     ));
 
-    expect(screen.getByText('Current: Alice')).toBeInTheDocument();
+    await expect.element(page.getByText('Current: Alice')).toBeVisible();
   });
 
-  it('displays rotation list names', () => {
+  it('displays rotation list names', async () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();
     const partialRotationChore: RotatingChore = {
@@ -73,10 +74,10 @@ describe('RotatingChoreCard', () => {
       />
     ));
 
-    expect(screen.getByText('Rotation: Alice, Bob')).toBeInTheDocument();
+    await expect.element(page.getByText('Rotation: Alice, Bob')).toBeVisible();
   });
 
-  it('displays "Everyone" when rotation includes all people', () => {
+  it('displays "Everyone" when rotation includes all people', async () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();
 
@@ -89,10 +90,10 @@ describe('RotatingChoreCard', () => {
       />
     ));
 
-    expect(screen.getByText('Rotation: Everyone')).toBeInTheDocument();
+    await expect.element(page.getByText('Rotation: Everyone')).toBeVisible();
   });
 
-  it('displays "Everyone" only when rotation exactly matches all people', () => {
+  it('displays "Everyone" only when rotation exactly matches all people', async () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();
     const partialRotationChore: RotatingChore = {
@@ -109,11 +110,11 @@ describe('RotatingChoreCard', () => {
       />
     ));
 
-    expect(screen.getByText('Rotation: Alice, Bob')).toBeInTheDocument();
-    expect(screen.queryByText('Rotation: Everyone')).not.toBeInTheDocument();
+    await expect.element(page.getByText('Rotation: Alice, Bob')).toBeVisible();
+    expect(page.getByText('Rotation: Everyone').elements().length).toBe(0);
   });
 
-  it('displays deadline when present', () => {
+  it('displays deadline when present', async () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();
     const choreWithDeadline: RotatingChore = {
@@ -130,10 +131,10 @@ describe('RotatingChoreCard', () => {
       />
     ));
 
-    expect(screen.getByText('Deadline: 5:00 PM')).toBeInTheDocument();
+    await expect.element(page.getByText('Deadline: 5:00 PM')).toBeVisible();
   });
 
-  it('does not display deadline when not present', () => {
+  it('does not display deadline when not present', async () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();
 
@@ -146,10 +147,10 @@ describe('RotatingChoreCard', () => {
       />
     ));
 
-    expect(screen.queryByText(/Deadline:/)).not.toBeInTheDocument();
+    expect(page.getByText(/Deadline:/).elements().length).toBe(0);
   });
 
-  it('displays skip days', () => {
+  it('displays skip days', async () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();
     const choreWithSkipDays: RotatingChore = {
@@ -166,10 +167,10 @@ describe('RotatingChoreCard', () => {
       />
     ));
 
-    expect(screen.getByText('Skip days: Monday, Wednesday')).toBeInTheDocument();
+    await expect.element(page.getByText('Skip days: Monday, Wednesday')).toBeVisible();
   });
 
-  it('displays "None" for skip days when empty', () => {
+  it('displays "None" for skip days when empty', async () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();
 
@@ -182,7 +183,7 @@ describe('RotatingChoreCard', () => {
       />
     ));
 
-    expect(screen.getByText('Skip days: None')).toBeInTheDocument();
+    await expect.element(page.getByText('Skip days: None')).toBeVisible();
   });
 
   it('calls onEdit with chore when edit button is clicked', async () => {
@@ -198,7 +199,7 @@ describe('RotatingChoreCard', () => {
       />
     ));
 
-    const editButton = screen.getByText('Edit');
+    const editButton = page.getByRole('button', { name: 'Edit' });
     await editButton.click();
 
     expect(onEdit).toHaveBeenCalledWith(mockChore);
@@ -217,13 +218,13 @@ describe('RotatingChoreCard', () => {
       />
     ));
 
-    const deleteButton = screen.getByText('Delete');
+    const deleteButton = page.getByRole('button', { name: 'Delete' });
     await deleteButton.click();
 
     expect(onDelete).toHaveBeenCalledWith('chore-1');
   });
 
-  it('displays "Unassigned" when current person is not found', () => {
+  it('displays "Unassigned" when current person is not found', async () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();
     const choreWithInvalidPerson: RotatingChore = {
@@ -240,10 +241,10 @@ describe('RotatingChoreCard', () => {
       />
     ));
 
-    expect(screen.getByText('Current: Unassigned')).toBeInTheDocument();
+    await expect.element(page.getByText('Current: Unassigned')).toBeVisible();
   });
 
-  it('displays "Unknown" for missing people in rotation list', () => {
+  it('displays "Unknown" for missing people in rotation list', async () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();
     const choreWithMissingPerson: RotatingChore = {
@@ -260,10 +261,10 @@ describe('RotatingChoreCard', () => {
       />
     ));
 
-    expect(screen.getByText(/Alice, Unknown/)).toBeInTheDocument();
+    await expect.element(page.getByText(/Alice, Unknown/)).toBeVisible();
   });
 
-  it('handles empty people list', () => {
+  it('handles empty people list', async () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();
 
@@ -271,7 +272,7 @@ describe('RotatingChoreCard', () => {
       <RotatingChoreCard chore={mockChore} people={[]} onEdit={onEdit} onDelete={onDelete} />
     ));
 
-    expect(screen.getByText('Current: Unassigned')).toBeInTheDocument();
-    expect(screen.getByText('Rotation: Unknown, Unknown, Unknown')).toBeInTheDocument();
+    await expect.element(page.getByText('Current: Unassigned')).toBeVisible();
+    await expect.element(page.getByText('Rotation: Unknown, Unknown, Unknown')).toBeVisible();
   });
 });

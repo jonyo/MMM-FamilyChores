@@ -89,7 +89,9 @@ export const CopyChoresModal: Component<CopyChoresModalProps> = (props) => {
     <div class="fixed inset-0 z-1000 flex  items-center justify-center bg-black/50">
       <div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200">
         <div class="mb-5 flex items-center justify-between">
-          <h3 class="text-2xl text-indigo-600">Copy Chores</h3>
+          <h3 class="text-2xl text-indigo-600" data-testid="modal-title">
+            Copy Chores
+          </h3>
           <button
             type="button"
             class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"
@@ -114,7 +116,9 @@ export const CopyChoresModal: Component<CopyChoresModalProps> = (props) => {
           when={personalChores().length > 0}
           fallback={
             <div class="my-2.5 text-slate-500 italic" data-testid="empty-message">
-              <p>No personal chores to copy for {escapeHtml(props.fromPerson.name)}.</p>
+              <p data-testid="empty-message-text">
+                No personal chores to copy for {escapeHtml(props.fromPerson.name)}.
+              </p>
               <Button type="button" variant="secondary" onClick={() => props.closeModal()}>
                 Close
               </Button>
@@ -123,7 +127,7 @@ export const CopyChoresModal: Component<CopyChoresModalProps> = (props) => {
         >
           <Show when={availablePeople().length === 0}>
             <div class="my-2.5 text-slate-500 italic" data-testid="empty-message">
-              <p>No other people available to copy chores to.</p>
+              <p data-testid="empty-message-text">No other people available to copy chores to.</p>
               <Button type="button" variant="secondary" onClick={() => props.closeModal()}>
                 Close
               </Button>

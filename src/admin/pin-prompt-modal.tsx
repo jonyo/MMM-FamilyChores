@@ -25,7 +25,9 @@ export const PinPromptModal: Component<PinPromptModalProps> = (props) => {
     <div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50">
       <div class="w-[90%] max-w-[400px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200">
         <div class="mb-2 flex items-center justify-between">
-          <h3 class="text-xl text-indigo-600">{props.title}</h3>
+          <h3 class="text-xl text-indigo-600" data-testid="modal-title">
+            {props.title}
+          </h3>
           <button
             type="button"
             class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"
@@ -35,7 +37,9 @@ export const PinPromptModal: Component<PinPromptModalProps> = (props) => {
             ×
           </button>
         </div>
-        <p class="mb-5 text-sm text-slate-600">{props.message}</p>
+        <p class="mb-5 text-sm text-slate-600" data-testid="modal-message">
+          {props.message}
+        </p>
         <form onSubmit={handleSubmit}>
           <div class="mb-5">
             <label for="pinPromptInput" class="mb-2 block font-medium text-amber-900">
@@ -67,6 +71,7 @@ export const PinPromptModal: Component<PinPromptModalProps> = (props) => {
               checked={remember()}
               onInput={(e) => setRemember(e.currentTarget.checked)}
               class="size-4.5 cursor-pointer"
+              data-testid="remember-pin-checkbox"
             />
             Remember PIN for 10 minutes
             <span

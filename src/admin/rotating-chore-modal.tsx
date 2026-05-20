@@ -200,7 +200,7 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
     <div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50">
       <div class="max-h-[90vh] w-[90%] max-w-[600px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200">
         <div class="mb-5 flex items-center justify-between">
-          <h3 class="text-2xl text-indigo-600">
+          <h3 class="text-2xl text-indigo-600" data-testid="modal-title">
             {props.initialChore ? 'Edit Rotating Chore' : 'Add Rotating Chore'}
           </h3>
           <button
@@ -319,7 +319,10 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
                     )}
                   </For>
                   <Show when={rotation().length === 0}>
-                    <li class="list-none p-4 text-center text-sm text-slate-400 italic">
+                    <li
+                      class="list-none p-4 text-center text-sm text-slate-400 italic"
+                      data-testid="empty-rotation-message"
+                    >
                       Drag people here
                     </li>
                   </Show>
