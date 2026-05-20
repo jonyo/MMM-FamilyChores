@@ -393,6 +393,35 @@ src/
     └── *.test.ts               # Utility tests
 ```
 
+## Troubleshooting
+
+### History Tracking
+
+#### Why are there blank spots in the history view?
+
+Blank spots in the chore history grid can occur for several reasons:
+
+- **History tracking disabled**: If `historyEnabled` is set to `false` in the settings, no completion entries are recorded. A warning banner appears in the history modal when this is the case.
+- **History temporarily disabled**: Even if history is currently enabled, if it was disabled for part of a day, any chores completed during that time would not have entries.
+- **MagicMirror not running**: If MagicMirror was not running on a particular day, no completion entries were recorded.
+- **Chore not created yet**: If the chore was created after the date in question, no entry exists for that date.
+- **Person not created yet**: If the person was created after the date in question, no entry exists for that date for any of that person's chores.
+- **Rotating chore assignment**: For rotating chores, blank spots may indicate it was someone else's turn on that day.
+
+#### How does history tracking work?
+
+- **Completions**: When you check a chore as complete, a completion entry is recorded if `historyEnabled` is `true`.
+- **Unchecking**: When you uncheck a chore, the corresponding completion entry for that day is removed.
+- **Midnight reset**: At midnight, incomplete chores from the previous day are logged as "not completed" in the history (if `historyEnabled` is `true` and the day was not a skip day).
+
+#### History disabled behavior
+
+When `historyEnabled` is `false`:
+- No new completion entries are recorded when chores are checked/unchecked
+- The midnight reset does not log incomplete chores
+- Existing history entries are preserved (not deleted) - the function returns early without modifying the `dailyCompletions` array
+- A prominent warning banner appears in the history modal
+
 ## Contributing
 
 Contributions are welcome! This is a side project, so please understand that response times may vary.

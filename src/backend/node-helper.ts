@@ -47,6 +47,7 @@ interface FamilyChoresNodeHelper extends Partial<NodeHelper.NodeHelperModule> {
   handleChoreReassign(payload: ChoreReassignPayload): void;
   handleCaughtUpReset(payload: CaughtUpResetPayload): void;
   logIncompleteChore(chore: Chore, date: string): void;
+  trackDailyCompletion(chore: Chore, completed: boolean): void;
 }
 
 const nodeHelper: FamilyChoresNodeHelper = {
@@ -314,7 +315,12 @@ const nodeHelper: FamilyChoresNodeHelper = {
 
   // Handle chore toggle
   handleChoreToggle(payload: ChoreTogglePayload): void {
-    if (!this.choreData) return;
+    Log.info(`CHORE_TOGGLE received: choreId=${payload.choreId}, completed=${payload.completed}`);
+
+    if (!this.choreData) {
+      Log.error('choreData is null, cannot handle toggle');
+      return;
+    }
 
     const todayDateString = getLocalDateString();
     if (todayDateString > this.choreData.lastResetDate) {
@@ -337,49 +343,12 @@ const nodeHelper: FamilyChoresNodeHelper = {
       return;
     }
 
+    Log.info(`Setting chore ${payload.choreId} completedToday to ${payload.completed}`);
     chore.completedToday = payload.completed;
-    // Note: we do NOT change caughtUp here - it stays as-is
+    // Note: we do NOT change caughtUp here - it stays as-is in case the chore gets unchecked later
 
     // Track daily completion if history is enabled
-    if (this.choreData.settings?.historyEnabled) {
-      let personId: string | undefined;
-      if (chore.type === 'personal') {
-        personId = chore.assignedTo;
-      } else if (chore.type === 'rotating') {
-        personId = chore.rotation[chore.rotatingIndex ?? 0];
-      }
-
-      const todayDate = getLocalDateString();
-      const todayDayName = getLocalDayName();
-      const _isSkipDay = (chore.skipDays ?? []).includes(todayDayName);
-
-      if (payload.completed && personId) {
-        // Create daily completion record
-        const currentTime = new Date();
-        const currentTimeString = getLocalTimeString();
-        const wasLate = !!chore.deadline && currentTimeString > chore.deadline;
-
-        const dailyCompletion = {
-          id: generateUUID(),
-          date: todayDate,
-          personId,
-          choreId: chore.id,
-          completed: true,
-          completedAt: getLocalTimeString(currentTime),
-          wasLate,
-        };
-
-        this.choreData.dailyCompletions.push(dailyCompletion);
-      } else if (!payload.completed && personId) {
-        // Delete daily completion record for this day/person/chore
-        const index = this.choreData.dailyCompletions.findIndex(
-          (dc) => dc.date === todayDate && dc.personId === personId && dc.choreId === chore.id
-        );
-        if (index !== -1) {
-          this.choreData.dailyCompletions.splice(index, 1);
-        }
-      }
-    }
+    this.trackDailyCompletion(chore, payload.completed);
 
     this.saveChoreData();
     const updateResult: ChoreUpdateResultPayload = {
@@ -388,6 +357,62 @@ const nodeHelper: FamilyChoresNodeHelper = {
     };
     this.sendSocketNotification?.(SocketNotifications.CHORE_UPDATE_RESULT, updateResult);
     this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
+  },
+
+  /**
+   * Track daily completion in history if enabled
+   */
+  trackDailyCompletion(chore: Chore, completed: boolean): void {
+    if (!this.choreData?.settings?.historyEnabled) {
+      Log.warn(`Skipping daily completion save for chore ${chore.id}, history is disabled`);
+      return;
+    }
+
+    let personId: string | undefined;
+    if (chore.type === 'personal') {
+      personId = chore.assignedTo;
+    } else if (chore.type === 'rotating') {
+      personId = chore.rotation[chore.rotatingIndex ?? 0];
+    }
+
+    const todayDate = getLocalDateString();
+
+    if (completed && personId) {
+      // Create daily completion record
+      const currentTime = new Date();
+      const currentTimeString = getLocalTimeString();
+      const wasLate = !!chore.deadline && currentTimeString > chore.deadline;
+
+      const dailyCompletion = {
+        id: generateUUID(),
+        date: todayDate,
+        personId,
+        choreId: chore.id,
+        completed: true,
+        completedAt: getLocalTimeString(currentTime),
+        wasLate,
+      };
+
+      this.choreData.dailyCompletions.push(dailyCompletion);
+      Log.info(
+        `Daily completion added for chore ${chore.id}, person ${personId}. Total completions: ${this.choreData.dailyCompletions.length}`
+      );
+    } else if (!completed && personId) {
+      // Delete daily completion record for this day/person/chore
+      const index = this.choreData.dailyCompletions.findIndex(
+        (dc) => dc.date === todayDate && dc.personId === personId && dc.choreId === chore.id
+      );
+      if (index !== -1) {
+        this.choreData.dailyCompletions.splice(index, 1);
+        Log.info(
+          `Daily completion removed for chore ${chore.id}, person ${personId}. Total completions: ${this.choreData.dailyCompletions.length}`
+        );
+      } else {
+        Log.warn(
+          `No daily completion found to remove for chore ${chore.id}, person ${personId}, date ${todayDate}`
+        );
+      }
+    }
   },
 
   // Handle chore reassignment

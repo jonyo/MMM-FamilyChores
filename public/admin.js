@@ -1481,7 +1481,7 @@
 	};
 	//#endregion
 	//#region src/admin/chore-history-modal.tsx
-	var _tmpl$$10 = /* @__PURE__ */ template(`<div class="py-4 text-center text-slate-500">Loading history...`), _tmpl$2$9 = /* @__PURE__ */ template(`<div class=overflow-x-auto><table class="w-full border-collapse border border-slate-200"data-testid=history-table><thead><tr><th class="border border-slate-200 p-2.5 text-left text-base font-medium whitespace-nowrap text-slate-900">Chore</th></tr></thead><tbody>`), _tmpl$3$7 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"data-testid=modal><div class="max-h-[90vh] w-[90%] max-w-[95vw] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"data-testid=modal-content><h3 class="mb-5 text-2xl text-indigo-600">'s Chore History</h3><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$4$4 = /* @__PURE__ */ template(`<th class="relative h-[100px] w-[50px] overflow-visible border border-slate-200 p-2.5 text-left text-base font-medium text-slate-900"><span class="absolute top-1/2 left-1/2 -translate-1/2 -rotate-90 whitespace-nowrap">`), _tmpl$5$3 = /* @__PURE__ */ template(`<tr><td class="border border-slate-200 p-2.5 text-base whitespace-nowrap text-slate-900">`), _tmpl$6$3 = /* @__PURE__ */ template(`<td class="border border-slate-200 p-2.5 text-center">`), _tmpl$7$2 = /* @__PURE__ */ template(`<span style=opacity:0;width:32px;height:32px;display:inline-block>`);
+	var _tmpl$$10 = /* @__PURE__ */ template(`<div class="mb-5 rounded-md border border-amber-200 bg-amber-50 p-4"><div class=flex><div class=shrink-0><svg class="size-5 text-amber-400"viewBox="0 0 20 20"fill=currentColor aria-hidden=true><path fill-rule=evenodd d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"clip-rule=evenodd></path></svg></div><div class=ml-3><p class="text-sm font-medium text-amber-800">History tracking is currently disabled</p><p class="mt-1 text-sm text-amber-700">No new completion entries will be recorded until history is re-enabled in settings.`), _tmpl$2$9 = /* @__PURE__ */ template(`<div class="py-4 text-center text-slate-500">Loading history...`), _tmpl$3$7 = /* @__PURE__ */ template(`<div class=overflow-x-auto><table class="w-full border-collapse border border-slate-200"data-testid=history-table><thead><tr><th class="border border-slate-200 p-2.5 text-left text-base font-medium whitespace-nowrap text-slate-900">Chore</th></tr></thead><tbody>`), _tmpl$4$4 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"data-testid=modal><div class="max-h-[90vh] w-[90%] max-w-[95vw] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"data-testid=modal-content><h3 class="mb-5 text-2xl text-indigo-600">'s Chore History</h3><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$5$3 = /* @__PURE__ */ template(`<th class="relative h-[100px] w-[50px] overflow-visible border border-slate-200 p-2.5 text-left text-base font-medium text-slate-900"><span class="absolute top-1/2 left-1/2 -translate-1/2 -rotate-90 whitespace-nowrap">`), _tmpl$6$3 = /* @__PURE__ */ template(`<tr><td class="border border-slate-200 p-2.5 text-base whitespace-nowrap text-slate-900">`), _tmpl$7$2 = /* @__PURE__ */ template(`<td class="border border-slate-200 p-2.5 text-center">`), _tmpl$8$2 = /* @__PURE__ */ template(`<span style=opacity:0;width:32px;height:32px;display:inline-block>`);
 	var ChoreHistoryModal = (props) => {
 		const { choreData, loadData } = useAdminContext();
 		const [loading, setLoading] = createSignal(true);
@@ -1523,42 +1523,50 @@
 			return chore.skipDays.includes(day.dayName);
 		};
 		return (() => {
-			var _el$ = _tmpl$3$7(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.firstChild, _el$10 = _el$3.nextSibling;
+			var _el$ = _tmpl$4$4(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.firstChild, _el$11 = _el$3.nextSibling;
 			insert(_el$3, () => escapeHtml(props.person.name), _el$4);
+			insert(_el$2, createComponent(Show, {
+				get when() {
+					return memo(() => !!!loading())() && !choreData().settings?.historyEnabled;
+				},
+				get children() {
+					return _tmpl$$10();
+				}
+			}), _el$11);
 			insert(_el$2, createComponent(Show, {
 				get when() {
 					return loading();
 				},
 				get children() {
-					return _tmpl$$10();
+					return _tmpl$2$9();
 				}
-			}), _el$10);
+			}), _el$11);
 			insert(_el$2, createComponent(Show, {
 				get when() {
 					return !loading();
 				},
 				get children() {
-					var _el$6 = _tmpl$2$9(), _el$8 = _el$6.firstChild.firstChild, _el$9 = _el$8.firstChild;
-					_el$9.firstChild;
-					var _el$1 = _el$8.nextSibling;
-					insert(_el$9, createComponent(For, {
+					var _el$7 = _tmpl$3$7(), _el$9 = _el$7.firstChild.firstChild, _el$0 = _el$9.firstChild;
+					_el$0.firstChild;
+					var _el$10 = _el$9.nextSibling;
+					insert(_el$0, createComponent(For, {
 						get each() {
 							return getDays();
 						},
 						children: (day) => (() => {
-							var _el$11 = _tmpl$4$4(), _el$12 = _el$11.firstChild;
-							insert(_el$12, () => day.display);
-							return _el$11;
+							var _el$12 = _tmpl$5$3(), _el$13 = _el$12.firstChild;
+							insert(_el$13, () => day.display);
+							return _el$12;
 						})()
 					}), null);
-					insert(_el$1, createComponent(For, {
+					insert(_el$10, createComponent(For, {
 						get each() {
 							return getPersonChores();
 						},
 						children: (chore) => (() => {
-							var _el$13 = _tmpl$5$3(), _el$14 = _el$13.firstChild;
-							insert(_el$14, () => escapeHtml(chore.name), null);
-							insert(_el$14, createComponent(Show, {
+							var _el$14 = _tmpl$6$3(), _el$15 = _el$14.firstChild;
+							insert(_el$15, () => escapeHtml(chore.name), null);
+							insert(_el$15, createComponent(Show, {
 								get when() {
 									return chore.type === "rotating";
 								},
@@ -1572,7 +1580,7 @@
 									})];
 								}
 							}), null);
-							insert(_el$13, createComponent(For, {
+							insert(_el$14, createComponent(For, {
 								get each() {
 									return getDays();
 								},
@@ -1581,8 +1589,7 @@
 									const skipDay = isSkipDay(chore, day);
 									const emptyDay = !skipDay && !completion;
 									const getEmptyTooltip = () => {
-										if (chore.type === "rotating") return "Either it was someone else's turn (rotating chore), Magic Mirror was not running this day, or the chore was not created yet.";
-										return "Either Magic Mirror was not running this day, or the chore was not created yet.";
+										return chore.type === "rotating" ? "Either it was someone else's turn (rotating chore), Magic Mirror was not running this day, the chore was not created yet, or history tracking was disabled when the chore was checked." : "Either Magic Mirror was not running this day, the chore was not created yet, or history tracking was disabled when the chore was checked.";
 									};
 									const getTooltipText = () => {
 										if (completion?.completed) return `Completed at ${completion.completedAt} (24h)`;
@@ -1592,9 +1599,9 @@
 										return "";
 									};
 									return (() => {
-										var _el$15 = _tmpl$6$3();
-										_el$15.classList.toggle("bg-slate-100", !!skipDay);
-										insert(_el$15, createComponent(Switch, {
+										var _el$16 = _tmpl$7$2();
+										_el$16.classList.toggle("bg-slate-100", !!skipDay);
+										insert(_el$16, createComponent(Switch, {
 											get fallback() {
 												return createComponent(Tooltip, {
 													get text() {
@@ -1604,7 +1611,7 @@
 													align: "right",
 													multiline: emptyDay,
 													get children() {
-														return _tmpl$7$2();
+														return _tmpl$8$2();
 													}
 												});
 											},
@@ -1658,17 +1665,17 @@
 												})];
 											}
 										}));
-										return _el$15;
+										return _el$16;
 									})();
 								}
 							}), null);
-							return _el$13;
+							return _el$14;
 						})()
 					}));
-					return _el$6;
+					return _el$7;
 				}
-			}), _el$10);
-			insert(_el$10, createComponent(Button, {
+			}), _el$11);
+			insert(_el$11, createComponent(Button, {
 				type: "button",
 				variant: "secondary",
 				onClick: () => props.closeModal(),

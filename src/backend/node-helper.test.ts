@@ -27,6 +27,7 @@ const { nodeHelperInstance, setNodeHelperInstance } = vi.hoisted(() => {
     handleChoreToggle: (payload: ChoreTogglePayload) => void;
     handleChoreReassign: (payload: ChoreReassignPayload) => void;
     handleCaughtUpReset: (payload: CaughtUpResetPayload) => void;
+    trackDailyCompletion: (chore: Chore, completed: boolean) => void;
     setupAdminRoutes: () => void;
     expressApp?: {
       get: (path: string, handler: (req: unknown, res: unknown) => void) => void;
@@ -1171,6 +1172,267 @@ describe('Node Helper Tests', () => {
       expect(registeredRoutes).toContain('GET /MMM-FamilyChores/backup');
       expect(registeredRoutes).toContain('POST /MMM-FamilyChores/restore');
       expect(registeredRoutes).toContain('POST /MMM-FamilyChores/copy-chores');
+    });
+  });
+
+  describe('historyEnabled behavior', () => {
+    beforeEach(() => {
+      nodeHelper.choreData = {
+        lastResetDate: getLocalDateString(),
+        people: [
+          { id: '1', name: 'Person 1', color: '#FF6B6B' },
+          { id: '2', name: 'Person 2', color: '#4ECDC4' },
+        ],
+        chores: [
+          {
+            id: 'chore1',
+            name: 'Test Chore',
+            type: ChoreType.PERSONAL,
+            assignedTo: '1',
+            completedToday: false,
+            skipDays: [],
+            skipDayVisibility: SkipDayVisibility.HIDE,
+            caughtUp: false,
+          },
+        ],
+        dailyCompletions: [],
+        settings: {
+          historyEnabled: true,
+        },
+      };
+    });
+
+    it('should add daily completion when historyEnabled is true', () => {
+      const payload: ChoreTogglePayload = { choreId: 'chore1', completed: true };
+      nodeHelper.handleChoreToggle(payload);
+
+      expect(nodeHelper.choreData?.dailyCompletions).toHaveLength(1);
+      expect(nodeHelper.choreData?.dailyCompletions[0].choreId).toBe('chore1');
+      expect(nodeHelper.choreData?.dailyCompletions[0].completed).toBe(true);
+    });
+
+    it('should NOT add daily completion when historyEnabled is false', () => {
+      if (!nodeHelper.choreData) return;
+      nodeHelper.choreData.settings.historyEnabled = false;
+
+      const payload: ChoreTogglePayload = { choreId: 'chore1', completed: true };
+      nodeHelper.handleChoreToggle(payload);
+
+      expect(nodeHelper.choreData?.dailyCompletions).toHaveLength(0);
+    });
+
+    it('should remove daily completion when historyEnabled is true', () => {
+      if (!nodeHelper.choreData) return;
+      // Set chore as completed so toggle will work
+      nodeHelper.choreData.chores[0].completedToday = true;
+      // First add a completion
+      nodeHelper.choreData.dailyCompletions.push({
+        id: generateTestUUID(1),
+        date: getLocalDateString(),
+        personId: '1',
+        choreId: 'chore1',
+        completed: true,
+        completedAt: '09:00',
+        wasLate: false,
+      });
+
+      const payload: ChoreTogglePayload = { choreId: 'chore1', completed: false };
+      nodeHelper.handleChoreToggle(payload);
+
+      expect(nodeHelper.choreData?.dailyCompletions).toHaveLength(0);
+    });
+
+    it('should NOT remove daily completion when historyEnabled is false', () => {
+      if (!nodeHelper.choreData) return;
+      nodeHelper.choreData.settings.historyEnabled = false;
+      // Add a completion
+      nodeHelper.choreData.dailyCompletions.push({
+        id: generateTestUUID(1),
+        date: getLocalDateString(),
+        personId: '1',
+        choreId: 'chore1',
+        completed: true,
+        completedAt: '09:00',
+        wasLate: false,
+      });
+
+      const payload: ChoreTogglePayload = { choreId: 'chore1', completed: false };
+      nodeHelper.handleChoreToggle(payload);
+
+      // Completion should still be there since history is disabled
+      expect(nodeHelper.choreData?.dailyCompletions).toHaveLength(1);
+    });
+  });
+
+  describe('un-checking isolation', () => {
+    beforeEach(() => {
+      nodeHelper.choreData = {
+        lastResetDate: getLocalDateString(),
+        people: [
+          { id: '1', name: 'Person 1', color: '#FF6B6B' },
+          { id: '2', name: 'Person 2', color: '#4ECDC4' },
+        ],
+        chores: [
+          {
+            id: 'chore1',
+            name: 'Test Chore 1',
+            type: ChoreType.PERSONAL,
+            assignedTo: '1',
+            completedToday: true,
+            skipDays: [],
+            skipDayVisibility: SkipDayVisibility.HIDE,
+            caughtUp: false,
+          },
+          {
+            id: 'chore2',
+            name: 'Test Chore 2',
+            type: ChoreType.PERSONAL,
+            assignedTo: '1',
+            completedToday: true,
+            skipDays: [],
+            skipDayVisibility: SkipDayVisibility.HIDE,
+            caughtUp: false,
+          },
+        ],
+        dailyCompletions: [],
+        settings: {
+          historyEnabled: true,
+        },
+      };
+    });
+
+    it('should only remove the specific chore being unchecked', () => {
+      if (!nodeHelper.choreData) return;
+      // Add completions for both chores
+      nodeHelper.choreData.dailyCompletions.push(
+        {
+          id: generateTestUUID(1),
+          date: getLocalDateString(),
+          personId: '1',
+          choreId: 'chore1',
+          completed: true,
+          completedAt: '09:00',
+          wasLate: false,
+        },
+        {
+          id: generateTestUUID(2),
+          date: getLocalDateString(),
+          personId: '1',
+          choreId: 'chore2',
+          completed: true,
+          completedAt: '09:00',
+          wasLate: false,
+        }
+      );
+
+      // Uncheck only chore1
+      const payload: ChoreTogglePayload = { choreId: 'chore1', completed: false };
+      nodeHelper.handleChoreToggle(payload);
+
+      // Only chore1 should be removed, chore2 should remain
+      expect(nodeHelper.choreData?.dailyCompletions).toHaveLength(1);
+      expect(nodeHelper.choreData?.dailyCompletions[0].choreId).toBe('chore2');
+    });
+
+    it('should not affect completedToday status of other chores', () => {
+      if (!nodeHelper.choreData) return;
+      // Uncheck only chore1
+      const payload: ChoreTogglePayload = { choreId: 'chore1', completed: false };
+      nodeHelper.handleChoreToggle(payload);
+
+      // chore1 should be unchecked, chore2 should still be checked
+      expect(nodeHelper.choreData?.chores[0].completedToday).toBe(false);
+      expect(nodeHelper.choreData?.chores[1].completedToday).toBe(true);
+    });
+  });
+
+  describe('trackDailyCompletion function', () => {
+    beforeEach(() => {
+      nodeHelper.choreData = {
+        lastResetDate: getLocalDateString(),
+        people: [
+          { id: '1', name: 'Person 1', color: '#FF6B6B' },
+          { id: '2', name: 'Person 2', color: '#4ECDC4' },
+        ],
+        chores: [
+          {
+            id: 'chore1',
+            name: 'Test Chore',
+            type: ChoreType.PERSONAL,
+            assignedTo: '1',
+            completedToday: false,
+            skipDays: [],
+            skipDayVisibility: SkipDayVisibility.HIDE,
+            caughtUp: false,
+          },
+          {
+            id: 'chore2',
+            name: 'Rotating Chore',
+            type: ChoreType.ROTATING,
+            rotation: ['1', '2'],
+            rotatingIndex: 0,
+            completedToday: false,
+            skipDays: [],
+            skipDayVisibility: SkipDayVisibility.HIDE,
+            caughtUp: false,
+          },
+        ],
+        dailyCompletions: [],
+        settings: {
+          historyEnabled: true,
+        },
+      };
+    });
+
+    it('should add completion for personal chore', () => {
+      if (!nodeHelper.choreData) return;
+      const chore = nodeHelper.choreData.chores[0];
+      nodeHelper.trackDailyCompletion(chore, true);
+
+      expect(nodeHelper.choreData.dailyCompletions).toHaveLength(1);
+      expect(nodeHelper.choreData.dailyCompletions[0].choreId).toBe('chore1');
+      expect(nodeHelper.choreData.dailyCompletions[0].personId).toBe('1');
+      expect(nodeHelper.choreData.dailyCompletions[0].completed).toBe(true);
+    });
+
+    it('should add completion for rotating chore', () => {
+      if (!nodeHelper.choreData) return;
+      const chore = nodeHelper.choreData.chores[1];
+      nodeHelper.trackDailyCompletion(chore, true);
+
+      expect(nodeHelper.choreData.dailyCompletions).toHaveLength(1);
+      expect(nodeHelper.choreData.dailyCompletions[0].choreId).toBe('chore2');
+      expect(nodeHelper.choreData.dailyCompletions[0].personId).toBe('1'); // rotation[0]
+      expect(nodeHelper.choreData.dailyCompletions[0].completed).toBe(true);
+    });
+
+    it('should remove completion when completed is false', () => {
+      if (!nodeHelper.choreData) return;
+      const chore = nodeHelper.choreData.chores[0];
+      // First add a completion
+      nodeHelper.choreData.dailyCompletions.push({
+        id: generateTestUUID(1),
+        date: getLocalDateString(),
+        personId: '1',
+        choreId: 'chore1',
+        completed: true,
+        completedAt: '09:00',
+        wasLate: false,
+      });
+
+      nodeHelper.trackDailyCompletion(chore, false);
+
+      expect(nodeHelper.choreData.dailyCompletions).toHaveLength(0);
+    });
+
+    it('should not add completion when history is disabled', () => {
+      if (!nodeHelper.choreData) return;
+      nodeHelper.choreData.settings.historyEnabled = false;
+      const chore = nodeHelper.choreData.chores[0];
+
+      nodeHelper.trackDailyCompletion(chore, true);
+
+      expect(nodeHelper.choreData.dailyCompletions).toHaveLength(0);
     });
   });
 });

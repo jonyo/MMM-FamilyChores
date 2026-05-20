@@ -218,20 +218,17 @@
         </div>
       </div>
     `;
-			this.addCheckboxListeners(wrapper);
-			return wrapper;
-		},
-		addCheckboxListeners(wrapper) {
-			wrapper.querySelectorAll("input[type=\"checkbox\"]").forEach((checkbox) => {
-				checkbox.addEventListener("change", (event) => {
-					const target = event.target;
+			wrapper.addEventListener("change", (event) => {
+				const target = event.target;
+				if (target.type === "checkbox") {
 					const choreItem = target.closest(".chore-item");
 					if (choreItem) {
 						const choreId = choreItem.getAttribute("data-chore-id");
 						if (choreId) this.toggleChoreCompletion(choreId, target.checked);
 					}
-				});
+				}
 			});
+			return wrapper;
 		},
 		toggleChoreCompletion(choreId, completed) {
 			Log.debug(`${this.name} toggling chore ${choreId} to ${completed}`);
@@ -377,7 +374,16 @@
 			}
 			html += "</div>";
 			wrapper.innerHTML = html;
-			this.addCheckboxListeners(wrapper);
+			wrapper.addEventListener("change", (event) => {
+				const target = event.target;
+				if (target.type === "checkbox") {
+					const choreItem = target.closest(".chore-item, .rotating-inline");
+					if (choreItem) {
+						const choreId = choreItem.getAttribute("data-chore-id");
+						if (choreId) this.toggleChoreCompletion(choreId, target.checked);
+					}
+				}
+			});
 			return wrapper;
 		},
 		socketNotificationReceived(notificationIdentifier, payload) {

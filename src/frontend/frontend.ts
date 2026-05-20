@@ -207,19 +207,11 @@ const familyChoresModule: FamilyChoresModule = {
       </div>
     `;
 
-    // Add event listeners for checkbox interactions
-    this.addCheckboxListeners(wrapper);
-
-    return wrapper;
-  },
-
-  // Custom function: add event listeners to checkboxes
-  addCheckboxListeners(wrapper: HTMLElement): void {
-    // Add change listeners to checkboxes for accessibility
-    const checkboxes = wrapper.querySelectorAll('input[type="checkbox"]');
-    checkboxes.forEach((checkbox) => {
-      checkbox.addEventListener('change', (event) => {
-        const target = event.target as HTMLInputElement;
+    // Use event delegation for checkbox interactions
+    // This ensures listeners work even after DOM updates
+    wrapper.addEventListener('change', (event) => {
+      const target = event.target as HTMLInputElement;
+      if (target.type === 'checkbox') {
         const choreItem = target.closest('.chore-item');
         if (choreItem) {
           const choreId = choreItem.getAttribute('data-chore-id');
@@ -227,8 +219,10 @@ const familyChoresModule: FamilyChoresModule = {
             this.toggleChoreCompletion(choreId, target.checked);
           }
         }
-      });
+      }
     });
+
+    return wrapper;
   },
 
   // Custom function: toggle chore completion
@@ -469,8 +463,20 @@ const familyChoresModule: FamilyChoresModule = {
     html += '</div>';
     wrapper.innerHTML = html;
 
-    // Add event listeners for checkbox interactions
-    this.addCheckboxListeners(wrapper);
+    // Use event delegation for checkbox interactions
+    // This ensures listeners work even after DOM updates
+    wrapper.addEventListener('change', (event) => {
+      const target = event.target as HTMLInputElement;
+      if (target.type === 'checkbox') {
+        const choreItem = target.closest('.chore-item, .rotating-inline');
+        if (choreItem) {
+          const choreId = choreItem.getAttribute('data-chore-id');
+          if (choreId) {
+            this.toggleChoreCompletion(choreId, target.checked);
+          }
+        }
+      }
+    });
 
     return wrapper;
   },
