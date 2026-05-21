@@ -1,7 +1,7 @@
 {
   "name": "mmm-familychores",
-  "version": "1.0.0",
-  "description": "A TypeScript-based MagicMirror² module for family chore tracking with personal daily chores, rotating daily chores that cycle through family members, and a summary view.",
+  "version": "1.0.1",
+  "description": "A MagicMirror² module for family chore tracking with personal daily chores, rotating chores that stay with one family member per day and cycle to the next when marked complete, and a configurable summary view.",
   "main": "MMM-FamilyChores.js",
   "scripts": {
     "build": "pnpm run build:client && pnpm run build:node && pnpm run build:admin && pnpm run copy:dist",
@@ -20,11 +20,13 @@
     "playwright:install": "playwright install"
   },
   "keywords": [
-    "magicmirror",
-    "module",
+    "MagicMirror",
     "family",
+    "household",
     "chores",
-    "typescript"
+    "tasks",
+    "todo",
+    "rotating"
   ],
   "author": "Jonathan Foote",
   "license": "MIT",
