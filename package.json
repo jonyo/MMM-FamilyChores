@@ -1,8 +1,12 @@
 {
   "name": "mmm-familychores",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "A MagicMirror² module for family chore tracking with personal daily chores, rotating chores that stay with one family member per day and cycle to the next when marked complete, and a configurable summary view.",
   "main": "MMM-FamilyChores.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jonyo/MMM-FamilyChores.git"
+  },
   "scripts": {
     "build": "pnpm run build:client && pnpm run build:node && pnpm run build:admin && pnpm run copy:dist",
     "build:client": "vite build --config vite.client.config.ts",

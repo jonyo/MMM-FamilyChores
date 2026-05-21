@@ -468,6 +468,10 @@ To make changes:
 }
 
 @layer utilities {
+  .invisible {
+    visibility: hidden;
+  }
+
   .visible {
     visibility: visible;
   }

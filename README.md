@@ -61,16 +61,28 @@ Have an idea? Start a discussion in the [GitHub Discussions](https://github.com/
 
 That's it! The module includes all necessary dependencies in the bundled JavaScript files.
 
+## Update
+
+To update the module to the latest version:
+
+```bash
+cd ~/MagicMirror/modules/MMM-FamilyChores
+git pull
+```
+
+No additional steps are needed - the bundled JavaScript files are included in the repository.
+
+**Before updating**, check [CHANGELOG.md](CHANGELOG.md) for version history and release notes. We strive to maintain backward compatibility, but any breaking changes will be clearly documented there.
+
 ## Configuration
 
 ### Basic Options
 
-| Option           | Type    | Default       | Description                                                                        |
-| ---------------- | ------- | ------------- | ---------------------------------------------------------------------------------- |
-| `updateInterval` | number  | `60000`       | Update interval in milliseconds                                                    |
-| `personFilter`   | string  | `null`        | Filter chores by person name (case-insensitive)                                    |
-| `viewMode`       | string  | `'personal'`  | View mode: `'personal'` or `'summary'`                                             |
-| `summary`        | object  | see below     | Summary view configuration options                                                 |
+| Option          | Type    | Default       | Description                                     |
+| --------------- | ------- | ------------- | ----------------------------------------------- |
+| `personFilter`  | string  | `null`        | Filter chores by person name (case-insensitive) |
+| `viewMode`      | string  | `'personal'`  | View mode: `'personal'` or `'summary'`          |
+| `summary`       | object  | see below     | Summary view configuration options              |
 
 ### Summary View Configuration
 
@@ -418,7 +430,7 @@ Rotating chores pause until the next valid day.
 
 ### Daily Reset
 
-The module detects when the local date has advanced past the last reset date and automatically clears all `completedToday` entries, making personal chores available again. This happens on the first update after midnight (or whenever the module next checks after the date changes).
+The module detects when the local date has advanced past the last reset date and automatically clears all `completedToday` entries, making personal chores available again. The backend checks for the date change every minute, and when a reset occurs, it broadcasts the updated data to all frontend instances via socket notifications.
 
 ## Development
 
@@ -571,6 +583,11 @@ Contributions are welcome! This is a side project, so please understand that res
 ### How to Contribute
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed contribution guidelines.
+
+### Additional Documentation
+
+- [CHANGELOG.md](CHANGELOG.md) - Version history and release notes
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) - Community guidelines
 
 ## License
 

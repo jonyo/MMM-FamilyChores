@@ -77,7 +77,7 @@ export const Admin: Component<Record<string, never>> = () => {
         <div class="animate-loading-pulse bg-[radial-gradient(circle,#2563eb,#ffffff)] bg-size-[200%_200%] bg-center px-8 py-16 text-center text-slate-500">
           <div class="inline-block rounded-xl bg-white/30 p-8 shadow-md">
             <p class="mb-2.5 text-xl font-semibold text-slate-900">
-              Magic Mirror is starting up, please wait...
+              MagicMirror² is starting up, please wait...
             </p>
             <Show when={retryCount() > 0}>
               <p class="text-sm font-medium text-slate-600 italic">

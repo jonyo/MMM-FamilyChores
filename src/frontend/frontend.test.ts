@@ -71,8 +71,6 @@ describe('Frontend Tests', () => {
     } as FamilyChoresModule;
 
     module.config = {
-      updateInterval: 60000,
-      dataFile: 'data.json',
       personFilter: null,
     };
   });
@@ -87,11 +85,6 @@ describe('Frontend Tests', () => {
   });
 
   describe('Module Configuration', () => {
-    it('should have correct default configuration', () => {
-      expect(module.defaults.updateInterval).toBe(60000);
-      expect(module.defaults.dataFile).toBe('data.json');
-    });
-
     it('should return correct styles', () => {
       const styles = module.getStyles();
       expect(styles).toContain('css/main.css');
@@ -102,12 +95,10 @@ describe('Frontend Tests', () => {
   describe('start', () => {
     it('should initialize module and start data loading', () => {
       const loadDataSpy = vi.spyOn(module, 'loadData');
-      const scheduleUpdateSpy = vi.spyOn(module, 'scheduleUpdate');
 
       module.start();
 
       expect(loadDataSpy).toHaveBeenCalled();
-      expect(scheduleUpdateSpy).toHaveBeenCalled();
     });
   });
 
@@ -1676,43 +1667,6 @@ describe('Frontend Tests', () => {
       module.loadData();
 
       expect(mockSendSocketNotification).toHaveBeenCalledWith('CONFIG_REQUEST', module.config);
-    });
-  });
-
-  describe('scheduleUpdate', () => {
-    beforeEach(() => {
-      vi.useFakeTimers();
-    });
-
-    afterEach(() => {
-      vi.useRealTimers();
-    });
-
-    it('should schedule data loading at intervals', () => {
-      const loadDataSpy = vi.spyOn(module, 'loadData');
-
-      module.scheduleUpdate();
-
-      // Should not call immediately
-      expect(loadDataSpy).not.toHaveBeenCalled();
-
-      // Should call after interval
-      vi.advanceTimersByTime(60000);
-      expect(loadDataSpy).toHaveBeenCalledTimes(1);
-
-      // Should call again after another interval
-      vi.advanceTimersByTime(60000);
-      expect(loadDataSpy).toHaveBeenCalledTimes(2);
-    });
-
-    it('should use custom update interval from config', () => {
-      module.config.updateInterval = 30000;
-      const loadDataSpy = vi.spyOn(module, 'loadData');
-
-      module.scheduleUpdate();
-      vi.advanceTimersByTime(30000);
-
-      expect(loadDataSpy).toHaveBeenCalledTimes(1);
     });
   });
 });

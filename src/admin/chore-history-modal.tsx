@@ -197,8 +197,8 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
 
                           const getEmptyTooltip = () => {
                             return chore.type === 'rotating'
-                              ? "Either it was someone else's turn (rotating chore), Magic Mirror was not running this day, the chore was not created yet, or history tracking was disabled when the chore was checked."
-                              : 'Either Magic Mirror was not running this day, the chore was not created yet, or history tracking was disabled when the chore was checked.';
+                              ? "Either it was someone else's turn (rotating chore), MagicMirror² was not running this day, the chore was not created yet, or history tracking was disabled when the chore was checked."
+                              : 'Either MagicMirror² was not running this day, the chore was not created yet, or history tracking was disabled when the chore was checked.';
                           };
 
                           const getTooltipText = () => {

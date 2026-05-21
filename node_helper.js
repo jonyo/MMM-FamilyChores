@@ -851,12 +851,27 @@ function createAdminHandlers(context) {
 var node_helper_default = node_helper.create({
 	choreData: null,
 	config: null,
+	dailyResetTimer: null,
 	/**
 	* MM function: called when the node helper starts
 	*/
 	start() {
 		logger.info(`Starting node helper for MMM-FamilyChores`);
 		this.setupAdminRoutes();
+		this.dailyResetTimer = setInterval(() => {
+			const previousResetDate = this.choreData?.lastResetDate;
+			this.checkAndPerformDailyReset();
+			if (this.choreData && this.choreData.lastResetDate !== previousResetDate) this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
+		}, 6e4);
+	},
+	/**
+	* MM function: called when the node helper stops
+	*/
+	stop() {
+		if (this.dailyResetTimer) {
+			clearInterval(this.dailyResetTimer);
+			this.dailyResetTimer = null;
+		}
 	},
 	/**
 	* MM function: called when a socket notification arrives from the module
@@ -882,7 +897,7 @@ var node_helper_default = node_helper.create({
 			logger.error("Config not set, cannot load chore data");
 			return;
 		}
-		const dataPath = node_path.resolve(__dirname, this.config.dataFile || "data.json");
+		const dataPath = node_path.resolve(__dirname, "data.json");
 		try {
 			if (node_fs.existsSync(dataPath)) {
 				const fileContent = node_fs.readFileSync(dataPath, "utf8");
@@ -942,7 +957,7 @@ var node_helper_default = node_helper.create({
 			logger.error("Config or chore data not set, cannot save");
 			return;
 		}
-		const dataPath = node_path.resolve(__dirname, this.config.dataFile || "data.json");
+		const dataPath = node_path.resolve(__dirname, "data.json");
 		try {
 			node_fs.writeFileSync(dataPath, JSON.stringify(this.choreData, null, 2), "utf8");
 			logger.info(`Saved chore data to ${dataPath}`);

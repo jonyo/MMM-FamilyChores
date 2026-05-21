@@ -110,6 +110,31 @@ git commit -m "message" # Commit
 
 **This is NON-NEGOTIABLE:** Built files (`MMM-FamilyChores.js`, `node_helper.js`, `public/admin.js`) MUST be committed. The module will not work for users without these built files. Never commit source changes without also committing the corresponding built files.
 
+**Release Workflow:**
+
+For any branch that will be merged to main (including feature branches and release preparation):
+
+1. Update `CHANGELOG.md` with changes for the new version
+2. Bump version in `package.json` following semantic versioning
+3. Build and commit as above
+4. Push branch to remote and create PR
+5. Create the release: remind the user to create the release using the Github UI after merging to main. Doing so will automatically create the tag and release.
+
+**IMPORTANT: MMPM Update Detection**
+
+MMPM (MagicMirror Package Manager) detects updates by comparing the local HEAD commit SHA with the remote origin/HEAD commit SHA. This means:
+
+- **Users are notified as soon as you merge to main** - there is no delay or central DB cache
+- Users cannot "opt in" to updates - they will see your changes immediately when they run `mmpm update`
+- **No breaking change warnings** - MMPM does not check changelogs or semver before upgrading
+- Users blindly pull whatever is on your main branch
+
+**Implications:**
+- Be conservative about what you merge to main
+- Use feature branches and only merge when ready for users
+- Document breaking changes prominently in README/CHANGELOG
+- Consider using GitHub releases with release notes (even though MMPM doesn't check them)
+
 **Build process:**
 
 ```bash
@@ -154,7 +179,7 @@ If the pre-commit hook fails: `pnpm fix && pnpm build && git add . && git commit
 
 - Single `data.json` file contains both config and state
 - State updates are atomic to prevent race conditions
-- Daily reset at midnight clears `completedToday`
+- Daily reset at midnight clears `completedToday` (backend checks every minute and broadcasts updates to frontends)
 - Rotating chores stay with current person until completed
 
 **Validation on Load:**
@@ -409,7 +434,7 @@ This module is for household use, not a high-security context — but `escapeHtm
 
 **Data File:**
 
-- Use `data.json` as default location
+- Uses `data.json` (hardcoded path in module directory)
 - Create automatic backups before writes
 - Validate data structure on load
 
