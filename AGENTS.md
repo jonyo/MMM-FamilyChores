@@ -110,6 +110,31 @@ git commit -m "message" # Commit
 
 **This is NON-NEGOTIABLE:** Built files (`MMM-FamilyChores.js`, `node_helper.js`, `public/admin.js`) MUST be committed. The module will not work for users without these built files. Never commit source changes without also committing the corresponding built files.
 
+**Release Workflow:**
+
+For any branch that will be merged to main (including feature branches and release preparation):
+
+1. Update `CHANGELOG.md` with changes for the new version
+2. Bump version in `package.json` following semantic versioning
+3. Build and commit as above
+4. Create a git tag for the version (e.g., `git tag v1.1.0`)
+5. Push tag to remote (e.g., `git push origin v1.1.0`)
+
+**IMPORTANT: MMPM Update Detection**
+
+MMPM (MagicMirror Package Manager) detects updates by comparing the local HEAD commit SHA with the remote origin/HEAD commit SHA. This means:
+
+- **Users are notified as soon as you merge to main** - there is no delay or central DB cache
+- Users cannot "opt in" to updates - they will see your changes immediately when they run `mmpm update`
+- **No breaking change warnings** - MMPM does not check changelogs or semver before upgrading
+- Users blindly pull whatever is on your main branch
+
+**Implications:**
+- Be conservative about what you merge to main
+- Use feature branches and only merge when ready for users
+- Document breaking changes prominently in README/CHANGELOG
+- Consider using GitHub releases with release notes (even though MMPM doesn't check them)
+
 **Build process:**
 
 ```bash

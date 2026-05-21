@@ -25,6 +25,19 @@ Contributions are welcome! This is a side project, so please understand that res
 
 **Security Note**: Do not commit built files (`MMM-FamilyChores.js`, `node_helper.js`) in your PR. Maintainers will build and release trusted versions.
 
+**Release Process:**
+
+When preparing a release (merging to main or creating a release branch):
+
+1. Update `CHANGELOG.md` with changes for the new version
+2. Bump version in `package.json` following semantic versioning
+3. Build the project: `pnpm run build`
+4. Commit all changes (including built files)
+5. Create a git tag: `git tag v1.1.0`
+6. Push tag to remote: `git push origin v1.1.0`
+
+Tags are created for each version to enable users to track specific releases and for MMPM to reference stable versions.
+
 ## Guidelines
 
 - Keep it simple - this module prioritizes ease of use
