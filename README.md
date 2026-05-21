@@ -1,6 +1,8 @@
 # MMM-FamilyChores
 
-A TypeScript-based MagicMirror² module for family chore tracking with personal daily chores, rotating daily chores that cycle through family members, a configurable summary view, and a full-featured admin panel.
+A MagicMirror² module for family chore tracking with personal daily chores, rotating chores that stay with one family member per day and cycle to the next when marked complete, a configurable summary view, and a full-featured admin panel.
+
+![MMM-FamilyChores Summary View](screenshot.png)
 
 ## Current Features
 
