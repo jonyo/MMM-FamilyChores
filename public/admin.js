@@ -1760,7 +1760,7 @@
 									const skipDay = isSkipDay(chore, day);
 									const emptyDay = !skipDay && !completion;
 									const getEmptyTooltip = () => {
-										return chore.type === "rotating" ? "Either it was someone else's turn (rotating chore), Magic Mirror was not running this day, the chore was not created yet, or history tracking was disabled when the chore was checked." : "Either Magic Mirror was not running this day, the chore was not created yet, or history tracking was disabled when the chore was checked.";
+										return chore.type === "rotating" ? "Either it was someone else's turn (rotating chore), MagicMirror² was not running this day, the chore was not created yet, or history tracking was disabled when the chore was checked." : "Either MagicMirror² was not running this day, the chore was not created yet, or history tracking was disabled when the chore was checked.";
 									};
 									const getTooltipText = () => {
 										if (completion?.completed) return `Completed at ${completion.completedAt} (24h)`;
@@ -3429,7 +3429,7 @@
 	delegateEvents(["input"]);
 	//#endregion
 	//#region src/admin/admin.tsx
-	var _tmpl$ = /* @__PURE__ */ template(`<header class="flex flex-wrap items-center justify-between gap-4 bg-slate-100 p-8 text-slate-900"><h1 class="text-3xl font-semibold">Family Chores Admin`), _tmpl$2 = /* @__PURE__ */ template(`<p class="text-sm font-medium text-slate-600 italic">Retrying... (attempt <!>)`), _tmpl$3 = /* @__PURE__ */ template(`<div class="animate-loading-pulse bg-[radial-gradient(circle,#2563eb,#ffffff)] bg-size-[200%_200%] bg-center px-8 py-16 text-center text-slate-500"><div class="inline-block rounded-xl bg-white/30 p-8 shadow-md"><p class="mb-2.5 text-xl font-semibold text-slate-900">Magic Mirror is starting up, please wait...`), _tmpl$4 = /* @__PURE__ */ template(`<div class="mx-auto max-w-5xl overflow-hidden rounded-xl bg-white shadow-2xl"data-testid=admin-container>`);
+	var _tmpl$ = /* @__PURE__ */ template(`<header class="flex flex-wrap items-center justify-between gap-4 bg-slate-100 p-8 text-slate-900"><h1 class="text-3xl font-semibold">Family Chores Admin`), _tmpl$2 = /* @__PURE__ */ template(`<p class="text-sm font-medium text-slate-600 italic">Retrying... (attempt <!>)`), _tmpl$3 = /* @__PURE__ */ template(`<div class="animate-loading-pulse bg-[radial-gradient(circle,#2563eb,#ffffff)] bg-size-[200%_200%] bg-center px-8 py-16 text-center text-slate-500"><div class="inline-block rounded-xl bg-white/30 p-8 shadow-md"><p class="mb-2.5 text-xl font-semibold text-slate-900">MagicMirror² is starting up, please wait...`), _tmpl$4 = /* @__PURE__ */ template(`<div class="mx-auto max-w-5xl overflow-hidden rounded-xl bg-white shadow-2xl"data-testid=admin-container>`);
 	var API_BASE = "/MMM-FamilyChores";
 	var Admin = () => {
 		const [choreData, setChoreData] = createSignal(null);

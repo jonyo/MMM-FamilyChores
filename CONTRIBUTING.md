@@ -18,7 +18,7 @@ Contributions are welcome! This is a side project, so please understand that res
 ### Pull Requests
 
 1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/my-feature`
+2. Create a feature branch: `git switch -c feature/my-feature`
 3. Run tests: `pnpm test`
 4. Ensure TypeScript compiles: `pnpm run build` (verify only, don't commit built files)
 5. Submit PR with clear description

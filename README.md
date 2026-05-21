@@ -61,6 +61,17 @@ Have an idea? Start a discussion in the [GitHub Discussions](https://github.com/
 
 That's it! The module includes all necessary dependencies in the bundled JavaScript files.
 
+## Update
+
+To update the module to the latest version:
+
+```bash
+cd ~/MagicMirror/modules/MMM-FamilyChores
+git pull
+```
+
+No additional steps are needed - the bundled JavaScript files are included in the repository.
+
 ## Configuration
 
 ### Basic Options
