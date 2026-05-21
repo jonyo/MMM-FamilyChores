@@ -33,10 +33,12 @@ When preparing a release (merging to main or creating a release branch):
 2. Bump version in `package.json` following semantic versioning
 3. Build the project: `pnpm run build`
 4. Commit all changes (including built files)
-5. Create a git tag: `git tag v1.1.0`
-6. Push tag to remote: `git push origin v1.1.0`
+5. Push branch to remote and create PR
+6. After merging to main, switch to main and pull
+7. Create a git tag on main: `git tag v1.1.0`
+8. Push tag to remote: `git push origin v1.1.0`
 
-Tags are created for each version to enable users to track specific releases and for MMPM to reference stable versions.
+Tags are created for each version on main to enable users to track specific releases and for MMPM to reference stable versions.
 
 ## Guidelines
 

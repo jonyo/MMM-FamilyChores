@@ -17,6 +17,13 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Add `stop()` method to node helper to properly clean up daily reset timer on module shutdown
 
+### Documentation
+- Add repository field to package.json
+- Add update section to README.md with git pull instructions
+- Add CODE_OF_CONDUCT.md file
+- Replace `git checkout` with `git switch` in CONTRIBUTING.md (modern git command)
+- Fix typos: Magic Mirror → MagicMirror² in admin.tsx and chore-history-modal.tsx
+
 ## [1.0.1](https://github.com/jonyo/MMM-FamilyChores/compare/v1.0.0...v1.0.1) (2026-05-20)
 
 ### Documentation

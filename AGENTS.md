@@ -117,8 +117,8 @@ For any branch that will be merged to main (including feature branches and relea
 1. Update `CHANGELOG.md` with changes for the new version
 2. Bump version in `package.json` following semantic versioning
 3. Build and commit as above
-4. Create a git tag for the version (e.g., `git tag v1.1.0`)
-5. Push tag to remote (e.g., `git push origin v1.1.0`)
+4. Push branch to remote and create PR
+5. Create the release: remind the user to create the release using the Github UI after merging to main. Doing so will automatically create the tag and release.
 
 **IMPORTANT: MMPM Update Detection**
 

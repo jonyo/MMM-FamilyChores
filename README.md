@@ -72,6 +72,8 @@ git pull
 
 No additional steps are needed - the bundled JavaScript files are included in the repository.
 
+**Before updating**, check [CHANGELOG.md](CHANGELOG.md) for version history and release notes. We strive to maintain backward compatibility, but any breaking changes will be clearly documented there.
+
 ## Configuration
 
 ### Basic Options
@@ -581,6 +583,11 @@ Contributions are welcome! This is a side project, so please understand that res
 ### How to Contribute
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed contribution guidelines.
+
+### Additional Documentation
+
+- [CHANGELOG.md](CHANGELOG.md) - Version history and release notes
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) - Community guidelines
 
 ## License
 
