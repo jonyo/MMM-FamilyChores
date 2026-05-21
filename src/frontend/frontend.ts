@@ -20,8 +20,6 @@ declare global {
 const familyChoresModule: FamilyChoresModule = {
   name: 'MMM-FamilyChores',
   config: {
-    updateInterval: 60000,
-    dataFile: 'data.json',
     personFilter: null,
     viewMode: 'personal',
     summary: {
@@ -34,8 +32,6 @@ const familyChoresModule: FamilyChoresModule = {
     },
   },
   defaults: {
-    updateInterval: 60000,
-    dataFile: 'data.json',
     personFilter: null,
     viewMode: 'personal',
     summary: {
@@ -53,7 +49,6 @@ const familyChoresModule: FamilyChoresModule = {
   start(): void {
     Log.info(`${this.name} is starting`);
     this.loadData();
-    this.scheduleUpdate();
   },
 
   /**
@@ -505,13 +500,6 @@ const familyChoresModule: FamilyChoresModule = {
       default:
         Log.warn(`${this.name} received unknown socket notification: '${notificationIdentifier}'`);
     }
-  },
-
-  // Custom function: load data every interval
-  scheduleUpdate(): void {
-    setInterval(() => {
-      this.loadData();
-    }, this.config.updateInterval || 60000);
   },
 
   // Custom function: send socket notification to node helper

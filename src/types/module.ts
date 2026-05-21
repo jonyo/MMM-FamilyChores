@@ -41,7 +41,6 @@ export interface FamilyChoresModule extends Omit<MagicMirrorModule<Config>, 'get
 
   // Custom methods specific to our module
   loadData: () => void;
-  scheduleUpdate: () => void;
   toggleChoreCompletion: (choreId: string, completed: boolean) => void;
   shouldShowChore: (chore: Chore, todayDayName: DayOfWeek) => boolean;
   getFilteredChores: () => Chore[];

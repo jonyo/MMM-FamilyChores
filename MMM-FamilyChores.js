@@ -105,8 +105,6 @@
 	Module.register("MMM-FamilyChores", {
 		name: "MMM-FamilyChores",
 		config: {
-			updateInterval: 6e4,
-			dataFile: "data.json",
 			personFilter: null,
 			viewMode: "personal",
 			summary: {
@@ -119,8 +117,6 @@
 			}
 		},
 		defaults: {
-			updateInterval: 6e4,
-			dataFile: "data.json",
 			personFilter: null,
 			viewMode: "personal",
 			summary: {
@@ -136,7 +132,6 @@
 		start() {
 			Log.info(`${this.name} is starting`);
 			this.loadData();
-			this.scheduleUpdate();
 		},
 		/**
 		* The getStyles method is called to request any additional stylesheets that need to be loaded.
@@ -393,11 +388,6 @@
 					break;
 				default: Log.warn(`${this.name} received unknown socket notification: '${notificationIdentifier}'`);
 			}
-		},
-		scheduleUpdate() {
-			setInterval(() => {
-				this.loadData();
-			}, this.config.updateInterval || 6e4);
 		},
 		loadData() {
 			Log.debug(`${this.name} is loading data`);

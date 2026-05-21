@@ -30,6 +30,7 @@ interface FamilyChoresNodeHelper extends Partial<NodeHelper.NodeHelperModule> {
   // Module state
   choreData: FamilyChoresData | null;
   config: Config | null;
+  dailyResetTimer: NodeHelperTimer;
 
   // Custom methods
   setupAdminRoutes(): void;
@@ -41,12 +42,18 @@ interface FamilyChoresNodeHelper extends Partial<NodeHelper.NodeHelperModule> {
   handleChoreToggle(payload: ChoreTogglePayload): void;
   logIncompleteChore(chore: Chore, date: string): void;
   trackDailyCompletion(chore: Chore, completed: boolean): void;
+  stop(): void;
 }
+
+type NodeHelperTimer = ReturnType<typeof setInterval> | null;
 
 const nodeHelper: FamilyChoresNodeHelper = {
   // Module state
   choreData: null as FamilyChoresData | null,
   config: null as Config | null,
+
+  // Timer handle for daily reset check
+  dailyResetTimer: null as NodeHelperTimer,
 
   /**
    * MM function: called when the node helper starts
@@ -54,6 +61,26 @@ const nodeHelper: FamilyChoresNodeHelper = {
   start(): void {
     Log.info(`Starting node helper for MMM-FamilyChores`);
     this.setupAdminRoutes();
+
+    // Check for daily reset every minute
+    this.dailyResetTimer = setInterval(() => {
+      const previousResetDate = this.choreData?.lastResetDate;
+      this.checkAndPerformDailyReset();
+      // If reset occurred, notify all frontends with fresh data
+      if (this.choreData && this.choreData.lastResetDate !== previousResetDate) {
+        this.sendSocketNotification?.(SocketNotifications.CHORE_DATA, this.choreData);
+      }
+    }, 60000);
+  },
+
+  /**
+   * MM function: called when the node helper stops
+   */
+  stop(): void {
+    if (this.dailyResetTimer) {
+      clearInterval(this.dailyResetTimer);
+      this.dailyResetTimer = null;
+    }
   },
 
   /**
@@ -87,7 +114,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
       return;
     }
 
-    const dataPath = path.resolve(__dirname, this.config.dataFile || 'data.json');
+    const dataPath = path.resolve(__dirname, 'data.json');
 
     try {
       if (fs.existsSync(dataPath)) {
@@ -177,7 +204,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
       return;
     }
 
-    const dataPath = path.resolve(__dirname, this.config.dataFile || 'data.json');
+    const dataPath = path.resolve(__dirname, 'data.json');
 
     try {
       fs.writeFileSync(dataPath, JSON.stringify(this.choreData, null, 2), 'utf8');

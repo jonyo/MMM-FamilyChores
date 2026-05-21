@@ -65,12 +65,11 @@ That's it! The module includes all necessary dependencies in the bundled JavaScr
 
 ### Basic Options
 
-| Option           | Type    | Default       | Description                                                                        |
-| ---------------- | ------- | ------------- | ---------------------------------------------------------------------------------- |
-| `updateInterval` | number  | `60000`       | Update interval in milliseconds                                                    |
-| `personFilter`   | string  | `null`        | Filter chores by person name (case-insensitive)                                    |
-| `viewMode`       | string  | `'personal'`  | View mode: `'personal'` or `'summary'`                                             |
-| `summary`        | object  | see below     | Summary view configuration options                                                 |
+| Option          | Type    | Default       | Description                                     |
+| --------------- | ------- | ------------- | ----------------------------------------------- |
+| `personFilter`  | string  | `null`        | Filter chores by person name (case-insensitive) |
+| `viewMode`      | string  | `'personal'`  | View mode: `'personal'` or `'summary'`          |
+| `summary`       | object  | see below     | Summary view configuration options              |
 
 ### Summary View Configuration
 
@@ -418,7 +417,7 @@ Rotating chores pause until the next valid day.
 
 ### Daily Reset
 
-The module detects when the local date has advanced past the last reset date and automatically clears all `completedToday` entries, making personal chores available again. This happens on the first update after midnight (or whenever the module next checks after the date changes).
+The module detects when the local date has advanced past the last reset date and automatically clears all `completedToday` entries, making personal chores available again. The backend checks for the date change every minute, and when a reset occurs, it broadcasts the updated data to all frontend instances via socket notifications.
 
 ## Development
 

@@ -154,7 +154,7 @@ If the pre-commit hook fails: `pnpm fix && pnpm build && git add . && git commit
 
 - Single `data.json` file contains both config and state
 - State updates are atomic to prevent race conditions
-- Daily reset at midnight clears `completedToday`
+- Daily reset at midnight clears `completedToday` (backend checks every minute and broadcasts updates to frontends)
 - Rotating chores stay with current person until completed
 
 **Validation on Load:**
@@ -409,7 +409,7 @@ This module is for household use, not a high-security context — but `escapeHtm
 
 **Data File:**
 
-- Use `data.json` as default location
+- Uses `data.json` (hardcoded path in module directory)
 - Create automatic backups before writes
 - Validate data structure on load
 

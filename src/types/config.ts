@@ -1,6 +1,4 @@
 export type Config = {
-  updateInterval?: number;
-  dataFile?: string;
   personFilter?: string | null;
   /**
    * View mode: 'personal' (default) or 'summary'
