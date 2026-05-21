@@ -16,51 +16,9 @@ A MagicMirror² module for family chore tracking with personal daily chores, rot
 - **Skip Days**: Configure chores to skip specific days (e.g., weekends)
 - **State Persistence**: Single JSON file stores all configuration and current state
 - **Admin Panel**: Web-based UI for managing people, chores, settings, and viewing activity history
-- **PIN Protection**: Optional admin PIN with enable/disable toggle protects destructive actions (delete, reassign, settings changes, backup/restore)
-- **Activity History**: View who completed which chores and when
+- **PIN Protection**: Optional admin PIN with enable/disable toggle — view everything in the admin panel without it, but any change (add, edit, delete, settings, backup download/restore) requires it
+- **Activity History**: Per-person 2-week chore history — see which chores were completed each day, and whether they were on time or late (for chores with deadlines)
 - **Backup/Restore**: Download and upload configuration files
-
-## Screenshots
-
-> Screenshots show representative examples of the module's appearance. The mirror display is fully customizable through your MagicMirror `custom.css` file, so your actual layout may differ.
->
-> Even with default options, the look may change depending on which region you add the module to.
-
-### Mirror Views
-
-**Summary view** showing overdue chores, today's rotating assignments, and remaining personal chores across the family:
-
-![Summary View](docs/summary.png)
-
-**Per-person view** showing a single person's personal chores and their current rotating assignments:
-
-![Alice's Chores](docs/alice.png)
-
-**Overdue indicator** on a per-person view — chores not completed by their deadline show with a yellow warning badge:
-
-![Charlie's Chores with Overdue](docs/charlie.png)
-
-### Admin Panel
-
-The admin panel provides full management of people, chores, settings, and history:
-
-![Admin Panel Overview](docs/admin-top.png)
-
-**Rotating chores** show the current person assigned and can be reassigned directly:
-
-![Admin Rotating Chores](docs/admin-rotating-chores.png)
-
-**Adding a person** — each family member gets a name and a color for visual identification on the mirror:
-
-![Admin Add Person](docs/admin-add-person.png)
-
-**Adding a rotating chore** — configure skip days, visibility behavior, rotation order, and optional deadline:
-
-![Admin Add Rotating Chore](docs/admin-add-rotating-chore.png)
-
-**Activity history** — view a log of who completed which chores and when:
-
-![Admin History](docs/admin-history.png)
 
 ## Planned Roadmap
 
@@ -68,13 +26,17 @@ _Note: This roadmap represents current plans and priorities. Features may be add
 
 None at this time. The module is feature-complete for v1.0.
 
+We welcome suggestions, but aim to preserve the module's focus on simple family chore tracking. Not every feature will fit — see [Intentionally _Not_ Included](#intentionally-_not_-included) for examples of what we intentionally keep out of scope to avoid "kitchen sink" bloat.
+
+Have an idea? Start a discussion in the [GitHub Discussions](https://github.com/jonyo/MMM-FamilyChores/discussions) section.
+
 ## Intentionally _Not_ Included
 
 - **Advanced Scheduling**: This module focuses on daily chores with basic features like skip days. For complex scheduling needs, consider using this alongside a calendar module for the more complex "every other Monday" or "monthly" chores.
 
 - **Reward System**: Focused on simple chore tracking rather than gamification. Provides visual indicators for overdue tasks and tracks completion history for reference, but does not award rewards or points. Designed as a straightforward reminder system with rotating chore assignments. Any "rewards" or incentives are left to the family to implement outside the system.
 
-- **Security**: Designed for private home environments only. The PIN protection provides minimal deterrence but stores PIN in plain text. Not suitable for public/shared environments. Person and chore names (and similar fields) are stored exactly as entered; the mirror UI and bundled admin page escape them when building HTML so markup in names is shown as text, not executed. This does not replace network-level controls (keep MagicMirror off the public internet; treat your LAN as the trust boundary).
+- **Security**: Designed for private home environments only. The PIN protection provides minimal deterrence but stores PIN in plain text. Not suitable for public/shared environments. Person and chore names (and similar fields) are stored exactly as entered; the mirror UI and bundled admin page escape them when building HTML so markup in names is shown as text, not executed. This does not replace network-level controls (keep MagicMirror off the public internet; treat your LAN as the trust boundary). See [Security & Privacy](#security--privacy) for what the module does and does not do regarding external connectivity.
 
 ## Installation
 
@@ -85,9 +47,9 @@ None at this time. The module is feature-complete for v1.0.
    git clone https://github.com/jonyo/MMM-FamilyChores.git
    ```
 
-2. Add the module to your MagicMirror config (see Configuration section below)
+2. Add at least one module entry to your MagicMirror `config.js` — MagicMirror won't load the module (and the admin panel won't work) until there is at least one entry. See the [Configuration](#configuration) section for the minimal setup and all available options.
 
-3. Open the admin panel in your browser to set up people and chores:
+3. Once MagicMirror is running, open the admin panel in your browser to set up people and chores:
 
    ```
    http://192.168.xxx.xxx:8080/modules/MMM-FamilyChores/admin.html
@@ -105,7 +67,6 @@ That's it! The module includes all necessary dependencies in the bundled JavaScr
 
 | Option           | Type    | Default       | Description                                                                        |
 | ---------------- | ------- | ------------- | ---------------------------------------------------------------------------------- |
-| `dataFile`       | string  | `'data.json'` | Path to data file relative to module folder                                        |
 | `updateInterval` | number  | `60000`       | Update interval in milliseconds                                                    |
 | `personFilter`   | string  | `null`        | Filter chores by person name (case-insensitive)                                    |
 | `viewMode`       | string  | `'personal'`  | View mode: `'personal'` or `'summary'`                                             |
@@ -223,6 +184,8 @@ Use multiple module instances to place each summary section in a different posit
 
 ### Display Modes
 
+> Screenshots below show representative examples of the module's appearance. The mirror display is fully customizable through your MagicMirror `custom.css` file, so your actual layout may differ. Even with default options, the look may change depending on which region you add the module to.
+
 #### Per-Person View
 
 Show only one person's personal chores plus their current rotating assignments:
@@ -235,6 +198,12 @@ Show only one person's personal chores plus their current rotating assignments:
   config: { personFilter: 'Alice' }
 }
 ```
+
+![Alice's Chores](docs/alice.png)
+
+**Overdue indicator** — chores not completed by their deadline show with a yellow warning badge:
+
+![Charlie's Chores with Overdue](docs/charlie.png)
 
 #### Summary View
 
@@ -256,6 +225,8 @@ Sections automatically arrange side-by-side when there's horizontal space, or st
   }
 }
 ```
+
+![Summary View](docs/summary.png)
 
 #### All Chores View
 
@@ -351,7 +322,7 @@ Each chore item shows:
 
 ## Admin Panel
 
-The module includes a web-based admin panel for managing people, chores, settings, and viewing activity history.
+The admin panel is a web-based UI for managing people, chores, settings, and activity history. It is designed to be self-documenting — just open it and explore. The sections below cover access, a visual overview, and the non-obvious behaviors worth knowing about upfront.
 
 ### Accessing the Admin Panel
 
@@ -361,20 +332,29 @@ Open your browser and navigate to:
 http://192.168.xxx.xxx:8080/modules/MMM-FamilyChores/admin.html
 ```
 
-Replace `192.168.xxx.xxx` with the IP address of the device running MagicMirror (e.g., your Raspberry Pi).
-
-If you are using a custom port or path, adjust accordingly.
+Replace `192.168.xxx.xxx` with the IP address of the device running MagicMirror (e.g., your Raspberry Pi). If you are using a custom port or path, adjust accordingly.
 
 **Note:** By default, MagicMirror only accepts connections from the same device. To access the admin panel from your phone or computer, you may need to update `address` and `ipWhitelist` in your MagicMirror `config.js`. See the [MagicMirror configuration docs](https://docs.magicmirror.builders/configuration/introduction.html) for details.
 
-### Available Actions
+### Overview
 
-- **People**: Add, edit, and remove family members. Each person has a name and text color.
-- **Chores**: Create and manage personal and rotating chores, assign skip days, set deadlines, and copy chores between people.
-- **Settings**: Enable/disable activity history and set an admin PIN.
-- **Activity History**: View a log of who completed which chores and when (requires `historyEnabled` to be set).
-- **Backup/Restore**: Download the current `data.json` for safekeeping or upload a previously saved backup.
-- **System Actions**: Tools for resetting or resyncing chore state after unusual situations (see below).
+![Admin Panel Overview](docs/admin-top.png)
+
+**Rotating chores** show the current person assigned and can be reassigned directly:
+
+![Admin Rotating Chores](docs/admin-rotating-chores.png)
+
+**Adding a person** — each family member gets a name and a color for visual identification on the mirror:
+
+![Admin Add Person](docs/admin-add-person.png)
+
+**Adding a rotating chore** — configure skip days, visibility behavior, rotation order, and optional deadline:
+
+![Admin Add Rotating Chore](docs/admin-add-rotating-chore.png)
+
+**Activity history** — select a person to view a 2-week grid of their chores, showing which days they were completed (and whether they were on time or late for chores with deadlines):
+
+![Admin History](docs/admin-history.png)
 
 ### System Actions
 
@@ -385,10 +365,10 @@ The **System Actions** section at the bottom of the admin panel provides tools f
 
 ### PIN Protection
 
-An optional admin PIN can be configured in the admin panel settings to protect destructive actions:
+An optional admin PIN can be configured in the admin panel settings. When enabled, every action that changes data (or downloads a backup) requires the PIN:
 
 - **Enable/Disable**: Toggle PIN protection on or off from the Settings tab.
-- **Protected Actions**: Deleting people or chores, reassigning rotating chores, resetting caught-up status, changing settings, and restoring backups.
+- **Protected Actions**: Adding, editing, or deleting people and chores; reassigning rotating chores; resetting caught-up status; changing settings; restoring backups; and downloading backups. Viewing is always allowed without a PIN.
 - **Remember PIN**: A "Remember PIN for 10 minutes" checkbox (unchecked by default) lets you perform multiple admin actions without re-entering the PIN during a session. The PIN is forgotten when you refresh or close the window.
 - **Forgot PIN**: If you forget your PIN, SSH into the MagicMirror and edit the `adminPin` value directly in the module's `data.json` file.
 
@@ -439,11 +419,6 @@ Rotating chores pause until the next valid day.
 ### Daily Reset
 
 The module detects when the local date has advanced past the last reset date and automatically clears all `completedToday` entries, making personal chores available again. This happens on the first update after midnight (or whenever the module next checks after the date changes).
-
-### Mirror Interactions
-
-- **Mark Complete/Incomplete**: Anyone can check/uncheck chores on the mirror display without a PIN
-- **Admin Actions**: Open the admin panel at `/admin.html` within the module folder. When a PIN is set in the admin panel settings, destructive actions require PIN entry
 
 ## Development
 
@@ -501,6 +476,7 @@ src/
 ├── backend/                    # Node.js helper for data persistence
 │   ├── node-helper.ts          # Node helper
 │   ├── admin-routes.ts         # Admin API routes
+│   ├── validator.ts            # Data validation
 │   └── *.test.ts               # Backend tests
 ├── admin/                      # SolidJS admin interface
 │   ├── admin.tsx               # Main admin component
@@ -508,19 +484,25 @@ src/
 │   └── *.tsx                   # Admin UI components
 ├── api/                        # API client functions
 │   ├── client.ts               # Base client and response handling
+│   ├── index.ts                # Barrel exports
 │   ├── people.ts               # Person API operations
 │   ├── chores.ts               # Chore API operations
+│   ├── settings.ts             # Settings API operations
 │   └── *.test.ts               # API client tests
 ├── types/                      # TypeScript type definitions
 │   ├── module.ts               # MagicMirror module types
 │   ├── config.ts               # Configuration types
 │   ├── chore-types.ts          # Data structure types
-│   └── *.ts                    # Additional type definitions
+│   ├── request-types.ts        # API request types
+│   ├── response-types.ts       # API response types
+│   └── socket-payload-types.ts # Socket notification types
 ├── constants/
 │   └── socket-notifications.ts # Socket notification constants
 └── utils/                      # Utility functions
     ├── uuid.ts                 # UUID v4 generation and validation
     ├── date.ts                 # Date utilities
+    ├── browser.ts              # Browser/DOM utilities
+    ├── validation.ts           # Validation helpers
     └── *.test.ts               # Utility tests
 ```
 
@@ -566,6 +548,21 @@ When `historyEnabled` is `false`:
 - The midnight reset does not log incomplete chores
 - Existing history entries are preserved (not deleted) - the function returns early without modifying the `dailyCompletions` array
 - A prominent warning banner appears in the history modal
+
+## Security & Privacy
+
+MMM-FamilyChores is an entirely self-contained module. All data is stored locally in a single JSON file on your MagicMirror device.
+
+### Local-Only by Design
+
+- **No External Services**: The module does not communicate with any third-party websites, APIs, or cloud services. It does not use analytics, telemetry, or any external data sources.
+- **Local Data Storage**: All people, chores, settings, and history are stored in a single `data.json` file within the module folder. Nothing leaves your device.
+- **Local API Calls Only**: The admin panel makes HTTP fetch calls, but only to the local MagicMirror server endpoints provided by the module itself (`/MMM-FamilyChores/...`). No data is sent to or retrieved from the internet.
+- **No Runtime Dependencies**: The module bundles all necessary code. There are no external scripts loaded from CDNs or other remote sources at runtime.
+
+### Trust Boundary
+
+While the module does not reach out to external services on its own, it is still designed for use within a trusted local network. If you expose MagicMirror to the public internet, the admin panel and chore data could be accessed by anyone who can reach the server. Keep MagicMirror on your LAN and use your router and firewall as your primary security boundary.
 
 ## Contributing
 
