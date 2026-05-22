@@ -213,7 +213,7 @@ Show only one person's personal chores plus their current rotating assignments:
 
 ![Alice's Chores](docs/alice.png)
 
-**Overdue indicator** — chores not completed by their deadline show with a yellow warning badge:
+**Overdue indicator** — chores not completed by their deadline or not marked complete the previous day show with a yellow warning badge:
 
 ![Charlie's Chores with Overdue](docs/charlie.png)
 
@@ -223,7 +223,8 @@ Show all incomplete chores, rotating assignments, and behind schedule chores in 
 
 - **Incomplete Chores**: Displays each person with their count of incomplete tasks (includes both personal and rotating chores assigned to them). People with 0 incomplete chores show a celebration emoji (🎉).
 - **Today's Rotation**: Shows rotating chores in a compact inline format with chore name, assigned person, and checkbox on each line.
-- **Overdue**: Groups overdue chores by person, showing the person name followed by up to 3 overdue chore names. If a person has more than 4 overdue chores, displays "...X more" after the first 3.
+- **Overdue**: Groups overdue chores by person, showing the person name followed by up to 3 overdue chore names. If a person has more than 4 overdue chores, displays "...X more" after the first 3. A chore shows as overdue either because its deadline has passed today or because it was not completed the previous day (even if no deadline is set).
+- All 3 options respect the skip days and skip visibility settings.
 
 Sections automatically arrange side-by-side when there's horizontal space, or stack vertically depending on what position is used in the config.
 
@@ -414,8 +415,15 @@ The data structure uses stable identifiers internally, so you can rename people 
 
 ### Deadline Indicators
 
-- **Normal**: Current time before deadline
-- **Yellow**: Past deadline but not completed
+Chores can show as overdue for two reasons:
+
+1. **Deadline passed**: If a deadline is set and the current local time has reached or passed it, the chore turns yellow.
+2. **Not caught up**: If a chore was not completed the previous day, it automatically shows as yellow at the start of the next day, even without a deadline set.
+
+Visual states:
+
+- **Normal**: Current time before deadline and caught up from the previous day
+- **Yellow**: Past deadline or not caught up from the previous day
 - **Strikethrough**: Completed (clickable to uncheck)
 
 ### Skip Days

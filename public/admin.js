@@ -2159,7 +2159,7 @@
 	} });
 	//#endregion
 	//#region src/admin/personal-chore-modal.tsx
-	var _tmpl$$7 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><div class="mb-5 flex items-center justify-between"><h3 class="text-2xl text-indigo-600">Error</h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><p>Person not found. Please refresh the page.`), _tmpl$2$7 = /* @__PURE__ */ template(`<div class=mb-5><label for=skipDayVisibility class="mb-3 block font-medium text-slate-900">Skip Day Visibility</label><select id=skipDayVisibility class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option>Hide</option><option>Always Show</option><option>Show If Overdue`), _tmpl$3$5 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"data-testid=modal><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"data-testid=modal-content><div class="mb-5 flex items-center justify-between"><h3 class="text-2xl text-indigo-600"data-testid=modal-title></h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><div class="mb-5 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-base"data-testid=assigned-person-display><span class="inline-block size-6 rounded-full border-2 border-black/10 align-middle"data-testid=person-color-badge></span><strong>Assigned to:</strong> </div><form><div class=mb-5><label for=choreName class="mb-3 block font-medium text-slate-900">Chore Name</label><input type=text id=choreName required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><label for=deadline class="mb-3 block font-medium text-slate-900">Deadline (optional)</label><input type=time id=deadline class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Skip Days</div><div class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3"></div></div><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$4$5 = /* @__PURE__ */ template(`<label class="flex cursor-pointer items-center gap-2 font-normal"><input type=checkbox class="size-4.5 cursor-pointer">`);
+	var _tmpl$$7 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><div class="mb-5 flex items-center justify-between"><h3 class="text-2xl text-indigo-600">Error</h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><p>Person not found. Please refresh the page.`), _tmpl$2$7 = /* @__PURE__ */ template(`<div class=mb-5><label for=skipDayVisibility class="mb-3 block font-medium text-slate-900">Skip Day Visibility</label><select id=skipDayVisibility class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option>Hide</option><option>Always Show</option><option>Show If Overdue`), _tmpl$3$5 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"data-testid=modal><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"data-testid=modal-content><div class="mb-5 flex items-center justify-between"><h3 class="text-2xl text-indigo-600"data-testid=modal-title></h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><div class="mb-5 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-base"data-testid=assigned-person-display><span class="inline-block size-6 rounded-full border-2 border-black/10 align-middle"data-testid=person-color-badge></span><strong>Assigned to:</strong> </div><form><div class=mb-5><label for=choreName class="mb-3 block font-medium text-slate-900">Chore Name</label><input type=text id=choreName required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><div class="mb-3 flex items-center"><label for=deadline class="block font-medium text-slate-900">Deadline (optional)</label></div><input type=time id=deadline class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Skip Days</div><div class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3"></div></div><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$4$5 = /* @__PURE__ */ template(`<label class="flex cursor-pointer items-center gap-2 font-normal"><input type=checkbox class="size-4.5 cursor-pointer">`);
 	var PersonalChoreModal = (props) => {
 		const { pinRequired, cachedPin, setCachedPin } = useAdminContext();
 		const [name, setName] = createSignal(props.initialChore?.name ?? "");
@@ -2231,24 +2231,34 @@
 			children: (person) => (() => {
 				var _el$7 = _tmpl$3$5(), _el$9 = _el$7.firstChild.firstChild, _el$0 = _el$9.firstChild, _el$1 = _el$0.nextSibling, _el$10 = _el$9.nextSibling, _el$11 = _el$10.firstChild;
 				_el$11.nextSibling.nextSibling;
-				var _el$14 = _el$10.nextSibling, _el$15 = _el$14.firstChild, _el$17 = _el$15.firstChild.nextSibling, _el$18 = _el$15.nextSibling, _el$20 = _el$18.firstChild.nextSibling, _el$21 = _el$18.nextSibling, _el$23 = _el$21.firstChild.nextSibling, _el$30 = _el$21.nextSibling;
+				var _el$14 = _el$10.nextSibling, _el$15 = _el$14.firstChild, _el$17 = _el$15.firstChild.nextSibling, _el$18 = _el$15.nextSibling, _el$19 = _el$18.firstChild;
+				_el$19.firstChild;
+				var _el$21 = _el$19.nextSibling, _el$22 = _el$18.nextSibling, _el$24 = _el$22.firstChild.nextSibling, _el$31 = _el$22.nextSibling;
 				insert(_el$0, () => props.initialChore ? "Edit Personal Chore" : "Add Personal Chore");
 				_el$1.$$click = () => props.closeModal();
 				insert(_el$10, () => person.name, null);
 				_el$14.addEventListener("submit", handleSubmit);
 				_el$17.$$input = (e) => setName(e.currentTarget.value);
-				_el$20.$$input = (e) => setDeadline(e.currentTarget.value);
-				insert(_el$23, createComponent(For, {
+				insert(_el$19, createComponent(Tooltip, {
+					text: "The chore turns yellow on the display after this time. Shown as a badge next to the assigned person. Chores not done the previous day also show as overdue automatically, regardless of this setting.",
+					position: "above",
+					align: "center",
+					multiline: true,
+					"class": "ml-1.5 inline-flex size-5 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-600",
+					children: "?"
+				}), null);
+				_el$21.$$input = (e) => setDeadline(e.currentTarget.value);
+				insert(_el$24, createComponent(For, {
 					get each() {
 						return Object.values(DayOfWeek);
 					},
 					children: (day) => (() => {
-						var _el$31 = _tmpl$4$5(), _el$32 = _el$31.firstChild;
-						_el$32.$$input = (e) => handleSkipDayChange(day, e.currentTarget.checked);
-						_el$32.value = day;
-						insert(_el$31, () => day.charAt(0).toUpperCase() + day.slice(1), null);
-						createRenderEffect(() => _el$32.checked = skipDays().includes(day));
-						return _el$31;
+						var _el$32 = _tmpl$4$5(), _el$33 = _el$32.firstChild;
+						_el$33.$$input = (e) => handleSkipDayChange(day, e.currentTarget.checked);
+						_el$33.value = day;
+						insert(_el$32, () => day.charAt(0).toUpperCase() + day.slice(1), null);
+						createRenderEffect(() => _el$33.checked = skipDays().includes(day));
+						return _el$32;
 					})()
 				}));
 				insert(_el$14, createComponent(Show, {
@@ -2256,18 +2266,18 @@
 						return skipDays().length > 0;
 					},
 					get children() {
-						var _el$24 = _tmpl$2$7(), _el$26 = _el$24.firstChild.nextSibling, _el$27 = _el$26.firstChild, _el$28 = _el$27.nextSibling, _el$29 = _el$28.nextSibling;
-						_el$26.$$input = (e) => setSkipDayVisibility(e.currentTarget.value);
-						insert(_el$24, createComponent(SkipDayVisibilityInfo, { get value() {
+						var _el$25 = _tmpl$2$7(), _el$27 = _el$25.firstChild.nextSibling, _el$28 = _el$27.firstChild, _el$29 = _el$28.nextSibling, _el$30 = _el$29.nextSibling;
+						_el$27.$$input = (e) => setSkipDayVisibility(e.currentTarget.value);
+						insert(_el$25, createComponent(SkipDayVisibilityInfo, { get value() {
 							return skipDayVisibility();
 						} }), null);
-						createRenderEffect(() => _el$27.value = SkipDayVisibility.HIDE);
-						createRenderEffect(() => _el$28.value = SkipDayVisibility.SHOW_ALWAYS);
-						createRenderEffect(() => _el$29.value = SkipDayVisibility.SHOW_IF_OVERDUE);
-						createRenderEffect(() => _el$26.value = skipDayVisibility());
-						return _el$24;
+						createRenderEffect(() => _el$28.value = SkipDayVisibility.HIDE);
+						createRenderEffect(() => _el$29.value = SkipDayVisibility.SHOW_ALWAYS);
+						createRenderEffect(() => _el$30.value = SkipDayVisibility.SHOW_IF_OVERDUE);
+						createRenderEffect(() => _el$27.value = skipDayVisibility());
+						return _el$25;
 					}
-				}), _el$30);
+				}), _el$31);
 				insert(_el$14, createComponent(Show, {
 					get when() {
 						return memo(() => !!pinRequired())() && !cachedPin();
@@ -2284,14 +2294,14 @@
 							onRememberChange: setRememberPin
 						});
 					}
-				}), _el$30);
-				insert(_el$30, createComponent(Button, {
+				}), _el$31);
+				insert(_el$31, createComponent(Button, {
 					type: "button",
 					variant: "secondary",
 					onClick: () => props.closeModal(),
 					children: "Cancel"
 				}), null);
-				insert(_el$30, createComponent(Button, {
+				insert(_el$31, createComponent(Button, {
 					type: "submit",
 					variant: "primary",
 					get children() {
@@ -2300,7 +2310,7 @@
 				}), null);
 				createRenderEffect((_$p) => style(_el$11, `background-color: ${person.color}`, _$p));
 				createRenderEffect(() => _el$17.value = name());
-				createRenderEffect(() => _el$20.value = deadline());
+				createRenderEffect(() => _el$21.value = deadline());
 				return _el$7;
 			})()
 		});
@@ -2522,7 +2532,7 @@
 	};
 	//#endregion
 	//#region src/admin/rotating-chore-modal.tsx
-	var _tmpl$$3 = /* @__PURE__ */ template(`<svg width=12 height=18 viewBox="0 0 12 18"class=text-slate-400><title>Drag handle</title><circle cx=3 cy=3 r=1.5 fill=currentColor></circle><circle cx=9 cy=3 r=1.5 fill=currentColor></circle><circle cx=3 cy=9 r=1.5 fill=currentColor></circle><circle cx=9 cy=9 r=1.5 fill=currentColor></circle><circle cx=3 cy=15 r=1.5 fill=currentColor></circle><circle cx=9 cy=15 r=1.5 fill=currentColor>`), _tmpl$2$3 = /* @__PURE__ */ template(`<li class="list-none p-4 text-center text-sm text-slate-400 italic">All people in rotation`), _tmpl$3$3 = /* @__PURE__ */ template(`<li class="list-none p-4 text-center text-sm text-slate-400 italic"data-testid=empty-rotation-message>Drag people here`), _tmpl$4$3 = /* @__PURE__ */ template(`<div class=mb-5><label for=skipDayVisibility class="mb-3 block font-medium text-slate-900">Skip Day Visibility</label><select id=skipDayVisibility class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option>Hide</option><option>Always Show</option><option>Show If Overdue`), _tmpl$5$2 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[600px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><div class="mb-5 flex items-center justify-between"><h3 class="text-2xl text-indigo-600"data-testid=modal-title></h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><form><div class=mb-5><label for=choreName class="mb-3 block font-medium text-slate-900">Chore Name</label><input type=text id=choreName required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Rotation</div><div class="flex gap-4"><div class=flex-1><div class="mb-2 text-sm font-medium text-slate-600">Available</div><ul class="min-h-[120px] rounded-lg border border-slate-200 bg-slate-50 p-2"data-testid=available-column></ul></div><div class=flex-1><div class="mb-2 text-sm font-medium text-slate-600">In Rotation</div><ul class="min-h-[120px] rounded-lg border border-slate-200 bg-slate-50 p-2"data-testid=rotation-column></ul></div></div></div><div class=mb-5><label for=deadline class="mb-3 block font-medium text-slate-900">Deadline (optional)</label><input type=time id=deadline class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Skip Days</div><div class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3"data-testid=skip-days-checkbox-list></div></div><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$6$2 = /* @__PURE__ */ template(`<li class="flex cursor-grab items-center gap-2 rounded p-2 transition-opacity hover:bg-slate-100"><span data-drag-handle class=shrink-0></span><span class=text-sm>`), _tmpl$7$2 = /* @__PURE__ */ template(`<li class="flex items-center gap-2 rounded p-2 transition-opacity hover:bg-slate-100"data-rotation-item><span data-drag-handle class="shrink-0 cursor-grab"></span><label class="flex cursor-pointer items-center gap-2"><input type=radio name=active-person class="size-4 cursor-pointer"><span class=text-sm>`), _tmpl$8$2 = /* @__PURE__ */ template(`<label class="flex cursor-pointer items-center gap-2 font-normal"><input type=checkbox class="size-4.5 cursor-pointer">`);
+	var _tmpl$$3 = /* @__PURE__ */ template(`<svg width=12 height=18 viewBox="0 0 12 18"class=text-slate-400><title>Drag handle</title><circle cx=3 cy=3 r=1.5 fill=currentColor></circle><circle cx=9 cy=3 r=1.5 fill=currentColor></circle><circle cx=3 cy=9 r=1.5 fill=currentColor></circle><circle cx=9 cy=9 r=1.5 fill=currentColor></circle><circle cx=3 cy=15 r=1.5 fill=currentColor></circle><circle cx=9 cy=15 r=1.5 fill=currentColor>`), _tmpl$2$3 = /* @__PURE__ */ template(`<li class="list-none p-4 text-center text-sm text-slate-400 italic">All people in rotation`), _tmpl$3$3 = /* @__PURE__ */ template(`<li class="list-none p-4 text-center text-sm text-slate-400 italic"data-testid=empty-rotation-message>Drag people here`), _tmpl$4$3 = /* @__PURE__ */ template(`<div class=mb-5><label for=skipDayVisibility class="mb-3 block font-medium text-slate-900">Skip Day Visibility</label><select id=skipDayVisibility class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option>Hide</option><option>Always Show</option><option>Show If Overdue`), _tmpl$5$2 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[600px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><div class="mb-5 flex items-center justify-between"><h3 class="text-2xl text-indigo-600"data-testid=modal-title></h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><form><div class=mb-5><label for=choreName class="mb-3 block font-medium text-slate-900">Chore Name</label><input type=text id=choreName required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Rotation</div><div class="flex gap-4"><div class=flex-1><div class="mb-2 text-sm font-medium text-slate-600">Available</div><ul class="min-h-[120px] rounded-lg border border-slate-200 bg-slate-50 p-2"data-testid=available-column></ul></div><div class=flex-1><div class="mb-2 text-sm font-medium text-slate-600">In Rotation</div><ul class="min-h-[120px] rounded-lg border border-slate-200 bg-slate-50 p-2"data-testid=rotation-column></ul></div></div></div><div class=mb-5><div class="mb-3 flex items-center"><label for=deadline class="block font-medium text-slate-900">Deadline (optional)</label></div><input type=time id=deadline class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Skip Days</div><div class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3"data-testid=skip-days-checkbox-list></div></div><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$6$2 = /* @__PURE__ */ template(`<li class="flex cursor-grab items-center gap-2 rounded p-2 transition-opacity hover:bg-slate-100"><span data-drag-handle class=shrink-0></span><span class=text-sm>`), _tmpl$7$2 = /* @__PURE__ */ template(`<li class="flex items-center gap-2 rounded p-2 transition-opacity hover:bg-slate-100"data-rotation-item><span data-drag-handle class="shrink-0 cursor-grab"></span><label class="flex cursor-pointer items-center gap-2"><input type=radio name=active-person class="size-4 cursor-pointer"><span class=text-sm>`), _tmpl$8$2 = /* @__PURE__ */ template(`<label class="flex cursor-pointer items-center gap-2 font-normal"><input type=checkbox class="size-4.5 cursor-pointer">`);
 	/**
 	* 6-dot grab handle used as the drag initiator for person rows.
 	*/
@@ -2649,7 +2659,9 @@
 			}
 		};
 		return (() => {
-			var _el$2 = _tmpl$5$2(), _el$4 = _el$2.firstChild.firstChild, _el$5 = _el$4.firstChild, _el$6 = _el$5.nextSibling, _el$7 = _el$4.nextSibling, _el$8 = _el$7.firstChild, _el$0 = _el$8.firstChild.nextSibling, _el$1 = _el$8.nextSibling, _el$12 = _el$1.firstChild.nextSibling.firstChild, _el$14 = _el$12.firstChild.nextSibling, _el$18 = _el$12.nextSibling.firstChild.nextSibling, _el$20 = _el$1.nextSibling, _el$22 = _el$20.firstChild.nextSibling, _el$23 = _el$20.nextSibling, _el$25 = _el$23.firstChild.nextSibling, _el$32 = _el$23.nextSibling;
+			var _el$2 = _tmpl$5$2(), _el$4 = _el$2.firstChild.firstChild, _el$5 = _el$4.firstChild, _el$6 = _el$5.nextSibling, _el$7 = _el$4.nextSibling, _el$8 = _el$7.firstChild, _el$0 = _el$8.firstChild.nextSibling, _el$1 = _el$8.nextSibling, _el$12 = _el$1.firstChild.nextSibling.firstChild, _el$14 = _el$12.firstChild.nextSibling, _el$18 = _el$12.nextSibling.firstChild.nextSibling, _el$20 = _el$1.nextSibling, _el$21 = _el$20.firstChild;
+			_el$21.firstChild;
+			var _el$23 = _el$21.nextSibling, _el$24 = _el$20.nextSibling, _el$26 = _el$24.firstChild.nextSibling, _el$33 = _el$24.nextSibling;
 			insert(_el$5, () => props.initialChore ? "Edit Rotating Chore" : "Add Rotating Chore");
 			_el$6.$$click = () => props.closeModal();
 			_el$7.addEventListener("submit", handleSubmit);
@@ -2661,22 +2673,22 @@
 					return availablePeople();
 				},
 				children: (person) => (() => {
-					var _el$33 = _tmpl$6$2(), _el$34 = _el$33.firstChild, _el$35 = _el$34.nextSibling;
-					_el$33.addEventListener("dragend", handleDragEnd);
-					addEventListener(_el$33, "dragstart", handleDragStart(person.id));
-					setAttribute(_el$33, "draggable", true);
-					insert(_el$34, createComponent(GrabHandle, {}));
-					insert(_el$35, () => person.name);
+					var _el$34 = _tmpl$6$2(), _el$35 = _el$34.firstChild, _el$36 = _el$35.nextSibling;
+					_el$34.addEventListener("dragend", handleDragEnd);
+					addEventListener(_el$34, "dragstart", handleDragStart(person.id));
+					setAttribute(_el$34, "draggable", true);
+					insert(_el$35, createComponent(GrabHandle, {}));
+					insert(_el$36, () => person.name);
 					createRenderEffect((_p$) => {
 						var _v$3 = !!(draggedPersonId() === person.id), _v$4 = `available-person-${person.id}`;
-						_v$3 !== _p$.e && _el$33.classList.toggle("opacity-50", _p$.e = _v$3);
-						_v$4 !== _p$.t && setAttribute(_el$33, "data-testid", _p$.t = _v$4);
+						_v$3 !== _p$.e && _el$34.classList.toggle("opacity-50", _p$.e = _v$3);
+						_v$4 !== _p$.t && setAttribute(_el$34, "data-testid", _p$.t = _v$4);
 						return _p$;
 					}, {
 						e: void 0,
 						t: void 0
 					});
-					return _el$33;
+					return _el$34;
 				})()
 			}), null);
 			insert(_el$14, createComponent(Show, {
@@ -2694,23 +2706,23 @@
 					return rotation();
 				},
 				children: (personId, index) => (() => {
-					var _el$36 = _tmpl$7$2(), _el$37 = _el$36.firstChild, _el$39 = _el$37.nextSibling.firstChild, _el$40 = _el$39.nextSibling;
-					_el$36.addEventListener("dragend", handleDragEnd);
-					addEventListener(_el$36, "dragstart", handleDragStart(personId));
-					setAttribute(_el$36, "draggable", true);
-					setAttribute(_el$36, "data-testid", `rotation-person-${personId}`);
-					insert(_el$37, createComponent(GrabHandle, {}));
-					_el$39.addEventListener("change", () => setActivePersonId(personId));
-					_el$39.value = personId;
-					setAttribute(_el$39, "data-testid", `active-person-radio-${personId}`);
-					insert(_el$40, () => getPersonName(personId));
-					createRenderEffect((_$p) => classList(_el$36, {
+					var _el$37 = _tmpl$7$2(), _el$38 = _el$37.firstChild, _el$40 = _el$38.nextSibling.firstChild, _el$41 = _el$40.nextSibling;
+					_el$37.addEventListener("dragend", handleDragEnd);
+					addEventListener(_el$37, "dragstart", handleDragStart(personId));
+					setAttribute(_el$37, "draggable", true);
+					setAttribute(_el$37, "data-testid", `rotation-person-${personId}`);
+					insert(_el$38, createComponent(GrabHandle, {}));
+					_el$40.addEventListener("change", () => setActivePersonId(personId));
+					_el$40.value = personId;
+					setAttribute(_el$40, "data-testid", `active-person-radio-${personId}`);
+					insert(_el$41, () => getPersonName(personId));
+					createRenderEffect((_$p) => classList(_el$37, {
 						"border-t-2 border-indigo-500": dragOverColumn() === "rotation" && dragOverIndex() === index(),
 						"border-b-2 border-indigo-500": dragOverColumn() === "rotation" && dragOverIndex() === rotation().length && index() === rotation().length - 1,
 						"opacity-50": draggedPersonId() === personId
 					}, _$p));
-					createRenderEffect(() => _el$39.checked = activePersonId() === personId);
-					return _el$36;
+					createRenderEffect(() => _el$40.checked = activePersonId() === personId);
+					return _el$37;
 				})()
 			}), null);
 			insert(_el$18, createComponent(Show, {
@@ -2721,18 +2733,26 @@
 					return _tmpl$3$3();
 				}
 			}), null);
-			_el$22.$$input = (e) => setDeadline(e.currentTarget.value);
-			insert(_el$25, createComponent(For, {
+			insert(_el$21, createComponent(Tooltip, {
+				text: "The chore turns yellow on the display after this time. Shown as a badge next to the assigned person. Chores not done the previous day also show as overdue automatically, regardless of this setting.",
+				position: "above",
+				align: "center",
+				multiline: true,
+				"class": "ml-1.5 inline-flex size-5 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-600",
+				children: "?"
+			}), null);
+			_el$23.$$input = (e) => setDeadline(e.currentTarget.value);
+			insert(_el$26, createComponent(For, {
 				get each() {
 					return Object.values(DayOfWeek);
 				},
 				children: (day) => (() => {
-					var _el$41 = _tmpl$8$2(), _el$42 = _el$41.firstChild;
-					_el$42.$$input = (e) => handleSkipDayChange(day, e.currentTarget.checked);
-					_el$42.value = day;
-					insert(_el$41, () => day.charAt(0).toUpperCase() + day.slice(1), null);
-					createRenderEffect(() => _el$42.checked = skipDays().includes(day));
-					return _el$41;
+					var _el$42 = _tmpl$8$2(), _el$43 = _el$42.firstChild;
+					_el$43.$$input = (e) => handleSkipDayChange(day, e.currentTarget.checked);
+					_el$43.value = day;
+					insert(_el$42, () => day.charAt(0).toUpperCase() + day.slice(1), null);
+					createRenderEffect(() => _el$43.checked = skipDays().includes(day));
+					return _el$42;
 				})()
 			}));
 			insert(_el$7, createComponent(Show, {
@@ -2740,18 +2760,18 @@
 					return skipDays().length > 0;
 				},
 				get children() {
-					var _el$26 = _tmpl$4$3(), _el$28 = _el$26.firstChild.nextSibling, _el$29 = _el$28.firstChild, _el$30 = _el$29.nextSibling, _el$31 = _el$30.nextSibling;
-					_el$28.$$input = (e) => setSkipDayVisibility(e.currentTarget.value);
-					insert(_el$26, createComponent(SkipDayVisibilityInfo, { get value() {
+					var _el$27 = _tmpl$4$3(), _el$29 = _el$27.firstChild.nextSibling, _el$30 = _el$29.firstChild, _el$31 = _el$30.nextSibling, _el$32 = _el$31.nextSibling;
+					_el$29.$$input = (e) => setSkipDayVisibility(e.currentTarget.value);
+					insert(_el$27, createComponent(SkipDayVisibilityInfo, { get value() {
 						return skipDayVisibility();
 					} }), null);
-					createRenderEffect(() => _el$29.value = SkipDayVisibility.HIDE);
-					createRenderEffect(() => _el$30.value = SkipDayVisibility.SHOW_ALWAYS);
-					createRenderEffect(() => _el$31.value = SkipDayVisibility.SHOW_IF_OVERDUE);
-					createRenderEffect(() => _el$28.value = skipDayVisibility());
-					return _el$26;
+					createRenderEffect(() => _el$30.value = SkipDayVisibility.HIDE);
+					createRenderEffect(() => _el$31.value = SkipDayVisibility.SHOW_ALWAYS);
+					createRenderEffect(() => _el$32.value = SkipDayVisibility.SHOW_IF_OVERDUE);
+					createRenderEffect(() => _el$29.value = skipDayVisibility());
+					return _el$27;
 				}
-			}), _el$32);
+			}), _el$33);
 			insert(_el$7, createComponent(Show, {
 				get when() {
 					return memo(() => !!pinRequired())() && !cachedPin();
@@ -2768,14 +2788,14 @@
 						onRememberChange: setRememberPin
 					});
 				}
-			}), _el$32);
-			insert(_el$32, createComponent(Button, {
+			}), _el$33);
+			insert(_el$33, createComponent(Button, {
 				type: "button",
 				variant: "secondary",
 				onClick: () => props.closeModal(),
 				children: "Cancel"
 			}), null);
-			insert(_el$32, createComponent(Button, {
+			insert(_el$33, createComponent(Button, {
 				type: "submit",
 				variant: "primary",
 				get children() {
@@ -2792,7 +2812,7 @@
 				t: void 0
 			});
 			createRenderEffect(() => _el$0.value = name());
-			createRenderEffect(() => _el$22.value = deadline());
+			createRenderEffect(() => _el$23.value = deadline());
 			return _el$2;
 		})();
 	};
