@@ -1,5 +1,6 @@
 import type { Component } from 'solid-js';
 import { createSignal, Show } from 'solid-js';
+import { HelpIcon } from './help-icon';
 import { Tooltip } from './tooltip';
 
 interface PinFieldProps {
@@ -49,12 +50,12 @@ export const PinField: Component<PinFieldProps> = (props) => {
             class="size-4.5 cursor-pointer"
           />
           Remember PIN for 10 minutes
-          <span
-            title="PIN is remembered for 10 minutes or until you refresh or close the window"
-            class="ml-1 cursor-help text-slate-400"
-          >
-            &#9432;
-          </span>
+          <HelpIcon
+            text="PIN is remembered for 10 minutes or until you refresh or close the window"
+            align="center"
+            multiline
+            class="ml-1"
+          />
         </label>
       </Show>
       <small class="mt-1 block text-sm text-amber-700">PIN is required to make changes</small>

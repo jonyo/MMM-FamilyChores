@@ -9,6 +9,7 @@ import { AdvanceRotationsModal } from './advance-rotations-modal';
 import { Button } from './button';
 import { ChoreHistoryModal } from './chore-history-modal';
 import { CopyChoresModal } from './copy-chores-modal';
+import { HelpIcon } from './help-icon';
 import { PersonModal } from './person-modal';
 import { PersonalChoreModal } from './personal-chore-modal';
 import { PinPromptModal } from './pin-prompt-modal';
@@ -16,7 +17,6 @@ import { ResetCaughtUpModal } from './reset-caught-up-modal';
 import { RotatingChoreCard } from './rotating-chore';
 import { RotatingChoreModal } from './rotating-chore-modal';
 import { SettingsModal } from './settings-modal';
-import { Tooltip } from './tooltip';
 
 // API base URL
 const API_BASE = '/MMM-FamilyChores';
@@ -331,12 +331,11 @@ export const MainPage: Component = () => {
                 Add Person
               </Button>
               <Show when={choreData().people.length === 0}>
-                <Tooltip
+                <HelpIcon
                   text="Add at least one person before you can create chores"
-                  class="ml-2 text-base"
-                >
-                  ℹ️
-                </Tooltip>
+                  class="ml-2"
+                  align="right"
+                />
               </Show>
             </div>
           </div>

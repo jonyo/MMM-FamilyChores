@@ -10,7 +10,9 @@ import {
 import type { CreateChoreRequest, UpdateChoreRequest } from '../types/request-types';
 import { useAdminContext } from './admin-context';
 import { Button } from './button';
+import { HelpIcon } from './help-icon';
 import { PinField } from './pin-field';
+import { SkipDayVisibilityInfo } from './skip-day-visibility-info';
 
 interface PersonalChoreModalProps {
   person: Person | null;
@@ -156,9 +158,18 @@ export const PersonalChoreModal: Component<PersonalChoreModalProps> = (props) =>
                 />
               </div>
               <div class="mb-5">
-                <label for="deadline" class="mb-3 block font-medium text-slate-900">
-                  Deadline (optional)
-                </label>
+                <div class="mb-3 flex items-center">
+                  <label for="deadline" class="block font-medium text-slate-900">
+                    Deadline (optional)
+                  </label>
+                  <HelpIcon
+                    text="The chore turns yellow on the display after this time. Shown as a badge next to the assigned person. Chores not done the previous day also show as overdue automatically, regardless of this setting."
+                    position="above"
+                    align="center"
+                    multiline
+                    class="ml-1.5"
+                  />
+                </div>
                 <input
                   type="time"
                   id="deadline"
@@ -186,21 +197,26 @@ export const PersonalChoreModal: Component<PersonalChoreModalProps> = (props) =>
                   </For>
                 </div>
               </div>
-              <div class="mb-5">
-                <label for="skipDayVisibility" class="mb-3 block font-medium text-slate-900">
-                  Skip Day Visibility
-                </label>
-                <select
-                  id="skipDayVisibility"
-                  value={skipDayVisibility()}
-                  onInput={(e) => setSkipDayVisibility(e.currentTarget.value as SkipDayVisibility)}
-                  class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"
-                >
-                  <option value={SkipDayVisibilityEnum.HIDE}>Hide</option>
-                  <option value={SkipDayVisibilityEnum.SHOW_ALWAYS}>Show Always</option>
-                  <option value={SkipDayVisibilityEnum.SHOW_IF_OVERDUE}>Show If Overdue</option>
-                </select>
-              </div>
+              <Show when={skipDays().length > 0}>
+                <div class="mb-5">
+                  <label for="skipDayVisibility" class="mb-3 block font-medium text-slate-900">
+                    Skip Day Visibility
+                  </label>
+                  <select
+                    id="skipDayVisibility"
+                    value={skipDayVisibility()}
+                    onInput={(e) =>
+                      setSkipDayVisibility(e.currentTarget.value as SkipDayVisibility)
+                    }
+                    class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"
+                  >
+                    <option value={SkipDayVisibilityEnum.HIDE}>Hide</option>
+                    <option value={SkipDayVisibilityEnum.SHOW_ALWAYS}>Always Show</option>
+                    <option value={SkipDayVisibilityEnum.SHOW_IF_OVERDUE}>Show If Overdue</option>
+                  </select>
+                  <SkipDayVisibilityInfo value={skipDayVisibility()} />
+                </div>
+              </Show>
               <Show when={pinRequired() && !cachedPin()}>
                 <PinField
                   pin={pin()}

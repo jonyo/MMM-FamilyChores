@@ -78,6 +78,64 @@ describe('PersonalChoreModal', () => {
       expect(createChore).not.toHaveBeenCalled();
     });
 
+    it('should hide skip day visibility when no skip days are selected', async () => {
+      const closeModal = vi.fn();
+
+      render(() => (
+        <MockAdminProvider>
+          <PersonalChoreModal
+            person={mockPerson}
+            initialChore={undefined}
+            closeModal={closeModal}
+          />
+        </MockAdminProvider>
+      ));
+
+      expect(page.getByLabelText('Skip Day Visibility').elements().length).toBe(0);
+    });
+
+    it('should show skip day visibility when a skip day is checked', async () => {
+      const closeModal = vi.fn();
+
+      render(() => (
+        <MockAdminProvider>
+          <PersonalChoreModal
+            person={mockPerson}
+            initialChore={undefined}
+            closeModal={closeModal}
+          />
+        </MockAdminProvider>
+      ));
+
+      expect(page.getByLabelText('Skip Day Visibility').elements().length).toBe(0);
+
+      const sundayCheckbox = page.getByLabelText('Sunday');
+      await sundayCheckbox.click();
+
+      await expect.element(page.getByLabelText('Skip Day Visibility')).toBeVisible();
+    });
+
+    it('should hide skip day visibility when all skip days are unchecked', async () => {
+      const closeModal = vi.fn();
+
+      render(() => (
+        <MockAdminProvider>
+          <PersonalChoreModal
+            person={mockPerson}
+            initialChore={undefined}
+            closeModal={closeModal}
+          />
+        </MockAdminProvider>
+      ));
+
+      const sundayCheckbox = page.getByLabelText('Sunday');
+      await sundayCheckbox.click();
+      await expect.element(page.getByLabelText('Skip Day Visibility')).toBeVisible();
+
+      await sundayCheckbox.click();
+      expect(page.getByLabelText('Skip Day Visibility').elements().length).toBe(0);
+    });
+
     it('should click add button', async () => {
       const closeModal = vi.fn();
 
@@ -171,6 +229,46 @@ describe('PersonalChoreModal', () => {
 
       expect(closeModal).toHaveBeenCalled();
       expect(updateChore).toHaveBeenCalled();
+    });
+
+    it('should hide skip day visibility when all skip days are unchecked and preserve value when re-checked', async () => {
+      const closeModal = vi.fn();
+      const initialChore: PersonalChore = {
+        id: 'c1',
+        name: 'Take out trash',
+        type: ChoreType.PERSONAL,
+        assignedTo: 'p1',
+        skipDays: [DayOfWeek.SUNDAY],
+        skipDayVisibility: SkipDayVisibility.SHOW_IF_OVERDUE,
+        caughtUp: true,
+        completedToday: false,
+        deadline: '21:00',
+      };
+
+      render(() => (
+        <MockAdminProvider>
+          <PersonalChoreModal
+            person={mockPerson}
+            initialChore={initialChore}
+            closeModal={closeModal}
+          />
+        </MockAdminProvider>
+      ));
+
+      await expect.element(page.getByLabelText('Skip Day Visibility')).toBeVisible();
+      await expect
+        .element(page.getByLabelText('Skip Day Visibility'))
+        .toHaveValue('show-if-overdue');
+
+      const sundayCheckbox = page.getByLabelText('Sunday');
+      await sundayCheckbox.click();
+      expect(page.getByLabelText('Skip Day Visibility').elements().length).toBe(0);
+
+      await sundayCheckbox.click();
+      await expect.element(page.getByLabelText('Skip Day Visibility')).toBeVisible();
+      await expect
+        .element(page.getByLabelText('Skip Day Visibility'))
+        .toHaveValue('show-if-overdue');
     });
   });
 
