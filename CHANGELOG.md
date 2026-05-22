@@ -2,7 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.1.1](https://github.com/jonyo/MMM-FamilyChores/compare/v1.1.0...v1.1.1) (2026-05-22)
+## [1.2.0](https://github.com/jonyo/MMM-FamilyChores/compare/v1.1.0...v1.2.0) (2026-05-22)
+
+### Added
+- Add contextual help descriptions for skip day visibility options in chore modals
+- Hide skip day visibility selector when no skip days are configured
 
 ### Fixed
 - Align the tooltip for adding people so it is not clipped

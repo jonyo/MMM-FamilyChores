@@ -11,6 +11,7 @@ import type { CreateChoreRequest, UpdateChoreRequest } from '../types/request-ty
 import { useAdminContext } from './admin-context';
 import { Button } from './button';
 import { PinField } from './pin-field';
+import { SkipDayVisibilityInfo } from './skip-day-visibility-info';
 
 interface RotatingChoreModalProps {
   initialChore?: RotatingChore;
@@ -365,21 +366,24 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
               </For>
             </div>
           </div>
-          <div class="mb-5">
-            <label for="skipDayVisibility" class="mb-3 block font-medium text-slate-900">
-              Skip Day Visibility
-            </label>
-            <select
-              id="skipDayVisibility"
-              value={skipDayVisibility()}
-              onInput={(e) => setSkipDayVisibility(e.currentTarget.value as SkipDayVisibility)}
-              class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"
-            >
-              <option value={SkipDayVisibilityEnum.HIDE}>Hide</option>
-              <option value={SkipDayVisibilityEnum.SHOW_ALWAYS}>Show Always</option>
-              <option value={SkipDayVisibilityEnum.SHOW_IF_OVERDUE}>Show If Overdue</option>
-            </select>
-          </div>
+          <Show when={skipDays().length > 0}>
+            <div class="mb-5">
+              <label for="skipDayVisibility" class="mb-3 block font-medium text-slate-900">
+                Skip Day Visibility
+              </label>
+              <select
+                id="skipDayVisibility"
+                value={skipDayVisibility()}
+                onInput={(e) => setSkipDayVisibility(e.currentTarget.value as SkipDayVisibility)}
+                class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"
+              >
+                <option value={SkipDayVisibilityEnum.HIDE}>Hide</option>
+                <option value={SkipDayVisibilityEnum.SHOW_ALWAYS}>Always Show</option>
+                <option value={SkipDayVisibilityEnum.SHOW_IF_OVERDUE}>Show If Overdue</option>
+              </select>
+              <SkipDayVisibilityInfo value={skipDayVisibility()} />
+            </div>
+          </Show>
           <Show when={pinRequired() && !cachedPin()}>
             <PinField
               pin={pin()}
