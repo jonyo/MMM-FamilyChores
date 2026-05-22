@@ -3141,6 +3141,7 @@
 						return createComponent(Tooltip, {
 							text: "Add at least one person before you can create chores",
 							"class": "ml-2 text-base",
+							align: "right",
 							children: "ℹ️"
 						});
 					}

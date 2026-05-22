@@ -334,6 +334,7 @@ export const MainPage: Component = () => {
                 <Tooltip
                   text="Add at least one person before you can create chores"
                   class="ml-2 text-base"
+                  align="right"
                 >
                   ℹ️
                 </Tooltip>

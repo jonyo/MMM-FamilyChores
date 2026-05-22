@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.1](https://github.com/jonyo/MMM-FamilyChores/compare/v1.1.0...v1.1.1) (2026-05-22)
+
+### Fixed
+- Align the tooltip for adding people so it is not clipped
+
 ## [1.1.0](https://github.com/jonyo/MMM-FamilyChores/compare/v1.0.1...v1.1.0) (2026-05-21)
 
 ### Changed
