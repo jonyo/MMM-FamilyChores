@@ -10,9 +10,9 @@ import {
 import type { CreateChoreRequest, UpdateChoreRequest } from '../types/request-types';
 import { useAdminContext } from './admin-context';
 import { Button } from './button';
+import { HelpIcon } from './help-icon';
 import { PinField } from './pin-field';
 import { SkipDayVisibilityInfo } from './skip-day-visibility-info';
-import { Tooltip } from './tooltip';
 
 interface PersonalChoreModalProps {
   person: Person | null;
@@ -162,15 +162,13 @@ export const PersonalChoreModal: Component<PersonalChoreModalProps> = (props) =>
                   <label for="deadline" class="block font-medium text-slate-900">
                     Deadline (optional)
                   </label>
-                  <Tooltip
+                  <HelpIcon
                     text="The chore turns yellow on the display after this time. Shown as a badge next to the assigned person. Chores not done the previous day also show as overdue automatically, regardless of this setting."
                     position="above"
                     align="center"
                     multiline
-                    class="ml-1.5 inline-flex size-5 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-600"
-                  >
-                    ?
-                  </Tooltip>
+                    class="ml-1.5"
+                  />
                 </div>
                 <input
                   type="time"

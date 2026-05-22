@@ -1412,15 +1412,42 @@
 		})();
 	};
 	//#endregion
+	//#region src/admin/help-icon.tsx
+	/**
+	* A small circular question-mark icon with a tooltip.
+	* Use next to labels or controls that need extra explanation.
+	*/
+	var HelpIcon = (props) => createComponent(Tooltip, {
+		get text() {
+			return props.text;
+		},
+		get position() {
+			return props.position;
+		},
+		get align() {
+			return props.align;
+		},
+		get multiline() {
+			return props.multiline;
+		},
+		get ["class"]() {
+			return `inline-flex size-5 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-600 ${props.class || ""}`;
+		},
+		get dataTestId() {
+			return props.dataTestId || "help-icon";
+		},
+		children: "?"
+	});
+	//#endregion
 	//#region src/admin/pin-field.tsx
-	var _tmpl$$14 = /* @__PURE__ */ template(`<label class="mt-3 flex cursor-pointer items-center gap-2"><input type=checkbox class="size-4.5 cursor-pointer">Remember PIN for 10 minutes<span title="PIN is remembered for 10 minutes or until you refresh or close the window"class="ml-1 cursor-help text-slate-400">&#9432;`), _tmpl$2$12 = /* @__PURE__ */ template(`<button type=button class="cursor-help text-sm text-indigo-600 underline">Forgot PIN?`), _tmpl$3$10 = /* @__PURE__ */ template(`<div class="mb-5 rounded-lg border border-amber-200 bg-amber-50 p-4"><label for=adminPin class="mb-2 block font-medium text-amber-900">Admin PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=adminPin placeholder="Enter admin PIN"required class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"><button type=button class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100"></button></div><small class="mt-1 block text-sm text-amber-700">PIN is required to make changes</small><div class=mt-1>`);
+	var _tmpl$$14 = /* @__PURE__ */ template(`<label class="mt-3 flex cursor-pointer items-center gap-2"><input type=checkbox class="size-4.5 cursor-pointer">Remember PIN for 10 minutes`), _tmpl$2$12 = /* @__PURE__ */ template(`<button type=button class="cursor-help text-sm text-indigo-600 underline">Forgot PIN?`), _tmpl$3$10 = /* @__PURE__ */ template(`<div class="mb-5 rounded-lg border border-amber-200 bg-amber-50 p-4"><label for=adminPin class="mb-2 block font-medium text-amber-900">Admin PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=adminPin placeholder="Enter admin PIN"required class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"><button type=button class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100"></button></div><small class="mt-1 block text-sm text-amber-700">PIN is required to make changes</small><div class=mt-1>`);
 	/**
 	* Reusable PIN input field for admin modals.
 	*/
 	var PinField = (props) => {
 		const [showPin, setShowPin] = createSignal(false);
 		return (() => {
-			var _el$ = _tmpl$3$10(), _el$3 = _el$.firstChild.nextSibling, _el$4 = _el$3.firstChild, _el$5 = _el$4.nextSibling, _el$8 = _el$3.nextSibling, _el$9 = _el$8.nextSibling;
+			var _el$ = _tmpl$3$10(), _el$3 = _el$.firstChild.nextSibling, _el$4 = _el$3.firstChild, _el$5 = _el$4.nextSibling, _el$9 = _el$3.nextSibling, _el$0 = _el$9.nextSibling;
 			_el$4.$$input = (e) => props.onPinChange(e.currentTarget.value);
 			_el$5.$$click = () => setShowPin(!showPin());
 			insert(_el$5, createComponent(Show, {
@@ -1436,12 +1463,19 @@
 				},
 				get children() {
 					var _el$6 = _tmpl$$14(), _el$7 = _el$6.firstChild;
+					_el$7.nextSibling;
 					_el$7.$$input = (e) => props.onRememberChange?.(e.currentTarget.checked);
+					insert(_el$6, createComponent(HelpIcon, {
+						text: "PIN is remembered for 10 minutes or until you refresh or close the window",
+						align: "center",
+						multiline: true,
+						"class": "ml-1"
+					}), null);
 					createRenderEffect(() => _el$7.checked = props.remember ?? false);
 					return _el$6;
 				}
-			}), _el$8);
-			insert(_el$9, createComponent(Tooltip, {
+			}), _el$9);
+			insert(_el$0, createComponent(Tooltip, {
 				text: "SSH into the MagicMirror and edit the adminPin value in the module's data file directly",
 				position: "above",
 				align: "left",
@@ -2239,13 +2273,12 @@
 				insert(_el$10, () => person.name, null);
 				_el$14.addEventListener("submit", handleSubmit);
 				_el$17.$$input = (e) => setName(e.currentTarget.value);
-				insert(_el$19, createComponent(Tooltip, {
+				insert(_el$19, createComponent(HelpIcon, {
 					text: "The chore turns yellow on the display after this time. Shown as a badge next to the assigned person. Chores not done the previous day also show as overdue automatically, regardless of this setting.",
 					position: "above",
 					align: "center",
 					multiline: true,
-					"class": "ml-1.5 inline-flex size-5 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-600",
-					children: "?"
+					"class": "ml-1.5"
 				}), null);
 				_el$21.$$input = (e) => setDeadline(e.currentTarget.value);
 				insert(_el$24, createComponent(For, {
@@ -2318,7 +2351,7 @@
 	delegateEvents(["click", "input"]);
 	//#endregion
 	//#region src/admin/pin-prompt-modal.tsx
-	var _tmpl$$6 = /* @__PURE__ */ template(`<button type=button class="cursor-help text-sm text-indigo-600 underline">Forgot PIN?`), _tmpl$2$6 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="w-[90%] max-w-[400px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><div class="mb-2 flex items-center justify-between"><h3 class="text-xl text-indigo-600"data-testid=modal-title></h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><p class="mb-5 text-sm text-slate-600"data-testid=modal-message></p><form><div class=mb-5><label for=pinPromptInput class="mb-2 block font-medium text-amber-900">PIN</label><div class="flex gap-2"><input id=pinPromptInput placeholder="Enter PIN"required autofocus class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"><button type=button class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100"></button></div></div><label class="mb-5 flex cursor-pointer items-center gap-2"><input type=checkbox class="size-4.5 cursor-pointer"data-testid=remember-pin-checkbox>Remember PIN for 10 minutes<span title="PIN is remembered for 10 minutes or until you refresh or close the window"class="ml-1 cursor-help text-slate-400">&#9432;</span></label><div class=mb-5></div><div class="flex justify-end gap-2.5">`);
+	var _tmpl$$6 = /* @__PURE__ */ template(`<button type=button class="cursor-help text-sm text-indigo-600 underline">Forgot PIN?`), _tmpl$2$6 = /* @__PURE__ */ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="w-[90%] max-w-[400px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><div class="mb-2 flex items-center justify-between"><h3 class="text-xl text-indigo-600"data-testid=modal-title></h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><p class="mb-5 text-sm text-slate-600"data-testid=modal-message></p><form><div class=mb-5><label for=pinPromptInput class="mb-2 block font-medium text-amber-900">PIN</label><div class="flex gap-2"><input id=pinPromptInput placeholder="Enter PIN"required autofocus class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"><button type=button class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100"></button></div></div><label class="mb-5 flex cursor-pointer items-center gap-2"><input type=checkbox class="size-4.5 cursor-pointer"data-testid=remember-pin-checkbox>Remember PIN for 10 minutes</label><div class=mb-5></div><div class="flex justify-end gap-2.5">`);
 	var PinPromptModal = (props) => {
 		const [pin, setPin] = createSignal("");
 		const [showPin, setShowPin] = createSignal(false);
@@ -2329,7 +2362,9 @@
 			props.onConfirm(pin().trim(), remember());
 		};
 		return (() => {
-			var _el$ = _tmpl$2$6(), _el$3 = _el$.firstChild.firstChild, _el$4 = _el$3.firstChild, _el$5 = _el$4.nextSibling, _el$6 = _el$3.nextSibling, _el$7 = _el$6.nextSibling, _el$8 = _el$7.firstChild, _el$1 = _el$8.firstChild.nextSibling.firstChild, _el$10 = _el$1.nextSibling, _el$11 = _el$8.nextSibling, _el$12 = _el$11.firstChild, _el$13 = _el$11.nextSibling, _el$15 = _el$13.nextSibling;
+			var _el$ = _tmpl$2$6(), _el$3 = _el$.firstChild.firstChild, _el$4 = _el$3.firstChild, _el$5 = _el$4.nextSibling, _el$6 = _el$3.nextSibling, _el$7 = _el$6.nextSibling, _el$8 = _el$7.firstChild, _el$1 = _el$8.firstChild.nextSibling.firstChild, _el$10 = _el$1.nextSibling, _el$11 = _el$8.nextSibling, _el$12 = _el$11.firstChild;
+			_el$12.nextSibling;
+			var _el$14 = _el$11.nextSibling, _el$16 = _el$14.nextSibling;
 			insert(_el$4, () => props.title);
 			_el$5.$$click = () => props.onCancel();
 			insert(_el$6, () => props.message);
@@ -2338,7 +2373,13 @@
 			_el$10.$$click = () => setShowPin(!showPin());
 			insert(_el$10, () => showPin() ? "🙈" : "👁");
 			_el$12.$$input = (e) => setRemember(e.currentTarget.checked);
-			insert(_el$13, createComponent(Tooltip, {
+			insert(_el$11, createComponent(HelpIcon, {
+				text: "PIN is remembered for 10 minutes or until you refresh or close the window",
+				multiline: true,
+				align: "right",
+				"class": "ml-1"
+			}), null);
+			insert(_el$14, createComponent(Tooltip, {
 				text: "SSH into the MagicMirror and edit the adminPin value in the module's data file directly",
 				position: "above",
 				align: "left",
@@ -2347,7 +2388,7 @@
 					return _tmpl$$6();
 				}
 			}));
-			insert(_el$15, createComponent(Button, {
+			insert(_el$16, createComponent(Button, {
 				type: "button",
 				variant: "secondary",
 				get onClick() {
@@ -2355,7 +2396,7 @@
 				},
 				children: "Cancel"
 			}), null);
-			insert(_el$15, createComponent(Button, {
+			insert(_el$16, createComponent(Button, {
 				type: "submit",
 				variant: "primary",
 				children: "Confirm"
@@ -2733,13 +2774,12 @@
 					return _tmpl$3$3();
 				}
 			}), null);
-			insert(_el$21, createComponent(Tooltip, {
+			insert(_el$21, createComponent(HelpIcon, {
 				text: "The chore turns yellow on the display after this time. Shown as a badge next to the assigned person. Chores not done the previous day also show as overdue automatically, regardless of this setting.",
 				position: "above",
 				align: "center",
 				multiline: true,
-				"class": "ml-1.5 inline-flex size-5 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-600",
-				children: "?"
+				"class": "ml-1.5"
 			}), null);
 			_el$23.$$input = (e) => setDeadline(e.currentTarget.value);
 			insert(_el$26, createComponent(For, {
@@ -3226,11 +3266,10 @@
 						return choreData().people.length === 0;
 					},
 					get children() {
-						return createComponent(Tooltip, {
+						return createComponent(HelpIcon, {
 							text: "Add at least one person before you can create chores",
-							"class": "ml-2 text-base",
-							align: "right",
-							children: "ℹ️"
+							"class": "ml-2",
+							align: "right"
 						});
 					}
 				}), null);

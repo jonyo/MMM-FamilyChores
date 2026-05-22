@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 - Add contextual help descriptions for skip day visibility options in chore modals
 - Hide skip day visibility selector when no skip days are configured
 - Add tooltip to deadline field in chore modals explaining that chores turn yellow after the deadline and that chores not done the previous day also show as overdue automatically
+- Add reusable `HelpIcon` component (styled question-mark circle with tooltip) and replace all emoji/character info icons in the admin panel with it
 
 ### Fixed
 - Align the tooltip for adding people so it is not clipped

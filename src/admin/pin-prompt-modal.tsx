@@ -1,6 +1,7 @@
 import type { Component } from 'solid-js';
 import { createSignal } from 'solid-js';
 import { Button } from './button';
+import { HelpIcon } from './help-icon';
 import { Tooltip } from './tooltip';
 
 interface PinPromptModalProps {
@@ -74,12 +75,12 @@ export const PinPromptModal: Component<PinPromptModalProps> = (props) => {
               data-testid="remember-pin-checkbox"
             />
             Remember PIN for 10 minutes
-            <span
-              title="PIN is remembered for 10 minutes or until you refresh or close the window"
-              class="ml-1 cursor-help text-slate-400"
-            >
-              &#9432;
-            </span>
+            <HelpIcon
+              text="PIN is remembered for 10 minutes or until you refresh or close the window"
+              multiline
+              align="right"
+              class="ml-1"
+            />
           </label>
           <div class="mb-5">
             <Tooltip
