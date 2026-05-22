@@ -19,7 +19,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ci": "vitest run",
-    "prepare": "husky install",
+    "prepare": "husky",
     "test:browser": "vitest --config=vitest.browser.config.ts",
     "playwright:install": "playwright install"
   },

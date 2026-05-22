@@ -208,7 +208,7 @@ If the pre-commit hook fails: `pnpm fix && pnpm build && git add . && git commit
 - This applies to component files, utility files, and any new source files
 - Biome linter will enforce this - violations will cause lint errors
 - Examples: `personal-chore-modal.tsx`, `rotating-chore-modal.tsx`, `admin-helper.ts`
-- ONLY exception: files needing to be uppercase for technical reasons, like the built files used by Magic Mirror
+- ONLY exception: files needing to be uppercase for technical reasons, like the built files used by MagicMirror²
 
 **Source Organization:**
 
