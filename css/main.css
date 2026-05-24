@@ -10,6 +10,7 @@
   background: rgba(0, 0, 0, 0.3);
   border-radius: 5px;
   min-height: 100px;
+  container-type: inline-size;
 }
 
 .MMM-FamilyChores .loading {
@@ -32,12 +33,6 @@
   background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
   border-left: 4px solid #666;
-  transition: all 0.3s ease;
-}
-
-.MMM-FamilyChores .chore-item:hover {
-  background: rgba(255, 255, 255, 0.1);
-  transform: translateX(2px);
 }
 
 .MMM-FamilyChores .chore-checkbox {
@@ -52,21 +47,14 @@
   width: 20px;
   height: 20px;
   accent-color: #4caf50;
-  cursor: pointer;
   margin: 0;
   padding: 0;
   opacity: 0.9;
 }
 
-.MMM-FamilyChores .chore-checkbox input[type="checkbox"]:hover {
-  opacity: 1;
-  transform: scale(1.1);
-}
-
 .MMM-FamilyChores .chore-label {
   display: flex;
   align-items: center;
-  cursor: pointer;
   width: 100%;
   padding: 0;
   margin: 0;
@@ -136,6 +124,15 @@
 .MMM-FamilyChores .chore-item.overdue .deadline {
   background: rgba(255, 193, 7, 0.3);
   color: #ffc107;
+}
+
+/* Two-column layout for wide regions */
+@container (min-width: 450px) {
+  .MMM-FamilyChores .module-content > .chore-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
 }
 
 /* Summary View Styles */
@@ -217,7 +214,6 @@
   width: 10px;
   height: 10px;
   accent-color: #4caf50;
-  cursor: pointer;
   flex-shrink: 0;
   transform: scale(1.5);
 }
