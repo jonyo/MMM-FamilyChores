@@ -2,10 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.2.1](https://github.com/jonyo/MMM-FamilyChores/compare/v1.2.0...v1.2.1) (2026-05-23)
+## [1.2.1](https://github.com/jonyo/MMM-FamilyChores/compare/v1.2.0...v1.2.1) (2026-05-24)
 
 ### Fixed
 - Use two-column layout for chores in wide MagicMirror regions to reduce vertical space when many chores are displayed
+- Remove hover/focus/active state transitions from chore items and checkboxes to prevent glitchy visual cycling on touchscreens
 
 ## [1.2.0](https://github.com/jonyo/MMM-FamilyChores/compare/v1.1.0...v1.2.0) (2026-05-22)
 
