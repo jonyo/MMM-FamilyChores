@@ -10,6 +10,7 @@
   background: rgba(0, 0, 0, 0.3);
   border-radius: 5px;
   min-height: 100px;
+  container-type: inline-size;
 }
 
 .MMM-FamilyChores .loading {
@@ -136,6 +137,15 @@
 .MMM-FamilyChores .chore-item.overdue .deadline {
   background: rgba(255, 193, 7, 0.3);
   color: #ffc107;
+}
+
+/* Two-column layout for wide regions */
+@container (min-width: 450px) {
+  .MMM-FamilyChores .module-content > .chore-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
 }
 
 /* Summary View Styles */
