@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite';
+import solidPlugin from 'vite-plugin-solid';
 
 export default defineConfig({
+  plugins: [solidPlugin()],
   // Don't copy public directory files to build output
   publicDir: false,
   build: {
@@ -12,7 +14,7 @@ export default defineConfig({
     lib: {
       name: 'MMMFamilyChores',
       entry: {
-        'MMM-FamilyChores': './src/frontend/frontend.ts',
+        'MMM-FamilyChores': './src/frontend/frontend.tsx',
       },
       formats: ['umd'],
     },

@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0](https://github.com/jonyo/MMM-FamilyChores/compare/v1.2.1...v1.3.0) (2026-05-25)
+
+### Changed
+- Rewrite frontend from string-template rendering to SolidJS component tree
+  - Extract chore filtering logic into pure `chore-filters.ts` utility module
+  - Create SolidJS components: `app.tsx`, `chore-item.tsx`, `personal-view.tsx`, `summary-view.tsx`, `rotating-chore-inline.tsx`, `overdue-by-person.tsx`, `incomplete-by-person.tsx`
+  - Convert `frontend.ts` to thin MagicMirror glue module `frontend.tsx` that mounts Solid `<App>` once and forwards socket payloads into reactive signals
+  - Update Vite client config to use `vite-plugin-solid` with `.tsx` entry point
+  - Migrate frontend tests from monolithic `frontend.test.ts` to component-level `frontend.test.tsx`
+
 ## [1.2.1](https://github.com/jonyo/MMM-FamilyChores/compare/v1.2.0...v1.2.1) (2026-05-24)
 
 ### Fixed
