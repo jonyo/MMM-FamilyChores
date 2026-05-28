@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.1](https://github.com/jonyo/MMM-FamilyChores/compare/v1.3.0...v1.3.1) (2026-05-28)
+
+### Fixed
+- Fix admin page scrolling back to top after deleting a person or chore by switching from a single signal to a `createStore` + `reconcile` so SolidJS diffs the updated data instead of recreating all DOM nodes
+- Apply the same `createStore` + `reconcile` pattern to the frontend module so socket-pushed data updates are diffed rather than replaced, preserving DOM identity for unchanged chore items
+
 ## [1.3.0](https://github.com/jonyo/MMM-FamilyChores/compare/v1.2.1...v1.3.0) (2026-05-25)
 
 ### Changed

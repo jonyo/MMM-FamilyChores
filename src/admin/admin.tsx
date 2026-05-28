@@ -1,5 +1,6 @@
 import type { Component } from 'solid-js';
 import { createSignal, onMount, Show } from 'solid-js';
+import { createStore, reconcile } from 'solid-js/store';
 import type { FamilyChoresData } from '../types/chore-types';
 import AdminContext, { type AdminContextValue } from './admin-context';
 import { MainPage } from './main-page';
@@ -8,14 +9,14 @@ import { MainPage } from './main-page';
 const API_BASE = '/MMM-FamilyChores';
 
 export const Admin: Component<Record<string, never>> = () => {
-  const [choreData, setChoreData] = createSignal<FamilyChoresData | null>(null);
+  const [choreData, setChoreData] = createStore<{ data: FamilyChoresData | null }>({ data: null });
   const [loading, setLoading] = createSignal(true);
   const [retryCount, setRetryCount] = createSignal(0);
   const [cachedPin, setCachedPin] = createSignal('');
 
   let pinTimeout: ReturnType<typeof setTimeout> | null = null;
 
-  const pinRequired = () => !!choreData()?.settings?.adminPin;
+  const pinRequired = () => !!choreData.data?.settings?.adminPin;
 
   const setCachedPinWithTimeout = (pin: string) => {
     setCachedPin(pin);
@@ -35,7 +36,7 @@ export const Admin: Component<Record<string, never>> = () => {
       const response = await fetch(`${API_BASE}/data`);
       if (!response.ok) throw new Error('Failed to load data');
       const data = (await response.json()) as FamilyChoresData;
-      setChoreData(data);
+      setChoreData('data', reconcile(data));
       setLoading(false);
     } catch (error) {
       console.error('Error loading data:', error);
@@ -53,11 +54,10 @@ export const Admin: Component<Record<string, never>> = () => {
 
   const contextValue: AdminContextValue = {
     choreData: () => {
-      const data = choreData();
-      if (!data) {
+      if (!choreData.data) {
         throw new Error('choreData is null when creating context');
       }
-      return data;
+      return choreData.data;
     },
     loadData,
     pinRequired,
@@ -88,7 +88,7 @@ export const Admin: Component<Record<string, never>> = () => {
         </div>
       </Show>
 
-      <Show when={choreData()}>
+      <Show when={choreData.data}>
         <AdminContext.Provider value={contextValue}>
           <MainPage />
         </AdminContext.Provider>
