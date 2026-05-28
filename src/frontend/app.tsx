@@ -19,21 +19,18 @@ export const App: Component<AppProps> = (props) => {
     <div class="module-content">
       <Show when={props.choreData()} fallback={<div class="loading">Loading...</div>}>
         {(dataAccessor) => (
-          <>
-            {props.config.viewMode === 'summary' ? (
-              <SummaryView
-                choreData={dataAccessor}
-                config={props.config}
-                onToggle={props.onToggle}
-              />
-            ) : (
+          <Show
+            when={props.config.viewMode === 'summary'}
+            fallback={
               <PersonalView
                 choreData={dataAccessor}
                 config={props.config}
                 onToggle={props.onToggle}
               />
-            )}
-          </>
+            }
+          >
+            <SummaryView choreData={dataAccessor} config={props.config} onToggle={props.onToggle} />
+          </Show>
         )}
       </Show>
     </div>

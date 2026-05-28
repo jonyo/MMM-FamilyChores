@@ -1294,23 +1294,33 @@
 				get fallback() {
 					return _tmpl$2();
 				},
-				children: (dataAccessor) => memo(() => memo(() => props.config.viewMode === "summary")() ? createComponent(SummaryView, {
-					choreData: dataAccessor,
-					get config() {
-						return props.config;
+				children: (dataAccessor) => createComponent(Show, {
+					get when() {
+						return props.config.viewMode === "summary";
 					},
-					get onToggle() {
-						return props.onToggle;
-					}
-				}) : createComponent(PersonalView, {
-					choreData: dataAccessor,
-					get config() {
-						return props.config;
+					get fallback() {
+						return createComponent(PersonalView, {
+							choreData: dataAccessor,
+							get config() {
+								return props.config;
+							},
+							get onToggle() {
+								return props.onToggle;
+							}
+						});
 					},
-					get onToggle() {
-						return props.onToggle;
+					get children() {
+						return createComponent(SummaryView, {
+							choreData: dataAccessor,
+							get config() {
+								return props.config;
+							},
+							get onToggle() {
+								return props.onToggle;
+							}
+						});
 					}
-				}))
+				})
 			}));
 			return _el$;
 		})();
