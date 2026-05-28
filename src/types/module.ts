@@ -1,6 +1,7 @@
 // MagicMirror Module Types - extending official @types/magicmirror-module
 
-import type { Chore, DayOfWeek, FamilyChoresData } from './chore-types';
+import type { Accessor, Setter } from 'solid-js';
+import type { FamilyChoresData } from './chore-types';
 import type { Config } from './config';
 
 // Base MagicMirror module interface from official types
@@ -36,20 +37,14 @@ export interface FamilyChoresModule extends Omit<MagicMirrorModule<Config>, 'get
   // Override getTranslations to match MagicMirror's expected type
   getTranslations?: () => { [key: string]: string };
 
-  // Store event listener to prevent accumulation
-  checkboxChangeListener?: (event: Event) => void;
+  // Per-instance Solid state — never shared across module instances
+  choreDataSignal?: Accessor<FamilyChoresData | null>;
+  setChoreData?: Setter<FamilyChoresData | null>;
+  rootContainer?: HTMLElement;
 
   // Custom methods specific to our module
   loadData: () => void;
   toggleChoreCompletion: (choreId: string, completed: boolean) => void;
-  shouldShowChore: (chore: Chore, todayDayName: DayOfWeek) => boolean;
-  getFilteredChores: () => Chore[];
-  getSummaryChores: () => Chore[];
-  renderChoreItem: (chore: Chore, choreData: FamilyChoresData) => string;
-  renderRotatingChoreInline: (chore: Chore, choreData: FamilyChoresData) => string;
-  renderOverdueByPerson: (overdueChores: Chore[], choreData: FamilyChoresData) => string;
-  renderIncompleteByPerson: (incompleteChores: Chore[], choreData: FamilyChoresData) => string;
-  renderSummaryView: (wrapper: HTMLElement) => HTMLElement;
 }
 
 // Module registration function type

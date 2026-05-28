@@ -2270,7 +2270,7 @@
 				var _el$21 = _el$19.nextSibling, _el$22 = _el$18.nextSibling, _el$24 = _el$22.firstChild.nextSibling, _el$31 = _el$22.nextSibling;
 				insert(_el$0, () => props.initialChore ? "Edit Personal Chore" : "Add Personal Chore");
 				_el$1.$$click = () => props.closeModal();
-				insert(_el$10, () => person.name, null);
+				insert(_el$10, () => escapeHtml(person.name), null);
 				_el$14.addEventListener("submit", handleSubmit);
 				_el$17.$$input = (e) => setName(e.currentTarget.value);
 				insert(_el$19, createComponent(HelpIcon, {
@@ -2719,7 +2719,7 @@
 					addEventListener(_el$34, "dragstart", handleDragStart(person.id));
 					setAttribute(_el$34, "draggable", true);
 					insert(_el$35, createComponent(GrabHandle, {}));
-					insert(_el$36, () => person.name);
+					insert(_el$36, () => escapeHtml(person.name));
 					createRenderEffect((_p$) => {
 						var _v$3 = !!(draggedPersonId() === person.id), _v$4 = `available-person-${person.id}`;
 						_v$3 !== _p$.e && _el$34.classList.toggle("opacity-50", _p$.e = _v$3);
@@ -2756,7 +2756,7 @@
 					_el$40.addEventListener("change", () => setActivePersonId(personId));
 					_el$40.value = personId;
 					setAttribute(_el$40, "data-testid", `active-person-radio-${personId}`);
-					insert(_el$41, () => getPersonName(personId));
+					insert(_el$41, () => escapeHtml(getPersonName(personId)));
 					createRenderEffect((_$p) => classList(_el$37, {
 						"border-t-2 border-indigo-500": dragOverColumn() === "rotation" && dragOverIndex() === index(),
 						"border-b-2 border-indigo-500": dragOverColumn() === "rotation" && dragOverIndex() === rotation().length && index() === rotation().length - 1,
