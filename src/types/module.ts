@@ -1,6 +1,6 @@
 // MagicMirror Module Types - extending official @types/magicmirror-module
 
-import type { Accessor, Setter } from 'solid-js';
+import type { Accessor } from 'solid-js';
 import type { FamilyChoresData } from './chore-types';
 import type { Config } from './config';
 
@@ -39,7 +39,7 @@ export interface FamilyChoresModule extends Omit<MagicMirrorModule<Config>, 'get
 
   // Per-instance Solid state — never shared across module instances
   choreDataSignal?: Accessor<FamilyChoresData | null>;
-  setChoreData?: Setter<FamilyChoresData | null>;
+  setChoreData?: (data: FamilyChoresData) => void;
   rootContainer?: HTMLElement;
 
   // Custom methods specific to our module

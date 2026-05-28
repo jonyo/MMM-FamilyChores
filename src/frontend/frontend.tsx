@@ -1,4 +1,4 @@
-import { createSignal } from 'solid-js';
+import { createStore, reconcile } from 'solid-js/store';
 import { render } from 'solid-js/web';
 import { SocketNotifications } from '../constants/socket-notifications';
 import type { FamilyChoresData } from '../types/chore-types';
@@ -49,10 +49,12 @@ const familyChoresModule: FamilyChoresModule = {
   start(): void {
     Log.info(`${this.name} is starting`);
 
-    // Create per-instance signal so socket updates target the correct module instance
-    const [choreData, setChoreData] = createSignal<FamilyChoresData | null>(null);
-    this.choreDataSignal = choreData;
-    this.setChoreData = setChoreData;
+    // Create per-instance store so socket updates diff rather than replace the whole tree
+    const [choreData, setChoreData] = createStore<{ data: FamilyChoresData | null }>({
+      data: null,
+    });
+    this.choreDataSignal = () => choreData.data;
+    this.setChoreData = (data: FamilyChoresData) => setChoreData('data', reconcile(data));
 
     this.loadData();
   },
