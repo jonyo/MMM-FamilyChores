@@ -52,7 +52,7 @@ Have an idea? Start a discussion in the [GitHub Discussions](https://github.com/
 3. Once MagicMirror is running, open the admin panel in your browser to set up people and chores:
 
    ```
-   http://192.168.xxx.xxx:8080/modules/MMM-FamilyChores/admin.html
+   http://192.168.xxx.xxx:8080/MMM-FamilyChores/admin.html
    ```
 
    Replace `192.168.xxx.xxx` with the IP address of your MagicMirror device.
@@ -342,7 +342,7 @@ The admin panel is a web-based UI for managing people, chores, settings, and act
 Open your browser and navigate to:
 
 ```
-http://192.168.xxx.xxx:8080/modules/MMM-FamilyChores/admin.html
+http://192.168.xxx.xxx:8080/MMM-FamilyChores/admin.html
 ```
 
 Replace `192.168.xxx.xxx` with the IP address of the device running MagicMirror (e.g., your Raspberry Pi). If you are using a custom port or path, adjust accordingly.
