@@ -825,7 +825,7 @@ describe('createAdminHandlers', () => {
       // Set lastResetDate to yesterday so today > lastResetDate
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
-      data.lastResetDate = yesterday.toISOString().split('T')[0];
+      data.lastResetDate = getLocalDateString(yesterday);
       const { context, mockSave } = makeContext(data);
       const { postAdvanceRotations } = createAdminHandlers(context);
       const res = createMockRes();

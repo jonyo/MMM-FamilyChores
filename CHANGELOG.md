@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.2](https://github.com/jonyo/MMM-FamilyChores/compare/v1.3.1...v1.3.2) (2026-06-16)
+
+### Fixed
+- Fix skip-day chores not reappearing after midnight if MagicMirror had not restarted — `todaysDayOfWeek` is now a reactive signal in the Solid store rather than a plain value read inside memos, so day rollovers trigger a proper re-render without a restart
+- Update `todaysDayOfWeek` atomically alongside chore data on every `CHORE_DATA` socket message, eliminating any in-between state at midnight when the backend reset and frontend day signal update in sequence
+- Fix `frontend.test.tsx` not being picked up by the Vitest browser project (glob was `*.test.ts`, not `*.test.tsx`)
+- Fix `postAdvanceRotations` 503 test using `toISOString()` for yesterday's date (UTC-based, wrong in negative-offset timezones) — replaced with `getLocalDateString()`
+
 ## [1.3.1](https://github.com/jonyo/MMM-FamilyChores/compare/v1.3.0...v1.3.1) (2026-05-28)
 
 ### Fixed

@@ -1092,19 +1092,6 @@
 		CHORE_UPDATE_RESULT: "CHORE_UPDATE_RESULT"
 	};
 	//#endregion
-	//#region src/types/chore-types.ts
-	var SkipDayVisibility = /* @__PURE__ */ function(SkipDayVisibility) {
-		SkipDayVisibility["HIDE"] = "hide";
-		SkipDayVisibility["SHOW_IF_OVERDUE"] = "show-if-overdue";
-		SkipDayVisibility["SHOW_ALWAYS"] = "show-always";
-		return SkipDayVisibility;
-	}({});
-	var ChoreType = /* @__PURE__ */ function(ChoreType) {
-		ChoreType["PERSONAL"] = "personal";
-		ChoreType["ROTATING"] = "rotating";
-		return ChoreType;
-	}({});
-	//#endregion
 	//#region src/utils/date.ts
 	/**
 	* Gets the local time string in HH:MM format
@@ -1168,6 +1155,19 @@
 		return DeadlineStatus.NORMAL;
 	};
 	//#endregion
+	//#region src/types/chore-types.ts
+	var SkipDayVisibility = /* @__PURE__ */ function(SkipDayVisibility) {
+		SkipDayVisibility["HIDE"] = "hide";
+		SkipDayVisibility["SHOW_IF_OVERDUE"] = "show-if-overdue";
+		SkipDayVisibility["SHOW_ALWAYS"] = "show-always";
+		return SkipDayVisibility;
+	}({});
+	var ChoreType = /* @__PURE__ */ function(ChoreType) {
+		ChoreType["PERSONAL"] = "personal";
+		ChoreType["ROTATING"] = "rotating";
+		return ChoreType;
+	}({});
+	//#endregion
 	//#region src/frontend/chore-filters.ts
 	/**
 	* Determine if a chore should be shown based on skip day visibility settings
@@ -1182,8 +1182,7 @@
 	/**
 	* Get chores filtered for personal view mode
 	*/
-	function getFilteredChores(chores, people, personFilter) {
-		const todayDayName = getLocalDayName();
+	function getFilteredChores(chores, people, personFilter, todayDayName) {
 		const filterValue = personFilter?.trim().toLowerCase();
 		if (!filterValue) return chores.filter((chore) => shouldShowChore(chore, todayDayName));
 		const filteredPerson = people.find((person) => person.id.toLowerCase() === filterValue) || people.find((person) => person.name.toLowerCase() === filterValue);
@@ -1201,8 +1200,7 @@
 	/**
 	* Get chores for summary view: all incomplete + all rotating chores, with skip day filtering
 	*/
-	function getSummaryChores(chores) {
-		const todayDayName = getLocalDayName();
+	function getSummaryChores(chores, todayDayName) {
 		return chores.filter((chore) => {
 			if (!shouldShowChore(chore, todayDayName)) return false;
 			if (!chore.completedToday) return true;
@@ -1299,7 +1297,7 @@
 	var PersonalView = (props) => {
 		const visibleChores = createMemo(() => {
 			const data = props.choreData();
-			return getFilteredChores(data.chores, data.people, props.config.personFilter);
+			return getFilteredChores(data.chores, data.people, props.config.personFilter, props.todaysDayOfWeek());
 		});
 		return (() => {
 			var _el$ = _tmpl$$5();
@@ -1469,7 +1467,7 @@
 	var SummaryView = (props) => {
 		const summaryConfig = () => getSummaryConfig(props.config);
 		const visibleChores = createMemo(() => {
-			return getSummaryChores(props.choreData().chores);
+			return getSummaryChores(props.choreData().chores, props.todaysDayOfWeek());
 		});
 		const incompleteChores = createMemo(() => visibleChores().filter((chore) => !chore.completedToday));
 		const overdueChores = createMemo(() => visibleChores().filter((chore) => {
@@ -1561,6 +1559,9 @@
 					get fallback() {
 						return createComponent(PersonalView, {
 							choreData: dataAccessor,
+							get todaysDayOfWeek() {
+								return props.todaysDayOfWeek;
+							},
 							get config() {
 								return props.config;
 							},
@@ -1572,6 +1573,9 @@
 					get children() {
 						return createComponent(SummaryView, {
 							choreData: dataAccessor,
+							get todaysDayOfWeek() {
+								return props.todaysDayOfWeek;
+							},
 							get config() {
 								return props.config;
 							},
@@ -1616,9 +1620,20 @@
 		choreData: null,
 		start() {
 			Log.info(`${this.name} is starting`);
-			const [choreData, setChoreData] = createStore({ data: null });
+			const [choreData, setChoreData] = createStore({
+				data: null,
+				todaysDayOfWeek: getLocalDayName()
+			});
 			this.choreDataSignal = () => choreData.data;
-			this.setChoreData = (data) => setChoreData("data", reconcile(data));
+			this.todaysDayOfWeekSignal = () => choreData.todaysDayOfWeek;
+			this.setChoreDataAndDay = (data) => {
+				setChoreData("data", reconcile(data));
+				setChoreData("todaysDayOfWeek", getLocalDayName());
+			};
+			setInterval(() => {
+				const newDay = getLocalDayName();
+				if (newDay !== choreData.todaysDayOfWeek) setChoreData("todaysDayOfWeek", newDay);
+			}, 6e4);
 			this.loadData();
 		},
 		/**
@@ -1639,14 +1654,16 @@
 				});
 			};
 			const choreDataSignal = this.choreDataSignal;
-			if (!choreDataSignal) {
-				Log.error(`${this.name} choreDataSignal is not initialized`);
+			const todaysDayOfWeekSignal = this.todaysDayOfWeekSignal;
+			if (!choreDataSignal || !todaysDayOfWeekSignal) {
+				Log.error(`${this.name} choreDataSignal or todaysDayOfWeekSignal is not initialized`);
 				return container;
 			}
 			render(() => {
 				const _self$ = this;
 				return createComponent(App, {
 					choreData: choreDataSignal,
+					todaysDayOfWeek: todaysDayOfWeekSignal,
 					get config() {
 						return _self$.config;
 					},
@@ -1670,7 +1687,7 @@
 					Log.debug("Received config response");
 					break;
 				case SocketNotifications.CHORE_DATA:
-					this.setChoreData?.(payload);
+					this.setChoreDataAndDay?.(payload);
 					break;
 				case SocketNotifications.CHORE_UPDATE_RESULT:
 					Log.debug("Received chore update result");

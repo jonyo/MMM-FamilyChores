@@ -28,6 +28,7 @@ export default defineConfig({
           name: 'browser',
           include: [
             'src/frontend/**/*.test.ts',
+            'src/frontend/**/*.test.tsx',
             // make sure utils work in browser too
             'src/utils/**/*.test.ts',
             'src/admin/**/*.test.tsx',

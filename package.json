@@ -1,6 +1,6 @@
 {
   "name": "mmm-familychores",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "A MagicMirror² module for family chore tracking with personal daily chores, rotating chores that stay with one family member per day and cycle to the next when marked complete, and a configurable summary view.",
   "main": "MMM-FamilyChores.js",
   "repository": {
