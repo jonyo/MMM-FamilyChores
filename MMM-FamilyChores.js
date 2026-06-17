@@ -150,7 +150,7 @@
 			return t ? t.done : void 0;
 		});
 	}
-	var [transPending, setTransPending] = /* @__PURE__ */ createSignal(false);
+	var [transPending, setTransPending] = /*@__PURE__*/ createSignal(false);
 	var SuspenseContext;
 	function readSignal() {
 		const runningTransition = Transition && Transition.running;
@@ -1092,19 +1092,6 @@
 		CHORE_UPDATE_RESULT: "CHORE_UPDATE_RESULT"
 	};
 	//#endregion
-	//#region src/types/chore-types.ts
-	var SkipDayVisibility = /* @__PURE__ */ function(SkipDayVisibility) {
-		SkipDayVisibility["HIDE"] = "hide";
-		SkipDayVisibility["SHOW_IF_OVERDUE"] = "show-if-overdue";
-		SkipDayVisibility["SHOW_ALWAYS"] = "show-always";
-		return SkipDayVisibility;
-	}({});
-	var ChoreType = /* @__PURE__ */ function(ChoreType) {
-		ChoreType["PERSONAL"] = "personal";
-		ChoreType["ROTATING"] = "rotating";
-		return ChoreType;
-	}({});
-	//#endregion
 	//#region src/utils/date.ts
 	/**
 	* Gets the local time string in HH:MM format
@@ -1161,12 +1148,25 @@
 	* @returns DeadlineStatus for CSS class application
 	*/
 	var getDeadlineStatus = (deadline, completedToday, caughtUp) => {
-		if (completedToday) return DeadlineStatus.COMPLETED;
-		if (caughtUp === false) return DeadlineStatus.OVERDUE;
-		if (!deadline) return DeadlineStatus.NORMAL;
-		if (getLocalTimeString() >= deadline) return DeadlineStatus.OVERDUE;
-		return DeadlineStatus.NORMAL;
+		if (completedToday) return "completed";
+		if (caughtUp === false) return "overdue";
+		if (!deadline) return "normal";
+		if (getLocalTimeString() >= deadline) return "overdue";
+		return "normal";
 	};
+	//#endregion
+	//#region src/types/chore-types.ts
+	var SkipDayVisibility = /* @__PURE__ */ function(SkipDayVisibility) {
+		SkipDayVisibility["HIDE"] = "hide";
+		SkipDayVisibility["SHOW_IF_OVERDUE"] = "show-if-overdue";
+		SkipDayVisibility["SHOW_ALWAYS"] = "show-always";
+		return SkipDayVisibility;
+	}({});
+	var ChoreType = /* @__PURE__ */ function(ChoreType) {
+		ChoreType["PERSONAL"] = "personal";
+		ChoreType["ROTATING"] = "rotating";
+		return ChoreType;
+	}({});
 	//#endregion
 	//#region src/frontend/chore-filters.ts
 	/**
@@ -1182,8 +1182,7 @@
 	/**
 	* Get chores filtered for personal view mode
 	*/
-	function getFilteredChores(chores, people, personFilter) {
-		const todayDayName = getLocalDayName();
+	function getFilteredChores(chores, people, personFilter, todayDayName) {
 		const filterValue = personFilter?.trim().toLowerCase();
 		if (!filterValue) return chores.filter((chore) => shouldShowChore(chore, todayDayName));
 		const filteredPerson = people.find((person) => person.id.toLowerCase() === filterValue) || people.find((person) => person.name.toLowerCase() === filterValue);
@@ -1201,8 +1200,7 @@
 	/**
 	* Get chores for summary view: all incomplete + all rotating chores, with skip day filtering
 	*/
-	function getSummaryChores(chores) {
-		const todayDayName = getLocalDayName();
+	function getSummaryChores(chores, todayDayName) {
 		return chores.filter((chore) => {
 			if (!shouldShowChore(chore, todayDayName)) return false;
 			if (!chore.completedToday) return true;
@@ -1240,7 +1238,7 @@
 	};
 	//#endregion
 	//#region src/frontend/chore-item.tsx
-	var _tmpl$$6 = /* @__PURE__ */ template(`<div data-testid=chore-item><label class=chore-label><div class=chore-checkbox><input type=checkbox data-testid=chore-checkbox></div><div class=chore-details><div class=chore-name></div><div class=chore-meta><span class=assigned-to>`), _tmpl$2$4 = /* @__PURE__ */ template(`<span class=deadline>`);
+	var _tmpl$$6 = /*#__PURE__*/ template(`<div data-testid=chore-item><label class=chore-label><div class=chore-checkbox><input type=checkbox data-testid=chore-checkbox></div><div class=chore-details><div class=chore-name></div><div class=chore-meta><span class=assigned-to>`), _tmpl$2$4 = /*#__PURE__*/ template(`<span class=deadline>`);
 	var ChoreItem = (props) => {
 		const assignedPerson = () => {
 			const chore = props.chore;
@@ -1295,11 +1293,11 @@
 	};
 	//#endregion
 	//#region src/frontend/personal-view.tsx
-	var _tmpl$$5 = /* @__PURE__ */ template(`<div class=chore-list>`), _tmpl$2$3 = /* @__PURE__ */ template(`<div class=empty-state>No chores match the current filter.`);
+	var _tmpl$$5 = /*#__PURE__*/ template(`<div class=chore-list>`), _tmpl$2$3 = /*#__PURE__*/ template(`<div class=empty-state>No chores match the current filter.`);
 	var PersonalView = (props) => {
 		const visibleChores = createMemo(() => {
 			const data = props.choreData();
-			return getFilteredChores(data.chores, data.people, props.config.personFilter);
+			return getFilteredChores(data.chores, data.people, props.config.personFilter, props.todaysDayOfWeek());
 		});
 		return (() => {
 			var _el$ = _tmpl$$5();
@@ -1332,7 +1330,7 @@
 	};
 	//#endregion
 	//#region src/frontend/incomplete-by-person.tsx
-	var _tmpl$$4 = /* @__PURE__ */ template(`<div class=incomplete-person-row><span class=person-name></span><span class=incomplete-count>`);
+	var _tmpl$$4 = /*#__PURE__*/ template(`<div class=incomplete-person-row><span class=person-name></span><span class=incomplete-count>`);
 	var IncompleteByPerson = (props) => {
 		const personRows = createMemo(() => {
 			const choresByPerson = /* @__PURE__ */ new Map();
@@ -1371,7 +1369,7 @@
 	};
 	//#endregion
 	//#region src/frontend/overdue-by-person.tsx
-	var _tmpl$$3 = /* @__PURE__ */ template(`<div class=overdue-person-group><div class=overdue-person-name></div><div class=overdue-chores-list>`), _tmpl$2$2 = /* @__PURE__ */ template(`<div class=overdue-chore-item data-testid=overdue-chore-item>`), _tmpl$3$1 = /* @__PURE__ */ template(`<div class=overdue-more>...<!> more`);
+	var _tmpl$$3 = /*#__PURE__*/ template(`<div class=overdue-person-group><div class=overdue-person-name></div><div class=overdue-chores-list>`), _tmpl$2$2 = /*#__PURE__*/ template(`<div class=overdue-chore-item data-testid=overdue-chore-item>`), _tmpl$3$1 = /*#__PURE__*/ template(`<div class=overdue-more>...<!> more`);
 	var OverdueByPerson = (props) => {
 		const personGroups = createMemo(() => {
 			const choresByPerson = /* @__PURE__ */ new Map();
@@ -1432,7 +1430,7 @@
 	};
 	//#endregion
 	//#region src/frontend/rotating-chore-inline.tsx
-	var _tmpl$$2 = /* @__PURE__ */ template(`<div class=rotating-inline data-testid=rotating-inline><span class=chore-name></span><span class=person-name></span><input type=checkbox class=inline-checkbox data-testid=rotating-checkbox>`);
+	var _tmpl$$2 = /*#__PURE__*/ template(`<div class=rotating-inline data-testid=rotating-inline><span class=chore-name></span><span class=person-name></span><input type=checkbox class=inline-checkbox data-testid=rotating-checkbox>`);
 	var RotatingChoreInline = (props) => {
 		const currentRotationPerson = () => {
 			const chore = props.chore;
@@ -1465,11 +1463,11 @@
 	};
 	//#endregion
 	//#region src/frontend/summary-view.tsx
-	var _tmpl$$1 = /* @__PURE__ */ template(`<div class="summary-section incomplete-section"><h3 class="section-title incomplete-title"></h3><div class=incomplete-list>`), _tmpl$2$1 = /* @__PURE__ */ template(`<div class="summary-section rotating-section"><h3 class="section-title rotating-title"></h3><div class=chore-list>`), _tmpl$3 = /* @__PURE__ */ template(`<div class="summary-section overdue-section"><h3 class="section-title overdue-title"></h3><div class=overdue-list>`), _tmpl$4 = /* @__PURE__ */ template(`<div class=summary-view>`);
+	var _tmpl$$1 = /*#__PURE__*/ template(`<div class="summary-section incomplete-section"><h3 class="section-title incomplete-title"></h3><div class=incomplete-list>`), _tmpl$2$1 = /*#__PURE__*/ template(`<div class="summary-section rotating-section"><h3 class="section-title rotating-title"></h3><div class=chore-list>`), _tmpl$3 = /*#__PURE__*/ template(`<div class="summary-section overdue-section"><h3 class="section-title overdue-title"></h3><div class=overdue-list>`), _tmpl$4 = /*#__PURE__*/ template(`<div class=summary-view>`);
 	var SummaryView = (props) => {
 		const summaryConfig = () => getSummaryConfig(props.config);
 		const visibleChores = createMemo(() => {
-			return getSummaryChores(props.choreData().chores);
+			return getSummaryChores(props.choreData().chores, props.todaysDayOfWeek());
 		});
 		const incompleteChores = createMemo(() => visibleChores().filter((chore) => !chore.completedToday));
 		const overdueChores = createMemo(() => visibleChores().filter((chore) => {
@@ -1543,7 +1541,7 @@
 	};
 	//#endregion
 	//#region src/frontend/app.tsx
-	var _tmpl$ = /* @__PURE__ */ template(`<div class=module-content>`), _tmpl$2 = /* @__PURE__ */ template(`<div class=loading>Loading...`);
+	var _tmpl$ = /*#__PURE__*/ template(`<div class=module-content>`), _tmpl$2 = /*#__PURE__*/ template(`<div class=loading>Loading...`);
 	var App = (props) => {
 		return (() => {
 			var _el$ = _tmpl$();
@@ -1561,6 +1559,9 @@
 					get fallback() {
 						return createComponent(PersonalView, {
 							choreData: dataAccessor,
+							get todaysDayOfWeek() {
+								return props.todaysDayOfWeek;
+							},
 							get config() {
 								return props.config;
 							},
@@ -1572,6 +1573,9 @@
 					get children() {
 						return createComponent(SummaryView, {
 							choreData: dataAccessor,
+							get todaysDayOfWeek() {
+								return props.todaysDayOfWeek;
+							},
 							get config() {
 								return props.config;
 							},
@@ -1616,9 +1620,20 @@
 		choreData: null,
 		start() {
 			Log.info(`${this.name} is starting`);
-			const [choreData, setChoreData] = createStore({ data: null });
+			const [choreData, setChoreData] = createStore({
+				data: null,
+				todaysDayOfWeek: getLocalDayName()
+			});
 			this.choreDataSignal = () => choreData.data;
-			this.setChoreData = (data) => setChoreData("data", reconcile(data));
+			this.todaysDayOfWeekSignal = () => choreData.todaysDayOfWeek;
+			this.setChoreDataAndDay = (data) => {
+				setChoreData("data", reconcile(data));
+				setChoreData("todaysDayOfWeek", getLocalDayName());
+			};
+			setInterval(() => {
+				const newDay = getLocalDayName();
+				if (newDay !== choreData.todaysDayOfWeek) setChoreData("todaysDayOfWeek", newDay);
+			}, 6e4);
 			this.loadData();
 		},
 		/**
@@ -1639,14 +1654,16 @@
 				});
 			};
 			const choreDataSignal = this.choreDataSignal;
-			if (!choreDataSignal) {
-				Log.error(`${this.name} choreDataSignal is not initialized`);
+			const todaysDayOfWeekSignal = this.todaysDayOfWeekSignal;
+			if (!choreDataSignal || !todaysDayOfWeekSignal) {
+				Log.error(`${this.name} choreDataSignal or todaysDayOfWeekSignal is not initialized`);
 				return container;
 			}
 			render(() => {
 				const _self$ = this;
 				return createComponent(App, {
 					choreData: choreDataSignal,
+					todaysDayOfWeek: todaysDayOfWeekSignal,
 					get config() {
 						return _self$.config;
 					},
@@ -1670,7 +1687,7 @@
 					Log.debug("Received config response");
 					break;
 				case SocketNotifications.CHORE_DATA:
-					this.setChoreData?.(payload);
+					this.setChoreDataAndDay?.(payload);
 					break;
 				case SocketNotifications.CHORE_UPDATE_RESULT:
 					Log.debug("Received chore update result");

@@ -1,6 +1,6 @@
 import type { Accessor, Component } from 'solid-js';
 import { createMemo, For, Show } from 'solid-js';
-import type { FamilyChoresData } from '../types/chore-types';
+import type { DayOfWeek, FamilyChoresData } from '../types/chore-types';
 import type { Config } from '../types/config';
 import { DeadlineStatus, getDeadlineStatus } from '../utils/date';
 import { getSummaryChores, getSummaryConfig } from './chore-filters';
@@ -11,6 +11,8 @@ import { RotatingChoreInline } from './rotating-chore-inline';
 interface SummaryViewProps {
   /** Accessor to the chore data (reactive) */
   choreData: Accessor<FamilyChoresData>;
+  /** Reactive accessor for today's day of week (updates at midnight) */
+  todaysDayOfWeek: Accessor<DayOfWeek>;
   /** Module configuration */
   config: Config;
   /** Callback when a chore checkbox is toggled */
@@ -22,7 +24,7 @@ export const SummaryView: Component<SummaryViewProps> = (props) => {
 
   const visibleChores = createMemo(() => {
     const data = props.choreData();
-    return getSummaryChores(data.chores);
+    return getSummaryChores(data.chores, props.todaysDayOfWeek());
   });
 
   const incompleteChores = createMemo(() =>

@@ -1,7 +1,7 @@
 // MagicMirror Module Types - extending official @types/magicmirror-module
 
 import type { Accessor } from 'solid-js';
-import type { FamilyChoresData } from './chore-types';
+import type { DayOfWeek, FamilyChoresData } from './chore-types';
 import type { Config } from './config';
 
 // Base MagicMirror module interface from official types
@@ -39,7 +39,8 @@ export interface FamilyChoresModule extends Omit<MagicMirrorModule<Config>, 'get
 
   // Per-instance Solid state — never shared across module instances
   choreDataSignal?: Accessor<FamilyChoresData | null>;
-  setChoreData?: (data: FamilyChoresData) => void;
+  todaysDayOfWeekSignal?: Accessor<DayOfWeek>;
+  setChoreDataAndDay?: (data: FamilyChoresData) => void;
   rootContainer?: HTMLElement;
 
   // Custom methods specific to our module

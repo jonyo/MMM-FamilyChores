@@ -1,7 +1,6 @@
 import type { Chore, DayOfWeek, Person } from '../types/chore-types';
 import { SkipDayVisibility } from '../types/chore-types';
 import type { Config } from '../types/config';
-import { getLocalDayName } from '../utils/date';
 
 /**
  * Determine if a chore should be shown based on skip day visibility settings
@@ -36,10 +35,9 @@ export function shouldShowChore(chore: Chore, todayDayName: DayOfWeek): boolean 
 export function getFilteredChores(
   chores: Chore[],
   people: Person[],
-  personFilter: string | null | undefined
+  personFilter: string | null | undefined,
+  todayDayName: DayOfWeek
 ): Chore[] {
-  const todayDayName = getLocalDayName();
-
   // No person filter - apply skip day filtering to all chores
   const filterValue = personFilter?.trim().toLowerCase();
   if (!filterValue) {
@@ -77,9 +75,7 @@ export function getFilteredChores(
 /**
  * Get chores for summary view: all incomplete + all rotating chores, with skip day filtering
  */
-export function getSummaryChores(chores: Chore[]): Chore[] {
-  const todayDayName = getLocalDayName();
-
+export function getSummaryChores(chores: Chore[], todayDayName: DayOfWeek): Chore[] {
   return chores.filter((chore) => {
     // Check skip day visibility
     if (!shouldShowChore(chore, todayDayName)) {

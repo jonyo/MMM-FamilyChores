@@ -1,9 +1,10 @@
 import { createStore, reconcile } from 'solid-js/store';
 import { render } from 'solid-js/web';
 import { SocketNotifications } from '../constants/socket-notifications';
-import type { FamilyChoresData } from '../types/chore-types';
+import type { DayOfWeek, FamilyChoresData } from '../types/chore-types';
 import type { Config } from '../types/config';
 import type { FamilyChoresModule } from '../types/module';
+import { getLocalDayName } from '../utils/date';
 import { App } from './app';
 
 declare global {
@@ -50,11 +51,27 @@ const familyChoresModule: FamilyChoresModule = {
     Log.info(`${this.name} is starting`);
 
     // Create per-instance store so socket updates diff rather than replace the whole tree
-    const [choreData, setChoreData] = createStore<{ data: FamilyChoresData | null }>({
+    const [choreData, setChoreData] = createStore<{
+      data: FamilyChoresData | null;
+      todaysDayOfWeek: DayOfWeek;
+    }>({
       data: null,
+      todaysDayOfWeek: getLocalDayName(),
     });
     this.choreDataSignal = () => choreData.data;
-    this.setChoreData = (data: FamilyChoresData) => setChoreData('data', reconcile(data));
+    this.todaysDayOfWeekSignal = () => choreData.todaysDayOfWeek;
+    this.setChoreDataAndDay = (data: FamilyChoresData) => {
+      setChoreData('data', reconcile(data));
+      setChoreData('todaysDayOfWeek', getLocalDayName());
+    };
+
+    // Check every minute if the date has rolled over and update the reactive signal
+    setInterval(() => {
+      const newDay = getLocalDayName();
+      if (newDay !== choreData.todaysDayOfWeek) {
+        setChoreData('todaysDayOfWeek', newDay);
+      }
+    }, 60_000);
 
     this.loadData();
   },
@@ -86,13 +103,21 @@ const familyChoresModule: FamilyChoresModule = {
     };
 
     const choreDataSignal = this.choreDataSignal;
-    if (!choreDataSignal) {
-      Log.error(`${this.name} choreDataSignal is not initialized`);
+    const todaysDayOfWeekSignal = this.todaysDayOfWeekSignal;
+    if (!choreDataSignal || !todaysDayOfWeekSignal) {
+      Log.error(`${this.name} choreDataSignal or todaysDayOfWeekSignal is not initialized`);
       return container;
     }
 
     render(
-      () => <App choreData={choreDataSignal} config={this.config} onToggle={handleToggle} />,
+      () => (
+        <App
+          choreData={choreDataSignal}
+          todaysDayOfWeek={todaysDayOfWeekSignal}
+          config={this.config}
+          onToggle={handleToggle}
+        />
+      ),
       container
     );
 
@@ -119,7 +144,7 @@ const familyChoresModule: FamilyChoresModule = {
         Log.debug('Received config response');
         break;
       case SocketNotifications.CHORE_DATA:
-        this.setChoreData?.(payload as FamilyChoresData);
+        this.setChoreDataAndDay?.(payload as FamilyChoresData);
         break;
       case SocketNotifications.CHORE_UPDATE_RESULT:
         Log.debug('Received chore update result');

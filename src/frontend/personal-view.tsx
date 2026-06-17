@@ -1,6 +1,6 @@
 import type { Accessor, Component } from 'solid-js';
 import { createMemo, For, Show } from 'solid-js';
-import type { FamilyChoresData } from '../types/chore-types';
+import type { DayOfWeek, FamilyChoresData } from '../types/chore-types';
 import type { Config } from '../types/config';
 import { getFilteredChores } from './chore-filters';
 import { ChoreItem } from './chore-item';
@@ -8,6 +8,8 @@ import { ChoreItem } from './chore-item';
 interface PersonalViewProps {
   /** Accessor to the chore data (reactive) */
   choreData: Accessor<FamilyChoresData>;
+  /** Reactive accessor for today's day of week (updates at midnight) */
+  todaysDayOfWeek: Accessor<DayOfWeek>;
   /** Module configuration */
   config: Config;
   /** Callback when a chore checkbox is toggled */
@@ -17,7 +19,12 @@ interface PersonalViewProps {
 export const PersonalView: Component<PersonalViewProps> = (props) => {
   const visibleChores = createMemo(() => {
     const data = props.choreData();
-    return getFilteredChores(data.chores, data.people, props.config.personFilter);
+    return getFilteredChores(
+      data.chores,
+      data.people,
+      props.config.personFilter,
+      props.todaysDayOfWeek()
+    );
   });
 
   return (

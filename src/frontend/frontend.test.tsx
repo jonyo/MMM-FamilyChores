@@ -2,7 +2,7 @@ import { render } from '@solidjs/testing-library';
 import { createSignal } from 'solid-js';
 import { describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
-import type { Chore, FamilyChoresData, Person } from '../types/chore-types';
+import type { Chore, DayOfWeek, FamilyChoresData, Person } from '../types/chore-types';
 import { ChoreType, SkipDayVisibility } from '../types/chore-types';
 import type { Config } from '../types/config';
 import { App } from './app';
@@ -12,6 +12,8 @@ import { OverdueByPerson } from './overdue-by-person';
 import { PersonalView } from './personal-view';
 import { RotatingChoreInline } from './rotating-chore-inline';
 import { SummaryView } from './summary-view';
+
+const mockTodaysDayOfWeek = () => 'monday' as DayOfWeek;
 
 const mockPeople: Person[] = [
   { id: 'p1', name: 'Alice', color: '#FF6B6B' },
@@ -112,6 +114,7 @@ describe('Frontend Component Tests', () => {
       render(() => (
         <PersonalView
           choreData={choreData}
+          todaysDayOfWeek={mockTodaysDayOfWeek}
           config={{ viewMode: 'personal', personFilter: null } as Config}
           onToggle={vi.fn()}
         />
@@ -119,6 +122,35 @@ describe('Frontend Component Tests', () => {
 
       await expect.element(page.getByText('Take out trash')).toBeVisible();
       await expect.element(page.getByText('Clean kitchen')).toBeVisible();
+    });
+
+    it('should show chore that was hidden on a skip day once the day changes', async () => {
+      const skipDayChore: Chore = {
+        ...mockPersonalChore,
+        id: 'c-skip',
+        name: 'Skip day chore',
+        skipDays: ['monday' as DayOfWeek],
+        skipDayVisibility: SkipDayVisibility.HIDE,
+      };
+      const [choreData] = createSignal<FamilyChoresData>({
+        ...mockChoreData,
+        chores: [skipDayChore],
+      });
+      const [todaysDayOfWeek, setTodaysDayOfWeek] = createSignal<DayOfWeek>('monday' as DayOfWeek);
+      render(() => (
+        <PersonalView
+          choreData={choreData}
+          todaysDayOfWeek={todaysDayOfWeek}
+          config={{ viewMode: 'personal', personFilter: null } as Config}
+          onToggle={vi.fn()}
+        />
+      ));
+
+      expect(page.getByText('Skip day chore').elements().length).toBe(0);
+
+      setTodaysDayOfWeek('tuesday' as DayOfWeek);
+
+      await expect.element(page.getByText('Skip day chore')).toBeVisible();
     });
 
     it('should show empty state when no chores match', async () => {
@@ -129,6 +161,7 @@ describe('Frontend Component Tests', () => {
       render(() => (
         <PersonalView
           choreData={choreData}
+          todaysDayOfWeek={mockTodaysDayOfWeek}
           config={{ viewMode: 'personal', personFilter: null } as Config}
           onToggle={vi.fn()}
         />
@@ -151,7 +184,7 @@ describe('Frontend Component Tests', () => {
     it('should show celebration emoji when no incomplete chores for a person', async () => {
       render(() => <IncompleteByPerson incompleteChores={[]} people={mockPeople} />);
 
-      await expect.element(page.getByText('🎉')).toBeVisible();
+      expect(page.getByText('🎉').elements().length).toBe(2);
     });
   });
 
@@ -176,6 +209,7 @@ describe('Frontend Component Tests', () => {
       render(() => (
         <SummaryView
           choreData={choreData}
+          todaysDayOfWeek={mockTodaysDayOfWeek}
           config={
             {
               viewMode: 'summary',
@@ -203,6 +237,7 @@ describe('Frontend Component Tests', () => {
       render(() => (
         <SummaryView
           choreData={choreData}
+          todaysDayOfWeek={mockTodaysDayOfWeek}
           config={
             {
               viewMode: 'summary',
@@ -225,11 +260,55 @@ describe('Frontend Component Tests', () => {
       await expect.element(page.getByText('Clean kitchen')).toBeVisible();
     });
 
+    it('should show chore in summary that was hidden on a skip day once the day changes', async () => {
+      const skipDayChore: Chore = {
+        ...mockPersonalChore,
+        id: 'c-skip-summary',
+        name: 'Summary skip day chore',
+        skipDays: ['monday' as DayOfWeek],
+        skipDayVisibility: SkipDayVisibility.HIDE,
+        completedToday: false,
+      };
+      const [choreData] = createSignal<FamilyChoresData>({
+        ...mockChoreData,
+        chores: [skipDayChore],
+      });
+      const [todaysDayOfWeek, setTodaysDayOfWeek] = createSignal<DayOfWeek>('monday' as DayOfWeek);
+      render(() => (
+        <SummaryView
+          choreData={choreData}
+          todaysDayOfWeek={todaysDayOfWeek}
+          config={
+            {
+              viewMode: 'summary',
+              personFilter: null,
+              summary: {
+                showIncomplete: true,
+                showRotating: false,
+                showOverdue: false,
+                incompleteTitle: 'Incomplete',
+                rotatingTitle: 'Rotating',
+                overdueTitle: 'Overdue',
+              },
+            } as Config
+          }
+          onToggle={vi.fn()}
+        />
+      ));
+
+      expect(page.getByText('Incomplete').elements().length).toBe(0);
+
+      setTodaysDayOfWeek('tuesday' as DayOfWeek);
+
+      await expect.element(page.getByText('Incomplete')).toBeVisible();
+    });
+
     it('should not render sections when disabled', async () => {
       const [choreData] = createSignal<FamilyChoresData>(mockChoreData);
       render(() => (
         <SummaryView
           choreData={choreData}
+          todaysDayOfWeek={mockTodaysDayOfWeek}
           config={
             {
               viewMode: 'summary',
@@ -260,6 +339,7 @@ describe('Frontend Component Tests', () => {
       render(() => (
         <App
           choreData={choreData}
+          todaysDayOfWeek={mockTodaysDayOfWeek}
           config={{ viewMode: 'personal', personFilter: null } as Config}
           onToggle={vi.fn()}
         />
@@ -273,6 +353,7 @@ describe('Frontend Component Tests', () => {
       render(() => (
         <App
           choreData={choreData}
+          todaysDayOfWeek={mockTodaysDayOfWeek}
           config={{ viewMode: 'personal', personFilter: null } as Config}
           onToggle={vi.fn()}
         />
@@ -287,6 +368,7 @@ describe('Frontend Component Tests', () => {
       render(() => (
         <App
           choreData={choreData}
+          todaysDayOfWeek={mockTodaysDayOfWeek}
           config={
             {
               viewMode: 'summary',
