@@ -1142,11 +1142,11 @@
 	/**
 	* Controls how a chore is handled after its deadline
 	*/
-	var PostDeadlineVisibility = /* @__PURE__ */ function(PostDeadlineVisibility) {
-		PostDeadlineVisibility["SHOW_NORMAL"] = "normal";
-		PostDeadlineVisibility["SHOW_OVERDUE"] = "overdue";
-		PostDeadlineVisibility["MOVE_TO_EARLIER"] = "earlier";
-		return PostDeadlineVisibility;
+	var AfterDeadlineVisibility = /* @__PURE__ */ function(AfterDeadlineVisibility) {
+		AfterDeadlineVisibility["SHOW_NORMAL"] = "normal";
+		AfterDeadlineVisibility["SHOW_OVERDUE"] = "overdue";
+		AfterDeadlineVisibility["MOVE_TO_EARLIER"] = "earlier";
+		return AfterDeadlineVisibility;
 	}({});
 	/**
 	* Controls whether a missed chore is shown before its startTime
@@ -1175,7 +1175,7 @@
 	* Determine if a chore should be shown based on skip day and time-based visibility settings.
 	*
 	* Skip-day filtering is applied first. A completed chore is then shown even if it would
-	* otherwise be hidden by the start-time or post-deadline settings, so the user can see
+	* otherwise be hidden by the start-time or after-deadline settings, so the user can see
 	* what has already been done today.
 	*/
 	function shouldShowChore(chore, todayDayName, currentTime) {
@@ -1196,11 +1196,11 @@
 	*
 	* A chore with a deadline that has passed moves to the earlier section when:
 	* - it is completed, or
-	* - it is not completed and its post-deadline setting is "Move to earlier".
+	* - it is not completed and its after-deadline setting is "Move to earlier".
 	*/
 	function isEarlierChore(chore, currentTime) {
 		if (!chore.deadline || currentTime < chore.deadline) return false;
-		if (!chore.completedToday && chore.postDeadlineVisibility === PostDeadlineVisibility.MOVE_TO_EARLIER) return true;
+		if (!chore.completedToday && chore.afterDeadlineVisibility === AfterDeadlineVisibility.MOVE_TO_EARLIER) return true;
 		if (chore.completedToday) return true;
 		return false;
 	}
@@ -1209,12 +1209,12 @@
 	*
 	* Completed chores are never overdue. A missed chore is overdue when
 	* notCaughtUpDisplay is 'overdue'. A chore past its deadline is overdue when
-	* postDeadlineVisibility is 'overdue'.
+	* afterDeadlineVisibility is 'overdue'.
 	*/
 	function isChoreOverdue(chore, currentTime) {
 		if (chore.completedToday) return false;
 		if (!chore.caughtUp && chore.notCaughtUpDisplay === NotCaughtUpDisplay.OVERDUE) return true;
-		if (chore.deadline && currentTime >= chore.deadline && chore.postDeadlineVisibility === PostDeadlineVisibility.SHOW_OVERDUE) return true;
+		if (chore.deadline && currentTime >= chore.deadline && chore.afterDeadlineVisibility === AfterDeadlineVisibility.SHOW_OVERDUE) return true;
 		return false;
 	}
 	/**

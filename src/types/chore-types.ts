@@ -15,7 +15,7 @@ export enum SkipDayVisibility {
 /**
  * Controls how a chore is handled after its deadline
  */
-export enum PostDeadlineVisibility {
+export enum AfterDeadlineVisibility {
   SHOW_NORMAL = 'normal',
   SHOW_OVERDUE = 'overdue',
   MOVE_TO_EARLIER = 'earlier',
@@ -93,7 +93,7 @@ type ChoreBase = {
   /**
    * Controls whether the chore remains visible after its deadline when not completed
    */
-  postDeadlineVisibility: PostDeadlineVisibility;
+  afterDeadlineVisibility: AfterDeadlineVisibility;
   /**
    * Controls how a chore that is not caught up is displayed
    */

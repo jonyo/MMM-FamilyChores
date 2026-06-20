@@ -1,11 +1,11 @@
 import type {
+  AfterDeadlineVisibility,
   BeforeStartTimeVisibility,
   Chore,
   ChoreType,
   DayOfWeek,
   NotCaughtUpDisplay,
   Person,
-  PostDeadlineVisibility,
   SkipDayVisibility,
   UUID,
 } from './chore-types';
@@ -56,7 +56,7 @@ export interface CreateChoreRequest extends PinProtectedRequest {
   skipDays?: DayOfWeek[];
   skipDayVisibility?: SkipDayVisibility;
   beforeStartTimeVisibility: BeforeStartTimeVisibility;
-  postDeadlineVisibility: PostDeadlineVisibility;
+  afterDeadlineVisibility: AfterDeadlineVisibility;
   notCaughtUpDisplay: NotCaughtUpDisplay;
 }
 

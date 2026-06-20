@@ -1,14 +1,17 @@
 import type { Accessor, Component } from 'solid-js';
-import { createMemo, createSignal, Show, untrack } from 'solid-js';
+import { createMemo, createSignal, Match, Show, Switch, untrack } from 'solid-js';
 import type {
+  AfterDeadlineVisibility,
   BeforeStartTimeVisibility,
+  DayOfWeek,
   NotCaughtUpDisplay,
-  PostDeadlineVisibility,
+  SkipDayVisibility,
 } from '../types/chore-types';
 import {
+  AfterDeadlineVisibility as AfterDeadlineVisibilityEnum,
   BeforeStartTimeVisibility as BeforeStartTimeVisibilityEnum,
   NotCaughtUpDisplay as NotCaughtUpDisplayEnum,
-  PostDeadlineVisibility as PostDeadlineVisibilityEnum,
+  SkipDayVisibility as SkipDayVisibilityEnum,
 } from '../types/chore-types';
 import { InfoBox } from './info-box';
 
@@ -17,14 +20,20 @@ interface DisplayOptionsSectionProps {
   startTime: Accessor<string | undefined>;
   /** Current deadline value (controls whether After Deadline option is shown) */
   deadline: Accessor<string | undefined>;
+  /** Current skip days (controls whether Skip Day Visibility option is shown) */
+  skipDays: Accessor<DayOfWeek[]>;
+  /** Current skip-day visibility value */
+  skipDayVisibility: Accessor<SkipDayVisibility>;
+  /** Setter for skip-day visibility */
+  setSkipDayVisibility: (value: SkipDayVisibility) => void;
   /** Current before-start-time visibility value */
   beforeStartTimeVisibility: Accessor<BeforeStartTimeVisibility>;
   /** Setter for before-start-time visibility */
   setBeforeStartTimeVisibility: (value: BeforeStartTimeVisibility) => void;
-  /** Current post-deadline visibility value */
-  postDeadlineVisibility: Accessor<PostDeadlineVisibility>;
-  /** Setter for post-deadline visibility */
-  setPostDeadlineVisibility: (value: PostDeadlineVisibility) => void;
+  /** Current after-deadline visibility value */
+  afterDeadlineVisibility: Accessor<AfterDeadlineVisibility>;
+  /** Setter for after-deadline visibility */
+  setAfterDeadlineVisibility: (value: AfterDeadlineVisibility) => void;
   /** Current not-caught-up display value */
   notCaughtUpDisplay: Accessor<NotCaughtUpDisplay>;
   /** Setter for not-caught-up display */
@@ -45,11 +54,14 @@ export const DisplayOptionsSection: Component<DisplayOptionsSectionProps> = (pro
     }
     if (
       props.deadline() &&
-      props.postDeadlineVisibility() !== PostDeadlineVisibilityEnum.SHOW_OVERDUE
+      props.afterDeadlineVisibility() !== AfterDeadlineVisibilityEnum.SHOW_OVERDUE
     ) {
       return true;
     }
     if (props.notCaughtUpDisplay() !== NotCaughtUpDisplayEnum.OVERDUE) {
+      return true;
+    }
+    if (props.skipDays().length > 0 && props.skipDayVisibility() !== SkipDayVisibilityEnum.HIDE) {
       return true;
     }
     return false;
@@ -79,6 +91,41 @@ export const DisplayOptionsSection: Component<DisplayOptionsSectionProps> = (pro
         </div>
       </summary>
       <div class="space-y-4 p-3 pt-0">
+        <InfoBox icon>
+          <strong>Note:</strong> A chore is <strong>caught up</strong> when it was completed on the
+          previous day it appeared (by default, the previous non-skip day). New and newly rotated
+          chores start as caught up.
+        </InfoBox>
+
+        <div>
+          <div class="mb-1.5 flex items-center">
+            <label for="notCaughtUpDisplay" class="block font-medium text-slate-900">
+              When visible and not caught up, style as:
+            </label>
+          </div>
+          <select
+            id="notCaughtUpDisplay"
+            value={props.notCaughtUpDisplay()}
+            onInput={(e) =>
+              props.setNotCaughtUpDisplay(e.currentTarget.value as NotCaughtUpDisplay)
+            }
+            class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"
+          >
+            <option value={NotCaughtUpDisplayEnum.OVERDUE}>Overdue styling</option>
+            <option value={NotCaughtUpDisplayEnum.NORMAL}>Normal styling</option>
+          </select>
+          <InfoBox>
+            <Show when={props.notCaughtUpDisplay() === NotCaughtUpDisplayEnum.OVERDUE}>
+              <strong>Overdue styling:</strong> If the chore is not caught up, it is styled as
+              overdue (default style is yellow).
+            </Show>
+            <Show when={props.notCaughtUpDisplay() === NotCaughtUpDisplayEnum.NORMAL}>
+              <strong>Normal styling:</strong> If the chore is not caught up, it is styled as
+              normal.
+            </Show>
+          </InfoBox>
+        </div>
+
         <Show when={props.startTime()}>
           <div>
             <label for="beforeStartTimeVisibility" class="mb-1.5 block font-medium text-slate-900">
@@ -98,71 +145,111 @@ export const DisplayOptionsSection: Component<DisplayOptionsSectionProps> = (pro
               <option value={BeforeStartTimeVisibilityEnum.SHOW_IF_OVERDUE}>Show if overdue</option>
             </select>
             <InfoBox>
-              <strong>Hide:</strong> The chore stays hidden until its start time even if it was
-              missed previously.
-              <br />
-              <strong>Show if overdue:</strong> A missed chore appears before its start time so it
-              can be caught up early.
+              <Show when={props.beforeStartTimeVisibility() === BeforeStartTimeVisibilityEnum.HIDE}>
+                <strong>Hide:</strong> The chore stays hidden until {props.startTime()} even if it
+                is not caught up.
+              </Show>
+              <Show
+                when={
+                  props.beforeStartTimeVisibility() ===
+                  BeforeStartTimeVisibilityEnum.SHOW_IF_OVERDUE
+                }
+              >
+                <strong>Show if overdue:</strong> If the chore is caught up, it stays hidden until{' '}
+                {props.startTime()}. If it is not caught up, it appears before {props.startTime()}{' '}
+                so it can be caught up early.
+              </Show>
             </InfoBox>
           </div>
         </Show>
 
         <Show when={props.deadline()}>
           <div>
-            <label for="postDeadlineVisibility" class="mb-1.5 block font-medium text-slate-900">
+            <label for="afterDeadlineVisibility" class="mb-1.5 block font-medium text-slate-900">
               After deadline
             </label>
             <select
-              id="postDeadlineVisibility"
-              value={props.postDeadlineVisibility()}
+              id="afterDeadlineVisibility"
+              value={props.afterDeadlineVisibility()}
               onInput={(e) =>
-                props.setPostDeadlineVisibility(e.currentTarget.value as PostDeadlineVisibility)
+                props.setAfterDeadlineVisibility(e.currentTarget.value as AfterDeadlineVisibility)
               }
               class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"
             >
-              <option value={PostDeadlineVisibilityEnum.SHOW_NORMAL}>Show normally</option>
-              <option value={PostDeadlineVisibilityEnum.SHOW_OVERDUE}>Show as overdue</option>
-              <option value={PostDeadlineVisibilityEnum.MOVE_TO_EARLIER}>
+              <option value={AfterDeadlineVisibilityEnum.SHOW_NORMAL}>Show normally</option>
+              <option value={AfterDeadlineVisibilityEnum.SHOW_OVERDUE}>Show as overdue</option>
+              <option value={AfterDeadlineVisibilityEnum.MOVE_TO_EARLIER}>
                 Move to earlier chores
               </option>
             </select>
             <InfoBox>
-              <strong>Show normally:</strong> The chore stays in the main list after the deadline.
-              <br />
-              <strong>Show as overdue:</strong> The chore stays in the main list and turns yellow
-              after the deadline until completed.
-              <br />
-              <strong>Move to earlier chores:</strong> The chore moves to the collapsed "Earlier
-              chores" section after the deadline.
+              <Switch>
+                <Match
+                  when={props.afterDeadlineVisibility() === AfterDeadlineVisibilityEnum.SHOW_NORMAL}
+                >
+                  <strong>Show normally:</strong> If the chore is complete, it moves to the "Earlier
+                  chores" section after {props.deadline()}. If it is not complete, it stays in the
+                  main list after {props.deadline()} until completed.
+                </Match>
+                <Match
+                  when={
+                    props.afterDeadlineVisibility() === AfterDeadlineVisibilityEnum.SHOW_OVERDUE
+                  }
+                >
+                  <strong>Show as overdue:</strong> If the chore is complete, it moves to the
+                  "Earlier chores" section after {props.deadline()}. If it is not complete, it stays
+                  in the main list and turns yellow after {props.deadline()} until completed.
+                </Match>
+                <Match
+                  when={
+                    props.afterDeadlineVisibility() === AfterDeadlineVisibilityEnum.MOVE_TO_EARLIER
+                  }
+                >
+                  <strong>Move to earlier chores:</strong> The chore moves to the "Earlier chores"
+                  section after {props.deadline()} whether complete or not. You can still mark as
+                  complete after that time by expanding the "Earlier chores" section.
+                </Match>
+              </Switch>
             </InfoBox>
           </div>
         </Show>
 
-        <div>
-          <div class="mb-1.5 flex items-center">
-            <label for="notCaughtUpDisplay" class="block font-medium text-slate-900">
-              If not completed, next day show as:
+        <Show when={props.skipDays().length > 0}>
+          <div>
+            <label for="skipDayVisibility" class="mb-1.5 block font-medium text-slate-900">
+              Skip day visibility
             </label>
+            <select
+              id="skipDayVisibility"
+              value={props.skipDayVisibility()}
+              onInput={(e) =>
+                props.setSkipDayVisibility(e.currentTarget.value as SkipDayVisibility)
+              }
+              class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"
+            >
+              <option value={SkipDayVisibilityEnum.HIDE}>Hide</option>
+              <option value={SkipDayVisibilityEnum.SHOW_ALWAYS}>Always Show</option>
+              <option value={SkipDayVisibilityEnum.SHOW_IF_OVERDUE}>Show If Overdue</option>
+            </select>
+            <InfoBox>
+              <Switch>
+                <Match when={props.skipDayVisibility() === SkipDayVisibilityEnum.HIDE}>
+                  <strong>Hide:</strong> The chore disappears completely on skip days. It's a true
+                  day off — no catch-up needed.
+                </Match>
+                <Match when={props.skipDayVisibility() === SkipDayVisibilityEnum.SHOW_ALWAYS}>
+                  <strong>Always Show:</strong> The chore stays visible on skip days. If it is
+                  caught up, it remains checked (a grace day). If it is not caught up, you can check
+                  it off on the skip day.
+                </Match>
+                <Match when={props.skipDayVisibility() === SkipDayVisibilityEnum.SHOW_IF_OVERDUE}>
+                  <strong>Show If Overdue:</strong> The chore appears on skip days only if it is not
+                  caught up. You can check it off on the skip day to catch up.
+                </Match>
+              </Switch>
+            </InfoBox>
           </div>
-          <select
-            id="notCaughtUpDisplay"
-            value={props.notCaughtUpDisplay()}
-            onInput={(e) =>
-              props.setNotCaughtUpDisplay(e.currentTarget.value as NotCaughtUpDisplay)
-            }
-            class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"
-          >
-            <option value={NotCaughtUpDisplayEnum.OVERDUE}>Overdue</option>
-            <option value={NotCaughtUpDisplayEnum.NORMAL}>Normal</option>
-          </select>
-          <InfoBox>
-            <strong>Overdue:</strong> A chore missed on the previous non-skip day starts the day as
-            overdue (yellow).
-            <br />
-            <strong>Normal:</strong> A missed chore starts the day looking normal until its deadline
-            passes.
-          </InfoBox>
-        </div>
+        </Show>
       </div>
     </details>
   );

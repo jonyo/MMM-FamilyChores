@@ -2,11 +2,11 @@ import type { Accessor, Component } from 'solid-js';
 import { createSignal } from 'solid-js';
 import type { FamilyChoresData, Person, PersonalChore, RotatingChore } from '../types/chore-types';
 import {
+  AfterDeadlineVisibility,
   BeforeStartTimeVisibility,
   ChoreType,
   DayOfWeek,
   NotCaughtUpDisplay,
-  PostDeadlineVisibility,
   SkipDayVisibility,
 } from '../types/chore-types';
 import AdminContext, { type AdminContextValue } from './admin-context';
@@ -33,7 +33,7 @@ export const mockPersonalChore: PersonalChore = {
   skipDays: [],
   skipDayVisibility: SkipDayVisibility.HIDE,
   beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
-  postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+  afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
   notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
   caughtUp: true,
   completedToday: false,
@@ -49,7 +49,7 @@ export const mockRotatingChore: RotatingChore = {
   skipDays: [DayOfWeek.SUNDAY],
   skipDayVisibility: SkipDayVisibility.SHOW_IF_OVERDUE,
   beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
-  postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+  afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
   notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
   caughtUp: true,
   completedToday: false,

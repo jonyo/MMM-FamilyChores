@@ -7,9 +7,9 @@
  */
 
 import {
+  AfterDeadlineVisibility,
   BeforeStartTimeVisibility,
   NotCaughtUpDisplay,
-  PostDeadlineVisibility,
 } from '../types/chore-types';
 
 /**
@@ -53,12 +53,12 @@ const upgradeChore = (chore: unknown): unknown => {
     choreObj.beforeStartTimeVisibility = BeforeStartTimeVisibility.HIDE;
   }
 
-  if (choreObj.postDeadlineVisibility === undefined) {
-    choreObj.postDeadlineVisibility = PostDeadlineVisibility.SHOW_OVERDUE;
+  if (choreObj.afterDeadlineVisibility === undefined) {
+    choreObj.afterDeadlineVisibility = AfterDeadlineVisibility.SHOW_OVERDUE;
   }
   // Normalize old 'hide' value to the new 'earlier' behavior
-  if (choreObj.postDeadlineVisibility === 'hide') {
-    choreObj.postDeadlineVisibility = PostDeadlineVisibility.MOVE_TO_EARLIER;
+  if (choreObj.afterDeadlineVisibility === 'hide') {
+    choreObj.afterDeadlineVisibility = AfterDeadlineVisibility.MOVE_TO_EARLIER;
   }
 
   if (choreObj.notCaughtUpDisplay === undefined) {

@@ -142,11 +142,11 @@ var SkipDayVisibility = /* @__PURE__ */ function(SkipDayVisibility) {
 /**
 * Controls how a chore is handled after its deadline
 */
-var PostDeadlineVisibility = /* @__PURE__ */ function(PostDeadlineVisibility) {
-	PostDeadlineVisibility["SHOW_NORMAL"] = "normal";
-	PostDeadlineVisibility["SHOW_OVERDUE"] = "overdue";
-	PostDeadlineVisibility["MOVE_TO_EARLIER"] = "earlier";
-	return PostDeadlineVisibility;
+var AfterDeadlineVisibility = /* @__PURE__ */ function(AfterDeadlineVisibility) {
+	AfterDeadlineVisibility["SHOW_NORMAL"] = "normal";
+	AfterDeadlineVisibility["SHOW_OVERDUE"] = "overdue";
+	AfterDeadlineVisibility["MOVE_TO_EARLIER"] = "earlier";
+	return AfterDeadlineVisibility;
 }({});
 /**
 * Controls whether a missed chore is shown before its startTime
@@ -213,8 +213,8 @@ var upgradeChore = (chore) => {
 	if (!chore || typeof chore !== "object") return chore;
 	const choreObj = { ...chore };
 	if (choreObj.beforeStartTimeVisibility === void 0) choreObj.beforeStartTimeVisibility = BeforeStartTimeVisibility.HIDE;
-	if (choreObj.postDeadlineVisibility === void 0) choreObj.postDeadlineVisibility = PostDeadlineVisibility.SHOW_OVERDUE;
-	if (choreObj.postDeadlineVisibility === "hide") choreObj.postDeadlineVisibility = PostDeadlineVisibility.MOVE_TO_EARLIER;
+	if (choreObj.afterDeadlineVisibility === void 0) choreObj.afterDeadlineVisibility = AfterDeadlineVisibility.SHOW_OVERDUE;
+	if (choreObj.afterDeadlineVisibility === "hide") choreObj.afterDeadlineVisibility = AfterDeadlineVisibility.MOVE_TO_EARLIER;
 	if (choreObj.notCaughtUpDisplay === void 0) choreObj.notCaughtUpDisplay = NotCaughtUpDisplay.OVERDUE;
 	return choreObj;
 };
@@ -330,13 +330,13 @@ var validateChore = (chore, people) => {
 		valid: false,
 		error: "Chore beforeStartTimeVisibility must be \"hide\" or \"show-if-overdue\""
 	};
-	if (!choreObj.postDeadlineVisibility || typeof choreObj.postDeadlineVisibility !== "string") return {
+	if (!choreObj.afterDeadlineVisibility || typeof choreObj.afterDeadlineVisibility !== "string") return {
 		valid: false,
-		error: "Chore must have a postDeadlineVisibility"
+		error: "Chore must have a afterDeadlineVisibility"
 	};
-	if (!Object.values(PostDeadlineVisibility).includes(choreObj.postDeadlineVisibility)) return {
+	if (!Object.values(AfterDeadlineVisibility).includes(choreObj.afterDeadlineVisibility)) return {
 		valid: false,
-		error: "Chore postDeadlineVisibility must be \"normal\", \"overdue\", or \"earlier\""
+		error: "Chore afterDeadlineVisibility must be \"normal\", \"overdue\", or \"earlier\""
 	};
 	if (!choreObj.notCaughtUpDisplay || typeof choreObj.notCaughtUpDisplay !== "string") return {
 		valid: false,
@@ -624,7 +624,7 @@ function createAdminHandlers(context) {
 		postChore: (req, res) => {
 			if (!validatePin(req, res, context)) return;
 			try {
-				const { name, type, assignedTo, rotation, rotatingIndex, startTime, deadline, skipDays, skipDayVisibility, beforeStartTimeVisibility, postDeadlineVisibility, notCaughtUpDisplay } = req.body;
+				const { name, type, assignedTo, rotation, rotatingIndex, startTime, deadline, skipDays, skipDayVisibility, beforeStartTimeVisibility, afterDeadlineVisibility, notCaughtUpDisplay } = req.body;
 				const choreData = context.getChoreData();
 				if (!choreData) {
 					res.status(500).json(apiErr("No data available"));
@@ -639,7 +639,7 @@ function createAdminHandlers(context) {
 					skipDays: skipDays || [],
 					skipDayVisibility: skipDayVisibility || SkipDayVisibility.SHOW_IF_OVERDUE,
 					beforeStartTimeVisibility: beforeStartTimeVisibility || BeforeStartTimeVisibility.HIDE,
-					postDeadlineVisibility: postDeadlineVisibility || PostDeadlineVisibility.SHOW_OVERDUE,
+					afterDeadlineVisibility: afterDeadlineVisibility || AfterDeadlineVisibility.SHOW_OVERDUE,
 					notCaughtUpDisplay: notCaughtUpDisplay || NotCaughtUpDisplay.OVERDUE,
 					caughtUp: true,
 					completedToday: false
@@ -668,7 +668,7 @@ function createAdminHandlers(context) {
 			if (!validatePin(req, res, context)) return;
 			try {
 				const { id } = req.params;
-				const { name, type, assignedTo, rotation, rotatingIndex, startTime, deadline, skipDays, skipDayVisibility, beforeStartTimeVisibility, postDeadlineVisibility, notCaughtUpDisplay } = req.body;
+				const { name, type, assignedTo, rotation, rotatingIndex, startTime, deadline, skipDays, skipDayVisibility, beforeStartTimeVisibility, afterDeadlineVisibility, notCaughtUpDisplay } = req.body;
 				const choreData = context.getChoreData();
 				if (!choreData) {
 					res.status(500).json(apiErr("No data available"));
@@ -691,7 +691,7 @@ function createAdminHandlers(context) {
 					skipDays: skipDays || chore.skipDays,
 					skipDayVisibility: skipDayVisibility || chore.skipDayVisibility,
 					beforeStartTimeVisibility: beforeStartTimeVisibility || chore.beforeStartTimeVisibility,
-					postDeadlineVisibility: postDeadlineVisibility || chore.postDeadlineVisibility,
+					afterDeadlineVisibility: afterDeadlineVisibility || chore.afterDeadlineVisibility,
 					notCaughtUpDisplay: notCaughtUpDisplay || chore.notCaughtUpDisplay
 				};
 				if (chore.type === ChoreType.PERSONAL) updatedChore.assignedTo = assignedTo || chore.assignedTo;
@@ -864,7 +864,7 @@ function createAdminHandlers(context) {
 						skipDays: chore.skipDays,
 						skipDayVisibility: chore.skipDayVisibility,
 						beforeStartTimeVisibility: chore.beforeStartTimeVisibility,
-						postDeadlineVisibility: chore.postDeadlineVisibility,
+						afterDeadlineVisibility: chore.afterDeadlineVisibility,
 						notCaughtUpDisplay: chore.notCaughtUpDisplay,
 						caughtUp: true,
 						completedToday: false

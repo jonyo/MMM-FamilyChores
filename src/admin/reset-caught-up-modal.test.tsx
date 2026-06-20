@@ -4,10 +4,10 @@ import { page } from 'vitest/browser';
 import { resetCaughtUp } from '../api';
 import type { PersonalChore, RotatingChore } from '../types/chore-types';
 import {
+  AfterDeadlineVisibility,
   BeforeStartTimeVisibility,
   ChoreType,
   NotCaughtUpDisplay,
-  PostDeadlineVisibility,
   SkipDayVisibility,
 } from '../types/chore-types';
 import { ResetCaughtUpModal } from './reset-caught-up-modal';
@@ -29,7 +29,7 @@ const mockPersonalChore: PersonalChore = {
   skipDays: [],
   skipDayVisibility: SkipDayVisibility.HIDE,
   beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
-  postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+  afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
   notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
   caughtUp: false,
   completedToday: false,
@@ -44,7 +44,7 @@ const mockRotatingChore: RotatingChore = {
   skipDays: [],
   skipDayVisibility: SkipDayVisibility.HIDE,
   beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
-  postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+  afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
   notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
   caughtUp: false,
   completedToday: false,

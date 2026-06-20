@@ -1,10 +1,10 @@
 import type { Chore, Person } from '../types/chore-types';
 import {
+  AfterDeadlineVisibility,
   BeforeStartTimeVisibility,
   ChoreType,
   DayOfWeek,
   NotCaughtUpDisplay,
-  PostDeadlineVisibility,
   SkipDayVisibility,
 } from '../types/chore-types';
 import { isValidUUID } from '../utils/uuid';
@@ -147,18 +147,18 @@ export const validateChore = (chore: unknown | Chore, people: Person[]): Validat
     };
   }
 
-  // Validate postDeadlineVisibility (required, must be valid enum value)
-  if (!choreObj.postDeadlineVisibility || typeof choreObj.postDeadlineVisibility !== 'string') {
-    return { valid: false, error: 'Chore must have a postDeadlineVisibility' };
+  // Validate afterDeadlineVisibility (required, must be valid enum value)
+  if (!choreObj.afterDeadlineVisibility || typeof choreObj.afterDeadlineVisibility !== 'string') {
+    return { valid: false, error: 'Chore must have a afterDeadlineVisibility' };
   }
   if (
-    !Object.values(PostDeadlineVisibility).includes(
-      choreObj.postDeadlineVisibility as PostDeadlineVisibility
+    !Object.values(AfterDeadlineVisibility).includes(
+      choreObj.afterDeadlineVisibility as AfterDeadlineVisibility
     )
   ) {
     return {
       valid: false,
-      error: 'Chore postDeadlineVisibility must be "normal", "overdue", or "earlier"',
+      error: 'Chore afterDeadlineVisibility must be "normal", "overdue", or "earlier"',
     };
   }
 

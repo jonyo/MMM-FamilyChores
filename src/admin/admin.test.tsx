@@ -3,10 +3,10 @@ import { describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import type { FamilyChoresData } from '../types/chore-types';
 import {
+  AfterDeadlineVisibility,
   BeforeStartTimeVisibility,
   ChoreType,
   NotCaughtUpDisplay,
-  PostDeadlineVisibility,
   SkipDayVisibility,
 } from '../types/chore-types';
 import { Admin } from './admin';
@@ -31,7 +31,7 @@ describe('Admin Component Tests', () => {
             skipDays: [],
             skipDayVisibility: SkipDayVisibility.HIDE,
             beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
-            postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+            afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
             notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
             caughtUp: true,
             completedToday: false,

@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { Chore, Person } from '../types/chore-types';
 import {
+  AfterDeadlineVisibility,
   BeforeStartTimeVisibility,
   ChoreType,
   DayOfWeek,
   NotCaughtUpDisplay,
-  PostDeadlineVisibility,
   SkipDayVisibility,
 } from '../types/chore-types';
 import { generateTestUUID } from '../utils/uuid';
@@ -29,7 +29,7 @@ const baseChoreFields = (idNum: number) => ({
   skipDays: [] as DayOfWeek[],
   skipDayVisibility: SkipDayVisibility.HIDE,
   beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
-  postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+  afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
   notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
   caughtUp: true,
   completedToday: false,
@@ -219,10 +219,10 @@ describe('validateChore', () => {
     expect(validateChore({ ...personal, beforeStartTimeVisibility: 'nope' }, people).valid).toBe(
       false
     );
-    expect(validateChore({ ...personal, postDeadlineVisibility: undefined }, people).valid).toBe(
+    expect(validateChore({ ...personal, afterDeadlineVisibility: undefined }, people).valid).toBe(
       false
     );
-    expect(validateChore({ ...personal, postDeadlineVisibility: 'nope' }, people).valid).toBe(
+    expect(validateChore({ ...personal, afterDeadlineVisibility: 'nope' }, people).valid).toBe(
       false
     );
     expect(validateChore({ ...personal, notCaughtUpDisplay: undefined }, people).valid).toBe(false);

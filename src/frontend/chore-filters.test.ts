@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { Chore } from '../types/chore-types';
 import {
+  AfterDeadlineVisibility,
   BeforeStartTimeVisibility,
   ChoreType,
   NotCaughtUpDisplay,
-  PostDeadlineVisibility,
   SkipDayVisibility,
 } from '../types/chore-types';
 import { isChoreOverdue, isEarlierChore, shouldShowChore } from './chore-filters';
@@ -17,7 +17,7 @@ const baseChore: Chore = {
   skipDays: [],
   skipDayVisibility: SkipDayVisibility.HIDE,
   beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
-  postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+  afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
   notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
   caughtUp: true,
   completedToday: false,
@@ -88,29 +88,29 @@ describe('isEarlierChore', () => {
     expect(isEarlierChore(chore, '10:00')).toBe(true);
   });
 
-  it('returns true when incomplete and post-deadline is set to earlier', () => {
+  it('returns true when incomplete and after-deadline is set to earlier', () => {
     const chore: Chore = {
       ...baseChore,
       deadline: '09:00',
-      postDeadlineVisibility: PostDeadlineVisibility.MOVE_TO_EARLIER,
+      afterDeadlineVisibility: AfterDeadlineVisibility.MOVE_TO_EARLIER,
     };
     expect(isEarlierChore(chore, '10:00')).toBe(true);
   });
 
-  it('returns false when incomplete and post-deadline is set to normal', () => {
+  it('returns false when incomplete and after-deadline is set to normal', () => {
     const chore: Chore = {
       ...baseChore,
       deadline: '09:00',
-      postDeadlineVisibility: PostDeadlineVisibility.SHOW_NORMAL,
+      afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_NORMAL,
     };
     expect(isEarlierChore(chore, '10:00')).toBe(false);
   });
 
-  it('returns false when incomplete and post-deadline is set to overdue', () => {
+  it('returns false when incomplete and after-deadline is set to overdue', () => {
     const chore: Chore = {
       ...baseChore,
       deadline: '09:00',
-      postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+      afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
     };
     expect(isEarlierChore(chore, '10:00')).toBe(false);
   });
@@ -136,25 +136,25 @@ describe('isChoreOverdue', () => {
     expect(isChoreOverdue(chore, '10:00')).toBe(false);
   });
 
-  it('returns true when past deadline and post-deadline is set to overdue', () => {
+  it('returns true when past deadline and after-deadline is set to overdue', () => {
     const chore: Chore = { ...baseChore, deadline: '09:00' };
     expect(isChoreOverdue(chore, '10:00')).toBe(true);
   });
 
-  it('returns false when past deadline and post-deadline is set to normal', () => {
+  it('returns false when past deadline and after-deadline is set to normal', () => {
     const chore: Chore = {
       ...baseChore,
       deadline: '09:00',
-      postDeadlineVisibility: PostDeadlineVisibility.SHOW_NORMAL,
+      afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_NORMAL,
     };
     expect(isChoreOverdue(chore, '10:00')).toBe(false);
   });
 
-  it('returns false when past deadline and post-deadline is set to earlier', () => {
+  it('returns false when past deadline and after-deadline is set to earlier', () => {
     const chore: Chore = {
       ...baseChore,
       deadline: '09:00',
-      postDeadlineVisibility: PostDeadlineVisibility.MOVE_TO_EARLIER,
+      afterDeadlineVisibility: AfterDeadlineVisibility.MOVE_TO_EARLIER,
     };
     expect(isChoreOverdue(chore, '10:00')).toBe(false);
   });

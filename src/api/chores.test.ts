@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  AfterDeadlineVisibility,
   BeforeStartTimeVisibility,
   ChoreType,
   DayOfWeek,
   NotCaughtUpDisplay,
-  PostDeadlineVisibility,
   SkipDayVisibility,
 } from '../types/chore-types';
 import type {
@@ -37,7 +37,7 @@ describe('chores API', () => {
         skipDays: [],
         skipDayVisibility: SkipDayVisibility.HIDE,
         beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
-        postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+        afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
         notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
       };
 
@@ -68,7 +68,7 @@ describe('chores API', () => {
         skipDays: [],
         skipDayVisibility: SkipDayVisibility.HIDE,
         beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
-        postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+        afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
         notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
       });
 
@@ -84,7 +84,7 @@ describe('chores API', () => {
             skipDays: [],
             skipDayVisibility: SkipDayVisibility.HIDE,
             beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
-            postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+            afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
             notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
           }),
         })
@@ -110,7 +110,7 @@ describe('chores API', () => {
         skipDays: [],
         skipDayVisibility: SkipDayVisibility.HIDE,
         beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
-        postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+        afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
         notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
       };
 
@@ -136,7 +136,7 @@ describe('chores API', () => {
         assignedTo: 'p1',
         pin: 'secret123',
         beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
-        postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+        afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
         notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
       };
 
@@ -160,7 +160,7 @@ describe('chores API', () => {
         type: ChoreType.PERSONAL,
         assignedTo: 'p1',
         beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
-        postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+        afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
         notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
       };
 
@@ -178,7 +178,7 @@ describe('chores API', () => {
         type: ChoreType.PERSONAL,
         assignedTo: 'p1',
         beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
-        postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+        afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
         notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
       };
 
@@ -196,7 +196,7 @@ describe('chores API', () => {
         type: ChoreType.PERSONAL,
         assignedTo: 'p1',
         beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
-        postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+        afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
         notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
       };
 
@@ -225,7 +225,7 @@ describe('chores API', () => {
         skipDays: [DayOfWeek.SUNDAY],
         skipDayVisibility: SkipDayVisibility.SHOW_IF_OVERDUE,
         beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
-        postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+        afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
         notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
       };
 

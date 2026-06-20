@@ -8,10 +8,10 @@ import type {
   Settings,
 } from '../types/chore-types';
 import {
+  AfterDeadlineVisibility,
   BeforeStartTimeVisibility,
   ChoreType,
   NotCaughtUpDisplay,
-  PostDeadlineVisibility,
   SkipDayVisibility,
 } from '../types/chore-types';
 import type {
@@ -251,7 +251,7 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
           skipDays,
           skipDayVisibility,
           beforeStartTimeVisibility,
-          postDeadlineVisibility,
+          afterDeadlineVisibility,
           notCaughtUpDisplay,
         } = req.body as CreateChoreRequest;
         const choreData = context.getChoreData();
@@ -271,7 +271,7 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
           skipDays: skipDays || [],
           skipDayVisibility: skipDayVisibility || SkipDayVisibility.SHOW_IF_OVERDUE,
           beforeStartTimeVisibility: beforeStartTimeVisibility || BeforeStartTimeVisibility.HIDE,
-          postDeadlineVisibility: postDeadlineVisibility || PostDeadlineVisibility.SHOW_OVERDUE,
+          afterDeadlineVisibility: afterDeadlineVisibility || AfterDeadlineVisibility.SHOW_OVERDUE,
           notCaughtUpDisplay: notCaughtUpDisplay || NotCaughtUpDisplay.OVERDUE,
           // Default to caught up since this is a new chore
           caughtUp: true,
@@ -322,7 +322,7 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
           skipDays,
           skipDayVisibility,
           beforeStartTimeVisibility,
-          postDeadlineVisibility,
+          afterDeadlineVisibility,
           notCaughtUpDisplay,
         } = req.body as UpdateChoreRequest;
         const choreData = context.getChoreData();
@@ -351,7 +351,7 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
           skipDays: skipDays || chore.skipDays,
           skipDayVisibility: skipDayVisibility || chore.skipDayVisibility,
           beforeStartTimeVisibility: beforeStartTimeVisibility || chore.beforeStartTimeVisibility,
-          postDeadlineVisibility: postDeadlineVisibility || chore.postDeadlineVisibility,
+          afterDeadlineVisibility: afterDeadlineVisibility || chore.afterDeadlineVisibility,
           notCaughtUpDisplay: notCaughtUpDisplay || chore.notCaughtUpDisplay,
         };
 
@@ -575,7 +575,7 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
             skipDays: chore.skipDays,
             skipDayVisibility: chore.skipDayVisibility,
             beforeStartTimeVisibility: chore.beforeStartTimeVisibility,
-            postDeadlineVisibility: chore.postDeadlineVisibility,
+            afterDeadlineVisibility: chore.afterDeadlineVisibility,
             notCaughtUpDisplay: chore.notCaughtUpDisplay,
             caughtUp: true,
             completedToday: false,

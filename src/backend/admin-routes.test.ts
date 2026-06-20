@@ -2,11 +2,11 @@ import { describe, expect, it, vi } from 'vitest';
 import { SocketNotifications } from '../constants/socket-notifications';
 import type { FamilyChoresData, RotatingChore } from '../types/chore-types';
 import {
+  AfterDeadlineVisibility,
   BeforeStartTimeVisibility,
   ChoreType,
   DayOfWeek,
   NotCaughtUpDisplay,
-  PostDeadlineVisibility,
   SkipDayVisibility,
 } from '../types/chore-types';
 import { getLocalDateString } from '../utils/date';
@@ -82,7 +82,7 @@ function makeBaseData(): FamilyChoresData {
         skipDays: [],
         skipDayVisibility: SkipDayVisibility.HIDE,
         beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
-        postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+        afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
         notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
         caughtUp: true,
         completedToday: false,
@@ -96,7 +96,7 @@ function makeBaseData(): FamilyChoresData {
         skipDays: [],
         skipDayVisibility: SkipDayVisibility.HIDE,
         beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
-        postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+        afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
         notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
         caughtUp: false,
         completedToday: false,
@@ -533,7 +533,7 @@ describe('createAdminHandlers', () => {
                 skipDays: [DayOfWeek.TUESDAY],
                 skipDayVisibility: SkipDayVisibility.SHOW_ALWAYS,
                 beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
-                postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+                afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
                 notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
                 caughtUp: false,
                 completedToday: true,
@@ -608,7 +608,7 @@ describe('createAdminHandlers', () => {
                 skipDays: [],
                 skipDayVisibility: SkipDayVisibility.HIDE,
                 beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
-                postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+                afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
                 notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
                 caughtUp: true,
                 completedToday: false,
@@ -663,7 +663,7 @@ describe('createAdminHandlers', () => {
                 skipDays: [],
                 skipDayVisibility: SkipDayVisibility.HIDE,
                 beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
-                postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+                afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
                 notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
                 caughtUp: true,
                 completedToday: false,

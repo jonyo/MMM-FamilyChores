@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  AfterDeadlineVisibility,
   BeforeStartTimeVisibility,
   NotCaughtUpDisplay,
-  PostDeadlineVisibility,
 } from '../types/chore-types';
 import { upgradeData } from './data-upgrade';
 
@@ -20,7 +20,7 @@ describe('upgradeData', () => {
     const chore = (result as { chores: unknown[] }).chores[0];
     expect(chore).toMatchObject({
       beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
-      postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+      afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
       notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
     });
   });
@@ -32,7 +32,7 @@ describe('upgradeData', () => {
           id: 'c1',
           name: 'Upgraded chore',
           beforeStartTimeVisibility: BeforeStartTimeVisibility.SHOW_IF_OVERDUE,
-          postDeadlineVisibility: PostDeadlineVisibility.MOVE_TO_EARLIER,
+          afterDeadlineVisibility: AfterDeadlineVisibility.MOVE_TO_EARLIER,
           notCaughtUpDisplay: NotCaughtUpDisplay.NORMAL,
         },
       ],
@@ -41,25 +41,25 @@ describe('upgradeData', () => {
     const chore = (result as { chores: unknown[] }).chores[0];
     expect(chore).toMatchObject({
       beforeStartTimeVisibility: BeforeStartTimeVisibility.SHOW_IF_OVERDUE,
-      postDeadlineVisibility: PostDeadlineVisibility.MOVE_TO_EARLIER,
+      afterDeadlineVisibility: AfterDeadlineVisibility.MOVE_TO_EARLIER,
       notCaughtUpDisplay: NotCaughtUpDisplay.NORMAL,
     });
   });
 
-  it('normalizes old hide post-deadline value to earlier', () => {
+  it('normalizes old hide after-deadline value to earlier', () => {
     const result = upgradeData({
       chores: [
         {
           id: 'c1',
           name: 'Old hidden chore',
-          postDeadlineVisibility: 'hide',
+          afterDeadlineVisibility: 'hide',
         },
       ],
     });
 
     const chore = (result as { chores: unknown[] }).chores[0];
     expect(chore).toMatchObject({
-      postDeadlineVisibility: PostDeadlineVisibility.MOVE_TO_EARLIER,
+      afterDeadlineVisibility: AfterDeadlineVisibility.MOVE_TO_EARLIER,
     });
   });
 
@@ -74,7 +74,7 @@ describe('upgradeData', () => {
     expect(chores[1]).toBe('not a chore');
     expect(chores[2]).toMatchObject({
       beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
-      postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+      afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
       notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
     });
   });

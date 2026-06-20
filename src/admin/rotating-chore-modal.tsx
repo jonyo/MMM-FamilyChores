@@ -2,18 +2,18 @@ import type { Component } from 'solid-js';
 import { createSignal, For, Show } from 'solid-js';
 import { createChore, updateChore } from '../api';
 import type {
+  AfterDeadlineVisibility,
   BeforeStartTimeVisibility,
   NotCaughtUpDisplay,
-  PostDeadlineVisibility,
   RotatingChore,
   SkipDayVisibility,
 } from '../types/chore-types';
 import {
+  AfterDeadlineVisibility as AfterDeadlineVisibilityEnum,
   BeforeStartTimeVisibility as BeforeStartTimeVisibilityEnum,
   ChoreType,
   DayOfWeek,
   NotCaughtUpDisplay as NotCaughtUpDisplayEnum,
-  PostDeadlineVisibility as PostDeadlineVisibilityEnum,
   SkipDayVisibility as SkipDayVisibilityEnum,
 } from '../types/chore-types';
 import type { CreateChoreRequest, UpdateChoreRequest } from '../types/request-types';
@@ -57,9 +57,10 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
     createSignal<BeforeStartTimeVisibility>(
       props.initialChore?.beforeStartTimeVisibility ?? BeforeStartTimeVisibilityEnum.HIDE
     );
-  const [postDeadlineVisibility, setPostDeadlineVisibility] = createSignal<PostDeadlineVisibility>(
-    props.initialChore?.postDeadlineVisibility ?? PostDeadlineVisibilityEnum.SHOW_OVERDUE
-  );
+  const [afterDeadlineVisibility, setAfterDeadlineVisibility] =
+    createSignal<AfterDeadlineVisibility>(
+      props.initialChore?.afterDeadlineVisibility ?? AfterDeadlineVisibilityEnum.SHOW_OVERDUE
+    );
   const [notCaughtUpDisplay, setNotCaughtUpDisplay] = createSignal<NotCaughtUpDisplay>(
     props.initialChore?.notCaughtUpDisplay ?? NotCaughtUpDisplayEnum.OVERDUE
   );
@@ -203,7 +204,7 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
           skipDays: skipDays(),
           skipDayVisibility: skipDayVisibility(),
           beforeStartTimeVisibility: beforeStartTimeVisibility(),
-          postDeadlineVisibility: postDeadlineVisibility(),
+          afterDeadlineVisibility: afterDeadlineVisibility(),
           notCaughtUpDisplay: notCaughtUpDisplay(),
           pin: pinRequired() ? pinToUse || undefined : undefined,
         };
@@ -219,7 +220,7 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
           skipDays: skipDays(),
           skipDayVisibility: skipDayVisibility(),
           beforeStartTimeVisibility: beforeStartTimeVisibility(),
-          postDeadlineVisibility: postDeadlineVisibility(),
+          afterDeadlineVisibility: afterDeadlineVisibility(),
           notCaughtUpDisplay: notCaughtUpDisplay(),
           pin: pinRequired() ? pinToUse || undefined : undefined,
         };
@@ -378,7 +379,7 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
                 Start Time (optional)
               </label>
               <HelpIcon
-                text="The chore stays hidden until this time. If a missed chore is set to 'Show if overdue', it appears early so it can be caught up."
+                text="The chore stays hidden until this time. If a chore that is not caught up is set to 'Show if overdue', it appears early so it can be caught up."
                 position="above"
                 align="center"
                 multiline
@@ -411,7 +412,7 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
                 Deadline (optional)
               </label>
               <HelpIcon
-                text="The chore turns yellow on the display after this time (unless 'After deadline' is set to Hide). Shown as a badge next to the assigned person."
+                text="After-deadline behavior is controlled by the 'After deadline' option in Advanced Display Options. Completed chores past this time move to the 'Earlier chores' section."
                 position="above"
                 align="center"
                 multiline
@@ -455,31 +456,16 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
               </For>
             </div>
           </div>
-          <Show when={skipDays().length > 0}>
-            <div class="mb-5">
-              <label for="skipDayVisibility" class="mb-1.5 block font-medium text-slate-900">
-                Skip Day Visibility
-              </label>
-              <select
-                id="skipDayVisibility"
-                value={skipDayVisibility()}
-                onInput={(e) => setSkipDayVisibility(e.currentTarget.value as SkipDayVisibility)}
-                class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"
-              >
-                <option value={SkipDayVisibilityEnum.HIDE}>Hide</option>
-                <option value={SkipDayVisibilityEnum.SHOW_ALWAYS}>Always Show</option>
-                <option value={SkipDayVisibilityEnum.SHOW_IF_OVERDUE}>Show If Overdue</option>
-              </select>
-            </div>
-          </Show>
-
           <DisplayOptionsSection
             startTime={startTime}
             deadline={deadline}
+            skipDays={skipDays}
+            skipDayVisibility={skipDayVisibility}
+            setSkipDayVisibility={setSkipDayVisibility}
             beforeStartTimeVisibility={beforeStartTimeVisibility}
             setBeforeStartTimeVisibility={setBeforeStartTimeVisibility}
-            postDeadlineVisibility={postDeadlineVisibility}
-            setPostDeadlineVisibility={setPostDeadlineVisibility}
+            afterDeadlineVisibility={afterDeadlineVisibility}
+            setAfterDeadlineVisibility={setAfterDeadlineVisibility}
             notCaughtUpDisplay={notCaughtUpDisplay}
             setNotCaughtUpDisplay={setNotCaughtUpDisplay}
           />

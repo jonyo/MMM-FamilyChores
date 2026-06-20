@@ -4,11 +4,11 @@ import { page } from 'vitest/browser';
 import { createChore, updateChore } from '../api';
 import type { Person, PersonalChore } from '../types/chore-types';
 import {
+  AfterDeadlineVisibility,
   BeforeStartTimeVisibility,
   ChoreType,
   DayOfWeek,
   NotCaughtUpDisplay,
-  PostDeadlineVisibility,
   SkipDayVisibility,
 } from '../types/chore-types';
 import { PersonalChoreModal } from './personal-chore-modal';
@@ -98,7 +98,7 @@ describe('PersonalChoreModal', () => {
         </MockAdminProvider>
       ));
 
-      expect(page.getByLabelText('Skip Day Visibility').elements().length).toBe(0);
+      expect(page.getByLabelText('Skip day visibility').elements().length).toBe(0);
     });
 
     it('should show skip day visibility when a skip day is checked', async () => {
@@ -114,12 +114,13 @@ describe('PersonalChoreModal', () => {
         </MockAdminProvider>
       ));
 
-      expect(page.getByLabelText('Skip Day Visibility').elements().length).toBe(0);
+      expect(page.getByLabelText('Skip day visibility').elements().length).toBe(0);
 
       const sundayCheckbox = page.getByLabelText('Sunday');
       await sundayCheckbox.click();
+      await page.getByText('Advanced Display Options').click();
 
-      await expect.element(page.getByLabelText('Skip Day Visibility')).toBeVisible();
+      await expect.element(page.getByLabelText('Skip day visibility')).toBeVisible();
     });
 
     it('should hide skip day visibility when all skip days are unchecked', async () => {
@@ -137,10 +138,11 @@ describe('PersonalChoreModal', () => {
 
       const sundayCheckbox = page.getByLabelText('Sunday');
       await sundayCheckbox.click();
-      await expect.element(page.getByLabelText('Skip Day Visibility')).toBeVisible();
+      await page.getByText('Advanced Display Options').click();
+      await expect.element(page.getByLabelText('Skip day visibility')).toBeVisible();
 
       await sundayCheckbox.click();
-      expect(page.getByLabelText('Skip Day Visibility').elements().length).toBe(0);
+      expect(page.getByLabelText('Skip day visibility').elements().length).toBe(0);
     });
 
     it('should click add button', async () => {
@@ -179,7 +181,7 @@ describe('PersonalChoreModal', () => {
         skipDays: [DayOfWeek.SUNDAY],
         skipDayVisibility: SkipDayVisibility.SHOW_IF_OVERDUE,
         beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
-        postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+        afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
         notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
         caughtUp: true,
         completedToday: false,
@@ -201,11 +203,11 @@ describe('PersonalChoreModal', () => {
 
       await expect.element(page.getByLabelText('Chore Name')).toBeVisible();
       await expect.element(page.getByLabelText('Deadline (optional)')).toBeVisible();
-      await expect.element(page.getByLabelText('Skip Day Visibility')).toBeVisible();
+      await expect.element(page.getByLabelText('Skip day visibility')).toBeVisible();
       await expect.element(page.getByLabelText('Chore Name')).toHaveValue('Take out trash');
       await expect.element(page.getByLabelText('Deadline (optional)')).toHaveValue('21:00');
       await expect
-        .element(page.getByLabelText('Skip Day Visibility'))
+        .element(page.getByLabelText('Skip day visibility'))
         .toHaveValue('show-if-overdue');
     });
 
@@ -219,7 +221,7 @@ describe('PersonalChoreModal', () => {
         skipDays: [DayOfWeek.SUNDAY],
         skipDayVisibility: SkipDayVisibility.SHOW_IF_OVERDUE,
         beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
-        postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+        afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
         notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
         caughtUp: true,
         completedToday: false,
@@ -254,7 +256,7 @@ describe('PersonalChoreModal', () => {
         skipDays: [DayOfWeek.SUNDAY],
         skipDayVisibility: SkipDayVisibility.SHOW_IF_OVERDUE,
         beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
-        postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+        afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
         notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
         caughtUp: true,
         completedToday: false,
@@ -271,19 +273,19 @@ describe('PersonalChoreModal', () => {
         </MockAdminProvider>
       ));
 
-      await expect.element(page.getByLabelText('Skip Day Visibility')).toBeVisible();
+      await expect.element(page.getByLabelText('Skip day visibility')).toBeVisible();
       await expect
-        .element(page.getByLabelText('Skip Day Visibility'))
+        .element(page.getByLabelText('Skip day visibility'))
         .toHaveValue('show-if-overdue');
 
       const sundayCheckbox = page.getByLabelText('Sunday');
       await sundayCheckbox.click();
-      expect(page.getByLabelText('Skip Day Visibility').elements().length).toBe(0);
+      expect(page.getByLabelText('Skip day visibility').elements().length).toBe(0);
 
       await sundayCheckbox.click();
-      await expect.element(page.getByLabelText('Skip Day Visibility')).toBeVisible();
+      await expect.element(page.getByLabelText('Skip day visibility')).toBeVisible();
       await expect
-        .element(page.getByLabelText('Skip Day Visibility'))
+        .element(page.getByLabelText('Skip day visibility'))
         .toHaveValue('show-if-overdue');
     });
   });
