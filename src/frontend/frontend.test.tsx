@@ -189,6 +189,38 @@ describe('Frontend Component Tests', () => {
       await expect.element(page.getByText('Skip day chore')).toBeVisible();
     });
 
+    it('should show chore that was hidden by start time once the time passes', async () => {
+      const startTimeChore: Chore = {
+        ...mockPersonalChore,
+        id: 'c-start-time',
+        name: 'Start time chore',
+        startTime: '12:00',
+        beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+      };
+      const [choreData] = createSignal<FamilyChoresData>({
+        ...mockChoreData,
+        chores: [startTimeChore],
+      });
+      const [currentTime, setCurrentTime] = createSignal('10:00');
+      render(() => (
+        <PersonalView
+          choreData={choreData}
+          todaysDayOfWeek={mockTodaysDayOfWeek}
+          currentTime={currentTime}
+          config={{ viewMode: 'personal', personFilter: null } as Config}
+          onToggle={vi.fn()}
+        />
+      ));
+
+      expect(page.getByText('Start time chore').elements().length).toBe(0);
+      await expect.element(page.getByTestId('later-chores-indicator')).toBeVisible();
+
+      setCurrentTime('12:00');
+
+      await expect.element(page.getByText('Start time chore')).toBeVisible();
+      expect(page.getByTestId('later-chores-indicator').elements().length).toBe(0);
+    });
+
     it('should show empty state when no chores match', async () => {
       const [choreData] = createSignal<FamilyChoresData>({
         ...mockChoreData,
@@ -412,6 +444,50 @@ describe('Frontend Component Tests', () => {
       expect(page.getByText('Incomplete').elements().length).toBe(0);
 
       setTodaysDayOfWeek('tuesday' as DayOfWeek);
+
+      await expect.element(page.getByText('Incomplete')).toBeVisible();
+    });
+
+    it('should show chore in summary that was hidden by start time once the time passes', async () => {
+      const startTimeChore: Chore = {
+        ...mockPersonalChore,
+        id: 'c-start-time-summary',
+        name: 'Summary start time chore',
+        startTime: '12:00',
+        beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+        completedToday: false,
+      };
+      const [choreData] = createSignal<FamilyChoresData>({
+        ...mockChoreData,
+        chores: [startTimeChore],
+      });
+      const [currentTime, setCurrentTime] = createSignal('10:00');
+      render(() => (
+        <SummaryView
+          choreData={choreData}
+          todaysDayOfWeek={mockTodaysDayOfWeek}
+          currentTime={currentTime}
+          config={
+            {
+              viewMode: 'summary',
+              personFilter: null,
+              summary: {
+                showIncomplete: true,
+                showRotating: false,
+                showOverdue: false,
+                incompleteTitle: 'Incomplete',
+                rotatingTitle: 'Rotating',
+                overdueTitle: 'Overdue',
+              },
+            } as Config
+          }
+          onToggle={vi.fn()}
+        />
+      ));
+
+      expect(page.getByText('Incomplete').elements().length).toBe(0);
+
+      setCurrentTime('12:00');
 
       await expect.element(page.getByText('Incomplete')).toBeVisible();
     });
