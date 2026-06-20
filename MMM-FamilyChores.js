@@ -1131,29 +1131,6 @@
 	var getLocalDayName = (date = /* @__PURE__ */ new Date()) => {
 		return new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(date).toLowerCase();
 	};
-	/**
-	* Deadline status enum for visual indicators
-	*/
-	var DeadlineStatus = /* @__PURE__ */ function(DeadlineStatus) {
-		DeadlineStatus["NORMAL"] = "normal";
-		DeadlineStatus["OVERDUE"] = "overdue";
-		DeadlineStatus["COMPLETED"] = "completed";
-		return DeadlineStatus;
-	}({});
-	/**
-	* Determines the deadline status for a chore
-	* @param deadline - Optional deadline time in "HH:MM" format
-	* @param completedToday - Whether the chore is completed today
-	* @param caughtUp - Whether the chore is caught up (completed yesterday)
-	* @returns DeadlineStatus for CSS class application
-	*/
-	var getDeadlineStatus = (deadline, completedToday, caughtUp) => {
-		if (completedToday) return "completed";
-		if (caughtUp === false) return "overdue";
-		if (!deadline) return "normal";
-		if (getLocalTimeString() >= deadline) return "overdue";
-		return "normal";
-	};
 	//#endregion
 	//#region src/types/chore-types.ts
 	var SkipDayVisibility = /* @__PURE__ */ function(SkipDayVisibility) {
@@ -1161,6 +1138,31 @@
 		SkipDayVisibility["SHOW_IF_OVERDUE"] = "show-if-overdue";
 		SkipDayVisibility["SHOW_ALWAYS"] = "show-always";
 		return SkipDayVisibility;
+	}({});
+	/**
+	* Controls how a chore is handled after its deadline
+	*/
+	var PostDeadlineVisibility = /* @__PURE__ */ function(PostDeadlineVisibility) {
+		PostDeadlineVisibility["SHOW_NORMAL"] = "normal";
+		PostDeadlineVisibility["SHOW_OVERDUE"] = "overdue";
+		PostDeadlineVisibility["MOVE_TO_EARLIER"] = "earlier";
+		return PostDeadlineVisibility;
+	}({});
+	/**
+	* Controls whether a missed chore is shown before its startTime
+	*/
+	var BeforeStartTimeVisibility = /* @__PURE__ */ function(BeforeStartTimeVisibility) {
+		BeforeStartTimeVisibility["HIDE"] = "hide";
+		BeforeStartTimeVisibility["SHOW_IF_OVERDUE"] = "show-if-overdue";
+		return BeforeStartTimeVisibility;
+	}({});
+	/**
+	* Controls how a chore that is not caught up is displayed
+	*/
+	var NotCaughtUpDisplay = /* @__PURE__ */ function(NotCaughtUpDisplay) {
+		NotCaughtUpDisplay["NORMAL"] = "normal";
+		NotCaughtUpDisplay["OVERDUE"] = "overdue";
+		return NotCaughtUpDisplay;
 	}({});
 	var ChoreType = /* @__PURE__ */ function(ChoreType) {
 		ChoreType["PERSONAL"] = "personal";
@@ -1170,25 +1172,61 @@
 	//#endregion
 	//#region src/frontend/chore-filters.ts
 	/**
-	* Determine if a chore should be shown based on skip day visibility settings
+	* Determine if a chore should be shown based on skip day and time-based visibility settings.
+	*
+	* Skip-day filtering is applied first. A completed chore is then shown even if it would
+	* otherwise be hidden by the start-time or post-deadline settings, so the user can see
+	* what has already been done today.
 	*/
-	function shouldShowChore(chore, todayDayName) {
-		if (!chore.skipDays.includes(todayDayName)) return true;
-		const skipDayVisibility = chore.skipDayVisibility ?? SkipDayVisibility.HIDE;
-		if (skipDayVisibility === SkipDayVisibility.HIDE) return false;
-		if (skipDayVisibility === SkipDayVisibility.SHOW_IF_OVERDUE && chore.caughtUp) return false;
+	function shouldShowChore(chore, todayDayName, currentTime) {
+		if (chore.skipDays.includes(todayDayName)) {
+			const skipDayVisibility = chore.skipDayVisibility;
+			if (skipDayVisibility === SkipDayVisibility.HIDE) return false;
+			if (skipDayVisibility === SkipDayVisibility.SHOW_IF_OVERDUE && chore.caughtUp) return false;
+		}
+		if (chore.completedToday) return true;
+		if (chore.startTime && currentTime < chore.startTime) {
+			if (chore.beforeStartTimeVisibility !== BeforeStartTimeVisibility.SHOW_IF_OVERDUE) return false;
+			if (chore.caughtUp) return false;
+		}
 		return true;
+	}
+	/**
+	* Determine if a chore belongs in the "Earlier chores" collapsed section.
+	*
+	* A chore with a deadline that has passed moves to the earlier section when:
+	* - it is completed, or
+	* - it is not completed and its post-deadline setting is "Move to earlier".
+	*/
+	function isEarlierChore(chore, currentTime) {
+		if (!chore.deadline || currentTime < chore.deadline) return false;
+		if (!chore.completedToday && chore.postDeadlineVisibility === PostDeadlineVisibility.MOVE_TO_EARLIER) return true;
+		if (chore.completedToday) return true;
+		return false;
+	}
+	/**
+	* Determine if a chore should be styled as overdue based on display options.
+	*
+	* Completed chores are never overdue. A missed chore is overdue when
+	* notCaughtUpDisplay is 'overdue'. A chore past its deadline is overdue when
+	* postDeadlineVisibility is 'overdue'.
+	*/
+	function isChoreOverdue(chore, currentTime) {
+		if (chore.completedToday) return false;
+		if (!chore.caughtUp && chore.notCaughtUpDisplay === NotCaughtUpDisplay.OVERDUE) return true;
+		if (chore.deadline && currentTime >= chore.deadline && chore.postDeadlineVisibility === PostDeadlineVisibility.SHOW_OVERDUE) return true;
+		return false;
 	}
 	/**
 	* Get chores filtered for personal view mode
 	*/
-	function getFilteredChores(chores, people, personFilter, todayDayName) {
+	function getFilteredChores(chores, people, personFilter, todayDayName, currentTime) {
 		const filterValue = personFilter?.trim().toLowerCase();
-		if (!filterValue) return chores.filter((chore) => shouldShowChore(chore, todayDayName));
+		if (!filterValue) return chores.filter((chore) => shouldShowChore(chore, todayDayName, currentTime));
 		const filteredPerson = people.find((person) => person.id.toLowerCase() === filterValue) || people.find((person) => person.name.toLowerCase() === filterValue);
 		if (!filteredPerson) return [];
 		return chores.filter((chore) => {
-			if (!shouldShowChore(chore, todayDayName)) return false;
+			if (!shouldShowChore(chore, todayDayName, currentTime)) return false;
 			if (chore.type === "personal") return chore.assignedTo === filteredPerson.id;
 			if (chore.type === "rotating" && chore.rotation?.length) {
 				const currentIndex = chore.rotatingIndex ?? 0;
@@ -1198,11 +1236,11 @@
 		});
 	}
 	/**
-	* Get chores for summary view: all incomplete + all rotating chores, with skip day filtering
+	* Get chores for summary view: all incomplete + all rotating chores, with skip day and time filtering
 	*/
-	function getSummaryChores(chores, todayDayName) {
+	function getSummaryChores(chores, todayDayName, currentTime) {
 		return chores.filter((chore) => {
-			if (!shouldShowChore(chore, todayDayName)) return false;
+			if (!shouldShowChore(chore, todayDayName, currentTime)) return false;
 			if (!chore.completedToday) return true;
 			if (chore.type === "rotating" && chore.rotation?.length) return true;
 			return false;
@@ -1253,8 +1291,11 @@
 		const displayPerson = () => assignedPerson() || currentRotationPerson();
 		const personName = () => displayPerson()?.name ?? "Unassigned";
 		const personColor = () => displayPerson()?.color ?? "#ccc";
-		const deadlineStatus = () => getDeadlineStatus(props.chore.deadline, props.chore.completedToday, props.chore.caughtUp);
-		const deadlineClass = () => deadlineStatus() === DeadlineStatus.COMPLETED ? "completed" : deadlineStatus();
+		const deadlineClass = () => {
+			if (props.chore.completedToday) return "completed";
+			if (isChoreOverdue(props.chore, props.currentTime)) return "overdue";
+			return "normal";
+		};
 		const handleChange = (event) => {
 			const target = event.target;
 			props.onToggle(props.chore.id, target.checked);
@@ -1293,40 +1334,90 @@
 	};
 	//#endregion
 	//#region src/frontend/personal-view.tsx
-	var _tmpl$$5 = /*#__PURE__*/ template(`<div class=chore-list>`), _tmpl$2$3 = /*#__PURE__*/ template(`<div class=empty-state>No chores match the current filter.`);
+	var _tmpl$$5 = /*#__PURE__*/ template(`<div class=chore-list>`), _tmpl$2$3 = /*#__PURE__*/ template(`<div class=chore-list><div class=earlier-chores-container><details class=earlier-chores><summary class=earlier-chores-summary><div class=earlier-chores-header><span class=earlier-chores-title>Earlier chores</span><span class=earlier-chores-count></span></div></summary><div class=earlier-chores-content>`), _tmpl$3$2 = /*#__PURE__*/ template(`<div class=chore-list><div class=empty-state>No chores match the current filter.`);
+	/** Debounce window after the last check/uncheck before moving chores to the earlier section. */
+	var EARLIER_SECTION_DEBOUNCE_MS = 5e3;
 	var PersonalView = (props) => {
 		const visibleChores = createMemo(() => {
 			const data = props.choreData();
-			return getFilteredChores(data.chores, data.people, props.config.personFilter, props.todaysDayOfWeek());
+			return getFilteredChores(data.chores, data.people, props.config.personFilter, props.todaysDayOfWeek(), props.currentTime());
 		});
-		return (() => {
-			var _el$ = _tmpl$$5();
-			insert(_el$, createComponent(Show, {
-				get when() {
-					return visibleChores().length > 0;
-				},
-				get fallback() {
-					return _tmpl$2$3();
-				},
-				get children() {
-					return createComponent(For, {
+		const liveEarlierIds = createMemo(() => {
+			const time = props.currentTime();
+			const ids = /* @__PURE__ */ new Set();
+			for (const chore of visibleChores()) if (isEarlierChore(chore, time)) ids.add(chore.id);
+			return ids;
+		});
+		const [frozenEarlierIds, setFrozenEarlierIds] = createSignal(null);
+		let earlierDebounceTimer;
+		const freezeEarlierSection = () => {
+			setFrozenEarlierIds(liveEarlierIds());
+			if (earlierDebounceTimer) clearTimeout(earlierDebounceTimer);
+			earlierDebounceTimer = window.setTimeout(() => {
+				setFrozenEarlierIds(null);
+			}, EARLIER_SECTION_DEBOUNCE_MS);
+		};
+		const effectiveEarlierIds = createMemo(() => frozenEarlierIds() ?? liveEarlierIds());
+		const mainChores = createMemo(() => visibleChores().filter((chore) => !effectiveEarlierIds().has(chore.id)));
+		const earlierChores = createMemo(() => visibleChores().filter((chore) => effectiveEarlierIds().has(chore.id)));
+		const hasVisibleChores = createMemo(() => mainChores().length > 0 || earlierChores().length > 0);
+		const handleToggle = (choreId, completed) => {
+			freezeEarlierSection();
+			props.onToggle(choreId, completed);
+		};
+		return createComponent(Show, {
+			get when() {
+				return hasVisibleChores();
+			},
+			get fallback() {
+				return _tmpl$3$2();
+			},
+			get children() {
+				return [(() => {
+					var _el$ = _tmpl$$5();
+					insert(_el$, createComponent(For, {
 						get each() {
-							return visibleChores();
+							return mainChores();
 						},
 						children: (chore) => createComponent(ChoreItem, {
 							chore,
 							get people() {
 								return props.choreData().people;
 							},
-							get onToggle() {
-								return props.onToggle;
-							}
+							get currentTime() {
+								return props.currentTime();
+							},
+							onToggle: handleToggle
 						})
-					});
-				}
-			}));
-			return _el$;
-		})();
+					}));
+					return _el$;
+				})(), createComponent(Show, {
+					get when() {
+						return earlierChores().length > 0;
+					},
+					get children() {
+						var _el$2 = _tmpl$2$3(), _el$5 = _el$2.firstChild.firstChild.firstChild, _el$8 = _el$5.firstChild.firstChild.nextSibling, _el$9 = _el$5.nextSibling;
+						insert(_el$8, () => earlierChores().length);
+						insert(_el$9, createComponent(For, {
+							get each() {
+								return earlierChores();
+							},
+							children: (chore) => createComponent(ChoreItem, {
+								chore,
+								get people() {
+									return props.choreData().people;
+								},
+								get currentTime() {
+									return props.currentTime();
+								},
+								onToggle: handleToggle
+							})
+						}));
+						return _el$2;
+					}
+				})];
+			}
+		});
 	};
 	//#endregion
 	//#region src/frontend/incomplete-by-person.tsx
@@ -1467,12 +1558,10 @@
 	var SummaryView = (props) => {
 		const summaryConfig = () => getSummaryConfig(props.config);
 		const visibleChores = createMemo(() => {
-			return getSummaryChores(props.choreData().chores, props.todaysDayOfWeek());
+			return getSummaryChores(props.choreData().chores, props.todaysDayOfWeek(), props.currentTime());
 		});
 		const incompleteChores = createMemo(() => visibleChores().filter((chore) => !chore.completedToday));
-		const overdueChores = createMemo(() => visibleChores().filter((chore) => {
-			return getDeadlineStatus(chore.deadline, chore.completedToday, chore.caughtUp) === DeadlineStatus.OVERDUE;
-		}));
+		const overdueChores = createMemo(() => visibleChores().filter((chore) => isChoreOverdue(chore, props.currentTime())));
 		const rotatingChores = createMemo(() => visibleChores().filter((chore) => chore.type === "rotating"));
 		return (() => {
 			var _el$ = _tmpl$4();
@@ -1562,6 +1651,9 @@
 							get todaysDayOfWeek() {
 								return props.todaysDayOfWeek;
 							},
+							get currentTime() {
+								return props.currentTime;
+							},
 							get config() {
 								return props.config;
 							},
@@ -1575,6 +1667,9 @@
 							choreData: dataAccessor,
 							get todaysDayOfWeek() {
 								return props.todaysDayOfWeek;
+							},
+							get currentTime() {
+								return props.currentTime;
 							},
 							get config() {
 								return props.config;
@@ -1622,17 +1717,21 @@
 			Log.info(`${this.name} is starting`);
 			const [choreData, setChoreData] = createStore({
 				data: null,
-				todaysDayOfWeek: getLocalDayName()
+				todaysDayOfWeek: getLocalDayName(),
+				currentTime: getLocalTimeString()
 			});
 			this.choreDataSignal = () => choreData.data;
 			this.todaysDayOfWeekSignal = () => choreData.todaysDayOfWeek;
+			this.currentTimeSignal = () => choreData.currentTime;
 			this.setChoreDataAndDay = (data) => {
 				setChoreData("data", reconcile(data));
 				setChoreData("todaysDayOfWeek", getLocalDayName());
+				setChoreData("currentTime", getLocalTimeString());
 			};
 			setInterval(() => {
 				const newDay = getLocalDayName();
 				if (newDay !== choreData.todaysDayOfWeek) setChoreData("todaysDayOfWeek", newDay);
+				setChoreData("currentTime", getLocalTimeString());
 			}, 6e4);
 			this.loadData();
 		},
@@ -1655,8 +1754,9 @@
 			};
 			const choreDataSignal = this.choreDataSignal;
 			const todaysDayOfWeekSignal = this.todaysDayOfWeekSignal;
-			if (!choreDataSignal || !todaysDayOfWeekSignal) {
-				Log.error(`${this.name} choreDataSignal or todaysDayOfWeekSignal is not initialized`);
+			const currentTimeSignal = this.currentTimeSignal;
+			if (!choreDataSignal || !todaysDayOfWeekSignal || !currentTimeSignal) {
+				Log.error(`${this.name} a required signal is not initialized`);
 				return container;
 			}
 			render(() => {
@@ -1664,6 +1764,7 @@
 				return createComponent(App, {
 					choreData: choreDataSignal,
 					todaysDayOfWeek: todaysDayOfWeekSignal,
+					currentTime: currentTimeSignal,
 					get config() {
 						return _self$.config;
 					},

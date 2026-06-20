@@ -2,7 +2,14 @@ import { render } from '@solidjs/testing-library';
 import { describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import type { Person, RotatingChore } from '../types/chore-types';
-import { ChoreType, DayOfWeek, SkipDayVisibility } from '../types/chore-types';
+import {
+  BeforeStartTimeVisibility,
+  ChoreType,
+  DayOfWeek,
+  NotCaughtUpDisplay,
+  PostDeadlineVisibility,
+  SkipDayVisibility,
+} from '../types/chore-types';
 import { RotatingChoreCard } from './rotating-chore';
 
 describe('RotatingChoreCard', () => {
@@ -20,6 +27,9 @@ describe('RotatingChoreCard', () => {
     rotatingIndex: 0,
     skipDays: [],
     skipDayVisibility: SkipDayVisibility.HIDE,
+    beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+    postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+    notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
     caughtUp: false,
     completedToday: false,
   };

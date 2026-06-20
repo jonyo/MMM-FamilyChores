@@ -3,7 +3,13 @@ import { createSignal } from 'solid-js';
 import { describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import type { Chore, DayOfWeek, FamilyChoresData, Person } from '../types/chore-types';
-import { ChoreType, SkipDayVisibility } from '../types/chore-types';
+import {
+  BeforeStartTimeVisibility,
+  ChoreType,
+  NotCaughtUpDisplay,
+  PostDeadlineVisibility,
+  SkipDayVisibility,
+} from '../types/chore-types';
 import type { Config } from '../types/config';
 import { App } from './app';
 import { ChoreItem } from './chore-item';
@@ -14,6 +20,7 @@ import { RotatingChoreInline } from './rotating-chore-inline';
 import { SummaryView } from './summary-view';
 
 const mockTodaysDayOfWeek = () => 'monday' as DayOfWeek;
+const mockCurrentTime = () => '10:00';
 
 const mockPeople: Person[] = [
   { id: 'p1', name: 'Alice', color: '#FF6B6B' },
@@ -27,6 +34,9 @@ const mockPersonalChore: Chore = {
   assignedTo: 'p1',
   skipDays: [],
   skipDayVisibility: SkipDayVisibility.HIDE,
+  beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+  postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+  notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
   caughtUp: true,
   completedToday: false,
 };
@@ -39,6 +49,9 @@ const mockRotatingChore: Chore = {
   rotatingIndex: 0,
   skipDays: [],
   skipDayVisibility: SkipDayVisibility.HIDE,
+  beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+  postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+  notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
   caughtUp: true,
   completedToday: false,
 };
@@ -55,7 +68,14 @@ describe('Frontend Component Tests', () => {
   describe('ChoreItem', () => {
     it('should render personal chore with assigned person', async () => {
       const onToggle = vi.fn();
-      render(() => <ChoreItem chore={mockPersonalChore} people={mockPeople} onToggle={onToggle} />);
+      render(() => (
+        <ChoreItem
+          chore={mockPersonalChore}
+          people={mockPeople}
+          currentTime={mockCurrentTime()}
+          onToggle={onToggle}
+        />
+      ));
 
       await expect.element(page.getByTestId('chore-item')).toBeVisible();
       await expect.element(page.getByText('Take out trash')).toBeVisible();
@@ -64,7 +84,14 @@ describe('Frontend Component Tests', () => {
 
     it('should render rotating chore with current rotation person', async () => {
       const onToggle = vi.fn();
-      render(() => <ChoreItem chore={mockRotatingChore} people={mockPeople} onToggle={onToggle} />);
+      render(() => (
+        <ChoreItem
+          chore={mockRotatingChore}
+          people={mockPeople}
+          currentTime={mockCurrentTime()}
+          onToggle={onToggle}
+        />
+      ));
 
       await expect.element(page.getByText('Clean kitchen')).toBeVisible();
       await expect.element(page.getByText('Alice')).toBeVisible();
@@ -72,7 +99,14 @@ describe('Frontend Component Tests', () => {
 
     it('should call onToggle when checkbox is changed', async () => {
       const onToggle = vi.fn();
-      render(() => <ChoreItem chore={mockPersonalChore} people={mockPeople} onToggle={onToggle} />);
+      render(() => (
+        <ChoreItem
+          chore={mockPersonalChore}
+          people={mockPeople}
+          currentTime={mockCurrentTime()}
+          onToggle={onToggle}
+        />
+      ));
 
       const checkbox = page.getByTestId('chore-checkbox');
       await expect.element(checkbox).toBeVisible();
@@ -115,6 +149,7 @@ describe('Frontend Component Tests', () => {
         <PersonalView
           choreData={choreData}
           todaysDayOfWeek={mockTodaysDayOfWeek}
+          currentTime={mockCurrentTime}
           config={{ viewMode: 'personal', personFilter: null } as Config}
           onToggle={vi.fn()}
         />
@@ -141,6 +176,7 @@ describe('Frontend Component Tests', () => {
         <PersonalView
           choreData={choreData}
           todaysDayOfWeek={todaysDayOfWeek}
+          currentTime={mockCurrentTime}
           config={{ viewMode: 'personal', personFilter: null } as Config}
           onToggle={vi.fn()}
         />
@@ -162,6 +198,7 @@ describe('Frontend Component Tests', () => {
         <PersonalView
           choreData={choreData}
           todaysDayOfWeek={mockTodaysDayOfWeek}
+          currentTime={mockCurrentTime}
           config={{ viewMode: 'personal', personFilter: null } as Config}
           onToggle={vi.fn()}
         />
@@ -210,6 +247,7 @@ describe('Frontend Component Tests', () => {
         <SummaryView
           choreData={choreData}
           todaysDayOfWeek={mockTodaysDayOfWeek}
+          currentTime={mockCurrentTime}
           config={
             {
               viewMode: 'summary',
@@ -238,6 +276,7 @@ describe('Frontend Component Tests', () => {
         <SummaryView
           choreData={choreData}
           todaysDayOfWeek={mockTodaysDayOfWeek}
+          currentTime={mockCurrentTime}
           config={
             {
               viewMode: 'summary',
@@ -278,6 +317,7 @@ describe('Frontend Component Tests', () => {
         <SummaryView
           choreData={choreData}
           todaysDayOfWeek={todaysDayOfWeek}
+          currentTime={mockCurrentTime}
           config={
             {
               viewMode: 'summary',
@@ -309,6 +349,7 @@ describe('Frontend Component Tests', () => {
         <SummaryView
           choreData={choreData}
           todaysDayOfWeek={mockTodaysDayOfWeek}
+          currentTime={mockCurrentTime}
           config={
             {
               viewMode: 'summary',
@@ -340,6 +381,7 @@ describe('Frontend Component Tests', () => {
         <App
           choreData={choreData}
           todaysDayOfWeek={mockTodaysDayOfWeek}
+          currentTime={mockCurrentTime}
           config={{ viewMode: 'personal', personFilter: null } as Config}
           onToggle={vi.fn()}
         />
@@ -354,6 +396,7 @@ describe('Frontend Component Tests', () => {
         <App
           choreData={choreData}
           todaysDayOfWeek={mockTodaysDayOfWeek}
+          currentTime={mockCurrentTime}
           config={{ viewMode: 'personal', personFilter: null } as Config}
           onToggle={vi.fn()}
         />
@@ -369,6 +412,7 @@ describe('Frontend Component Tests', () => {
         <App
           choreData={choreData}
           todaysDayOfWeek={mockTodaysDayOfWeek}
+          currentTime={mockCurrentTime}
           config={
             {
               viewMode: 'summary',

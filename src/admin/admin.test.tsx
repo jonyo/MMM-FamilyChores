@@ -2,7 +2,13 @@ import { render } from '@solidjs/testing-library';
 import { describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import type { FamilyChoresData } from '../types/chore-types';
-import { ChoreType, SkipDayVisibility } from '../types/chore-types';
+import {
+  BeforeStartTimeVisibility,
+  ChoreType,
+  NotCaughtUpDisplay,
+  PostDeadlineVisibility,
+  SkipDayVisibility,
+} from '../types/chore-types';
 import { Admin } from './admin';
 
 // Mock fetch API
@@ -24,6 +30,9 @@ describe('Admin Component Tests', () => {
             assignedTo: 'p1',
             skipDays: [],
             skipDayVisibility: SkipDayVisibility.HIDE,
+            beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+            postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+            notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
             caughtUp: true,
             completedToday: false,
           },

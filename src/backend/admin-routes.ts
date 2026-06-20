@@ -7,7 +7,13 @@ import type {
   Person,
   Settings,
 } from '../types/chore-types';
-import { ChoreType, SkipDayVisibility } from '../types/chore-types';
+import {
+  BeforeStartTimeVisibility,
+  ChoreType,
+  NotCaughtUpDisplay,
+  PostDeadlineVisibility,
+  SkipDayVisibility,
+} from '../types/chore-types';
 import type {
   CopyChoresRequest,
   CreateChoreRequest,
@@ -20,6 +26,7 @@ import type {
 import type { ApiErrorBody } from '../types/response-types';
 import { getLocalDateString } from '../utils/date';
 import { generateUUID } from '../utils/uuid';
+import { upgradeData } from './data-upgrade';
 import {
   validateChore,
   validateDailyCompletion,
@@ -239,9 +246,13 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
           assignedTo,
           rotation,
           rotatingIndex,
+          startTime,
           deadline,
           skipDays,
           skipDayVisibility,
+          beforeStartTimeVisibility,
+          postDeadlineVisibility,
+          notCaughtUpDisplay,
         } = req.body as CreateChoreRequest;
         const choreData = context.getChoreData();
 
@@ -255,9 +266,13 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
           id: generateUUID(),
           name: name?.trim() || '',
           type,
+          startTime: startTime?.trim(),
           deadline: deadline?.trim(),
           skipDays: skipDays || [],
           skipDayVisibility: skipDayVisibility || SkipDayVisibility.SHOW_IF_OVERDUE,
+          beforeStartTimeVisibility: beforeStartTimeVisibility || BeforeStartTimeVisibility.HIDE,
+          postDeadlineVisibility: postDeadlineVisibility || PostDeadlineVisibility.SHOW_OVERDUE,
+          notCaughtUpDisplay: notCaughtUpDisplay || NotCaughtUpDisplay.OVERDUE,
           // Default to caught up since this is a new chore
           caughtUp: true,
           completedToday: false,
@@ -302,9 +317,13 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
           assignedTo,
           rotation,
           rotatingIndex,
+          startTime,
           deadline,
           skipDays,
           skipDayVisibility,
+          beforeStartTimeVisibility,
+          postDeadlineVisibility,
+          notCaughtUpDisplay,
         } = req.body as UpdateChoreRequest;
         const choreData = context.getChoreData();
 
@@ -327,9 +346,13 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         const updatedChore: Record<string, unknown> = {
           ...chore,
           name: name ? name.trim() : chore.name,
+          startTime: startTime ? startTime.trim() : chore.startTime,
           deadline: deadline ? deadline.trim() : chore.deadline,
           skipDays: skipDays || chore.skipDays,
           skipDayVisibility: skipDayVisibility || chore.skipDayVisibility,
+          beforeStartTimeVisibility: beforeStartTimeVisibility || chore.beforeStartTimeVisibility,
+          postDeadlineVisibility: postDeadlineVisibility || chore.postDeadlineVisibility,
+          notCaughtUpDisplay: notCaughtUpDisplay || chore.notCaughtUpDisplay,
         };
 
         // Handle type-specific fields
@@ -426,9 +449,17 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
           return;
         }
 
+        // Upgrade older data formats before validation (additive, idempotent)
+        const upgradedData = upgradeData(restoredData as unknown as Record<string, unknown>);
+        const restoredChores = Array.isArray(upgradedData.chores) ? upgradedData.chores : [];
+        const restoredPeople = Array.isArray(upgradedData.people) ? upgradedData.people : [];
+        const restoredCompletions = Array.isArray(upgradedData.dailyCompletions)
+          ? upgradedData.dailyCompletions
+          : [];
+
         // Validate all people
         const validPeople: Person[] = [];
-        for (const person of restoredData.people) {
+        for (const person of restoredPeople) {
           const validation = validatePerson(person);
           if (!validation.valid) {
             res.status(400).json(apiErr(`Invalid person data: ${validation.error}`));
@@ -439,7 +470,7 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
 
         // Validate all chores
         const validChores: Chore[] = [];
-        for (const chore of restoredData.chores) {
+        for (const chore of restoredChores) {
           const validation = validateChore(chore, validPeople);
           if (!validation.valid) {
             res.status(400).json(apiErr(`Invalid chore data: ${validation.error}`));
@@ -449,7 +480,7 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         }
 
         // Validate settings if provided
-        const rawSettings = restoredData.settings ?? { historyEnabled: true };
+        const rawSettings = upgradedData.settings ?? { historyEnabled: true };
         const settingsValidation = validateSettings(rawSettings);
         if (!settingsValidation.valid) {
           res.status(400).json(apiErr(`Invalid settings: ${settingsValidation.error}`));
@@ -463,26 +494,27 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         const cutoffDateString = getLocalDateString(cutoffDate);
 
         const validCompletions: DailyCompletion[] = [];
-        if (Array.isArray(restoredData.dailyCompletions)) {
-          for (const completion of restoredData.dailyCompletions) {
-            const validation = validateDailyCompletion(completion, validChores);
-            if (!validation.valid) {
-              Log.warn(`Skipping invalid daily completion in restore data: ${validation.error}`);
-              continue;
-            }
-            const completionObj = completion as DailyCompletion;
-            if (completionObj.date < cutoffDateString) {
-              continue;
-            }
-            validCompletions.push(completionObj);
+        for (const completion of restoredCompletions) {
+          const validation = validateDailyCompletion(completion, validChores);
+          if (!validation.valid) {
+            Log.warn(`Skipping invalid daily completion in restore data: ${validation.error}`);
+            continue;
           }
+          const completionObj = completion as DailyCompletion;
+          if (completionObj.date < cutoffDateString) {
+            continue;
+          }
+          validCompletions.push(completionObj);
         }
 
         context.setChoreData({
           people: validPeople,
           chores: validChores,
           dailyCompletions: validCompletions,
-          lastResetDate: restoredData.lastResetDate ?? getLocalDateString(),
+          lastResetDate:
+            typeof upgradedData.lastResetDate === 'string'
+              ? upgradedData.lastResetDate
+              : getLocalDateString(),
           settings: rawSettings as Settings,
         });
         context.saveChoreData();
@@ -538,9 +570,13 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
             name: chore.name,
             type: ChoreType.PERSONAL,
             assignedTo: toPersonId,
+            startTime: chore.startTime,
             deadline: chore.deadline,
             skipDays: chore.skipDays,
             skipDayVisibility: chore.skipDayVisibility,
+            beforeStartTimeVisibility: chore.beforeStartTimeVisibility,
+            postDeadlineVisibility: chore.postDeadlineVisibility,
+            notCaughtUpDisplay: chore.notCaughtUpDisplay,
             caughtUp: true,
             completedToday: false,
           };

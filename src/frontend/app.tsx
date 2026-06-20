@@ -10,6 +10,8 @@ interface AppProps {
   choreData: Accessor<FamilyChoresData | null>;
   /** Reactive accessor for today's day of week (updates at midnight) */
   todaysDayOfWeek: Accessor<DayOfWeek>;
+  /** Reactive accessor for current local time in HH:MM (updates every minute) */
+  currentTime: Accessor<string>;
   /** Module configuration */
   config: Config;
   /** Callback when a chore checkbox is toggled */
@@ -27,6 +29,7 @@ export const App: Component<AppProps> = (props) => {
               <PersonalView
                 choreData={dataAccessor}
                 todaysDayOfWeek={props.todaysDayOfWeek}
+                currentTime={props.currentTime}
                 config={props.config}
                 onToggle={props.onToggle}
               />
@@ -35,6 +38,7 @@ export const App: Component<AppProps> = (props) => {
             <SummaryView
               choreData={dataAccessor}
               todaysDayOfWeek={props.todaysDayOfWeek}
+              currentTime={props.currentTime}
               config={props.config}
               onToggle={props.onToggle}
             />

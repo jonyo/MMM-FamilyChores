@@ -3,7 +3,14 @@ import { describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import { createChore, updateChore } from '../api';
 import type { Person, PersonalChore } from '../types/chore-types';
-import { ChoreType, DayOfWeek, SkipDayVisibility } from '../types/chore-types';
+import {
+  BeforeStartTimeVisibility,
+  ChoreType,
+  DayOfWeek,
+  NotCaughtUpDisplay,
+  PostDeadlineVisibility,
+  SkipDayVisibility,
+} from '../types/chore-types';
 import { PersonalChoreModal } from './personal-chore-modal';
 import { MockAdminProvider } from './test-utils';
 
@@ -171,6 +178,9 @@ describe('PersonalChoreModal', () => {
         assignedTo: 'p1',
         skipDays: [DayOfWeek.SUNDAY],
         skipDayVisibility: SkipDayVisibility.SHOW_IF_OVERDUE,
+        beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+        postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+        notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
         caughtUp: true,
         completedToday: false,
         deadline: '21:00',
@@ -208,6 +218,9 @@ describe('PersonalChoreModal', () => {
         assignedTo: 'p1',
         skipDays: [DayOfWeek.SUNDAY],
         skipDayVisibility: SkipDayVisibility.SHOW_IF_OVERDUE,
+        beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+        postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+        notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
         caughtUp: true,
         completedToday: false,
         deadline: '21:00',
@@ -240,6 +253,9 @@ describe('PersonalChoreModal', () => {
         assignedTo: 'p1',
         skipDays: [DayOfWeek.SUNDAY],
         skipDayVisibility: SkipDayVisibility.SHOW_IF_OVERDUE,
+        beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+        postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+        notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
         caughtUp: true,
         completedToday: false,
         deadline: '21:00',

@@ -12,6 +12,31 @@ export enum SkipDayVisibility {
   SHOW_ALWAYS = 'show-always', // Always show, carry over completion state
 }
 
+/**
+ * Controls how a chore is handled after its deadline
+ */
+export enum PostDeadlineVisibility {
+  SHOW_NORMAL = 'normal',
+  SHOW_OVERDUE = 'overdue',
+  MOVE_TO_EARLIER = 'earlier',
+}
+
+/**
+ * Controls whether a missed chore is shown before its startTime
+ */
+export enum BeforeStartTimeVisibility {
+  HIDE = 'hide',
+  SHOW_IF_OVERDUE = 'show-if-overdue',
+}
+
+/**
+ * Controls how a chore that is not caught up is displayed
+ */
+export enum NotCaughtUpDisplay {
+  NORMAL = 'normal',
+  OVERDUE = 'overdue',
+}
+
 export enum DayOfWeek {
   SUNDAY = 'sunday',
   MONDAY = 'monday',
@@ -46,6 +71,10 @@ type ChoreBase = {
   id: UUID;
   name: string;
   /**
+   * Time in 24-hour format when the chore first becomes visible
+   */
+  startTime?: string;
+  /**
    * Time in 24-hour format "08:00", "21:00"
    */
   deadline?: string;
@@ -57,6 +86,18 @@ type ChoreBase = {
    * How to handle display on skip days
    */
   skipDayVisibility: SkipDayVisibility;
+  /**
+   * Controls whether a missed chore is shown before its startTime
+   */
+  beforeStartTimeVisibility: BeforeStartTimeVisibility;
+  /**
+   * Controls whether the chore remains visible after its deadline when not completed
+   */
+  postDeadlineVisibility: PostDeadlineVisibility;
+  /**
+   * Controls how a chore that is not caught up is displayed
+   */
+  notCaughtUpDisplay: NotCaughtUpDisplay;
   /**
    * true if completed yesterday (false = start day with "overdue" styling)
    */

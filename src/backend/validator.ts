@@ -1,5 +1,12 @@
 import type { Chore, Person } from '../types/chore-types';
-import { ChoreType, DayOfWeek, SkipDayVisibility } from '../types/chore-types';
+import {
+  BeforeStartTimeVisibility,
+  ChoreType,
+  DayOfWeek,
+  NotCaughtUpDisplay,
+  PostDeadlineVisibility,
+  SkipDayVisibility,
+} from '../types/chore-types';
 import { isValidUUID } from '../utils/uuid';
 
 type ValidatedResult = { valid: true } | { valid: false; error: string };
@@ -63,6 +70,19 @@ export const validateChore = (chore: unknown | Chore, people: Person[]): Validat
     return { valid: false, error: 'Chore type must be either "personal" or "rotating"' };
   }
 
+  // Validate startTime (optional, but must be HH:MM if present)
+  if (choreObj.startTime !== undefined) {
+    if (typeof choreObj.startTime !== 'string') {
+      return { valid: false, error: 'Chore startTime must be a string' };
+    }
+    if (!choreObj.startTime.match(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)) {
+      return {
+        valid: false,
+        error: 'Chore startTime must be in 24-hour format (e.g., "08:00" or "21:00")',
+      };
+    }
+  }
+
   // Validate deadline (optional, but must be HH:MM if present)
   if (choreObj.deadline !== undefined) {
     if (typeof choreObj.deadline !== 'string') {
@@ -74,6 +94,15 @@ export const validateChore = (chore: unknown | Chore, people: Person[]): Validat
         error: 'Chore deadline must be in 24-hour format (e.g., "08:00" or "21:00")',
       };
     }
+  }
+
+  // If both startTime and deadline are set, startTime must be before deadline
+  if (
+    typeof choreObj.startTime === 'string' &&
+    typeof choreObj.deadline === 'string' &&
+    choreObj.startTime >= choreObj.deadline
+  ) {
+    return { valid: false, error: 'Chore startTime must be before deadline' };
   }
 
   // Validate skipDays (required, must be array of DayOfWeek enum values)
@@ -97,6 +126,52 @@ export const validateChore = (chore: unknown | Chore, people: Person[]): Validat
     return {
       valid: false,
       error: 'Chore skipDayVisibility must be "hide", "show-if-overdue", or "show-always"',
+    };
+  }
+
+  // Validate beforeStartTimeVisibility (required, must be valid enum value)
+  if (
+    !choreObj.beforeStartTimeVisibility ||
+    typeof choreObj.beforeStartTimeVisibility !== 'string'
+  ) {
+    return { valid: false, error: 'Chore must have a beforeStartTimeVisibility' };
+  }
+  if (
+    !Object.values(BeforeStartTimeVisibility).includes(
+      choreObj.beforeStartTimeVisibility as BeforeStartTimeVisibility
+    )
+  ) {
+    return {
+      valid: false,
+      error: 'Chore beforeStartTimeVisibility must be "hide" or "show-if-overdue"',
+    };
+  }
+
+  // Validate postDeadlineVisibility (required, must be valid enum value)
+  if (!choreObj.postDeadlineVisibility || typeof choreObj.postDeadlineVisibility !== 'string') {
+    return { valid: false, error: 'Chore must have a postDeadlineVisibility' };
+  }
+  if (
+    !Object.values(PostDeadlineVisibility).includes(
+      choreObj.postDeadlineVisibility as PostDeadlineVisibility
+    )
+  ) {
+    return {
+      valid: false,
+      error: 'Chore postDeadlineVisibility must be "normal", "overdue", or "earlier"',
+    };
+  }
+
+  // Validate notCaughtUpDisplay (required, must be valid enum value)
+  if (!choreObj.notCaughtUpDisplay || typeof choreObj.notCaughtUpDisplay !== 'string') {
+    return { valid: false, error: 'Chore must have a notCaughtUpDisplay' };
+  }
+  if (
+    !Object.values(NotCaughtUpDisplay).includes(choreObj.notCaughtUpDisplay as NotCaughtUpDisplay)
+  ) {
+    return {
+      valid: false,
+      error: 'Chore notCaughtUpDisplay must be "normal" or "overdue"',
     };
   }
 

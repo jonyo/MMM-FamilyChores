@@ -1,7 +1,13 @@
 import * as fs from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Chore, FamilyChoresData, PersonalChore, RotatingChore } from '../types/chore-types';
-import { ChoreType, SkipDayVisibility } from '../types/chore-types';
+import {
+  BeforeStartTimeVisibility,
+  ChoreType,
+  NotCaughtUpDisplay,
+  PostDeadlineVisibility,
+  SkipDayVisibility,
+} from '../types/chore-types';
 import type { Config } from '../types/config';
 import type {
   ChoreTogglePayload,
@@ -105,6 +111,9 @@ describe('Node Helper Tests', () => {
           deadline: undefined,
           skipDays: [],
           skipDayVisibility: SkipDayVisibility.HIDE,
+          beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+          postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+          notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
         },
         {
           id: '2',
@@ -117,6 +126,9 @@ describe('Node Helper Tests', () => {
           deadline: undefined,
           skipDays: [],
           skipDayVisibility: SkipDayVisibility.HIDE,
+          beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+          postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+          notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
         },
         {
           id: '3',
@@ -128,6 +140,9 @@ describe('Node Helper Tests', () => {
           deadline: undefined,
           skipDays: [],
           skipDayVisibility: SkipDayVisibility.HIDE,
+          beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+          postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+          notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
         },
         {
           id: '4',
@@ -139,6 +154,9 @@ describe('Node Helper Tests', () => {
           deadline: undefined,
           skipDays: [],
           skipDayVisibility: SkipDayVisibility.HIDE,
+          beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+          postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+          notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
         },
       ],
       lastResetDate: getLocalDateString(),
@@ -627,6 +645,9 @@ describe('Node Helper Tests', () => {
           caughtUp: true,
           skipDays: [],
           skipDayVisibility: SkipDayVisibility.HIDE,
+          beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+          postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+          notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
         },
         {
           id: '2',
@@ -637,6 +658,9 @@ describe('Node Helper Tests', () => {
           caughtUp: true,
           skipDays: [],
           skipDayVisibility: SkipDayVisibility.HIDE,
+          beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+          postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+          notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
         },
       ],
       dailyCompletions: [],
@@ -1004,6 +1028,9 @@ describe('Node Helper Tests', () => {
             completedToday: false,
             skipDays: [],
             skipDayVisibility: SkipDayVisibility.HIDE,
+            beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+            postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+            notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
             caughtUp: false,
           },
         ],
@@ -1093,6 +1120,9 @@ describe('Node Helper Tests', () => {
             completedToday: true,
             skipDays: [],
             skipDayVisibility: SkipDayVisibility.HIDE,
+            beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+            postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+            notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
             caughtUp: false,
           },
           {
@@ -1103,6 +1133,9 @@ describe('Node Helper Tests', () => {
             completedToday: true,
             skipDays: [],
             skipDayVisibility: SkipDayVisibility.HIDE,
+            beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+            postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+            notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
             caughtUp: false,
           },
         ],
@@ -1175,6 +1208,9 @@ describe('Node Helper Tests', () => {
             completedToday: false,
             skipDays: [],
             skipDayVisibility: SkipDayVisibility.HIDE,
+            beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+            postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+            notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
             caughtUp: false,
           },
           {
@@ -1186,6 +1222,9 @@ describe('Node Helper Tests', () => {
             completedToday: false,
             skipDays: [],
             skipDayVisibility: SkipDayVisibility.HIDE,
+            beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+            postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+            notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
             caughtUp: false,
           },
         ],

@@ -63,8 +63,14 @@ export const RotatingChoreCard: Component<RotatingChoreCardProps> = (props) => {
         </h3>
         <p class="text-sm text-slate-500">Current: {currentAssignee()}</p>
         <p class="text-sm text-slate-500">Rotation: {rotationText()}</p>
-        <Show when={props.chore.deadline}>
-          <p class="mt-1.25 text-sm text-indigo-600">Deadline: {props.chore.deadline}</p>
+        <Show when={props.chore.deadline || props.chore.startTime}>
+          <p class="mt-1.25 text-sm text-indigo-600">
+            <Show when={props.chore.startTime}>Start: {props.chore.startTime}</Show>
+            <Show when={props.chore.deadline && props.chore.startTime}>
+              <span class="mx-1">|</span>
+            </Show>
+            <Show when={props.chore.deadline}>Deadline: {props.chore.deadline}</Show>
+          </p>
         </Show>
         <p class="mt-1.25 text-sm text-slate-500">
           Skip days: {formatSkipDays(props.chore.skipDays)}

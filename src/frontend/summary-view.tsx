@@ -2,8 +2,7 @@ import type { Accessor, Component } from 'solid-js';
 import { createMemo, For, Show } from 'solid-js';
 import type { DayOfWeek, FamilyChoresData } from '../types/chore-types';
 import type { Config } from '../types/config';
-import { DeadlineStatus, getDeadlineStatus } from '../utils/date';
-import { getSummaryChores, getSummaryConfig } from './chore-filters';
+import { getSummaryChores, getSummaryConfig, isChoreOverdue } from './chore-filters';
 import { IncompleteByPerson } from './incomplete-by-person';
 import { OverdueByPerson } from './overdue-by-person';
 import { RotatingChoreInline } from './rotating-chore-inline';
@@ -13,6 +12,8 @@ interface SummaryViewProps {
   choreData: Accessor<FamilyChoresData>;
   /** Reactive accessor for today's day of week (updates at midnight) */
   todaysDayOfWeek: Accessor<DayOfWeek>;
+  /** Reactive accessor for current local time in HH:MM (updates every minute) */
+  currentTime: Accessor<string>;
   /** Module configuration */
   config: Config;
   /** Callback when a chore checkbox is toggled */
@@ -24,7 +25,7 @@ export const SummaryView: Component<SummaryViewProps> = (props) => {
 
   const visibleChores = createMemo(() => {
     const data = props.choreData();
-    return getSummaryChores(data.chores, props.todaysDayOfWeek());
+    return getSummaryChores(data.chores, props.todaysDayOfWeek(), props.currentTime());
   });
 
   const incompleteChores = createMemo(() =>
@@ -32,10 +33,7 @@ export const SummaryView: Component<SummaryViewProps> = (props) => {
   );
 
   const overdueChores = createMemo(() =>
-    visibleChores().filter((chore) => {
-      const status = getDeadlineStatus(chore.deadline, chore.completedToday, chore.caughtUp);
-      return status === DeadlineStatus.OVERDUE;
-    })
+    visibleChores().filter((chore) => isChoreOverdue(chore, props.currentTime()))
   );
 
   const rotatingChores = createMemo(() =>

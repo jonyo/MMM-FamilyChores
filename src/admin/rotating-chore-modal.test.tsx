@@ -2,7 +2,13 @@ import { render } from '@solidjs/testing-library';
 import { describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import { createChore, updateChore } from '../api';
-import { DayOfWeek, SkipDayVisibility } from '../types/chore-types';
+import {
+  BeforeStartTimeVisibility,
+  DayOfWeek,
+  NotCaughtUpDisplay,
+  PostDeadlineVisibility,
+  SkipDayVisibility,
+} from '../types/chore-types';
 import { RotatingChoreModal } from './rotating-chore-modal';
 import { MockAdminProvider } from './test-utils';
 
@@ -137,6 +143,9 @@ describe('RotatingChoreModal', () => {
         rotatingIndex: 0,
         skipDays: [DayOfWeek.SUNDAY],
         skipDayVisibility: SkipDayVisibility.SHOW_IF_OVERDUE,
+        beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+        postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+        notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
         caughtUp: true,
         completedToday: false,
         deadline: '20:00',
@@ -175,6 +184,9 @@ describe('RotatingChoreModal', () => {
         rotatingIndex: 0,
         skipDays: [DayOfWeek.SUNDAY],
         skipDayVisibility: SkipDayVisibility.SHOW_IF_OVERDUE,
+        beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+        postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+        notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
         caughtUp: true,
         completedToday: false,
         deadline: '20:00',
@@ -204,6 +216,9 @@ describe('RotatingChoreModal', () => {
         rotatingIndex: 0,
         skipDays: [DayOfWeek.SUNDAY],
         skipDayVisibility: SkipDayVisibility.SHOW_IF_OVERDUE,
+        beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+        postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+        notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
         caughtUp: true,
         completedToday: false,
         deadline: '20:00',
@@ -241,6 +256,9 @@ describe('RotatingChoreModal', () => {
         rotatingIndex: 0,
         skipDays: [],
         skipDayVisibility: SkipDayVisibility.HIDE,
+        beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+        postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+        notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
         caughtUp: true,
         completedToday: false,
       } as import('../types/chore-types').RotatingChore;
@@ -296,6 +314,9 @@ describe('RotatingChoreModal', () => {
         rotatingIndex: 0,
         skipDays: [],
         skipDayVisibility: SkipDayVisibility.HIDE,
+        beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+        postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+        notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
         caughtUp: true,
         completedToday: false,
       } as import('../types/chore-types').RotatingChore;

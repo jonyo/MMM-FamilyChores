@@ -2,13 +2,15 @@ import type { Component } from 'solid-js';
 import type { Chore, Person } from '../types/chore-types';
 import { ChoreType } from '../types/chore-types';
 import { escapeHtml } from '../utils/browser';
-import { DeadlineStatus, getDeadlineStatus } from '../utils/date';
+import { isChoreOverdue } from './chore-filters';
 
 interface ChoreItemProps {
   /** The chore to display */
   chore: Chore;
   /** All people for looking up assigned person */
   people: Person[];
+  /** Current local time in HH:MM */
+  currentTime: string;
   /** Callback when checkbox is toggled */
   onToggle: (choreId: string, completed: boolean) => void;
 }
@@ -34,11 +36,15 @@ export const ChoreItem: Component<ChoreItemProps> = (props) => {
   const personName = () => displayPerson()?.name ?? 'Unassigned';
   const personColor = () => displayPerson()?.color ?? '#ccc';
 
-  const deadlineStatus = () =>
-    getDeadlineStatus(props.chore.deadline, props.chore.completedToday, props.chore.caughtUp);
-
-  const deadlineClass = () =>
-    deadlineStatus() === DeadlineStatus.COMPLETED ? 'completed' : deadlineStatus();
+  const deadlineClass = () => {
+    if (props.chore.completedToday) {
+      return 'completed';
+    }
+    if (isChoreOverdue(props.chore, props.currentTime)) {
+      return 'overdue';
+    }
+    return 'normal';
+  };
 
   const handleChange = (event: Event) => {
     const target = event.target as HTMLInputElement;

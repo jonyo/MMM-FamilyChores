@@ -304,3 +304,72 @@
   font-style: italic;
   text-align: left;
 }
+
+/* Earlier chores collapsed section */
+.MMM-FamilyChores .earlier-chores {
+  margin-top: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+}
+
+.MMM-FamilyChores .earlier-chores-summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 10px;
+}
+
+.MMM-FamilyChores .earlier-chores-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.MMM-FamilyChores .earlier-chores-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 6px;
+  flex: 1;
+}
+
+.MMM-FamilyChores .earlier-chores-count {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+.MMM-FamilyChores .earlier-chores-container {
+  container-type: inline-size;
+  grid-column: 1 / -1;
+}
+
+.MMM-FamilyChores .earlier-chores-content {
+  display: none;
+  padding: 0 10px 10px;
+}
+
+.MMM-FamilyChores .earlier-chores[open] .earlier-chores-content {
+  display: block;
+}
+
+.MMM-FamilyChores .earlier-chores-content > .chore-item + .chore-item {
+  margin-top: 8px;
+}
+
+@container (min-width: 450px) {
+  .MMM-FamilyChores .earlier-chores[open] .earlier-chores-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .MMM-FamilyChores .earlier-chores-content > .chore-item + .chore-item {
+    margin-top: 0;
+  }
+}

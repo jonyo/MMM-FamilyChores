@@ -434,9 +434,13 @@ export const MainPage: Component = () => {
                                 <h4 class="mb-1.5 text-base text-slate-900">
                                   {escapeHtml(chore.name)}
                                 </h4>
-                                <Show when={chore.deadline}>
+                                <Show when={chore.deadline || chore.startTime}>
                                   <p class="mt-1.25 text-sm text-indigo-600">
-                                    Deadline: {chore.deadline}
+                                    <Show when={chore.startTime}>Start: {chore.startTime}</Show>
+                                    <Show when={chore.deadline && chore.startTime}>
+                                      <span class="mx-1">|</span>
+                                    </Show>
+                                    <Show when={chore.deadline}>Deadline: {chore.deadline}</Show>
                                   </p>
                                 </Show>
                                 <p class="mt-1.25 text-sm text-slate-500">

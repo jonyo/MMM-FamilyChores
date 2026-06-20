@@ -3,7 +3,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import { resetCaughtUp } from '../api';
 import type { PersonalChore, RotatingChore } from '../types/chore-types';
-import { ChoreType, SkipDayVisibility } from '../types/chore-types';
+import {
+  BeforeStartTimeVisibility,
+  ChoreType,
+  NotCaughtUpDisplay,
+  PostDeadlineVisibility,
+  SkipDayVisibility,
+} from '../types/chore-types';
 import { ResetCaughtUpModal } from './reset-caught-up-modal';
 import { MockAdminProvider } from './test-utils';
 
@@ -22,6 +28,9 @@ const mockPersonalChore: PersonalChore = {
   assignedTo: 'person-1',
   skipDays: [],
   skipDayVisibility: SkipDayVisibility.HIDE,
+  beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+  postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+  notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
   caughtUp: false,
   completedToday: false,
 };
@@ -34,6 +43,9 @@ const mockRotatingChore: RotatingChore = {
   rotatingIndex: 1,
   skipDays: [],
   skipDayVisibility: SkipDayVisibility.HIDE,
+  beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+  postDeadlineVisibility: PostDeadlineVisibility.SHOW_OVERDUE,
+  notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
   caughtUp: false,
   completedToday: false,
 };

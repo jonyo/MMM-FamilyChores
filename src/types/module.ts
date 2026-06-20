@@ -40,6 +40,7 @@ export interface FamilyChoresModule extends Omit<MagicMirrorModule<Config>, 'get
   // Per-instance Solid state — never shared across module instances
   choreDataSignal?: Accessor<FamilyChoresData | null>;
   todaysDayOfWeekSignal?: Accessor<DayOfWeek>;
+  currentTimeSignal?: Accessor<string>;
   setChoreDataAndDay?: (data: FamilyChoresData) => void;
   rootContainer?: HTMLElement;
 
