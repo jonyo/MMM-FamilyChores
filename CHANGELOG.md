@@ -14,6 +14,8 @@ All notable changes to this project will be documented in this file.
   - `afterDeadlineVisibility`: show normally, show as overdue, or move to "Earlier chores" after `deadline`
   - `notCaughtUpDisplay`: show not-caught-up chores as overdue or normal
   - `skipDayVisibility`: hide, always show, or show if overdue on skip days
+- Add hidden later-chores indicator in personal view when chores with a future `startTime` are not yet visible
+- Add per-person "+N later" note in the summary incomplete section when a person has hidden later-start chores
 - Add dynamic InfoBox descriptions with styled info icon for each Advanced Display Options setting
 - Add `Earlier chores` collapsed section in personal view for chores whose deadline has passed; completed chores move there automatically and incomplete chores with "Move to earlier chores" move there too
 - Add shared 5-second debounce after the last check/uncheck before moving chores into the "Earlier chores" section so the UI does not shift while the user is interacting

@@ -106,6 +106,78 @@ export function isChoreOverdue(chore: Chore, currentTime: string): boolean {
 }
 
 /**
+ * Determine if a chore is hidden because its startTime has not been reached yet.
+ *
+ * A chore is considered hidden by start time when it:
+ * - is not hidden by skip-day settings,
+ * - has a startTime that is in the future,
+ * - is not completed today,
+ * - and is configured to hide before startTime (or is caught up with SHOW_IF_OVERDUE).
+ */
+export function isHiddenByStartTime(
+  chore: Chore,
+  todayDayName: DayOfWeek,
+  currentTime: string
+): boolean {
+  const skipDays = chore.skipDays;
+  if (skipDays.includes(todayDayName)) {
+    const skipDayVisibility = chore.skipDayVisibility;
+    if (skipDayVisibility === SkipDayVisibility.HIDE) {
+      return false;
+    }
+    if (skipDayVisibility === SkipDayVisibility.SHOW_IF_OVERDUE && chore.caughtUp) {
+      return false;
+    }
+  }
+
+  if (!chore.startTime || currentTime >= chore.startTime) {
+    return false;
+  }
+
+  if (chore.completedToday) {
+    return false;
+  }
+
+  if (chore.beforeStartTimeVisibility === BeforeStartTimeVisibility.SHOW_IF_OVERDUE) {
+    return chore.caughtUp;
+  }
+
+  return chore.beforeStartTimeVisibility === BeforeStartTimeVisibility.HIDE;
+}
+
+/**
+ * Get chores that are currently hidden because their startTime has not been reached yet.
+ */
+export function getHiddenLaterChores(
+  chores: Chore[],
+  people: Person[],
+  personFilter: string | null | undefined,
+  todayDayName: DayOfWeek,
+  currentTime: string
+): Chore[] {
+  const filterValue = personFilter?.trim().toLowerCase();
+  const filteredPerson = filterValue
+    ? people.find((person) => person.id.toLowerCase() === filterValue) ||
+      people.find((person) => person.name.toLowerCase() === filterValue)
+    : null;
+
+  return chores.filter((chore) => {
+    if (filteredPerson) {
+      if (chore.type === 'personal') {
+        if (chore.assignedTo !== filteredPerson.id) return false;
+      } else if (chore.type === 'rotating' && chore.rotation?.length) {
+        const currentIndex = chore.rotatingIndex ?? 0;
+        if (chore.rotation[currentIndex] !== filteredPerson.id) return false;
+      } else {
+        return false;
+      }
+    }
+
+    return isHiddenByStartTime(chore, todayDayName, currentTime);
+  });
+}
+
+/**
  * Get chores filtered for personal view mode
  */
 export function getFilteredChores(

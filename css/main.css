@@ -305,6 +305,40 @@
   text-align: left;
 }
 
+/* Later chores indicator */
+.MMM-FamilyChores .later-chores-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.MMM-FamilyChores .later-chores-icon {
+  font-size: 1rem;
+  line-height: 1;
+  opacity: 0.8;
+}
+
+.MMM-FamilyChores .later-chores-text {
+  opacity: 0.9;
+}
+
+.MMM-FamilyChores .later-count-note {
+  font-size: 0.8rem;
+  font-weight: 400;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.55);
+  margin-left: 4px;
+}
+
 /* Earlier chores collapsed section */
 .MMM-FamilyChores .earlier-chores {
   margin-top: 10px;

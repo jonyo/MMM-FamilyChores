@@ -2,7 +2,12 @@ import type { Accessor, Component } from 'solid-js';
 import { createMemo, For, Show } from 'solid-js';
 import type { DayOfWeek, FamilyChoresData } from '../types/chore-types';
 import type { Config } from '../types/config';
-import { getSummaryChores, getSummaryConfig, isChoreOverdue } from './chore-filters';
+import {
+  getHiddenLaterChores,
+  getSummaryChores,
+  getSummaryConfig,
+  isChoreOverdue,
+} from './chore-filters';
 import { IncompleteByPerson } from './incomplete-by-person';
 import { OverdueByPerson } from './overdue-by-person';
 import { RotatingChoreInline } from './rotating-chore-inline';
@@ -40,6 +45,16 @@ export const SummaryView: Component<SummaryViewProps> = (props) => {
     visibleChores().filter((chore) => chore.type === 'rotating')
   );
 
+  const hiddenLaterChores = createMemo(() =>
+    getHiddenLaterChores(
+      props.choreData().chores,
+      props.choreData().people,
+      props.config.personFilter,
+      props.todaysDayOfWeek(),
+      props.currentTime()
+    )
+  );
+
   return (
     <div class="summary-view">
       <Show when={summaryConfig().showIncomplete && incompleteChores().length > 0}>
@@ -49,6 +64,7 @@ export const SummaryView: Component<SummaryViewProps> = (props) => {
             <IncompleteByPerson
               incompleteChores={incompleteChores()}
               people={props.choreData().people}
+              hiddenLaterChores={hiddenLaterChores()}
             />
           </div>
         </div>

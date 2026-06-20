@@ -206,6 +206,59 @@ describe('Frontend Component Tests', () => {
 
       await expect.element(page.getByText('No chores match the current filter.')).toBeVisible();
     });
+
+    it('should show a hidden later-chores indicator when start time has not been reached', async () => {
+      const laterChore: Chore = {
+        ...mockPersonalChore,
+        id: 'c-later',
+        name: 'Later chore',
+        startTime: '12:00',
+        beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+      };
+      const [choreData] = createSignal<FamilyChoresData>({
+        ...mockChoreData,
+        chores: [laterChore],
+      });
+      render(() => (
+        <PersonalView
+          choreData={choreData}
+          todaysDayOfWeek={mockTodaysDayOfWeek}
+          currentTime={mockCurrentTime}
+          config={{ viewMode: 'personal', personFilter: null } as Config}
+          onToggle={vi.fn()}
+        />
+      ));
+
+      await expect.element(page.getByTestId('later-chores-indicator')).toBeVisible();
+      await expect.element(page.getByText('1 more chore starts later')).toBeVisible();
+      expect(page.getByText('No chores match the current filter.').elements().length).toBe(0);
+    });
+
+    it('should not show the hidden later-chores indicator when the start time has passed', async () => {
+      const laterChore: Chore = {
+        ...mockPersonalChore,
+        id: 'c-later',
+        name: 'Later chore',
+        startTime: '09:00',
+        beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+      };
+      const [choreData] = createSignal<FamilyChoresData>({
+        ...mockChoreData,
+        chores: [laterChore],
+      });
+      render(() => (
+        <PersonalView
+          choreData={choreData}
+          todaysDayOfWeek={mockTodaysDayOfWeek}
+          currentTime={mockCurrentTime}
+          config={{ viewMode: 'personal', personFilter: null } as Config}
+          onToggle={vi.fn()}
+        />
+      ));
+
+      expect(page.getByTestId('later-chores-indicator').elements().length).toBe(0);
+      await expect.element(page.getByText('Later chore')).toBeVisible();
+    });
   });
 
   describe('IncompleteByPerson', () => {
@@ -222,6 +275,26 @@ describe('Frontend Component Tests', () => {
       render(() => <IncompleteByPerson incompleteChores={[]} people={mockPeople} />);
 
       expect(page.getByText('🎉').elements().length).toBe(2);
+    });
+
+    it('should show a per-person later count when hidden later-start chores exist', async () => {
+      const laterChore: Chore = {
+        ...mockPersonalChore,
+        id: 'c-later',
+        name: 'Later chore',
+        startTime: '12:00',
+        beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+      };
+      render(() => (
+        <IncompleteByPerson
+          incompleteChores={[mockPersonalChore]}
+          people={mockPeople}
+          hiddenLaterChores={[laterChore]}
+        />
+      ));
+
+      await expect.element(page.getByTestId('later-count-note')).toBeVisible();
+      await expect.element(page.getByText('+1 later')).toBeVisible();
     });
   });
 
@@ -341,6 +414,45 @@ describe('Frontend Component Tests', () => {
       setTodaysDayOfWeek('tuesday' as DayOfWeek);
 
       await expect.element(page.getByText('Incomplete')).toBeVisible();
+    });
+
+    it('should show a hidden later-chores note in the incomplete section', async () => {
+      const laterChore: Chore = {
+        ...mockPersonalChore,
+        id: 'c-later-summary',
+        name: 'Later summary chore',
+        startTime: '12:00',
+        beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+      };
+      const [choreData] = createSignal<FamilyChoresData>({
+        ...mockChoreData,
+        chores: [mockPersonalChore, laterChore],
+      });
+      render(() => (
+        <SummaryView
+          choreData={choreData}
+          todaysDayOfWeek={mockTodaysDayOfWeek}
+          currentTime={mockCurrentTime}
+          config={
+            {
+              viewMode: 'summary',
+              personFilter: null,
+              summary: {
+                showIncomplete: true,
+                showRotating: false,
+                showOverdue: false,
+                incompleteTitle: 'Incomplete',
+                rotatingTitle: 'Rotating',
+                overdueTitle: 'Overdue',
+              },
+            } as Config
+          }
+          onToggle={vi.fn()}
+        />
+      ));
+
+      await expect.element(page.getByTestId('later-count-note')).toBeVisible();
+      await expect.element(page.getByText('+1 later')).toBeVisible();
     });
 
     it('should not render sections when disabled', async () => {

@@ -2,8 +2,9 @@ import type { Accessor, Component } from 'solid-js';
 import { createMemo, createSignal, For, Show } from 'solid-js';
 import type { DayOfWeek, FamilyChoresData } from '../types/chore-types';
 import type { Config } from '../types/config';
-import { getFilteredChores, isEarlierChore } from './chore-filters';
+import { getFilteredChores, getHiddenLaterChores, isEarlierChore } from './chore-filters';
 import { ChoreItem } from './chore-item';
+import { LaterChoresIndicator } from './later-chores-indicator';
 
 /** Debounce window after the last check/uncheck before moving chores to the earlier section. */
 const EARLIER_SECTION_DEBOUNCE_MS = 5000;
@@ -69,7 +70,20 @@ export const PersonalView: Component<PersonalViewProps> = (props) => {
     visibleChores().filter((chore) => effectiveEarlierIds().has(chore.id))
   );
 
-  const hasVisibleChores = createMemo(() => mainChores().length > 0 || earlierChores().length > 0);
+  const hiddenLaterChores = createMemo(() => {
+    const data = props.choreData();
+    return getHiddenLaterChores(
+      data.chores,
+      data.people,
+      props.config.personFilter,
+      props.todaysDayOfWeek(),
+      props.currentTime()
+    );
+  });
+
+  const hasVisibleChores = createMemo(
+    () => mainChores().length > 0 || earlierChores().length > 0 || hiddenLaterChores().length > 0
+  );
 
   const handleToggle = (choreId: string, completed: boolean) => {
     freezeEarlierSection();
@@ -96,6 +110,9 @@ export const PersonalView: Component<PersonalViewProps> = (props) => {
             />
           )}
         </For>
+        <Show when={hiddenLaterChores().length > 0}>
+          <LaterChoresIndicator count={hiddenLaterChores().length} />
+        </Show>
       </div>
 
       <Show when={earlierChores().length > 0}>
