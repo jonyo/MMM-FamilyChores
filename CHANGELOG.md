@@ -2,24 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.4.0](https://github.com/jonyo/MMM-FamilyChores/compare/v1.3.2...v1.4.0) (2026-06-19)
+## [1.4.0](https://github.com/jonyo/MMM-FamilyChores/compare/v1.3.2...v1.4.0) (2026-06-20)
 
 ### Added
 - Add optional `startTime` field to chores so chores can stay hidden until a specific time
 - Add "Advanced Display Options" accordion to chore modals with:
-  - `beforeStartTimeVisibility`: hide or show missed chores before `startTime`
-  - `postDeadlineVisibility`: show normally, show as overdue, or move to "Earlier chores" after `deadline`
-  - `notCaughtUpDisplay`: show missed chores as overdue or normal
+  - `beforeStartTimeVisibility`: hide or show not-caught-up chores before `startTime`
+  - `afterDeadlineVisibility`: show normally, show as overdue, or move to "Earlier chores" after `deadline`
+  - `notCaughtUpDisplay`: show not-caught-up chores as overdue or normal
+  - `skipDayVisibility`: hide, always show, or show if overdue on skip days
+- Add dynamic InfoBox descriptions with styled info icon for each Advanced Display Options setting
 - Add `Earlier chores` collapsed section in personal view for chores whose deadline has passed; completed chores move there automatically and incomplete chores with "Move to earlier chores" move there too
 - Add shared 5-second debounce after the last check/uncheck before moving chores into the "Earlier chores" section so the UI does not shift while the user is interacting
-- Add `data-upgrade.ts` module to safely fill default values for older `data.json` files and normalize the previous `hide` post-deadline value to the new `earlier` behavior
+- Add `data-upgrade.ts` module to safely fill default values for missing display-option fields in older `data.json` files
 - Add validation for `startTime` format and enforce `startTime < deadline` when both are set
 - Add clear buttons to start time and deadline inputs in chore modals
 - Show `startTime` alongside `deadline` in admin chore lists
+- Add tests for `DisplayOptionsSection` component covering dynamic option descriptions
 
 ### Changed
-- `PostDeadlineVisibility` enum values are now `normal`, `overdue`, and `earlier` instead of `show-overdue` and `hide`
-- Move `startTime` before `deadline` in all forms, types, and data construction
+- Move skip day visibility setting into the Advanced Display Options accordion
 
 ## [1.3.2](https://github.com/jonyo/MMM-FamilyChores/compare/v1.3.1...v1.3.2) (2026-06-16)
 
