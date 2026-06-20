@@ -2444,7 +2444,7 @@
 	})();
 	//#endregion
 	//#region src/admin/display-options-section.tsx
-	var _tmpl$$8 = /*#__PURE__*/ template(`<span class="text-xs text-indigo-600">Customized`), _tmpl$2$8 = /*#__PURE__*/ template(`<strong>Hide:`), _tmpl$3$7 = /*#__PURE__*/ template(`<br>`), _tmpl$4$6 = /*#__PURE__*/ template(`<strong>Show if overdue:`), _tmpl$5$4 = /*#__PURE__*/ template(`<div><label for=beforeStartTimeVisibility class="mb-1.5 block font-medium text-slate-900">Before start time</label><select id=beforeStartTimeVisibility class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option>Hide</option><option>Show if overdue`), _tmpl$6$3 = /*#__PURE__*/ template(`<strong>Show normally:`), _tmpl$7$3 = /*#__PURE__*/ template(`<strong>Show as overdue:`), _tmpl$8$3 = /*#__PURE__*/ template(`<strong>Move to earlier chores:`), _tmpl$9$2 = /*#__PURE__*/ template(`<div><label for=postDeadlineVisibility class="mb-1.5 block font-medium text-slate-900">After deadline</label><select id=postDeadlineVisibility class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option>Show normally</option><option>Show as overdue</option><option>Move to earlier chores`), _tmpl$0 = /*#__PURE__*/ template(`<strong>Overdue:`), _tmpl$1 = /*#__PURE__*/ template(`<strong>Normal:`), _tmpl$10 = /*#__PURE__*/ template(`<span class="text-xs text-slate-500">*Previous non-skip day.`), _tmpl$11 = /*#__PURE__*/ template(`<details class="mb-5 rounded-lg border border-slate-200"><summary class="cursor-pointer list-none p-3 font-medium text-slate-900"><div class="flex items-center justify-between"><span>Advanced Display Options</span></div></summary><div class="space-y-4 p-3 pt-0"><div><label for=notCaughtUpDisplay class="mb-1.5 block font-medium text-slate-900">When not completed yesterday*, show as</label><select id=notCaughtUpDisplay class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option>Overdue</option><option>Normal`);
+	var _tmpl$$8 = /*#__PURE__*/ template(`<span class="text-xs text-indigo-600">Customized`), _tmpl$2$8 = /*#__PURE__*/ template(`<strong>Hide:`), _tmpl$3$7 = /*#__PURE__*/ template(`<br>`), _tmpl$4$6 = /*#__PURE__*/ template(`<strong>Show if overdue:`), _tmpl$5$4 = /*#__PURE__*/ template(`<div><label for=beforeStartTimeVisibility class="mb-1.5 block font-medium text-slate-900">Before start time</label><select id=beforeStartTimeVisibility class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option>Hide</option><option>Show if overdue`), _tmpl$6$3 = /*#__PURE__*/ template(`<strong>Show normally:`), _tmpl$7$3 = /*#__PURE__*/ template(`<strong>Show as overdue:`), _tmpl$8$3 = /*#__PURE__*/ template(`<strong>Move to earlier chores:`), _tmpl$9$2 = /*#__PURE__*/ template(`<div><label for=postDeadlineVisibility class="mb-1.5 block font-medium text-slate-900">After deadline</label><select id=postDeadlineVisibility class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option>Show normally</option><option>Show as overdue</option><option>Move to earlier chores`), _tmpl$0 = /*#__PURE__*/ template(`<strong>Overdue:`), _tmpl$1 = /*#__PURE__*/ template(`<strong>Normal:`), _tmpl$10 = /*#__PURE__*/ template(`<details class="mb-5 rounded-lg border border-slate-200"><summary class="cursor-pointer list-none p-3 font-medium text-slate-900"><div class="flex items-center justify-between"><span>Advanced Display Options</span><div class="flex items-center gap-2"><span class="text-lg leading-none"></span></div></div></summary><div class="space-y-4 p-3 pt-0"><div><div class="mb-1.5 flex items-center"><label for=notCaughtUpDisplay class="block font-medium text-slate-900">If not completed, next day show as:</label></div><select id=notCaughtUpDisplay class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option>Overdue</option><option>Normal`);
 	/**
 	* Collapsible "Advanced Display Options" section shared by both chore modals.
 	* Options that do not apply to the current settings are hidden.
@@ -2456,26 +2456,30 @@
 			if (props.notCaughtUpDisplay() !== NotCaughtUpDisplay.OVERDUE) return true;
 			return false;
 		});
+		const [isOpen, setIsOpen] = createSignal(untrack(() => hasNonDefaultValue()));
+		const handleToggle = (e) => {
+			setIsOpen(e.newState === "open");
+		};
 		return (() => {
-			var _el$ = _tmpl$11(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild;
-			_el$3.firstChild;
-			var _el$6 = _el$2.nextSibling, _el$24 = _el$6.firstChild, _el$26 = _el$24.firstChild.nextSibling, _el$27 = _el$26.firstChild, _el$28 = _el$27.nextSibling;
-			insert(_el$3, createComponent(Show, {
+			var _el$ = _tmpl$10(), _el$2 = _el$.firstChild, _el$5 = _el$2.firstChild.firstChild.nextSibling, _el$7 = _el$5.firstChild, _el$8 = _el$2.nextSibling, _el$26 = _el$8.firstChild, _el$28 = _el$26.firstChild.nextSibling, _el$29 = _el$28.firstChild, _el$30 = _el$29.nextSibling;
+			addEventListener(_el$, "toggle", handleToggle);
+			insert(_el$5, createComponent(Show, {
 				get when() {
 					return hasNonDefaultValue();
 				},
 				get children() {
 					return _tmpl$$8();
 				}
-			}), null);
-			insert(_el$6, createComponent(Show, {
+			}), _el$7);
+			insert(_el$7, () => isOpen() ? "−" : "+");
+			insert(_el$8, createComponent(Show, {
 				get when() {
 					return props.startTime();
 				},
 				get children() {
-					var _el$7 = _tmpl$5$4(), _el$9 = _el$7.firstChild.nextSibling, _el$0 = _el$9.firstChild, _el$1 = _el$0.nextSibling;
-					_el$9.$$input = (e) => props.setBeforeStartTimeVisibility(e.currentTarget.value);
-					insert(_el$7, createComponent(InfoBox, { get children() {
+					var _el$9 = _tmpl$5$4(), _el$1 = _el$9.firstChild.nextSibling, _el$10 = _el$1.firstChild, _el$11 = _el$10.nextSibling;
+					_el$1.$$input = (e) => props.setBeforeStartTimeVisibility(e.currentTarget.value);
+					insert(_el$9, createComponent(InfoBox, { get children() {
 						return [
 							_tmpl$2$8(),
 							" The chore stays hidden until its start time even if it was missed previously.",
@@ -2484,20 +2488,20 @@
 							" A missed chore appears before its start time so it can be caught up early."
 						];
 					} }), null);
-					createRenderEffect(() => _el$0.value = BeforeStartTimeVisibility.HIDE);
-					createRenderEffect(() => _el$1.value = BeforeStartTimeVisibility.SHOW_IF_OVERDUE);
-					createRenderEffect(() => _el$9.value = props.beforeStartTimeVisibility());
-					return _el$7;
+					createRenderEffect(() => _el$10.value = BeforeStartTimeVisibility.HIDE);
+					createRenderEffect(() => _el$11.value = BeforeStartTimeVisibility.SHOW_IF_OVERDUE);
+					createRenderEffect(() => _el$1.value = props.beforeStartTimeVisibility());
+					return _el$9;
 				}
-			}), _el$24);
-			insert(_el$6, createComponent(Show, {
+			}), _el$26);
+			insert(_el$8, createComponent(Show, {
 				get when() {
 					return props.deadline();
 				},
 				get children() {
-					var _el$13 = _tmpl$9$2(), _el$15 = _el$13.firstChild.nextSibling, _el$16 = _el$15.firstChild, _el$17 = _el$16.nextSibling, _el$18 = _el$17.nextSibling;
-					_el$15.$$input = (e) => props.setPostDeadlineVisibility(e.currentTarget.value);
-					insert(_el$13, createComponent(InfoBox, { get children() {
+					var _el$15 = _tmpl$9$2(), _el$17 = _el$15.firstChild.nextSibling, _el$18 = _el$17.firstChild, _el$19 = _el$18.nextSibling, _el$20 = _el$19.nextSibling;
+					_el$17.$$input = (e) => props.setPostDeadlineVisibility(e.currentTarget.value);
+					insert(_el$15, createComponent(InfoBox, { get children() {
 						return [
 							_tmpl$6$3(),
 							" The chore stays in the main list after the deadline.",
@@ -2509,29 +2513,27 @@
 							" The chore moves to the collapsed \"Earlier chores\" section after the deadline."
 						];
 					} }), null);
-					createRenderEffect(() => _el$16.value = PostDeadlineVisibility.SHOW_NORMAL);
-					createRenderEffect(() => _el$17.value = PostDeadlineVisibility.SHOW_OVERDUE);
-					createRenderEffect(() => _el$18.value = PostDeadlineVisibility.MOVE_TO_EARLIER);
-					createRenderEffect(() => _el$15.value = props.postDeadlineVisibility());
-					return _el$13;
+					createRenderEffect(() => _el$18.value = PostDeadlineVisibility.SHOW_NORMAL);
+					createRenderEffect(() => _el$19.value = PostDeadlineVisibility.SHOW_OVERDUE);
+					createRenderEffect(() => _el$20.value = PostDeadlineVisibility.MOVE_TO_EARLIER);
+					createRenderEffect(() => _el$17.value = props.postDeadlineVisibility());
+					return _el$15;
 				}
-			}), _el$24);
-			_el$26.$$input = (e) => props.setNotCaughtUpDisplay(e.currentTarget.value);
-			insert(_el$24, createComponent(InfoBox, { get children() {
+			}), _el$26);
+			_el$28.$$input = (e) => props.setNotCaughtUpDisplay(e.currentTarget.value);
+			insert(_el$26, createComponent(InfoBox, { get children() {
 				return [
 					_tmpl$0(),
 					" A chore missed on the previous non-skip day starts the day as overdue (yellow).",
 					_tmpl$3$7(),
 					_tmpl$1(),
-					" A missed chore starts the day looking normal until its deadline passes.",
-					_tmpl$3$7(),
-					_tmpl$10()
+					" A missed chore starts the day looking normal until its deadline passes."
 				];
 			} }), null);
-			createRenderEffect(() => _el$.open = hasNonDefaultValue());
-			createRenderEffect(() => _el$27.value = NotCaughtUpDisplay.OVERDUE);
-			createRenderEffect(() => _el$28.value = NotCaughtUpDisplay.NORMAL);
-			createRenderEffect(() => _el$26.value = props.notCaughtUpDisplay());
+			createRenderEffect(() => _el$.open = isOpen());
+			createRenderEffect(() => _el$29.value = NotCaughtUpDisplay.OVERDUE);
+			createRenderEffect(() => _el$30.value = NotCaughtUpDisplay.NORMAL);
+			createRenderEffect(() => _el$28.value = props.notCaughtUpDisplay());
 			return _el$;
 		})();
 	};

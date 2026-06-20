@@ -1,5 +1,5 @@
 import type { Accessor, Component } from 'solid-js';
-import { createMemo, Show } from 'solid-js';
+import { createMemo, createSignal, Show, untrack } from 'solid-js';
 import type {
   BeforeStartTimeVisibility,
   NotCaughtUpDisplay,
@@ -55,14 +55,27 @@ export const DisplayOptionsSection: Component<DisplayOptionsSectionProps> = (pro
     return false;
   });
 
+  const [isOpen, setIsOpen] = createSignal(untrack(() => hasNonDefaultValue()));
+
+  const handleToggle = (e: ToggleEvent) => {
+    setIsOpen(e.newState === 'open');
+  };
+
   return (
-    <details class="mb-5 rounded-lg border border-slate-200" open={hasNonDefaultValue()}>
+    <details
+      class="mb-5 rounded-lg border border-slate-200"
+      open={isOpen()}
+      on:toggle={handleToggle}
+    >
       <summary class="cursor-pointer list-none p-3 font-medium text-slate-900">
         <div class="flex items-center justify-between">
           <span>Advanced Display Options</span>
-          <Show when={hasNonDefaultValue()}>
-            <span class="text-xs text-indigo-600">Customized</span>
-          </Show>
+          <div class="flex items-center gap-2">
+            <Show when={hasNonDefaultValue()}>
+              <span class="text-xs text-indigo-600">Customized</span>
+            </Show>
+            <span class="text-lg leading-none">{isOpen() ? '−' : '+'}</span>
+          </div>
         </div>
       </summary>
       <div class="space-y-4 p-3 pt-0">
@@ -126,9 +139,11 @@ export const DisplayOptionsSection: Component<DisplayOptionsSectionProps> = (pro
         </Show>
 
         <div>
-          <label for="notCaughtUpDisplay" class="mb-1.5 block font-medium text-slate-900">
-            When not completed yesterday*, show as
-          </label>
+          <div class="mb-1.5 flex items-center">
+            <label for="notCaughtUpDisplay" class="block font-medium text-slate-900">
+              If not completed, next day show as:
+            </label>
+          </div>
           <select
             id="notCaughtUpDisplay"
             value={props.notCaughtUpDisplay()}
@@ -146,8 +161,6 @@ export const DisplayOptionsSection: Component<DisplayOptionsSectionProps> = (pro
             <br />
             <strong>Normal:</strong> A missed chore starts the day looking normal until its deadline
             passes.
-            <br />
-            <span class="text-xs text-slate-500">*Previous non-skip day.</span>
           </InfoBox>
         </div>
       </div>
