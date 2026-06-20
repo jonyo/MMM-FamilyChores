@@ -5,6 +5,9 @@ All notable changes to this project will be documented in this file.
 ## [1.4.0](https://github.com/jonyo/MMM-FamilyChores/compare/v1.3.2...v1.4.0) (2026-06-20)
 
 ### Added
+- Add tabbed navigation to the admin panel: People, Rotation Chores, and System Actions
+- Add accordion to People tab so each person card starts collapsed, showing only name, color, and personal-chore count
+- Add circular expand/collapse toggle per person card; expanded cards reveal the existing Add Chore, Copy Chores, and chore list UI
 - Add optional `startTime` field to chores so chores can stay hidden until a specific time
 - Add "Advanced Display Options" accordion to chore modals with:
   - `beforeStartTimeVisibility`: hide or show not-caught-up chores before `startTime`
@@ -21,6 +24,7 @@ All notable changes to this project will be documented in this file.
 - Add tests for `DisplayOptionsSection` component covering dynamic option descriptions
 
 ### Changed
+- Split admin main page into dedicated tab components: `people-tab`, `rotating-chores-tab`, `system-actions-tab`, and `person-card`
 - Move skip day visibility setting into the Advanced Display Options accordion
 
 ## [1.3.2](https://github.com/jonyo/MMM-FamilyChores/compare/v1.3.1...v1.3.2) (2026-06-16)

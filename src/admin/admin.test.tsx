@@ -51,13 +51,15 @@ describe('Admin Component Tests', () => {
 
       render(() => <Admin />);
 
-      // Verify people are displayed
-      await expect.element(page.getByText('People')).toBeVisible();
+      // Verify the People tab is active and people are displayed
+      await expect.element(page.getByRole('button', { name: 'People' })).toBeVisible();
 
       const personCards = page.getByTestId('person-card').elements();
       expect(personCards.length).toBe(2);
       expect(personCards[0].textContent).toContain('Alice');
       expect(personCards[1].textContent).toContain('Bob');
+      // Verify the collapsed accordion view shows the personal chore count
+      expect(personCards[0].textContent).toContain('1 personal chore');
     });
   });
 
@@ -154,6 +156,11 @@ describe('Admin Component Tests', () => {
 
       render(() => <Admin />);
 
+      // Expand the first person's accordion to reveal the Add Chore button
+      const expandButtons = page.getByTestId('expand-person-chores');
+      await expect.element(expandButtons.first()).toBeVisible();
+      await expandButtons.first().click();
+
       // Find the "Add Chore" button for Alice (first person)
       const addChoreButtons = page.getByRole('button', { name: 'Add Chore' });
       const aliceAddChoreButton = addChoreButtons.first();
@@ -173,6 +180,47 @@ describe('Admin Component Tests', () => {
       await expect
         .element(page.getByTestId('modal-content'))
         .toHaveTextContent('Add Personal Chore');
+    });
+  });
+
+  describe('Tabs', () => {
+    it('should switch between tabs', async () => {
+      const mockData: FamilyChoresData = {
+        people: [
+          { id: 'p1', name: 'Alice', color: '#FF6B6B' },
+          { id: 'p2', name: 'Bob', color: '#4ECDC4' },
+        ],
+        chores: [],
+        dailyCompletions: [],
+        lastResetDate: '2024-01-01',
+        settings: {
+          historyEnabled: true,
+        },
+      };
+
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockData,
+      } as Response);
+
+      render(() => <Admin />);
+
+      await expect.element(page.getByRole('button', { name: 'People' })).toBeVisible();
+      await expect.element(page.getByRole('button', { name: 'Rotation Chores' })).toBeVisible();
+      await expect.element(page.getByRole('button', { name: 'System Actions' })).toBeVisible();
+
+      // Verify default People tab is active
+      await expect.element(page.getByTestId('people-section')).toBeVisible();
+      expect(page.getByTestId('system-actions-section').elements().length).toBe(0);
+
+      // Switch to System Actions tab
+      await page.getByRole('button', { name: 'System Actions' }).click();
+      await expect.element(page.getByTestId('system-actions-section')).toBeVisible();
+      expect(page.getByTestId('people-section').elements().length).toBe(0);
+
+      // Switch to Rotation Chores tab
+      await page.getByRole('button', { name: 'Rotation Chores' }).click();
+      await expect.element(page.getByTestId('rotating-chores-section')).toBeVisible();
     });
   });
 });

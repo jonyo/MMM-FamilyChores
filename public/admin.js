@@ -1624,10 +1624,10 @@
 	};
 	//#endregion
 	//#region src/admin/button.tsx
-	var _tmpl$$16 = /*#__PURE__*/ template(`<button class="cursor-pointer rounded-lg border-none px-5 py-2.5 text-sm font-medium transition-all hover:-translate-y-0.5 hover:shadow-md">`);
+	var _tmpl$$20 = /*#__PURE__*/ template(`<button class="cursor-pointer rounded-lg border-none px-5 py-2.5 text-sm font-medium transition-all hover:-translate-y-0.5 hover:shadow-md">`);
 	var Button = (props) => {
 		return (() => {
-			var _el$ = _tmpl$$16();
+			var _el$ = _tmpl$$20();
 			_el$.$$click = (event) => props.onClick?.(event);
 			insert(_el$, () => props.children);
 			createRenderEffect((_p$) => {
@@ -1660,7 +1660,7 @@
 	delegateEvents(["click"]);
 	//#endregion
 	//#region src/admin/tooltip.tsx
-	var _tmpl$$15 = /*#__PURE__*/ template(`<span>`);
+	var _tmpl$$19 = /*#__PURE__*/ template(`<span>`);
 	var Tooltip = (rawProps) => {
 		const props = mergeProps({
 			position: "above",
@@ -1670,7 +1670,7 @@
 			classList: {}
 		}, rawProps);
 		return (() => {
-			var _el$ = _tmpl$$15();
+			var _el$ = _tmpl$$19();
 			insert(_el$, () => props.children);
 			createRenderEffect((_p$) => {
 				var _v$ = {
@@ -1729,14 +1729,14 @@
 	});
 	//#endregion
 	//#region src/admin/pin-field.tsx
-	var _tmpl$$14 = /*#__PURE__*/ template(`<label class="mt-3 flex cursor-pointer items-center gap-2"><input type=checkbox class="size-4.5 cursor-pointer">Remember PIN for 10 minutes`), _tmpl$2$13 = /*#__PURE__*/ template(`<button type=button class="cursor-help text-sm text-indigo-600 underline">Forgot PIN?`), _tmpl$3$11 = /*#__PURE__*/ template(`<div class="mb-5 rounded-lg border border-amber-200 bg-amber-50 p-4"><label for=adminPin class="mb-2 block font-medium text-amber-900">Admin PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=adminPin placeholder="Enter admin PIN"required class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"><button type=button class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100"></button></div><small class="mt-1 block text-sm text-amber-700">PIN is required to make changes</small><div class=mt-1>`);
+	var _tmpl$$18 = /*#__PURE__*/ template(`<label class="mt-3 flex cursor-pointer items-center gap-2"><input type=checkbox class="size-4.5 cursor-pointer">Remember PIN for 10 minutes`), _tmpl$2$14 = /*#__PURE__*/ template(`<button type=button class="cursor-help text-sm text-indigo-600 underline">Forgot PIN?`), _tmpl$3$12 = /*#__PURE__*/ template(`<div class="mb-5 rounded-lg border border-amber-200 bg-amber-50 p-4"><label for=adminPin class="mb-2 block font-medium text-amber-900">Admin PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=adminPin placeholder="Enter admin PIN"required class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"><button type=button class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100"></button></div><small class="mt-1 block text-sm text-amber-700">PIN is required to make changes</small><div class=mt-1>`);
 	/**
 	* Reusable PIN input field for admin modals.
 	*/
 	var PinField = (props) => {
 		const [showPin, setShowPin] = createSignal(false);
 		return (() => {
-			var _el$ = _tmpl$3$11(), _el$3 = _el$.firstChild.nextSibling, _el$4 = _el$3.firstChild, _el$5 = _el$4.nextSibling, _el$9 = _el$3.nextSibling, _el$0 = _el$9.nextSibling;
+			var _el$ = _tmpl$3$12(), _el$3 = _el$.firstChild.nextSibling, _el$4 = _el$3.firstChild, _el$5 = _el$4.nextSibling, _el$9 = _el$3.nextSibling, _el$0 = _el$9.nextSibling;
 			_el$4.$$input = (e) => props.onPinChange(e.currentTarget.value);
 			_el$5.$$click = () => setShowPin(!showPin());
 			insert(_el$5, createComponent(Show, {
@@ -1751,7 +1751,7 @@
 					return props.onRememberChange;
 				},
 				get children() {
-					var _el$6 = _tmpl$$14(), _el$7 = _el$6.firstChild;
+					var _el$6 = _tmpl$$18(), _el$7 = _el$6.firstChild;
 					_el$7.nextSibling;
 					_el$7.$$input = (e) => props.onRememberChange?.(e.currentTarget.checked);
 					insert(_el$6, createComponent(HelpIcon, {
@@ -1770,7 +1770,7 @@
 				align: "left",
 				multiline: true,
 				get children() {
-					return _tmpl$2$13();
+					return _tmpl$2$14();
 				}
 			}));
 			createRenderEffect(() => setAttribute(_el$4, "type", showPin() ? "text" : "password"));
@@ -1781,7 +1781,7 @@
 	delegateEvents(["input", "click"]);
 	//#endregion
 	//#region src/admin/advance-rotations-modal.tsx
-	var _tmpl$$13 = /*#__PURE__*/ template(`<div class="mb-5 overflow-hidden rounded-lg border border-slate-200"data-testid=rotation-preview-list><div class="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3 border-b border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold tracking-wide text-slate-500 uppercase"><span>Chore</span><span></span><span>Next Up`), _tmpl$2$12 = /*#__PURE__*/ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[560px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"data-testid=advance-rotations-modal><div class="mb-2 flex items-center justify-between"><h3 class="text-2xl text-indigo-600">Advance All Rotations</h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><p class="mb-5 text-sm text-slate-500">Each rotating chore will move to the next person in its rotation. Completion state will be cleared.</p><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$3$10 = /*#__PURE__*/ template(`<p class="my-4 text-slate-500 italic"data-testid=no-chores-message>No rotating chores with 2+ people to advance.`), _tmpl$4$9 = /*#__PURE__*/ template(`<div class="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3 px-4 py-3"><div><span class="font-medium text-slate-800"></span><div class="mt-0.5 text-sm text-slate-500"></div></div><span class="text-lg text-slate-400">→</span><div class="text-sm font-semibold text-indigo-600">`);
+	var _tmpl$$17 = /*#__PURE__*/ template(`<div class="mb-5 overflow-hidden rounded-lg border border-slate-200"data-testid=rotation-preview-list><div class="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3 border-b border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold tracking-wide text-slate-500 uppercase"><span>Chore</span><span></span><span>Next Up`), _tmpl$2$13 = /*#__PURE__*/ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[560px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"data-testid=advance-rotations-modal><div class="mb-2 flex items-center justify-between"><h3 class="text-2xl text-indigo-600">Advance All Rotations</h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><p class="mb-5 text-sm text-slate-500">Each rotating chore will move to the next person in its rotation. Completion state will be cleared.</p><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$3$11 = /*#__PURE__*/ template(`<p class="my-4 text-slate-500 italic"data-testid=no-chores-message>No rotating chores with 2+ people to advance.`), _tmpl$4$9 = /*#__PURE__*/ template(`<div class="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3 px-4 py-3"><div><span class="font-medium text-slate-800"></span><div class="mt-0.5 text-sm text-slate-500"></div></div><span class="text-lg text-slate-400">→</span><div class="text-sm font-semibold text-indigo-600">`);
 	var AdvanceRotationsModal = (props) => {
 		const { choreData, pinRequired, cachedPin, setCachedPin } = useAdminContext();
 		const [pin, setPin] = createSignal("");
@@ -1804,17 +1804,17 @@
 			}
 		};
 		return (() => {
-			var _el$ = _tmpl$2$12(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$5 = _el$3.firstChild.nextSibling, _el$9 = _el$3.nextSibling.nextSibling;
+			var _el$ = _tmpl$2$13(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$5 = _el$3.firstChild.nextSibling, _el$9 = _el$3.nextSibling.nextSibling;
 			_el$5.$$click = () => props.closeModal();
 			insert(_el$2, createComponent(Show, {
 				get when() {
 					return advanceable().length > 0;
 				},
 				get fallback() {
-					return _tmpl$3$10();
+					return _tmpl$3$11();
 				},
 				get children() {
-					var _el$7 = _tmpl$$13();
+					var _el$7 = _tmpl$$17();
 					_el$7.firstChild;
 					insert(_el$7, createComponent(For, {
 						get each() {
@@ -1974,7 +1974,7 @@
 	};
 	//#endregion
 	//#region src/admin/chore-history-modal.tsx
-	var _tmpl$$12 = /*#__PURE__*/ template(`<div class="mb-5 rounded-md border border-amber-200 bg-amber-50 p-4"><div class=flex><div class=shrink-0><svg class="size-5 text-amber-400"viewBox="0 0 20 20"fill=currentColor aria-hidden=true><path fill-rule=evenodd d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"clip-rule=evenodd></path></svg></div><div class=ml-3><p class="text-sm font-medium text-amber-800">History tracking is currently disabled</p><p class="mt-1 text-sm text-amber-700">No new completion entries will be recorded until history is re-enabled in settings.`), _tmpl$2$11 = /*#__PURE__*/ template(`<div class="py-4 text-center text-slate-500">Loading history...`), _tmpl$3$9 = /*#__PURE__*/ template(`<div class=overflow-x-auto><table class="w-full border-collapse border border-slate-200"data-testid=history-table><thead><tr><th class="border border-slate-200 p-2.5 text-left text-base font-medium whitespace-nowrap text-slate-900">Chore</th></tr></thead><tbody>`), _tmpl$4$8 = /*#__PURE__*/ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"data-testid=modal><div class="max-h-[90vh] w-[90%] max-w-[95vw] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"data-testid=modal-content><div class="mb-5 flex items-center justify-between"><h3 class="text-2xl text-indigo-600">'s Chore History</h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$5$6 = /*#__PURE__*/ template(`<th class="relative h-[100px] w-[50px] overflow-visible border border-slate-200 p-2.5 text-left text-base font-medium text-slate-900"><span class="absolute top-1/2 left-1/2 -translate-1/2 -rotate-90 whitespace-nowrap">`), _tmpl$6$6 = /*#__PURE__*/ template(`<tr><td class="border border-slate-200 p-2.5 text-base whitespace-nowrap text-slate-900">`), _tmpl$7$5 = /*#__PURE__*/ template(`<td class="border border-slate-200 p-2.5 text-center">`), _tmpl$8$4 = /*#__PURE__*/ template(`<span style=opacity:0;width:32px;height:32px;display:inline-block>`);
+	var _tmpl$$16 = /*#__PURE__*/ template(`<div class="mb-5 rounded-md border border-amber-200 bg-amber-50 p-4"><div class=flex><div class=shrink-0><svg class="size-5 text-amber-400"viewBox="0 0 20 20"fill=currentColor aria-hidden=true><path fill-rule=evenodd d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"clip-rule=evenodd></path></svg></div><div class=ml-3><p class="text-sm font-medium text-amber-800">History tracking is currently disabled</p><p class="mt-1 text-sm text-amber-700">No new completion entries will be recorded until history is re-enabled in settings.`), _tmpl$2$12 = /*#__PURE__*/ template(`<div class="py-4 text-center text-slate-500">Loading history...`), _tmpl$3$10 = /*#__PURE__*/ template(`<div class=overflow-x-auto><table class="w-full border-collapse border border-slate-200"data-testid=history-table><thead><tr><th class="border border-slate-200 p-2.5 text-left text-base font-medium whitespace-nowrap text-slate-900">Chore</th></tr></thead><tbody>`), _tmpl$4$8 = /*#__PURE__*/ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"data-testid=modal><div class="max-h-[90vh] w-[90%] max-w-[95vw] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"data-testid=modal-content><div class="mb-5 flex items-center justify-between"><h3 class="text-2xl text-indigo-600">'s Chore History</h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$5$6 = /*#__PURE__*/ template(`<th class="relative h-[100px] w-[50px] overflow-visible border border-slate-200 p-2.5 text-left text-base font-medium text-slate-900"><span class="absolute top-1/2 left-1/2 -translate-1/2 -rotate-90 whitespace-nowrap">`), _tmpl$6$6 = /*#__PURE__*/ template(`<tr><td class="border border-slate-200 p-2.5 text-base whitespace-nowrap text-slate-900">`), _tmpl$7$5 = /*#__PURE__*/ template(`<td class="border border-slate-200 p-2.5 text-center">`), _tmpl$8$3 = /*#__PURE__*/ template(`<span style=opacity:0;width:32px;height:32px;display:inline-block>`);
 	var ChoreHistoryModal = (props) => {
 		const { choreData, loadData } = useAdminContext();
 		const [loading, setLoading] = createSignal(true);
@@ -2024,7 +2024,7 @@
 					return memo(() => !!!loading())() && !choreData().settings?.historyEnabled;
 				},
 				get children() {
-					return _tmpl$$12();
+					return _tmpl$$16();
 				}
 			}), _el$13);
 			insert(_el$2, createComponent(Show, {
@@ -2032,7 +2032,7 @@
 					return loading();
 				},
 				get children() {
-					return _tmpl$2$11();
+					return _tmpl$2$12();
 				}
 			}), _el$13);
 			insert(_el$2, createComponent(Show, {
@@ -2040,7 +2040,7 @@
 					return !loading();
 				},
 				get children() {
-					var _el$9 = _tmpl$3$9(), _el$1 = _el$9.firstChild.firstChild, _el$10 = _el$1.firstChild;
+					var _el$9 = _tmpl$3$10(), _el$1 = _el$9.firstChild.firstChild, _el$10 = _el$1.firstChild;
 					_el$10.firstChild;
 					var _el$12 = _el$1.nextSibling;
 					insert(_el$10, createComponent(For, {
@@ -2105,7 +2105,7 @@
 													align: "right",
 													multiline: emptyDay,
 													get children() {
-														return _tmpl$8$4();
+														return _tmpl$8$3();
 													}
 												});
 											},
@@ -2182,7 +2182,7 @@
 	delegateEvents(["click"]);
 	//#endregion
 	//#region src/admin/copy-chores-modal.tsx
-	var _tmpl$$11 = /*#__PURE__*/ template(`<div class="my-2.5 text-slate-500 italic"data-testid=empty-message><p data-testid=empty-message-text>No other people available to copy chores to.`), _tmpl$2$10 = /*#__PURE__*/ template(`<form><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Select Person to Copy To</div><select id=toPerson required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option value>-- Select a person --</option></select></div><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Select Chores to Copy</div><div class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3"data-testid=checkbox-list></div></div><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$3$8 = /*#__PURE__*/ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><div class="mb-5 flex items-center justify-between"><h3 class="text-2xl text-indigo-600"data-testid=modal-title>Copy Chores</h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><div class="mb-5 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-base"data-testid=copy-from-display><span class="inline-block size-6 rounded-full border-2 border-black/10 align-middle"data-testid=person-color-badge></span><strong>From:</strong> `), _tmpl$4$7 = /*#__PURE__*/ template(`<div class="my-2.5 text-slate-500 italic"data-testid=empty-message><p data-testid=empty-message-text>No personal chores to copy for <!>.`), _tmpl$5$5 = /*#__PURE__*/ template(`<option>`), _tmpl$6$5 = /*#__PURE__*/ template(`<label class="flex cursor-pointer items-center gap-2 font-normal"><input type=checkbox class="size-4.5 cursor-pointer">`);
+	var _tmpl$$15 = /*#__PURE__*/ template(`<div class="my-2.5 text-slate-500 italic"data-testid=empty-message><p data-testid=empty-message-text>No other people available to copy chores to.`), _tmpl$2$11 = /*#__PURE__*/ template(`<form><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Select Person to Copy To</div><select id=toPerson required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option value>-- Select a person --</option></select></div><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Select Chores to Copy</div><div class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3"data-testid=checkbox-list></div></div><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$3$9 = /*#__PURE__*/ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><div class="mb-5 flex items-center justify-between"><h3 class="text-2xl text-indigo-600"data-testid=modal-title>Copy Chores</h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><div class="mb-5 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-base"data-testid=copy-from-display><span class="inline-block size-6 rounded-full border-2 border-black/10 align-middle"data-testid=person-color-badge></span><strong>From:</strong> `), _tmpl$4$7 = /*#__PURE__*/ template(`<div class="my-2.5 text-slate-500 italic"data-testid=empty-message><p data-testid=empty-message-text>No personal chores to copy for <!>.`), _tmpl$5$5 = /*#__PURE__*/ template(`<option>`), _tmpl$6$5 = /*#__PURE__*/ template(`<label class="flex cursor-pointer items-center gap-2 font-normal"><input type=checkbox class="size-4.5 cursor-pointer">`);
 	var CopyChoresModal = (props) => {
 		const { choreData, pinRequired, setCachedPin, cachedPin } = useAdminContext();
 		const personalChores = createMemo(() => {
@@ -2232,7 +2232,7 @@
 			}
 		};
 		return (() => {
-			var _el$ = _tmpl$3$8(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$5 = _el$3.firstChild.nextSibling, _el$6 = _el$3.nextSibling, _el$7 = _el$6.firstChild;
+			var _el$ = _tmpl$3$9(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$5 = _el$3.firstChild.nextSibling, _el$6 = _el$3.nextSibling, _el$7 = _el$6.firstChild;
 			_el$7.nextSibling.nextSibling;
 			_el$5.$$click = () => props.closeModal();
 			insert(_el$6, () => escapeHtml(props.fromPerson.name), null);
@@ -2260,7 +2260,7 @@
 							return availablePeople().length === 0;
 						},
 						get children() {
-							var _el$0 = _tmpl$$11();
+							var _el$0 = _tmpl$$15();
 							_el$0.firstChild;
 							insert(_el$0, createComponent(Button, {
 								type: "button",
@@ -2275,7 +2275,7 @@
 							return availablePeople().length > 0;
 						},
 						get children() {
-							var _el$10 = _tmpl$2$10(), _el$11 = _el$10.firstChild, _el$13 = _el$11.firstChild.nextSibling;
+							var _el$10 = _tmpl$2$11(), _el$11 = _el$10.firstChild, _el$13 = _el$11.firstChild.nextSibling;
 							_el$13.firstChild;
 							var _el$15 = _el$11.nextSibling, _el$17 = _el$15.firstChild.nextSibling, _el$18 = _el$15.nextSibling;
 							_el$10.addEventListener("submit", handleSubmit);
@@ -2349,8 +2349,234 @@
 	};
 	delegateEvents(["click", "input"]);
 	//#endregion
+	//#region src/admin/person-card.tsx
+	var _tmpl$$14 = /*#__PURE__*/ template(`<div class="grid gap-2.5">`), _tmpl$2$10 = /*#__PURE__*/ template(`<div class="mt-4 border-t border-slate-200 pt-4"><div class="mb-4 flex items-center justify-between"><h4 class="m-0 text-lg text-indigo-600">'s Personal Chores</h4><div class="flex gap-2">`), _tmpl$3$8 = /*#__PURE__*/ template(`<div class="rounded-lg border border-slate-200 bg-slate-50 p-5 transition-all hover:border-indigo-600 hover:shadow-md"data-testid=person-card><div class="flex items-start justify-between gap-4"><div class="flex items-start gap-3"><button type=button data-testid=expand-person-chores class="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-white text-lg font-semibold text-indigo-600 shadow-sm transition-all hover:border-indigo-600 hover:bg-indigo-50 hover:shadow-md"></button><div><h3 class="mb-1 text-xl text-slate-900"> <span class="inline-block size-6 rounded-full border-2 border-black/10 align-middle"></span></h3><p class="text-sm font-medium text-slate-500"></p></div></div><div class="flex gap-2.5">`), _tmpl$4$6 = /*#__PURE__*/ template(`<div><p class="my-2.5 text-slate-500 italic">No personal chores yet.`), _tmpl$5$4 = /*#__PURE__*/ template(`<span class=mx-1>|`), _tmpl$6$4 = /*#__PURE__*/ template(`<p class="mt-1.25 text-sm text-indigo-600">`), _tmpl$7$4 = /*#__PURE__*/ template(`<div class="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-2.5"><div><h4 class="mb-1.5 text-base text-slate-900"></h4><p class="mt-1.25 text-sm text-slate-500">Skip days: </p></div><div class="flex gap-2">`);
+	var formatSkipDays$1 = (skipDays) => {
+		if (!skipDays || skipDays.length === 0) return "None";
+		return skipDays.map((d) => d.charAt(0).toUpperCase() + d.slice(1)).join(", ");
+	};
+	/** Card displaying a person and their personal chores with an accordion */
+	var PersonCard = (props) => {
+		const [expanded, setExpanded] = createSignal(false);
+		const choreCount = () => props.chores.length;
+		const choreCountLabel = () => `${choreCount()} ${choreCount() === 1 ? "personal chore" : "personal chores"}`;
+		const toggleExpanded = () => setExpanded((prev) => !prev);
+		return (() => {
+			var _el$ = _tmpl$3$8(), _el$3 = _el$.firstChild.firstChild, _el$4 = _el$3.firstChild, _el$6 = _el$4.nextSibling.firstChild, _el$7 = _el$6.firstChild, _el$8 = _el$7.nextSibling, _el$9 = _el$6.nextSibling, _el$0 = _el$3.nextSibling;
+			_el$4.$$click = toggleExpanded;
+			insert(_el$4, () => expanded() ? "−" : "+");
+			insert(_el$6, () => escapeHtml(props.person.name), _el$7);
+			insert(_el$9, choreCountLabel);
+			insert(_el$0, createComponent(Button, {
+				type: "button",
+				variant: "secondary",
+				size: "sm",
+				onClick: () => props.onEditPerson(props.person),
+				children: "Edit"
+			}), null);
+			insert(_el$0, createComponent(Button, {
+				type: "button",
+				variant: "secondary",
+				size: "sm",
+				onClick: () => props.onHistory(props.person),
+				children: "History"
+			}), null);
+			insert(_el$0, createComponent(Button, {
+				type: "button",
+				variant: "danger",
+				size: "sm",
+				onClick: () => props.onDeletePerson(props.person.id),
+				children: "Delete"
+			}), null);
+			insert(_el$, createComponent(Show, {
+				get when() {
+					return expanded();
+				},
+				get children() {
+					var _el$1 = _tmpl$2$10(), _el$11 = _el$1.firstChild.firstChild, _el$12 = _el$11.firstChild, _el$13 = _el$11.nextSibling;
+					insert(_el$11, () => escapeHtml(props.person.name), _el$12);
+					insert(_el$13, createComponent(Button, {
+						type: "button",
+						variant: "primary",
+						size: "sm",
+						onClick: () => props.onAddChore(props.person),
+						children: "Add Chore"
+					}), null);
+					insert(_el$13, createComponent(Show, {
+						get when() {
+							return memo(() => choreCount() > 0)() && props.canCopyChores;
+						},
+						get children() {
+							return createComponent(Button, {
+								type: "button",
+								variant: "secondary",
+								size: "sm",
+								onClick: () => props.onCopyChores(props.person),
+								children: "Copy Chores"
+							});
+						}
+					}), null);
+					insert(_el$1, createComponent(Show, {
+						get when() {
+							return choreCount() > 0;
+						},
+						get fallback() {
+							return _tmpl$4$6();
+						},
+						get children() {
+							var _el$14 = _tmpl$$14();
+							insert(_el$14, createComponent(For, {
+								get each() {
+									return props.chores;
+								},
+								children: (chore) => (() => {
+									var _el$16 = _tmpl$7$4(), _el$17 = _el$16.firstChild, _el$18 = _el$17.firstChild, _el$21 = _el$18.nextSibling;
+									_el$21.firstChild;
+									var _el$23 = _el$17.nextSibling;
+									insert(_el$18, () => escapeHtml(chore.name));
+									insert(_el$17, createComponent(Show, {
+										get when() {
+											return chore.deadline || chore.startTime;
+										},
+										get children() {
+											var _el$19 = _tmpl$6$4();
+											insert(_el$19, createComponent(Show, {
+												get when() {
+													return chore.startTime;
+												},
+												get children() {
+													return ["Start: ", memo(() => chore.startTime)];
+												}
+											}), null);
+											insert(_el$19, createComponent(Show, {
+												get when() {
+													return memo(() => !!chore.deadline)() && chore.startTime;
+												},
+												get children() {
+													return _tmpl$5$4();
+												}
+											}), null);
+											insert(_el$19, createComponent(Show, {
+												get when() {
+													return chore.deadline;
+												},
+												get children() {
+													return ["Deadline: ", memo(() => chore.deadline)];
+												}
+											}), null);
+											return _el$19;
+										}
+									}), _el$21);
+									insert(_el$21, () => formatSkipDays$1(chore.skipDays), null);
+									insert(_el$23, createComponent(Button, {
+										type: "button",
+										variant: "secondary",
+										size: "sm",
+										onClick: () => props.onEditChore(props.person, chore),
+										children: "Edit"
+									}), null);
+									insert(_el$23, createComponent(Button, {
+										type: "button",
+										variant: "danger",
+										size: "sm",
+										onClick: () => props.onDeleteChore(chore.id),
+										children: "Delete"
+									}), null);
+									return _el$16;
+								})()
+							}));
+							return _el$14;
+						}
+					}), null);
+					return _el$1;
+				}
+			}), null);
+			createRenderEffect((_p$) => {
+				var _v$ = expanded() ? "Collapse chores" : "Expand chores", _v$2 = expanded(), _v$3 = `background-color: ${props.person.color}`;
+				_v$ !== _p$.e && setAttribute(_el$4, "aria-label", _p$.e = _v$);
+				_v$2 !== _p$.t && setAttribute(_el$4, "aria-expanded", _p$.t = _v$2);
+				_p$.a = style(_el$8, _v$3, _p$.a);
+				return _p$;
+			}, {
+				e: void 0,
+				t: void 0,
+				a: void 0
+			});
+			return _el$;
+		})();
+	};
+	delegateEvents(["click"]);
+	//#endregion
+	//#region src/admin/people-tab.tsx
+	var _tmpl$$13 = /*#__PURE__*/ template(`<section data-testid=people-section><div class="mb-5 flex items-center justify-between"><h2 class="m-0 border-b-2 border-indigo-600 pb-2.5 text-2xl text-indigo-600">People</h2><div class="flex items-center gap-2"></div></div><div id=peopleList class="mt-5 grid gap-4">`);
+	/** Tab showing all people as accordion cards */
+	var PeopleTab = (props) => {
+		const getPersonalChores = (personId) => props.chores.filter((chore) => chore.type === ChoreType.PERSONAL && chore.assignedTo === personId);
+		const canCopyChores = () => props.people.length > 1;
+		return (() => {
+			var _el$ = _tmpl$$13(), _el$2 = _el$.firstChild, _el$4 = _el$2.firstChild.nextSibling, _el$5 = _el$2.nextSibling;
+			insert(_el$4, createComponent(Button, {
+				type: "button",
+				variant: "primary",
+				id: "addPersonBtn",
+				get onClick() {
+					return props.onAddPerson;
+				},
+				children: "Add Person"
+			}), null);
+			insert(_el$4, createComponent(Show, {
+				get when() {
+					return props.people.length === 0;
+				},
+				get children() {
+					return createComponent(HelpIcon, {
+						text: "Add at least one person before you can create chores",
+						"class": "ml-2",
+						align: "right"
+					});
+				}
+			}), null);
+			insert(_el$5, createComponent(For, {
+				get each() {
+					return props.people;
+				},
+				children: (person) => createComponent(PersonCard, {
+					person,
+					get chores() {
+						return getPersonalChores(person.id);
+					},
+					get canCopyChores() {
+						return canCopyChores();
+					},
+					get onEditPerson() {
+						return props.onEditPerson;
+					},
+					get onHistory() {
+						return props.onHistory;
+					},
+					get onDeletePerson() {
+						return props.onDeletePerson;
+					},
+					get onAddChore() {
+						return props.onAddChore;
+					},
+					get onEditChore() {
+						return props.onEditChore;
+					},
+					get onDeleteChore() {
+						return props.onDeleteChore;
+					},
+					get onCopyChores() {
+						return props.onCopyChores;
+					}
+				})
+			}));
+			return _el$;
+		})();
+	};
+	//#endregion
 	//#region src/admin/person-modal.tsx
-	var _tmpl$$10 = /*#__PURE__*/ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><div class="mb-5 flex items-center justify-between"><h3 class="text-2xl text-indigo-600"data-testid=modal-title></h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><form><div class=mb-5><label for=personName class="mb-3 block font-medium text-slate-900">Name</label><input type=text id=personName required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><label for=personColor class="mb-3 block font-medium text-slate-900">Text Color</label><div class="flex items-center gap-2.5"><input type=color id=personColor required class="h-10 w-15 cursor-pointer rounded-lg border border-slate-300"></div></div><div class="mt-6 flex justify-end gap-2.5">`);
+	var _tmpl$$12 = /*#__PURE__*/ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><div class="mb-5 flex items-center justify-between"><h3 class="text-2xl text-indigo-600"data-testid=modal-title></h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><form><div class=mb-5><label for=personName class="mb-3 block font-medium text-slate-900">Name</label><input type=text id=personName required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><label for=personColor class="mb-3 block font-medium text-slate-900">Text Color</label><div class="flex items-center gap-2.5"><input type=color id=personColor required class="h-10 w-15 cursor-pointer rounded-lg border border-slate-300"></div></div><div class="mt-6 flex justify-end gap-2.5">`);
 	var PersonModal = (props) => {
 		const { loadData, pinRequired, cachedPin, setCachedPin } = useAdminContext();
 		const [name, setName] = createSignal(props.initialPerson?.name ?? "");
@@ -2387,7 +2613,7 @@
 			}
 		};
 		return (() => {
-			var _el$ = _tmpl$$10(), _el$3 = _el$.firstChild.firstChild, _el$4 = _el$3.firstChild, _el$5 = _el$4.nextSibling, _el$6 = _el$3.nextSibling, _el$7 = _el$6.firstChild, _el$9 = _el$7.firstChild.nextSibling, _el$0 = _el$7.nextSibling, _el$10 = _el$0.firstChild.nextSibling, _el$11 = _el$10.firstChild, _el$12 = _el$0.nextSibling;
+			var _el$ = _tmpl$$12(), _el$3 = _el$.firstChild.firstChild, _el$4 = _el$3.firstChild, _el$5 = _el$4.nextSibling, _el$6 = _el$3.nextSibling, _el$7 = _el$6.firstChild, _el$9 = _el$7.firstChild.nextSibling, _el$0 = _el$7.nextSibling, _el$10 = _el$0.firstChild.nextSibling, _el$11 = _el$10.firstChild, _el$12 = _el$0.nextSibling;
 			insert(_el$4, () => props.initialPerson ? "Edit Person" : "Add Person");
 			_el$5.$$click = () => props.closeModal();
 			_el$6.addEventListener("submit", handleSubmit);
@@ -2438,7 +2664,7 @@
 	delegateEvents(["click", "input"]);
 	//#endregion
 	//#region src/admin/info-box.tsx
-	var _tmpl$$9 = /*#__PURE__*/ template(`<span class="inline-flex size-5 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-slate-200 text-xs font-bold text-slate-600">i`), _tmpl$2$9 = /*#__PURE__*/ template(`<div><div>`);
+	var _tmpl$$11 = /*#__PURE__*/ template(`<span class="inline-flex size-5 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-slate-200 text-xs font-bold text-slate-600">i`), _tmpl$2$9 = /*#__PURE__*/ template(`<div><div>`);
 	/**
 	* Inline info box for contextual help text within the admin panel.
 	*/
@@ -2449,7 +2675,7 @@
 				return props.icon;
 			},
 			get children() {
-				return _tmpl$$9();
+				return _tmpl$$11();
 			}
 		}), _el$3);
 		insert(_el$3, () => props.children);
@@ -2458,7 +2684,7 @@
 	})();
 	//#endregion
 	//#region src/admin/display-options-section.tsx
-	var _tmpl$$8 = /*#__PURE__*/ template(`<span class="text-xs text-indigo-600">Customized`), _tmpl$2$8 = /*#__PURE__*/ template(`<strong>Note:`), _tmpl$3$7 = /*#__PURE__*/ template(`<strong>caught up`), _tmpl$4$6 = /*#__PURE__*/ template(`<strong>Overdue styling:`), _tmpl$5$4 = /*#__PURE__*/ template(`<strong>Normal styling:`), _tmpl$6$4 = /*#__PURE__*/ template(`<strong>Hide:`), _tmpl$7$4 = /*#__PURE__*/ template(`<strong>Show if overdue:`), _tmpl$8$3 = /*#__PURE__*/ template(`<div><label for=beforeStartTimeVisibility class="mb-1.5 block font-medium text-slate-900">Before start time</label><select id=beforeStartTimeVisibility class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option>Hide</option><option>Show if overdue`), _tmpl$9$1 = /*#__PURE__*/ template(`<strong>Show normally:`), _tmpl$0 = /*#__PURE__*/ template(`<strong>Show as overdue:`), _tmpl$1 = /*#__PURE__*/ template(`<strong>Move to earlier chores:`), _tmpl$10 = /*#__PURE__*/ template(`<div><label for=afterDeadlineVisibility class="mb-1.5 block font-medium text-slate-900">After deadline</label><select id=afterDeadlineVisibility class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option>Show normally</option><option>Show as overdue</option><option>Move to earlier chores`), _tmpl$11 = /*#__PURE__*/ template(`<strong>Always Show:`), _tmpl$12 = /*#__PURE__*/ template(`<strong>Show If Overdue:`), _tmpl$13 = /*#__PURE__*/ template(`<div><label for=skipDayVisibility class="mb-1.5 block font-medium text-slate-900">Skip day visibility</label><select id=skipDayVisibility class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option>Hide</option><option>Always Show</option><option>Show If Overdue`), _tmpl$14 = /*#__PURE__*/ template(`<details class="mb-5 rounded-lg border border-slate-200"><summary class="cursor-pointer list-none p-3 font-medium text-slate-900"><div class="flex items-center justify-between"><span>Advanced Display Options</span><div class="flex items-center gap-2"><span class="text-lg leading-none"></span></div></div></summary><div class="space-y-4 p-3 pt-0"><div><div class="mb-1.5 flex items-center"><label for=notCaughtUpDisplay class="block font-medium text-slate-900">When visible and not caught up, style as:</label></div><select id=notCaughtUpDisplay class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option>Overdue styling</option><option>Normal styling`);
+	var _tmpl$$10 = /*#__PURE__*/ template(`<span class="text-xs text-indigo-600">Customized`), _tmpl$2$8 = /*#__PURE__*/ template(`<strong>Note:`), _tmpl$3$7 = /*#__PURE__*/ template(`<strong>caught up`), _tmpl$4$5 = /*#__PURE__*/ template(`<strong>Overdue styling:`), _tmpl$5$3 = /*#__PURE__*/ template(`<strong>Normal styling:`), _tmpl$6$3 = /*#__PURE__*/ template(`<strong>Hide:`), _tmpl$7$3 = /*#__PURE__*/ template(`<strong>Show if overdue:`), _tmpl$8$2 = /*#__PURE__*/ template(`<div><label for=beforeStartTimeVisibility class="mb-1.5 block font-medium text-slate-900">Before start time</label><select id=beforeStartTimeVisibility class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option>Hide</option><option>Show if overdue`), _tmpl$9 = /*#__PURE__*/ template(`<strong>Show normally:`), _tmpl$0 = /*#__PURE__*/ template(`<strong>Show as overdue:`), _tmpl$1 = /*#__PURE__*/ template(`<strong>Move to earlier chores:`), _tmpl$10 = /*#__PURE__*/ template(`<div><label for=afterDeadlineVisibility class="mb-1.5 block font-medium text-slate-900">After deadline</label><select id=afterDeadlineVisibility class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option>Show normally</option><option>Show as overdue</option><option>Move to earlier chores`), _tmpl$11 = /*#__PURE__*/ template(`<strong>Always Show:`), _tmpl$12 = /*#__PURE__*/ template(`<strong>Show If Overdue:`), _tmpl$13 = /*#__PURE__*/ template(`<div><label for=skipDayVisibility class="mb-1.5 block font-medium text-slate-900">Skip day visibility</label><select id=skipDayVisibility class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option>Hide</option><option>Always Show</option><option>Show If Overdue`), _tmpl$14 = /*#__PURE__*/ template(`<details class="mb-5 rounded-lg border border-slate-200"><summary class="cursor-pointer list-none p-3 font-medium text-slate-900"><div class="flex items-center justify-between"><span>Advanced Display Options</span><div class="flex items-center gap-2"><span class="text-lg leading-none"></span></div></div></summary><div class="space-y-4 p-3 pt-0"><div><div class="mb-1.5 flex items-center"><label for=notCaughtUpDisplay class="block font-medium text-slate-900">When visible and not caught up, style as:</label></div><select id=notCaughtUpDisplay class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option>Overdue styling</option><option>Normal styling`);
 	/**
 	* Collapsible "Advanced Display Options" section shared by both chore modals.
 	* Options that do not apply to the current settings are hidden.
@@ -2483,7 +2709,7 @@
 					return hasNonDefaultValue();
 				},
 				get children() {
-					return _tmpl$$8();
+					return _tmpl$$10();
 				}
 			}), _el$7);
 			insert(_el$7, () => isOpen() ? "−" : "+");
@@ -2505,14 +2731,14 @@
 						return props.notCaughtUpDisplay() === NotCaughtUpDisplay.OVERDUE;
 					},
 					get children() {
-						return [_tmpl$4$6(), " If the chore is not caught up, it is styled as overdue (default style is yellow)."];
+						return [_tmpl$4$5(), " If the chore is not caught up, it is styled as overdue (default style is yellow)."];
 					}
 				}), createComponent(Show, {
 					get when() {
 						return props.notCaughtUpDisplay() === NotCaughtUpDisplay.NORMAL;
 					},
 					get children() {
-						return [_tmpl$5$4(), " If the chore is not caught up, it is styled as normal."];
+						return [_tmpl$5$3(), " If the chore is not caught up, it is styled as normal."];
 					}
 				})];
 			} }), null);
@@ -2521,7 +2747,7 @@
 					return props.startTime();
 				},
 				get children() {
-					var _el$16 = _tmpl$8$3(), _el$18 = _el$16.firstChild.nextSibling, _el$19 = _el$18.firstChild, _el$20 = _el$19.nextSibling;
+					var _el$16 = _tmpl$8$2(), _el$18 = _el$16.firstChild.nextSibling, _el$19 = _el$18.firstChild, _el$20 = _el$19.nextSibling;
 					_el$18.$$input = (e) => props.setBeforeStartTimeVisibility(e.currentTarget.value);
 					insert(_el$16, createComponent(InfoBox, { get children() {
 						return [createComponent(Show, {
@@ -2530,7 +2756,7 @@
 							},
 							get children() {
 								return [
-									_tmpl$6$4(),
+									_tmpl$6$3(),
 									" The chore stays hidden until ",
 									memo(() => props.startTime()),
 									" even if it is not caught up."
@@ -2542,7 +2768,7 @@
 							},
 							get children() {
 								return [
-									_tmpl$7$4(),
+									_tmpl$7$3(),
 									" If the chore is caught up, it stays hidden until",
 									" ",
 									memo(() => props.startTime()),
@@ -2576,7 +2802,7 @@
 									},
 									get children() {
 										return [
-											_tmpl$9$1(),
+											_tmpl$9(),
 											" If the chore is complete, it moves to the \"Earlier chores\" section after ",
 											memo(() => props.deadline()),
 											". If it is not complete, it stays in the main list after ",
@@ -2638,7 +2864,7 @@
 										return props.skipDayVisibility() === SkipDayVisibility.HIDE;
 									},
 									get children() {
-										return [_tmpl$6$4(), " The chore disappears completely on skip days. It's a true day off — no catch-up needed."];
+										return [_tmpl$6$3(), " The chore disappears completely on skip days. It's a true day off — no catch-up needed."];
 									}
 								}),
 								createComponent(Match, {
@@ -2677,7 +2903,7 @@
 	delegateEvents(["input"]);
 	//#endregion
 	//#region src/admin/personal-chore-modal.tsx
-	var _tmpl$$7 = /*#__PURE__*/ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><div class="mb-5 flex items-center justify-between"><h3 class="text-2xl text-indigo-600">Error</h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><p>Person not found. Please refresh the page.`), _tmpl$2$7 = /*#__PURE__*/ template(`<div class="mb-5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">`), _tmpl$3$6 = /*#__PURE__*/ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"data-testid=modal><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"data-testid=modal-content><div class="mb-5 flex items-center justify-between"><h3 class="text-2xl text-indigo-600"data-testid=modal-title></h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><div class="mb-5 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-base"data-testid=assigned-person-display><span class="inline-block size-6 rounded-full border-2 border-black/10 align-middle"data-testid=person-color-badge></span><strong>Assigned to:</strong> </div><form><div class=mb-5><label for=choreName class="mb-3 block font-medium text-slate-900">Chore Name</label><input type=text id=choreName required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><div class="mb-3 flex items-center"><label for=startTime class="block font-medium text-slate-900">Start Time (optional)</label></div><div class="flex items-center gap-2"><input type=time id=startTime class="w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div></div><div class=mb-5><div class="mb-3 flex items-center"><label for=deadline class="block font-medium text-slate-900">Deadline (optional)</label></div><div class="flex items-center gap-2"><input type=time id=deadline class="w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div></div><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Skip Days</div><div class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3"></div></div><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$4$5 = /*#__PURE__*/ template(`<label class="flex cursor-pointer items-center gap-2 font-normal"><input type=checkbox class="size-4.5 cursor-pointer">`);
+	var _tmpl$$9 = /*#__PURE__*/ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><div class="mb-5 flex items-center justify-between"><h3 class="text-2xl text-indigo-600">Error</h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><p>Person not found. Please refresh the page.`), _tmpl$2$7 = /*#__PURE__*/ template(`<div class="mb-5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">`), _tmpl$3$6 = /*#__PURE__*/ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"data-testid=modal><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"data-testid=modal-content><div class="mb-5 flex items-center justify-between"><h3 class="text-2xl text-indigo-600"data-testid=modal-title></h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><div class="mb-5 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-base"data-testid=assigned-person-display><span class="inline-block size-6 rounded-full border-2 border-black/10 align-middle"data-testid=person-color-badge></span><strong>Assigned to:</strong> </div><form><div class=mb-5><label for=choreName class="mb-3 block font-medium text-slate-900">Chore Name</label><input type=text id=choreName required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><div class="mb-3 flex items-center"><label for=startTime class="block font-medium text-slate-900">Start Time (optional)</label></div><div class="flex items-center gap-2"><input type=time id=startTime class="w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div></div><div class=mb-5><div class="mb-3 flex items-center"><label for=deadline class="block font-medium text-slate-900">Deadline (optional)</label></div><div class="flex items-center gap-2"><input type=time id=deadline class="w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div></div><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Skip Days</div><div class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3"></div></div><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$4$4 = /*#__PURE__*/ template(`<label class="flex cursor-pointer items-center gap-2 font-normal"><input type=checkbox class="size-4.5 cursor-pointer">`);
 	var PersonalChoreModal = (props) => {
 		const { pinRequired, cachedPin, setCachedPin } = useAdminContext();
 		const [name, setName] = createSignal(props.initialChore?.name ?? "");
@@ -2754,7 +2980,7 @@
 			keyed: true,
 			get fallback() {
 				return (() => {
-					var _el$ = _tmpl$$7(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$5 = _el$3.firstChild.nextSibling;
+					var _el$ = _tmpl$$9(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$5 = _el$3.firstChild.nextSibling;
 					_el$3.nextSibling;
 					_el$5.$$click = () => props.closeModal();
 					insert(_el$2, createComponent(Button, {
@@ -2828,7 +3054,7 @@
 						return Object.values(DayOfWeek);
 					},
 					children: (day) => (() => {
-						var _el$33 = _tmpl$4$5(), _el$34 = _el$33.firstChild;
+						var _el$33 = _tmpl$4$4(), _el$34 = _el$33.firstChild;
 						_el$34.$$input = (e) => handleSkipDayChange(day, e.currentTarget.checked);
 						_el$34.value = day;
 						insert(_el$33, () => day.charAt(0).toUpperCase() + day.slice(1), null);
@@ -2900,7 +3126,7 @@
 	delegateEvents(["click", "input"]);
 	//#endregion
 	//#region src/admin/pin-prompt-modal.tsx
-	var _tmpl$$6 = /*#__PURE__*/ template(`<button type=button class="cursor-help text-sm text-indigo-600 underline">Forgot PIN?`), _tmpl$2$6 = /*#__PURE__*/ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="w-[90%] max-w-[400px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><div class="mb-2 flex items-center justify-between"><h3 class="text-xl text-indigo-600"data-testid=modal-title></h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><p class="mb-5 text-sm text-slate-600"data-testid=modal-message></p><form><div class=mb-5><label for=pinPromptInput class="mb-2 block font-medium text-amber-900">PIN</label><div class="flex gap-2"><input id=pinPromptInput placeholder="Enter PIN"required autofocus class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"><button type=button class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100"></button></div></div><label class="mb-5 flex cursor-pointer items-center gap-2"><input type=checkbox class="size-4.5 cursor-pointer"data-testid=remember-pin-checkbox>Remember PIN for 10 minutes</label><div class=mb-5></div><div class="flex justify-end gap-2.5">`);
+	var _tmpl$$8 = /*#__PURE__*/ template(`<button type=button class="cursor-help text-sm text-indigo-600 underline">Forgot PIN?`), _tmpl$2$6 = /*#__PURE__*/ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="w-[90%] max-w-[400px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><div class="mb-2 flex items-center justify-between"><h3 class="text-xl text-indigo-600"data-testid=modal-title></h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><p class="mb-5 text-sm text-slate-600"data-testid=modal-message></p><form><div class=mb-5><label for=pinPromptInput class="mb-2 block font-medium text-amber-900">PIN</label><div class="flex gap-2"><input id=pinPromptInput placeholder="Enter PIN"required autofocus class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"><button type=button class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100"></button></div></div><label class="mb-5 flex cursor-pointer items-center gap-2"><input type=checkbox class="size-4.5 cursor-pointer"data-testid=remember-pin-checkbox>Remember PIN for 10 minutes</label><div class=mb-5></div><div class="flex justify-end gap-2.5">`);
 	var PinPromptModal = (props) => {
 		const [pin, setPin] = createSignal("");
 		const [showPin, setShowPin] = createSignal(false);
@@ -2934,7 +3160,7 @@
 				align: "left",
 				multiline: true,
 				get children() {
-					return _tmpl$$6();
+					return _tmpl$$8();
 				}
 			}));
 			insert(_el$16, createComponent(Button, {
@@ -2959,7 +3185,7 @@
 	delegateEvents(["click", "input"]);
 	//#endregion
 	//#region src/admin/reset-caught-up-modal.tsx
-	var _tmpl$$5 = /*#__PURE__*/ template(`<strong>Note:`), _tmpl$2$5 = /*#__PURE__*/ template(`<strong>caught up`), _tmpl$3$5 = /*#__PURE__*/ template(`<br>`), _tmpl$4$4 = /*#__PURE__*/ template(`<div class="mb-5 overflow-hidden rounded-lg border border-slate-200"data-testid=overdue-chores-list><div class="grid grid-cols-[1fr_1fr] items-center gap-x-3 border-b border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold tracking-wide text-slate-500 uppercase"><span>Chore</span><span>Assigned To`), _tmpl$5$3 = /*#__PURE__*/ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[560px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"data-testid=reset-caught-up-modal><div class="mb-2 flex items-center justify-between"><h3 class="text-2xl text-indigo-600">Reset All Caught Up</h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$6$3 = /*#__PURE__*/ template(`<p class="my-4 text-slate-500 italic"data-testid=no-overdue-message>All chores are already caught up — nothing to reset.`), _tmpl$7$3 = /*#__PURE__*/ template(`<div class="grid grid-cols-[1fr_1fr] items-center gap-x-3 px-4 py-3"><span class="font-medium text-slate-800"></span><span class="text-sm text-slate-500">`);
+	var _tmpl$$7 = /*#__PURE__*/ template(`<strong>Note:`), _tmpl$2$5 = /*#__PURE__*/ template(`<strong>caught up`), _tmpl$3$5 = /*#__PURE__*/ template(`<br>`), _tmpl$4$3 = /*#__PURE__*/ template(`<div class="mb-5 overflow-hidden rounded-lg border border-slate-200"data-testid=overdue-chores-list><div class="grid grid-cols-[1fr_1fr] items-center gap-x-3 border-b border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold tracking-wide text-slate-500 uppercase"><span>Chore</span><span>Assigned To`), _tmpl$5$2 = /*#__PURE__*/ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[560px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"data-testid=reset-caught-up-modal><div class="mb-2 flex items-center justify-between"><h3 class="text-2xl text-indigo-600">Reset All Caught Up</h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$6$2 = /*#__PURE__*/ template(`<p class="my-4 text-slate-500 italic"data-testid=no-overdue-message>All chores are already caught up — nothing to reset.`), _tmpl$7$2 = /*#__PURE__*/ template(`<div class="grid grid-cols-[1fr_1fr] items-center gap-x-3 px-4 py-3"><span class="font-medium text-slate-800"></span><span class="text-sm text-slate-500">`);
 	var ResetCaughtUpModal = (props) => {
 		const { choreData, pinRequired, cachedPin, setCachedPin } = useAdminContext();
 		const [pin, setPin] = createSignal("");
@@ -2981,14 +3207,14 @@
 			}
 		};
 		return (() => {
-			var _el$ = _tmpl$5$3(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$5 = _el$3.firstChild.nextSibling, _el$10 = _el$3.nextSibling;
+			var _el$ = _tmpl$5$2(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$5 = _el$3.firstChild.nextSibling, _el$10 = _el$3.nextSibling;
 			_el$5.$$click = () => props.closeModal();
 			insert(_el$2, createComponent(InfoBox, {
 				icon: true,
 				"class": "mb-5",
 				get children() {
 					return [
-						_tmpl$$5(),
+						_tmpl$$7(),
 						" A chore is ",
 						_tmpl$2$5(),
 						" when it was completed on the previous day it appeared (by default, the previous non-skip day). New and newly rotated chores start as caught up.",
@@ -3003,17 +3229,17 @@
 					return props.overdue.length > 0;
 				},
 				get fallback() {
-					return _tmpl$6$3();
+					return _tmpl$6$2();
 				},
 				get children() {
-					var _el$0 = _tmpl$4$4();
+					var _el$0 = _tmpl$4$3();
 					_el$0.firstChild;
 					insert(_el$0, createComponent(For, {
 						get each() {
 							return props.overdue;
 						},
 						children: (chore, index) => (() => {
-							var _el$12 = _tmpl$7$3(), _el$13 = _el$12.firstChild, _el$14 = _el$13.nextSibling;
+							var _el$12 = _tmpl$7$2(), _el$13 = _el$12.firstChild, _el$14 = _el$13.nextSibling;
 							insert(_el$13, () => escapeHtml(chore.name));
 							insert(_el$14, () => getCurrentAssignee(chore));
 							createRenderEffect((_p$) => {
@@ -3072,98 +3298,12 @@
 	};
 	delegateEvents(["click"]);
 	//#endregion
-	//#region src/admin/rotating-chore.tsx
-	var _tmpl$$4 = /*#__PURE__*/ template(`<span class=mx-1>|`), _tmpl$2$4 = /*#__PURE__*/ template(`<p class="mt-1.25 text-sm text-indigo-600">`), _tmpl$3$4 = /*#__PURE__*/ template(`<div class="rounded-lg border border-slate-200 bg-slate-50 p-5 transition-all hover:border-indigo-600 hover:shadow-md"><div class=flex-1><h3 class="mb-1.5 text-xl text-slate-900"> <span class="ml-2 inline-block rounded bg-indigo-100 px-2 py-1 text-xs font-medium text-indigo-700">Rotating</span></h3><p class="text-sm text-slate-500">Current: </p><p class="text-sm text-slate-500">Rotation: </p><p class="mt-1.25 text-sm text-slate-500">Skip days: </p></div><div class="flex gap-2.5">`);
-	/** Format skip days for display */
-	var formatSkipDays$1 = (skipDays) => {
-		if (!skipDays || skipDays.length === 0) return "None";
-		return skipDays.map((d) => d.charAt(0).toUpperCase() + d.slice(1)).join(", ");
-	};
-	/** Display card for a rotating chore in the admin interface */
-	var RotatingChoreCard = (props) => {
-		const rotationNames = createMemo(() => props.chore.rotation.map((personId) => {
-			const person = props.people.find((p) => p.id === personId);
-			return person ? escapeHtml(person.name) : "Unknown";
-		}).join(", "));
-		const includesEveryone = createMemo(() => {
-			const peopleLength = props.people.length ?? 0;
-			return props.chore.rotation.length === peopleLength && props.chore.rotation.every((personId) => props.people.some((p) => p.id === personId));
-		});
-		const rotationText = createMemo(() => includesEveryone() ? "Everyone" : rotationNames());
-		const currentAssignee = createMemo(() => {
-			const currentPersonId = props.chore.rotation[props.chore.rotatingIndex ?? 0];
-			const currentPerson = props.people.find((p) => p.id === currentPersonId);
-			return currentPerson ? escapeHtml(currentPerson.name) : "Unassigned";
-		});
-		return (() => {
-			var _el$ = _tmpl$3$4(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.firstChild, _el$5 = _el$3.nextSibling;
-			_el$5.firstChild;
-			var _el$7 = _el$5.nextSibling;
-			_el$7.firstChild;
-			var _el$1 = _el$7.nextSibling;
-			_el$1.firstChild;
-			var _el$11 = _el$2.nextSibling;
-			insert(_el$3, () => escapeHtml(props.chore.name), _el$4);
-			insert(_el$5, currentAssignee, null);
-			insert(_el$7, rotationText, null);
-			insert(_el$2, createComponent(Show, {
-				get when() {
-					return props.chore.deadline || props.chore.startTime;
-				},
-				get children() {
-					var _el$9 = _tmpl$2$4();
-					insert(_el$9, createComponent(Show, {
-						get when() {
-							return props.chore.startTime;
-						},
-						get children() {
-							return ["Start: ", memo(() => props.chore.startTime)];
-						}
-					}), null);
-					insert(_el$9, createComponent(Show, {
-						get when() {
-							return memo(() => !!props.chore.deadline)() && props.chore.startTime;
-						},
-						get children() {
-							return _tmpl$$4();
-						}
-					}), null);
-					insert(_el$9, createComponent(Show, {
-						get when() {
-							return props.chore.deadline;
-						},
-						get children() {
-							return ["Deadline: ", memo(() => props.chore.deadline)];
-						}
-					}), null);
-					return _el$9;
-				}
-			}), _el$1);
-			insert(_el$1, () => formatSkipDays$1(props.chore.skipDays), null);
-			insert(_el$11, createComponent(Button, {
-				type: "button",
-				variant: "secondary",
-				size: "sm",
-				onClick: () => props.onEdit(props.chore),
-				children: "Edit"
-			}), null);
-			insert(_el$11, createComponent(Button, {
-				type: "button",
-				variant: "danger",
-				size: "sm",
-				onClick: () => props.onDelete(props.chore.id),
-				children: "Delete"
-			}), null);
-			return _el$;
-		})();
-	};
-	//#endregion
 	//#region src/admin/rotating-chore-modal.tsx
-	var _tmpl$$3 = /*#__PURE__*/ template(`<svg width=12 height=18 viewBox="0 0 12 18"class=text-slate-400><title>Drag handle</title><circle cx=3 cy=3 r=1.5 fill=currentColor></circle><circle cx=9 cy=3 r=1.5 fill=currentColor></circle><circle cx=3 cy=9 r=1.5 fill=currentColor></circle><circle cx=9 cy=9 r=1.5 fill=currentColor></circle><circle cx=3 cy=15 r=1.5 fill=currentColor></circle><circle cx=9 cy=15 r=1.5 fill=currentColor>`), _tmpl$2$3 = /*#__PURE__*/ template(`<li class="list-none p-4 text-center text-sm text-slate-400 italic">All people in rotation`), _tmpl$3$3 = /*#__PURE__*/ template(`<li class="list-none p-4 text-center text-sm text-slate-400 italic"data-testid=empty-rotation-message>Drag people here`), _tmpl$4$3 = /*#__PURE__*/ template(`<div class="mb-5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">`), _tmpl$5$2 = /*#__PURE__*/ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[600px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><div class="mb-5 flex items-center justify-between"><h3 class="text-2xl text-indigo-600"data-testid=modal-title></h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><form><div class=mb-5><label for=choreName class="mb-3 block font-medium text-slate-900">Chore Name</label><input type=text id=choreName required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Rotation</div><div class="flex gap-4"><div class=flex-1><div class="mb-2 text-sm font-medium text-slate-600">Available</div><ul class="min-h-[120px] rounded-lg border border-slate-200 bg-slate-50 p-2"data-testid=available-column></ul></div><div class=flex-1><div class="mb-2 text-sm font-medium text-slate-600">In Rotation</div><ul class="min-h-[120px] rounded-lg border border-slate-200 bg-slate-50 p-2"data-testid=rotation-column></ul></div></div></div><div class=mb-5><div class="mb-3 flex items-center"><label for=startTime class="block font-medium text-slate-900">Start Time (optional)</label></div><div class="flex items-center gap-2"><input type=time id=startTime class="w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div></div><div class=mb-5><div class="mb-3 flex items-center"><label for=deadline class="block font-medium text-slate-900">Deadline (optional)</label></div><div class="flex items-center gap-2"><input type=time id=deadline class="w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div></div><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Skip Days</div><div class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3"data-testid=skip-days-checkbox-list></div></div><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$6$2 = /*#__PURE__*/ template(`<li class="flex cursor-grab items-center gap-2 rounded p-2 transition-opacity hover:bg-slate-100"><span data-drag-handle class=shrink-0></span><span class=text-sm>`), _tmpl$7$2 = /*#__PURE__*/ template(`<li class="flex items-center gap-2 rounded p-2 transition-opacity hover:bg-slate-100"data-rotation-item><span data-drag-handle class="shrink-0 cursor-grab"></span><label class="flex cursor-pointer items-center gap-2"><input type=radio name=active-person class="size-4 cursor-pointer"><span class=text-sm>`), _tmpl$8$2 = /*#__PURE__*/ template(`<label class="flex cursor-pointer items-center gap-2 font-normal"><input type=checkbox class="size-4.5 cursor-pointer">`);
+	var _tmpl$$6 = /*#__PURE__*/ template(`<svg width=12 height=18 viewBox="0 0 12 18"class=text-slate-400><title>Drag handle</title><circle cx=3 cy=3 r=1.5 fill=currentColor></circle><circle cx=9 cy=3 r=1.5 fill=currentColor></circle><circle cx=3 cy=9 r=1.5 fill=currentColor></circle><circle cx=9 cy=9 r=1.5 fill=currentColor></circle><circle cx=3 cy=15 r=1.5 fill=currentColor></circle><circle cx=9 cy=15 r=1.5 fill=currentColor>`), _tmpl$2$4 = /*#__PURE__*/ template(`<li class="list-none p-4 text-center text-sm text-slate-400 italic">All people in rotation`), _tmpl$3$4 = /*#__PURE__*/ template(`<li class="list-none p-4 text-center text-sm text-slate-400 italic"data-testid=empty-rotation-message>Drag people here`), _tmpl$4$2 = /*#__PURE__*/ template(`<div class="mb-5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">`), _tmpl$5$1 = /*#__PURE__*/ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[600px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><div class="mb-5 flex items-center justify-between"><h3 class="text-2xl text-indigo-600"data-testid=modal-title></h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><form><div class=mb-5><label for=choreName class="mb-3 block font-medium text-slate-900">Chore Name</label><input type=text id=choreName required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Rotation</div><div class="flex gap-4"><div class=flex-1><div class="mb-2 text-sm font-medium text-slate-600">Available</div><ul class="min-h-[120px] rounded-lg border border-slate-200 bg-slate-50 p-2"data-testid=available-column></ul></div><div class=flex-1><div class="mb-2 text-sm font-medium text-slate-600">In Rotation</div><ul class="min-h-[120px] rounded-lg border border-slate-200 bg-slate-50 p-2"data-testid=rotation-column></ul></div></div></div><div class=mb-5><div class="mb-3 flex items-center"><label for=startTime class="block font-medium text-slate-900">Start Time (optional)</label></div><div class="flex items-center gap-2"><input type=time id=startTime class="w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div></div><div class=mb-5><div class="mb-3 flex items-center"><label for=deadline class="block font-medium text-slate-900">Deadline (optional)</label></div><div class="flex items-center gap-2"><input type=time id=deadline class="w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div></div><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Skip Days</div><div class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3"data-testid=skip-days-checkbox-list></div></div><div class="mt-6 flex justify-end gap-2.5">`), _tmpl$6$1 = /*#__PURE__*/ template(`<li class="flex cursor-grab items-center gap-2 rounded p-2 transition-opacity hover:bg-slate-100"><span data-drag-handle class=shrink-0></span><span class=text-sm>`), _tmpl$7$1 = /*#__PURE__*/ template(`<li class="flex items-center gap-2 rounded p-2 transition-opacity hover:bg-slate-100"data-rotation-item><span data-drag-handle class="shrink-0 cursor-grab"></span><label class="flex cursor-pointer items-center gap-2"><input type=radio name=active-person class="size-4 cursor-pointer"><span class=text-sm>`), _tmpl$8$1 = /*#__PURE__*/ template(`<label class="flex cursor-pointer items-center gap-2 font-normal"><input type=checkbox class="size-4.5 cursor-pointer">`);
 	/**
 	* 6-dot grab handle used as the drag initiator for person rows.
 	*/
-	var GrabHandle = () => _tmpl$$3();
+	var GrabHandle = () => _tmpl$$6();
 	var RotatingChoreModal = (props) => {
 		const { choreData, pinRequired, setCachedPin, cachedPin } = useAdminContext();
 		const [name, setName] = createSignal(props.initialChore?.name ?? "");
@@ -3306,7 +3446,7 @@
 			}
 		};
 		return (() => {
-			var _el$2 = _tmpl$5$2(), _el$4 = _el$2.firstChild.firstChild, _el$5 = _el$4.firstChild, _el$6 = _el$5.nextSibling, _el$7 = _el$4.nextSibling, _el$8 = _el$7.firstChild, _el$0 = _el$8.firstChild.nextSibling, _el$1 = _el$8.nextSibling, _el$12 = _el$1.firstChild.nextSibling.firstChild, _el$14 = _el$12.firstChild.nextSibling, _el$18 = _el$12.nextSibling.firstChild.nextSibling, _el$20 = _el$1.nextSibling, _el$21 = _el$20.firstChild;
+			var _el$2 = _tmpl$5$1(), _el$4 = _el$2.firstChild.firstChild, _el$5 = _el$4.firstChild, _el$6 = _el$5.nextSibling, _el$7 = _el$4.nextSibling, _el$8 = _el$7.firstChild, _el$0 = _el$8.firstChild.nextSibling, _el$1 = _el$8.nextSibling, _el$12 = _el$1.firstChild.nextSibling.firstChild, _el$14 = _el$12.firstChild.nextSibling, _el$18 = _el$12.nextSibling.firstChild.nextSibling, _el$20 = _el$1.nextSibling, _el$21 = _el$20.firstChild;
 			_el$21.firstChild;
 			var _el$23 = _el$21.nextSibling, _el$24 = _el$23.firstChild, _el$25 = _el$20.nextSibling, _el$26 = _el$25.firstChild;
 			_el$26.firstChild;
@@ -3322,7 +3462,7 @@
 					return availablePeople();
 				},
 				children: (person) => (() => {
-					var _el$35 = _tmpl$6$2(), _el$36 = _el$35.firstChild, _el$37 = _el$36.nextSibling;
+					var _el$35 = _tmpl$6$1(), _el$36 = _el$35.firstChild, _el$37 = _el$36.nextSibling;
 					_el$35.addEventListener("dragend", handleDragEnd);
 					addEventListener(_el$35, "dragstart", handleDragStart(person.id));
 					setAttribute(_el$35, "draggable", true);
@@ -3345,7 +3485,7 @@
 					return availablePeople().length === 0;
 				},
 				get children() {
-					return _tmpl$2$3();
+					return _tmpl$2$4();
 				}
 			}), null);
 			_el$18.addEventListener("drop", (e) => handleColumnDrop(e, "rotation"));
@@ -3355,7 +3495,7 @@
 					return rotation();
 				},
 				children: (personId, index) => (() => {
-					var _el$38 = _tmpl$7$2(), _el$39 = _el$38.firstChild, _el$41 = _el$39.nextSibling.firstChild, _el$42 = _el$41.nextSibling;
+					var _el$38 = _tmpl$7$1(), _el$39 = _el$38.firstChild, _el$41 = _el$39.nextSibling.firstChild, _el$42 = _el$41.nextSibling;
 					_el$38.addEventListener("dragend", handleDragEnd);
 					addEventListener(_el$38, "dragstart", handleDragStart(personId));
 					setAttribute(_el$38, "draggable", true);
@@ -3379,7 +3519,7 @@
 					return rotation().length === 0;
 				},
 				get children() {
-					return _tmpl$3$3();
+					return _tmpl$3$4();
 				}
 			}), null);
 			insert(_el$21, createComponent(HelpIcon, {
@@ -3431,7 +3571,7 @@
 					return Object.values(DayOfWeek);
 				},
 				children: (day) => (() => {
-					var _el$43 = _tmpl$8$2(), _el$44 = _el$43.firstChild;
+					var _el$43 = _tmpl$8$1(), _el$44 = _el$43.firstChild;
 					_el$44.$$input = (e) => handleSkipDayChange(day, e.currentTarget.checked);
 					_el$44.value = day;
 					insert(_el$43, () => day.charAt(0).toUpperCase() + day.slice(1), null);
@@ -3457,7 +3597,7 @@
 					return formError();
 				},
 				get children() {
-					var _el$33 = _tmpl$4$3();
+					var _el$33 = _tmpl$4$2();
 					insert(_el$33, formError);
 					return _el$33;
 				}
@@ -3509,8 +3649,138 @@
 	};
 	delegateEvents(["click", "input"]);
 	//#endregion
+	//#region src/admin/rotating-chore.tsx
+	var _tmpl$$5 = /*#__PURE__*/ template(`<span class=mx-1>|`), _tmpl$2$3 = /*#__PURE__*/ template(`<p class="mt-1.25 text-sm text-indigo-600">`), _tmpl$3$3 = /*#__PURE__*/ template(`<div class="rounded-lg border border-slate-200 bg-slate-50 p-5 transition-all hover:border-indigo-600 hover:shadow-md"><div class=flex-1><h3 class="mb-1.5 text-xl text-slate-900"> <span class="ml-2 inline-block rounded bg-indigo-100 px-2 py-1 text-xs font-medium text-indigo-700">Rotating</span></h3><p class="text-sm text-slate-500">Current: </p><p class="text-sm text-slate-500">Rotation: </p><p class="mt-1.25 text-sm text-slate-500">Skip days: </p></div><div class="flex gap-2.5">`);
+	/** Format skip days for display */
+	var formatSkipDays = (skipDays) => {
+		if (!skipDays || skipDays.length === 0) return "None";
+		return skipDays.map((d) => d.charAt(0).toUpperCase() + d.slice(1)).join(", ");
+	};
+	/** Display card for a rotating chore in the admin interface */
+	var RotatingChoreCard = (props) => {
+		const rotationNames = createMemo(() => props.chore.rotation.map((personId) => {
+			const person = props.people.find((p) => p.id === personId);
+			return person ? escapeHtml(person.name) : "Unknown";
+		}).join(", "));
+		const includesEveryone = createMemo(() => {
+			const peopleLength = props.people.length ?? 0;
+			return props.chore.rotation.length === peopleLength && props.chore.rotation.every((personId) => props.people.some((p) => p.id === personId));
+		});
+		const rotationText = createMemo(() => includesEveryone() ? "Everyone" : rotationNames());
+		const currentAssignee = createMemo(() => {
+			const currentPersonId = props.chore.rotation[props.chore.rotatingIndex ?? 0];
+			const currentPerson = props.people.find((p) => p.id === currentPersonId);
+			return currentPerson ? escapeHtml(currentPerson.name) : "Unassigned";
+		});
+		return (() => {
+			var _el$ = _tmpl$3$3(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.firstChild, _el$5 = _el$3.nextSibling;
+			_el$5.firstChild;
+			var _el$7 = _el$5.nextSibling;
+			_el$7.firstChild;
+			var _el$1 = _el$7.nextSibling;
+			_el$1.firstChild;
+			var _el$11 = _el$2.nextSibling;
+			insert(_el$3, () => escapeHtml(props.chore.name), _el$4);
+			insert(_el$5, currentAssignee, null);
+			insert(_el$7, rotationText, null);
+			insert(_el$2, createComponent(Show, {
+				get when() {
+					return props.chore.deadline || props.chore.startTime;
+				},
+				get children() {
+					var _el$9 = _tmpl$2$3();
+					insert(_el$9, createComponent(Show, {
+						get when() {
+							return props.chore.startTime;
+						},
+						get children() {
+							return ["Start: ", memo(() => props.chore.startTime)];
+						}
+					}), null);
+					insert(_el$9, createComponent(Show, {
+						get when() {
+							return memo(() => !!props.chore.deadline)() && props.chore.startTime;
+						},
+						get children() {
+							return _tmpl$$5();
+						}
+					}), null);
+					insert(_el$9, createComponent(Show, {
+						get when() {
+							return props.chore.deadline;
+						},
+						get children() {
+							return ["Deadline: ", memo(() => props.chore.deadline)];
+						}
+					}), null);
+					return _el$9;
+				}
+			}), _el$1);
+			insert(_el$1, () => formatSkipDays(props.chore.skipDays), null);
+			insert(_el$11, createComponent(Button, {
+				type: "button",
+				variant: "secondary",
+				size: "sm",
+				onClick: () => props.onEdit(props.chore),
+				children: "Edit"
+			}), null);
+			insert(_el$11, createComponent(Button, {
+				type: "button",
+				variant: "danger",
+				size: "sm",
+				onClick: () => props.onDelete(props.chore.id),
+				children: "Delete"
+			}), null);
+			return _el$;
+		})();
+	};
+	//#endregion
+	//#region src/admin/rotating-chores-tab.tsx
+	var _tmpl$$4 = /*#__PURE__*/ template(`<section id=rotatingChoresSection data-testid=rotating-chores-section><div class="mb-5 flex items-center justify-between"><h2 class="m-0 border-b-2 border-indigo-600 pb-2.5 text-2xl text-indigo-600">Rotating Chores</h2></div><div id=rotatingChoresList class="mt-5 grid gap-4">`);
+	/** Tab showing all rotating chores */
+	var RotatingChoresTab = (props) => {
+		const rotatingChores = () => props.chores.filter((chore) => chore.type === ChoreType.ROTATING);
+		return createComponent(Show, {
+			get when() {
+				return props.people.length > 0;
+			},
+			get children() {
+				var _el$ = _tmpl$$4(), _el$2 = _el$.firstChild;
+				_el$2.firstChild;
+				var _el$4 = _el$2.nextSibling;
+				insert(_el$2, createComponent(Button, {
+					type: "button",
+					variant: "primary",
+					id: "addRotatingChoreBtn",
+					get onClick() {
+						return props.onAddRotatingChore;
+					},
+					children: "Add Rotating Chore"
+				}), null);
+				insert(_el$4, createComponent(For, {
+					get each() {
+						return rotatingChores();
+					},
+					children: (chore) => createComponent(RotatingChoreCard, {
+						chore,
+						get people() {
+							return props.people;
+						},
+						get onEdit() {
+							return props.onEditRotatingChore;
+						},
+						get onDelete() {
+							return props.onDeleteChore;
+						}
+					})
+				}));
+				return _el$;
+			}
+		});
+	};
+	//#endregion
 	//#region src/admin/settings-modal.tsx
-	var _tmpl$$2 = /*#__PURE__*/ template(`<div class="mb-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800"><strong>Note:</strong> This PIN is a basic deterrent only. It is stored in plain text in the module's data file. It is <strong>not</strong> intended for high-security environments. Do not expose the admin panel outside your local network. See the module README for more details.`), _tmpl$2$2 = /*#__PURE__*/ template(`<div class=mb-3><label for=currentPin class="mb-2 block font-medium text-amber-900">Current PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=currentPin placeholder="Enter current PIN to save changes"required class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"><button type=button class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100">`), _tmpl$3$2 = /*#__PURE__*/ template(`<label class="mb-3 flex cursor-pointer items-center gap-2"><input type=checkbox class="size-4.5 cursor-pointer">Change PIN`), _tmpl$4$2 = /*#__PURE__*/ template(`<div class=mb-3><label for=newPin class="mb-2 block font-medium text-slate-900"> <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=newPin required class="flex-1 rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><button type=button class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 transition-colors hover:bg-slate-100">`), _tmpl$5$1 = /*#__PURE__*/ template(`<div class=mb-3><label for=confirmPin class="mb-2 block font-medium text-slate-900">Confirm PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=confirmPin placeholder="Confirm PIN"required class="flex-1 rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><button type=button class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 transition-colors hover:bg-slate-100">`), _tmpl$6$1 = /*#__PURE__*/ template(`<small class="block text-sm text-slate-500">PIN can be any combination of letters, numbers, or symbols. There is no length limit.`), _tmpl$7$1 = /*#__PURE__*/ template(`<div class=mb-3><label for=currentPin class="mb-2 block font-medium text-amber-900">Current PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=currentPin placeholder="Enter current PIN to disable protection"required class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"><button type=button class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100">`), _tmpl$8$1 = /*#__PURE__*/ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><div class="mb-5 flex items-center justify-between"><h3 class="text-2xl text-indigo-600">Settings</h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><form><div class=mb-5><label class="flex cursor-pointer items-center gap-2"><input type=checkbox id=historyEnabled class="size-4.5 cursor-pointer">Enable History Tracking</label><small class="mt-2 block text-sm text-slate-500">Track daily chore completions (keeps last 14 days)</small></div><div class="mb-5 rounded-lg border border-slate-200 bg-slate-50 p-4"><h4 class="mb-3 font-medium text-slate-900">Admin PIN Protection</h4><label class="mb-4 flex cursor-pointer items-center gap-2"><input type=checkbox class="size-4.5 cursor-pointer">Enable PIN Protection</label><small class="block text-sm text-slate-500">When enabled, a PIN is required for all admin actions including backup, restore, and modifying people or chores.</small></div><div class="mt-6 flex justify-end gap-2.5">`);
+	var _tmpl$$3 = /*#__PURE__*/ template(`<div class="mb-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800"><strong>Note:</strong> This PIN is a basic deterrent only. It is stored in plain text in the module's data file. It is <strong>not</strong> intended for high-security environments. Do not expose the admin panel outside your local network. See the module README for more details.`), _tmpl$2$2 = /*#__PURE__*/ template(`<div class=mb-3><label for=currentPin class="mb-2 block font-medium text-amber-900">Current PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=currentPin placeholder="Enter current PIN to save changes"required class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"><button type=button class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100">`), _tmpl$3$2 = /*#__PURE__*/ template(`<label class="mb-3 flex cursor-pointer items-center gap-2"><input type=checkbox class="size-4.5 cursor-pointer">Change PIN`), _tmpl$4$1 = /*#__PURE__*/ template(`<div class=mb-3><label for=newPin class="mb-2 block font-medium text-slate-900"> <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=newPin required class="flex-1 rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><button type=button class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 transition-colors hover:bg-slate-100">`), _tmpl$5 = /*#__PURE__*/ template(`<div class=mb-3><label for=confirmPin class="mb-2 block font-medium text-slate-900">Confirm PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=confirmPin placeholder="Confirm PIN"required class="flex-1 rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><button type=button class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 transition-colors hover:bg-slate-100">`), _tmpl$6 = /*#__PURE__*/ template(`<small class="block text-sm text-slate-500">PIN can be any combination of letters, numbers, or symbols. There is no length limit.`), _tmpl$7 = /*#__PURE__*/ template(`<div class=mb-3><label for=currentPin class="mb-2 block font-medium text-amber-900">Current PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=currentPin placeholder="Enter current PIN to disable protection"required class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"><button type=button class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100">`), _tmpl$8 = /*#__PURE__*/ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><div class="mb-5 flex items-center justify-between"><h3 class="text-2xl text-indigo-600">Settings</h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><form><div class=mb-5><label class="flex cursor-pointer items-center gap-2"><input type=checkbox id=historyEnabled class="size-4.5 cursor-pointer">Enable History Tracking</label><small class="mt-2 block text-sm text-slate-500">Track daily chore completions (keeps last 14 days)</small></div><div class="mb-5 rounded-lg border border-slate-200 bg-slate-50 p-4"><h4 class="mb-3 font-medium text-slate-900">Admin PIN Protection</h4><label class="mb-4 flex cursor-pointer items-center gap-2"><input type=checkbox class="size-4.5 cursor-pointer">Enable PIN Protection</label><small class="block text-sm text-slate-500">When enabled, a PIN is required for all admin actions including backup, restore, and modifying people or chores.</small></div><div class="mt-6 flex justify-end gap-2.5">`);
 	var SettingsModal = (props) => {
 		const { choreData } = useAdminContext();
 		const settings = () => choreData().settings;
@@ -3562,7 +3832,7 @@
 			}
 		};
 		return (() => {
-			var _el$ = _tmpl$8$1(), _el$3 = _el$.firstChild.firstChild, _el$5 = _el$3.firstChild.nextSibling, _el$6 = _el$3.nextSibling, _el$7 = _el$6.firstChild, _el$9 = _el$7.firstChild.firstChild, _el$0 = _el$7.nextSibling, _el$10 = _el$0.firstChild.nextSibling, _el$11 = _el$10.firstChild, _el$37 = _el$10.nextSibling, _el$38 = _el$0.nextSibling;
+			var _el$ = _tmpl$8(), _el$3 = _el$.firstChild.firstChild, _el$5 = _el$3.firstChild.nextSibling, _el$6 = _el$3.nextSibling, _el$7 = _el$6.firstChild, _el$9 = _el$7.firstChild.firstChild, _el$0 = _el$7.nextSibling, _el$10 = _el$0.firstChild.nextSibling, _el$11 = _el$10.firstChild, _el$37 = _el$10.nextSibling, _el$38 = _el$0.nextSibling;
 			_el$5.$$click = () => props.closeModal();
 			_el$6.addEventListener("submit", handleSubmit);
 			_el$9.$$input = (e) => setHistoryEnabled(e.currentTarget.checked);
@@ -3578,7 +3848,7 @@
 				},
 				get children() {
 					return [
-						_tmpl$$2(),
+						_tmpl$$3(),
 						createComponent(Show, {
 							get when() {
 								return hasPin();
@@ -3611,7 +3881,7 @@
 							get children() {
 								return [
 									(() => {
-										var _el$20 = _tmpl$4$2(), _el$21 = _el$20.firstChild, _el$22 = _el$21.firstChild, _el$24 = _el$21.nextSibling.firstChild, _el$25 = _el$24.nextSibling;
+										var _el$20 = _tmpl$4$1(), _el$21 = _el$20.firstChild, _el$22 = _el$21.firstChild, _el$24 = _el$21.nextSibling.firstChild, _el$25 = _el$24.nextSibling;
 										insert(_el$21, () => hasPin() ? "New PIN" : "Set PIN", _el$22);
 										_el$24.$$input = (e) => setNewPin(e.currentTarget.value);
 										_el$25.$$click = () => setShowNewPin(!showNewPin());
@@ -3629,7 +3899,7 @@
 										return _el$20;
 									})(),
 									(() => {
-										var _el$26 = _tmpl$5$1(), _el$29 = _el$26.firstChild.nextSibling.firstChild, _el$30 = _el$29.nextSibling;
+										var _el$26 = _tmpl$5(), _el$29 = _el$26.firstChild.nextSibling.firstChild, _el$30 = _el$29.nextSibling;
 										_el$29.$$input = (e) => setConfirmPin(e.currentTarget.value);
 										_el$30.$$click = () => setShowConfirmPin(!showConfirmPin());
 										insert(_el$30, () => showConfirmPin() ? "🙈" : "👁");
@@ -3637,7 +3907,7 @@
 										createRenderEffect(() => _el$29.value = confirmPin());
 										return _el$26;
 									})(),
-									_tmpl$6$1()
+									_tmpl$6()
 								];
 							}
 						})
@@ -3649,7 +3919,7 @@
 					return memo(() => !!!pinEnabled())() && hasPin();
 				},
 				get children() {
-					var _el$32 = _tmpl$7$1(), _el$35 = _el$32.firstChild.nextSibling.firstChild, _el$36 = _el$35.nextSibling;
+					var _el$32 = _tmpl$7(), _el$35 = _el$32.firstChild.nextSibling.firstChild, _el$36 = _el$35.nextSibling;
 					_el$35.$$input = (e) => setCurrentPin(e.currentTarget.value);
 					_el$36.$$click = () => setShowCurrentPin(!showCurrentPin());
 					insert(_el$36, () => showCurrentPin() ? "🙈" : "👁");
@@ -3676,13 +3946,37 @@
 	};
 	delegateEvents(["click", "input"]);
 	//#endregion
-	//#region src/admin/main-page.tsx
-	var _tmpl$$1 = /*#__PURE__*/ template(`<header class="flex flex-wrap items-center justify-between gap-4 bg-slate-100 p-8 text-slate-900"><h1 class="text-3xl font-semibold">Family Chores Admin</h1><div class="flex gap-2.5"><label for=restoreFile class="cursor-pointer rounded-lg border-none bg-gray-600 px-5 py-2.5 text-sm font-medium text-white transition-all hover:-translate-y-0.5 hover:bg-gray-700 hover:shadow-md">Restore Backup</label><input type=file id=restoreFile accept=.json hidden>`), _tmpl$2$1 = /*#__PURE__*/ template(`<section class=mb-10 id=rotatingChoresSection><div class="mb-5 flex items-center justify-between"><h2 class="m-0 border-b-2 border-indigo-600 pb-2.5 text-2xl text-indigo-600">Rotating Chores</h2></div><div id=rotatingChoresList class="mt-5 grid gap-4">`), _tmpl$3$1 = /*#__PURE__*/ template(`<main class=p-8><section class=mb-10 data-testid=people-section><div class="mb-5 flex items-center justify-between"><h2 class="m-0 border-b-2 border-indigo-600 pb-2.5 text-2xl text-indigo-600">People</h2><div class="flex items-center gap-2"></div></div><div id=peopleList class="mt-5 grid gap-4"></div></section><section class=mb-10 data-testid=system-actions-section><div class=mb-5><h2 class="m-0 border-b-2 border-amber-500 pb-2.5 text-2xl text-amber-600">System Actions</h2><p class="mt-3 text-sm text-slate-500">Coming back from vacation? Just set up the mirror after it hasn't been used in a while? These tools help you quickly reset or resync the chore state so everything reflects reality again.</p></div><div class="flex flex-wrap gap-3">`), _tmpl$4$1 = /*#__PURE__*/ template(`<div class="mt-4 border-t border-slate-200 pt-4">`), _tmpl$5 = /*#__PURE__*/ template(`<div class="rounded-lg border border-slate-200 bg-slate-50 p-5 transition-all hover:border-indigo-600 hover:shadow-md"data-testid=person-card><div class="mb-4 flex items-center justify-between"><div class=flex-1><h3 class="mb-1.5 text-xl text-slate-900"> <span class="inline-block size-6 rounded-full border-2 border-black/10 align-middle"></span></h3><p class="text-sm text-slate-500">ID: </p></div><div class="flex gap-2.5"></div></div><div class="mt-4 flex items-center justify-between border-t border-slate-200 pt-4"><h4 class="m-0 text-lg text-indigo-600">'s Personal Chores</h4><div class="flex gap-2">`), _tmpl$6 = /*#__PURE__*/ template(`<div class="mt-4 border-t border-slate-200 pt-4"><p class="my-2.5 text-slate-500 italic">No personal chores yet.`), _tmpl$7 = /*#__PURE__*/ template(`<span class=mx-1>|`), _tmpl$8 = /*#__PURE__*/ template(`<p class="mt-1.25 text-sm text-indigo-600">`), _tmpl$9 = /*#__PURE__*/ template(`<div class="mb-2.5 flex items-center justify-between rounded-lg border border-slate-200 bg-white p-2.5 last:mb-0"><div><h4 class="mb-1.5 text-base text-slate-900"></h4><p class="mt-1.25 text-sm text-slate-500">Skip days: </p></div><div class="flex gap-2">`);
-	var API_BASE$1 = "/MMM-FamilyChores";
-	var formatSkipDays = (skipDays) => {
-		if (!skipDays || skipDays.length === 0) return "None";
-		return skipDays.map((d) => d.charAt(0).toUpperCase() + d.slice(1)).join(", ");
+	//#region src/admin/system-actions-tab.tsx
+	var _tmpl$$2 = /*#__PURE__*/ template(`<section data-testid=system-actions-section><div class=mb-5><h2 class="m-0 border-b-2 border-amber-500 pb-2.5 text-2xl text-amber-600">System Actions</h2><p class="mt-3 text-sm text-slate-500">Coming back from vacation? Just set up the mirror after it hasn't been used in a while? These tools help you quickly reset or resync the chore state so everything reflects reality again.</p></div><div class="flex flex-wrap gap-3">`);
+	/** Tab showing system-level actions for the chore module */
+	var SystemActionsTab = (props) => {
+		return (() => {
+			var _el$ = _tmpl$$2(), _el$3 = _el$.firstChild.nextSibling;
+			insert(_el$3, createComponent(Button, {
+				type: "button",
+				variant: "warning",
+				get onClick() {
+					return props.onAdvanceRotations;
+				},
+				dataTestId: "advance-rotations-btn",
+				children: "↻ Advance All Rotations"
+			}), null);
+			insert(_el$3, createComponent(Button, {
+				type: "button",
+				variant: "secondary",
+				get onClick() {
+					return props.onResetCaughtUp;
+				},
+				dataTestId: "reset-caught-up-btn",
+				children: "✓ Reset All Caught Up"
+			}), null);
+			return _el$;
+		})();
 	};
+	//#endregion
+	//#region src/admin/main-page.tsx
+	var _tmpl$$1 = /*#__PURE__*/ template(`<header class="flex flex-wrap items-center justify-between gap-4 bg-slate-100 p-8 text-slate-900"><h1 class="text-3xl font-semibold">Family Chores Admin</h1><div class="flex gap-2.5"><label for=restoreFile class="cursor-pointer rounded-lg border-none bg-gray-600 px-5 py-2.5 text-sm font-medium text-white transition-all hover:-translate-y-0.5 hover:bg-gray-700 hover:shadow-md">Restore Backup</label><input type=file id=restoreFile accept=.json hidden>`), _tmpl$2$1 = /*#__PURE__*/ template(`<main class=p-8><nav class="mb-8 border-b border-slate-200"><ul class="flex gap-1">`), _tmpl$3$1 = /*#__PURE__*/ template(`<li><button type=button class="cursor-pointer border-b-2 border-transparent px-4 py-2 text-sm font-medium text-slate-600 transition-all hover:text-indigo-600">`);
+	var API_BASE$1 = "/MMM-FamilyChores";
 	var MainPage = () => {
 		const { choreData, loadData, pinRequired, setCachedPin, cachedPin } = useAdminContext();
 		const [pinPromptOpen, setPinPromptOpen] = createSignal(false);
@@ -3877,12 +4171,24 @@
 				alert(`Failed to delete chore: ${error instanceof Error ? error.message : "Unknown error"}`);
 			}
 		};
-		const getPersonalChores = (personId) => {
-			return choreData().chores.filter((chore) => chore.type === ChoreType.PERSONAL && chore.assignedTo === personId);
-		};
 		const getRotatingChores = () => {
 			return choreData().chores.filter((chore) => chore.type === ChoreType.ROTATING);
 		};
+		const [activeTab, setActiveTab] = createSignal("people");
+		const tabs = [
+			{
+				id: "people",
+				label: "People"
+			},
+			{
+				id: "rotating",
+				label: "Rotation Chores"
+			},
+			{
+				id: "system",
+				label: "System Actions"
+			}
+		];
 		return [
 			(() => {
 				var _el$ = _tmpl$$1(), _el$3 = _el$.firstChild.nextSibling, _el$4 = _el$3.firstChild, _el$5 = _el$4.nextSibling;
@@ -3904,205 +4210,79 @@
 				return _el$;
 			})(),
 			(() => {
-				var _el$6 = _tmpl$3$1(), _el$7 = _el$6.firstChild, _el$8 = _el$7.firstChild, _el$0 = _el$8.firstChild.nextSibling, _el$1 = _el$8.nextSibling, _el$14 = _el$7.nextSibling, _el$16 = _el$14.firstChild.nextSibling;
-				insert(_el$0, createComponent(Button, {
-					type: "button",
-					variant: "primary",
-					id: "addPersonBtn",
-					onClick: () => openPersonModal(),
-					children: "Add Person"
-				}), null);
-				insert(_el$0, createComponent(Show, {
-					get when() {
-						return choreData().people.length === 0;
-					},
-					get children() {
-						return createComponent(HelpIcon, {
-							text: "Add at least one person before you can create chores",
-							"class": "ml-2",
-							align: "right"
+				var _el$6 = _tmpl$2$1(), _el$8 = _el$6.firstChild.firstChild;
+				insert(_el$8, createComponent(For, {
+					each: tabs,
+					children: (tab) => (() => {
+						var _el$9 = _tmpl$3$1(), _el$0 = _el$9.firstChild;
+						_el$0.$$click = () => setActiveTab(tab.id);
+						insert(_el$0, () => tab.label);
+						createRenderEffect((_p$) => {
+							var _v$ = {
+								"border-indigo-600 text-indigo-600": activeTab() === tab.id,
+								"border-transparent text-slate-600": activeTab() !== tab.id
+							}, _v$2 = activeTab() === tab.id ? "page" : void 0;
+							_p$.e = classList(_el$0, _v$, _p$.e);
+							_v$2 !== _p$.t && setAttribute(_el$0, "aria-current", _p$.t = _v$2);
+							return _p$;
+						}, {
+							e: void 0,
+							t: void 0
 						});
-					}
-				}), null);
-				insert(_el$1, createComponent(For, {
-					get each() {
-						return choreData().people;
-					},
-					children: (person) => (() => {
-						var _el$17 = _tmpl$5(), _el$18 = _el$17.firstChild, _el$19 = _el$18.firstChild, _el$20 = _el$19.firstChild, _el$21 = _el$20.firstChild, _el$22 = _el$21.nextSibling, _el$23 = _el$20.nextSibling;
-						_el$23.firstChild;
-						var _el$25 = _el$19.nextSibling, _el$27 = _el$18.nextSibling.firstChild, _el$28 = _el$27.firstChild, _el$29 = _el$27.nextSibling;
-						insert(_el$20, () => escapeHtml(person.name), _el$21);
-						insert(_el$23, () => person.id, null);
-						insert(_el$25, createComponent(Button, {
-							type: "button",
-							variant: "secondary",
-							size: "sm",
-							onClick: () => openPersonModal(person),
-							children: "Edit"
-						}), null);
-						insert(_el$25, createComponent(Button, {
-							type: "button",
-							variant: "secondary",
-							size: "sm",
-							onClick: () => setHistoryPerson(person),
-							children: "History"
-						}), null);
-						insert(_el$25, createComponent(Button, {
-							type: "button",
-							variant: "danger",
-							size: "sm",
-							onClick: () => handleDeletePerson(person.id),
-							children: "Delete"
-						}), null);
-						insert(_el$27, () => escapeHtml(person.name), _el$28);
-						insert(_el$29, createComponent(Button, {
-							type: "button",
-							variant: "primary",
-							size: "sm",
-							onClick: () => {
-								openPersonalChoreModal(person, null);
-							},
-							children: "Add Chore"
-						}), null);
-						insert(_el$29, createComponent(Show, {
-							get when() {
-								return memo(() => getPersonalChores(person.id).length > 0)() && choreData().people.length > 1;
-							},
-							get children() {
-								return createComponent(Button, {
-									type: "button",
-									variant: "secondary",
-									size: "sm",
-									onClick: () => {
-										openCopyChoresModal(person);
-									},
-									children: "Copy Chores"
-								});
-							}
-						}), null);
-						insert(_el$17, createComponent(Show, {
-							get when() {
-								return getPersonalChores(person.id).length > 0;
-							},
-							get fallback() {
-								return _tmpl$6();
-							},
-							get children() {
-								var _el$30 = _tmpl$4$1();
-								insert(_el$30, createComponent(For, {
-									get each() {
-										return getPersonalChores(person.id);
-									},
-									children: (chore) => (() => {
-										var _el$32 = _tmpl$9(), _el$33 = _el$32.firstChild, _el$34 = _el$33.firstChild, _el$37 = _el$34.nextSibling;
-										_el$37.firstChild;
-										var _el$39 = _el$33.nextSibling;
-										insert(_el$34, () => escapeHtml(chore.name));
-										insert(_el$33, createComponent(Show, {
-											get when() {
-												return chore.deadline || chore.startTime;
-											},
-											get children() {
-												var _el$35 = _tmpl$8();
-												insert(_el$35, createComponent(Show, {
-													get when() {
-														return chore.startTime;
-													},
-													get children() {
-														return ["Start: ", memo(() => chore.startTime)];
-													}
-												}), null);
-												insert(_el$35, createComponent(Show, {
-													get when() {
-														return memo(() => !!chore.deadline)() && chore.startTime;
-													},
-													get children() {
-														return _tmpl$7();
-													}
-												}), null);
-												insert(_el$35, createComponent(Show, {
-													get when() {
-														return chore.deadline;
-													},
-													get children() {
-														return ["Deadline: ", memo(() => chore.deadline)];
-													}
-												}), null);
-												return _el$35;
-											}
-										}), _el$37);
-										insert(_el$37, () => formatSkipDays(chore.skipDays), null);
-										insert(_el$39, createComponent(Button, {
-											type: "button",
-											variant: "secondary",
-											size: "sm",
-											onClick: () => {
-												openPersonalChoreModal(person, chore);
-											},
-											children: "Edit"
-										}), null);
-										insert(_el$39, createComponent(Button, {
-											type: "button",
-											variant: "danger",
-											size: "sm",
-											onClick: () => handleDeleteChore(chore.id),
-											children: "Delete"
-										}), null);
-										return _el$32;
-									})()
-								}));
-								return _el$30;
-							}
-						}), null);
-						createRenderEffect((_$p) => style(_el$22, `background-color: ${person.color}`, _$p));
-						return _el$17;
+						return _el$9;
 					})()
 				}));
 				insert(_el$6, createComponent(Show, {
 					get when() {
-						return choreData().people.length > 0;
+						return activeTab() === "people";
 					},
 					get children() {
-						var _el$10 = _tmpl$2$1(), _el$11 = _el$10.firstChild;
-						_el$11.firstChild;
-						var _el$13 = _el$11.nextSibling;
-						insert(_el$11, createComponent(Button, {
-							type: "button",
-							variant: "primary",
-							id: "addRotatingChoreBtn",
-							onClick: () => openRotatingChoreModal(),
-							children: "Add Rotating Chore"
-						}), null);
-						insert(_el$13, createComponent(For, {
-							get each() {
-								return getRotatingChores();
+						return createComponent(PeopleTab, {
+							get people() {
+								return choreData().people;
 							},
-							children: (chore) => createComponent(RotatingChoreCard, {
-								chore,
-								get people() {
-									return choreData().people;
-								},
-								onEdit: openRotatingChoreModal,
-								onDelete: handleDeleteChore
-							})
-						}));
-						return _el$10;
+							get chores() {
+								return choreData().chores;
+							},
+							onAddPerson: openPersonModal,
+							onEditPerson: openPersonModal,
+							onHistory: setHistoryPerson,
+							onDeletePerson: handleDeletePerson,
+							onAddChore: openPersonalChoreModal,
+							onEditChore: openPersonalChoreModal,
+							onDeleteChore: handleDeleteChore,
+							onCopyChores: openCopyChoresModal
+						});
 					}
-				}), _el$14);
-				insert(_el$16, createComponent(Button, {
-					type: "button",
-					variant: "warning",
-					onClick: handleAdvanceRotations,
-					"data-testid": "advance-rotations-btn",
-					children: "↻ Advance All Rotations"
 				}), null);
-				insert(_el$16, createComponent(Button, {
-					type: "button",
-					variant: "secondary",
-					onClick: handleResetCaughtUp,
-					"data-testid": "reset-caught-up-btn",
-					children: "✓ Reset All Caught Up"
+				insert(_el$6, createComponent(Show, {
+					get when() {
+						return activeTab() === "rotating";
+					},
+					get children() {
+						return createComponent(RotatingChoresTab, {
+							get people() {
+								return choreData().people;
+							},
+							get chores() {
+								return choreData().chores;
+							},
+							onAddRotatingChore: openRotatingChoreModal,
+							onEditRotatingChore: openRotatingChoreModal,
+							onDeleteChore: handleDeleteChore
+						});
+					}
+				}), null);
+				insert(_el$6, createComponent(Show, {
+					get when() {
+						return activeTab() === "system";
+					},
+					get children() {
+						return createComponent(SystemActionsTab, {
+							onAdvanceRotations: handleAdvanceRotations,
+							onResetCaughtUp: handleResetCaughtUp
+						});
+					}
 				}), null);
 				return _el$6;
 			})(),
@@ -4227,7 +4407,7 @@
 			})
 		];
 	};
-	delegateEvents(["input"]);
+	delegateEvents(["input", "click"]);
 	//#endregion
 	//#region src/admin/admin.tsx
 	var _tmpl$ = /*#__PURE__*/ template(`<header class="flex flex-wrap items-center justify-between gap-4 bg-slate-100 p-8 text-slate-900"><h1 class="text-3xl font-semibold">Family Chores Admin`), _tmpl$2 = /*#__PURE__*/ template(`<p class="text-sm font-medium text-slate-600 italic">Retrying... (attempt <!>)`), _tmpl$3 = /*#__PURE__*/ template(`<div class="animate-loading-pulse bg-[radial-gradient(circle,#2563eb,#ffffff)] bg-size-[200%_200%] bg-center px-8 py-16 text-center text-slate-500"><div class="inline-block rounded-xl bg-white/30 p-8 shadow-md"><p class="mb-2.5 text-xl font-semibold text-slate-900">MagicMirror² is starting up, please wait...`), _tmpl$4 = /*#__PURE__*/ template(`<div class="mx-auto max-w-5xl overflow-hidden rounded-xl bg-white shadow-2xl"data-testid=admin-container>`);
