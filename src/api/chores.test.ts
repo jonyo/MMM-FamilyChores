@@ -1,5 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ChoreType, DayOfWeek, SkipDayVisibility } from '../types/chore-types';
+import {
+  AfterDeadlineVisibility,
+  BeforeStartTimeVisibility,
+  ChoreType,
+  DayOfWeek,
+  NotCaughtUpDisplay,
+  SkipDayVisibility,
+} from '../types/chore-types';
 import type {
   CopyChoresRequest,
   CreateChoreRequest,
@@ -29,6 +36,9 @@ describe('chores API', () => {
         assignedTo: 'p1',
         skipDays: [],
         skipDayVisibility: SkipDayVisibility.HIDE,
+        beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+        afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
+        notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
       };
 
       vi.mocked(fetch).mockResolvedValueOnce({
@@ -57,6 +67,9 @@ describe('chores API', () => {
         assignedTo: 'p1',
         skipDays: [],
         skipDayVisibility: SkipDayVisibility.HIDE,
+        beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+        afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
+        notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
       });
 
       expect(globalThis.fetch).toHaveBeenCalledWith(
@@ -70,6 +83,9 @@ describe('chores API', () => {
             assignedTo: 'p1',
             skipDays: [],
             skipDayVisibility: SkipDayVisibility.HIDE,
+            beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+            afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
+            notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
           }),
         })
       );
@@ -93,6 +109,9 @@ describe('chores API', () => {
         rotation: ['p1', 'p2'],
         skipDays: [],
         skipDayVisibility: SkipDayVisibility.HIDE,
+        beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+        afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
+        notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
       };
 
       vi.mocked(fetch).mockResolvedValueOnce({
@@ -116,6 +135,9 @@ describe('chores API', () => {
         type: ChoreType.PERSONAL,
         assignedTo: 'p1',
         pin: 'secret123',
+        beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+        afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
+        notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
       };
 
       vi.mocked(fetch).mockResolvedValueOnce({
@@ -137,6 +159,9 @@ describe('chores API', () => {
         name: 'Take out trash',
         type: ChoreType.PERSONAL,
         assignedTo: 'p1',
+        beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+        afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
+        notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
       };
 
       vi.mocked(fetch).mockResolvedValueOnce({
@@ -152,6 +177,9 @@ describe('chores API', () => {
         name: 'Take out trash',
         type: ChoreType.PERSONAL,
         assignedTo: 'p1',
+        beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+        afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
+        notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
       };
 
       vi.mocked(fetch).mockResolvedValueOnce({
@@ -167,6 +195,9 @@ describe('chores API', () => {
         name: 'Take out trash',
         type: ChoreType.PERSONAL,
         assignedTo: 'p1',
+        beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+        afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
+        notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
       };
 
       vi.mocked(fetch).mockRejectedValueOnce(new Error('Network error'));
@@ -193,6 +224,9 @@ describe('chores API', () => {
         assignedTo: 'p1',
         skipDays: [DayOfWeek.SUNDAY],
         skipDayVisibility: SkipDayVisibility.SHOW_IF_OVERDUE,
+        beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+        afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
+        notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
       };
 
       vi.mocked(fetch).mockResolvedValueOnce({

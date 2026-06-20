@@ -3,7 +3,13 @@ import { createSignal } from 'solid-js';
 import { describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import type { Chore, DayOfWeek, FamilyChoresData, Person } from '../types/chore-types';
-import { ChoreType, SkipDayVisibility } from '../types/chore-types';
+import {
+  AfterDeadlineVisibility,
+  BeforeStartTimeVisibility,
+  ChoreType,
+  NotCaughtUpDisplay,
+  SkipDayVisibility,
+} from '../types/chore-types';
 import type { Config } from '../types/config';
 import { App } from './app';
 import { ChoreItem } from './chore-item';
@@ -14,6 +20,7 @@ import { RotatingChoreInline } from './rotating-chore-inline';
 import { SummaryView } from './summary-view';
 
 const mockTodaysDayOfWeek = () => 'monday' as DayOfWeek;
+const mockCurrentTime = () => '10:00';
 
 const mockPeople: Person[] = [
   { id: 'p1', name: 'Alice', color: '#FF6B6B' },
@@ -27,6 +34,9 @@ const mockPersonalChore: Chore = {
   assignedTo: 'p1',
   skipDays: [],
   skipDayVisibility: SkipDayVisibility.HIDE,
+  beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+  afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
+  notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
   caughtUp: true,
   completedToday: false,
 };
@@ -39,6 +49,9 @@ const mockRotatingChore: Chore = {
   rotatingIndex: 0,
   skipDays: [],
   skipDayVisibility: SkipDayVisibility.HIDE,
+  beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+  afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
+  notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
   caughtUp: true,
   completedToday: false,
 };
@@ -55,7 +68,14 @@ describe('Frontend Component Tests', () => {
   describe('ChoreItem', () => {
     it('should render personal chore with assigned person', async () => {
       const onToggle = vi.fn();
-      render(() => <ChoreItem chore={mockPersonalChore} people={mockPeople} onToggle={onToggle} />);
+      render(() => (
+        <ChoreItem
+          chore={mockPersonalChore}
+          people={mockPeople}
+          currentTime={mockCurrentTime()}
+          onToggle={onToggle}
+        />
+      ));
 
       await expect.element(page.getByTestId('chore-item')).toBeVisible();
       await expect.element(page.getByText('Take out trash')).toBeVisible();
@@ -64,7 +84,14 @@ describe('Frontend Component Tests', () => {
 
     it('should render rotating chore with current rotation person', async () => {
       const onToggle = vi.fn();
-      render(() => <ChoreItem chore={mockRotatingChore} people={mockPeople} onToggle={onToggle} />);
+      render(() => (
+        <ChoreItem
+          chore={mockRotatingChore}
+          people={mockPeople}
+          currentTime={mockCurrentTime()}
+          onToggle={onToggle}
+        />
+      ));
 
       await expect.element(page.getByText('Clean kitchen')).toBeVisible();
       await expect.element(page.getByText('Alice')).toBeVisible();
@@ -72,7 +99,14 @@ describe('Frontend Component Tests', () => {
 
     it('should call onToggle when checkbox is changed', async () => {
       const onToggle = vi.fn();
-      render(() => <ChoreItem chore={mockPersonalChore} people={mockPeople} onToggle={onToggle} />);
+      render(() => (
+        <ChoreItem
+          chore={mockPersonalChore}
+          people={mockPeople}
+          currentTime={mockCurrentTime()}
+          onToggle={onToggle}
+        />
+      ));
 
       const checkbox = page.getByTestId('chore-checkbox');
       await expect.element(checkbox).toBeVisible();
@@ -115,6 +149,7 @@ describe('Frontend Component Tests', () => {
         <PersonalView
           choreData={choreData}
           todaysDayOfWeek={mockTodaysDayOfWeek}
+          currentTime={mockCurrentTime}
           config={{ viewMode: 'personal', personFilter: null } as Config}
           onToggle={vi.fn()}
         />
@@ -141,6 +176,7 @@ describe('Frontend Component Tests', () => {
         <PersonalView
           choreData={choreData}
           todaysDayOfWeek={todaysDayOfWeek}
+          currentTime={mockCurrentTime}
           config={{ viewMode: 'personal', personFilter: null } as Config}
           onToggle={vi.fn()}
         />
@@ -153,6 +189,38 @@ describe('Frontend Component Tests', () => {
       await expect.element(page.getByText('Skip day chore')).toBeVisible();
     });
 
+    it('should show chore that was hidden by start time once the time passes', async () => {
+      const startTimeChore: Chore = {
+        ...mockPersonalChore,
+        id: 'c-start-time',
+        name: 'Start time chore',
+        startTime: '12:00',
+        beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+      };
+      const [choreData] = createSignal<FamilyChoresData>({
+        ...mockChoreData,
+        chores: [startTimeChore],
+      });
+      const [currentTime, setCurrentTime] = createSignal('10:00');
+      render(() => (
+        <PersonalView
+          choreData={choreData}
+          todaysDayOfWeek={mockTodaysDayOfWeek}
+          currentTime={currentTime}
+          config={{ viewMode: 'personal', personFilter: null } as Config}
+          onToggle={vi.fn()}
+        />
+      ));
+
+      expect(page.getByText('Start time chore').elements().length).toBe(0);
+      await expect.element(page.getByTestId('later-chores-indicator')).toBeVisible();
+
+      setCurrentTime('12:00');
+
+      await expect.element(page.getByText('Start time chore')).toBeVisible();
+      expect(page.getByTestId('later-chores-indicator').elements().length).toBe(0);
+    });
+
     it('should show empty state when no chores match', async () => {
       const [choreData] = createSignal<FamilyChoresData>({
         ...mockChoreData,
@@ -162,12 +230,66 @@ describe('Frontend Component Tests', () => {
         <PersonalView
           choreData={choreData}
           todaysDayOfWeek={mockTodaysDayOfWeek}
+          currentTime={mockCurrentTime}
           config={{ viewMode: 'personal', personFilter: null } as Config}
           onToggle={vi.fn()}
         />
       ));
 
       await expect.element(page.getByText('No chores match the current filter.')).toBeVisible();
+    });
+
+    it('should show a hidden later-chores indicator when start time has not been reached', async () => {
+      const laterChore: Chore = {
+        ...mockPersonalChore,
+        id: 'c-later',
+        name: 'Later chore',
+        startTime: '12:00',
+        beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+      };
+      const [choreData] = createSignal<FamilyChoresData>({
+        ...mockChoreData,
+        chores: [laterChore],
+      });
+      render(() => (
+        <PersonalView
+          choreData={choreData}
+          todaysDayOfWeek={mockTodaysDayOfWeek}
+          currentTime={mockCurrentTime}
+          config={{ viewMode: 'personal', personFilter: null } as Config}
+          onToggle={vi.fn()}
+        />
+      ));
+
+      await expect.element(page.getByTestId('later-chores-indicator')).toBeVisible();
+      await expect.element(page.getByText('1 more chore starts later')).toBeVisible();
+      expect(page.getByText('No chores match the current filter.').elements().length).toBe(0);
+    });
+
+    it('should not show the hidden later-chores indicator when the start time has passed', async () => {
+      const laterChore: Chore = {
+        ...mockPersonalChore,
+        id: 'c-later',
+        name: 'Later chore',
+        startTime: '09:00',
+        beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+      };
+      const [choreData] = createSignal<FamilyChoresData>({
+        ...mockChoreData,
+        chores: [laterChore],
+      });
+      render(() => (
+        <PersonalView
+          choreData={choreData}
+          todaysDayOfWeek={mockTodaysDayOfWeek}
+          currentTime={mockCurrentTime}
+          config={{ viewMode: 'personal', personFilter: null } as Config}
+          onToggle={vi.fn()}
+        />
+      ));
+
+      expect(page.getByTestId('later-chores-indicator').elements().length).toBe(0);
+      await expect.element(page.getByText('Later chore')).toBeVisible();
     });
   });
 
@@ -185,6 +307,26 @@ describe('Frontend Component Tests', () => {
       render(() => <IncompleteByPerson incompleteChores={[]} people={mockPeople} />);
 
       expect(page.getByText('🎉').elements().length).toBe(2);
+    });
+
+    it('should show a per-person later count when hidden later-start chores exist', async () => {
+      const laterChore: Chore = {
+        ...mockPersonalChore,
+        id: 'c-later',
+        name: 'Later chore',
+        startTime: '12:00',
+        beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+      };
+      render(() => (
+        <IncompleteByPerson
+          incompleteChores={[mockPersonalChore]}
+          people={mockPeople}
+          hiddenLaterChores={[laterChore]}
+        />
+      ));
+
+      await expect.element(page.getByTestId('later-count-note')).toBeVisible();
+      await expect.element(page.getByText('+1 later')).toBeVisible();
     });
   });
 
@@ -210,6 +352,7 @@ describe('Frontend Component Tests', () => {
         <SummaryView
           choreData={choreData}
           todaysDayOfWeek={mockTodaysDayOfWeek}
+          currentTime={mockCurrentTime}
           config={
             {
               viewMode: 'summary',
@@ -238,6 +381,7 @@ describe('Frontend Component Tests', () => {
         <SummaryView
           choreData={choreData}
           todaysDayOfWeek={mockTodaysDayOfWeek}
+          currentTime={mockCurrentTime}
           config={
             {
               viewMode: 'summary',
@@ -278,6 +422,7 @@ describe('Frontend Component Tests', () => {
         <SummaryView
           choreData={choreData}
           todaysDayOfWeek={todaysDayOfWeek}
+          currentTime={mockCurrentTime}
           config={
             {
               viewMode: 'summary',
@@ -303,12 +448,96 @@ describe('Frontend Component Tests', () => {
       await expect.element(page.getByText('Incomplete')).toBeVisible();
     });
 
+    it('should show chore in summary that was hidden by start time once the time passes', async () => {
+      const startTimeChore: Chore = {
+        ...mockPersonalChore,
+        id: 'c-start-time-summary',
+        name: 'Summary start time chore',
+        startTime: '12:00',
+        beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+        completedToday: false,
+      };
+      const [choreData] = createSignal<FamilyChoresData>({
+        ...mockChoreData,
+        chores: [startTimeChore],
+      });
+      const [currentTime, setCurrentTime] = createSignal('10:00');
+      render(() => (
+        <SummaryView
+          choreData={choreData}
+          todaysDayOfWeek={mockTodaysDayOfWeek}
+          currentTime={currentTime}
+          config={
+            {
+              viewMode: 'summary',
+              personFilter: null,
+              summary: {
+                showIncomplete: true,
+                showRotating: false,
+                showOverdue: false,
+                incompleteTitle: 'Incomplete',
+                rotatingTitle: 'Rotating',
+                overdueTitle: 'Overdue',
+              },
+            } as Config
+          }
+          onToggle={vi.fn()}
+        />
+      ));
+
+      expect(page.getByText('Incomplete').elements().length).toBe(0);
+
+      setCurrentTime('12:00');
+
+      await expect.element(page.getByText('Incomplete')).toBeVisible();
+    });
+
+    it('should show a hidden later-chores note in the incomplete section', async () => {
+      const laterChore: Chore = {
+        ...mockPersonalChore,
+        id: 'c-later-summary',
+        name: 'Later summary chore',
+        startTime: '12:00',
+        beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+      };
+      const [choreData] = createSignal<FamilyChoresData>({
+        ...mockChoreData,
+        chores: [mockPersonalChore, laterChore],
+      });
+      render(() => (
+        <SummaryView
+          choreData={choreData}
+          todaysDayOfWeek={mockTodaysDayOfWeek}
+          currentTime={mockCurrentTime}
+          config={
+            {
+              viewMode: 'summary',
+              personFilter: null,
+              summary: {
+                showIncomplete: true,
+                showRotating: false,
+                showOverdue: false,
+                incompleteTitle: 'Incomplete',
+                rotatingTitle: 'Rotating',
+                overdueTitle: 'Overdue',
+              },
+            } as Config
+          }
+          onToggle={vi.fn()}
+        />
+      ));
+
+      await expect.element(page.getByTestId('later-count-note')).toBeVisible();
+      await expect.element(page.getByText('+1 later')).toBeVisible();
+    });
+
     it('should not render sections when disabled', async () => {
       const [choreData] = createSignal<FamilyChoresData>(mockChoreData);
       render(() => (
         <SummaryView
           choreData={choreData}
           todaysDayOfWeek={mockTodaysDayOfWeek}
+          currentTime={mockCurrentTime}
           config={
             {
               viewMode: 'summary',
@@ -340,6 +569,7 @@ describe('Frontend Component Tests', () => {
         <App
           choreData={choreData}
           todaysDayOfWeek={mockTodaysDayOfWeek}
+          currentTime={mockCurrentTime}
           config={{ viewMode: 'personal', personFilter: null } as Config}
           onToggle={vi.fn()}
         />
@@ -354,6 +584,7 @@ describe('Frontend Component Tests', () => {
         <App
           choreData={choreData}
           todaysDayOfWeek={mockTodaysDayOfWeek}
+          currentTime={mockCurrentTime}
           config={{ viewMode: 'personal', personFilter: null } as Config}
           onToggle={vi.fn()}
         />
@@ -369,6 +600,7 @@ describe('Frontend Component Tests', () => {
         <App
           choreData={choreData}
           todaysDayOfWeek={mockTodaysDayOfWeek}
+          currentTime={mockCurrentTime}
           config={
             {
               viewMode: 'summary',

@@ -1131,29 +1131,6 @@
 	var getLocalDayName = (date = /* @__PURE__ */ new Date()) => {
 		return new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(date).toLowerCase();
 	};
-	/**
-	* Deadline status enum for visual indicators
-	*/
-	var DeadlineStatus = /* @__PURE__ */ function(DeadlineStatus) {
-		DeadlineStatus["NORMAL"] = "normal";
-		DeadlineStatus["OVERDUE"] = "overdue";
-		DeadlineStatus["COMPLETED"] = "completed";
-		return DeadlineStatus;
-	}({});
-	/**
-	* Determines the deadline status for a chore
-	* @param deadline - Optional deadline time in "HH:MM" format
-	* @param completedToday - Whether the chore is completed today
-	* @param caughtUp - Whether the chore is caught up (completed yesterday)
-	* @returns DeadlineStatus for CSS class application
-	*/
-	var getDeadlineStatus = (deadline, completedToday, caughtUp) => {
-		if (completedToday) return "completed";
-		if (caughtUp === false) return "overdue";
-		if (!deadline) return "normal";
-		if (getLocalTimeString() >= deadline) return "overdue";
-		return "normal";
-	};
 	//#endregion
 	//#region src/types/chore-types.ts
 	var SkipDayVisibility = /* @__PURE__ */ function(SkipDayVisibility) {
@@ -1161,6 +1138,31 @@
 		SkipDayVisibility["SHOW_IF_OVERDUE"] = "show-if-overdue";
 		SkipDayVisibility["SHOW_ALWAYS"] = "show-always";
 		return SkipDayVisibility;
+	}({});
+	/**
+	* Controls how a chore is handled after its deadline
+	*/
+	var AfterDeadlineVisibility = /* @__PURE__ */ function(AfterDeadlineVisibility) {
+		AfterDeadlineVisibility["SHOW_NORMAL"] = "normal";
+		AfterDeadlineVisibility["SHOW_OVERDUE"] = "overdue";
+		AfterDeadlineVisibility["MOVE_TO_EARLIER"] = "earlier";
+		return AfterDeadlineVisibility;
+	}({});
+	/**
+	* Controls whether a missed chore is shown before its startTime
+	*/
+	var BeforeStartTimeVisibility = /* @__PURE__ */ function(BeforeStartTimeVisibility) {
+		BeforeStartTimeVisibility["HIDE"] = "hide";
+		BeforeStartTimeVisibility["SHOW_IF_OVERDUE"] = "show-if-overdue";
+		return BeforeStartTimeVisibility;
+	}({});
+	/**
+	* Controls how a chore that is not caught up is displayed
+	*/
+	var NotCaughtUpDisplay = /* @__PURE__ */ function(NotCaughtUpDisplay) {
+		NotCaughtUpDisplay["NORMAL"] = "normal";
+		NotCaughtUpDisplay["OVERDUE"] = "overdue";
+		return NotCaughtUpDisplay;
 	}({});
 	var ChoreType = /* @__PURE__ */ function(ChoreType) {
 		ChoreType["PERSONAL"] = "personal";
@@ -1170,25 +1172,97 @@
 	//#endregion
 	//#region src/frontend/chore-filters.ts
 	/**
-	* Determine if a chore should be shown based on skip day visibility settings
+	* Determine if a chore should be shown based on skip day and time-based visibility settings.
+	*
+	* Skip-day filtering is applied first. A completed chore is then shown even if it would
+	* otherwise be hidden by the start-time or after-deadline settings, so the user can see
+	* what has already been done today.
 	*/
-	function shouldShowChore(chore, todayDayName) {
-		if (!chore.skipDays.includes(todayDayName)) return true;
-		const skipDayVisibility = chore.skipDayVisibility ?? SkipDayVisibility.HIDE;
-		if (skipDayVisibility === SkipDayVisibility.HIDE) return false;
-		if (skipDayVisibility === SkipDayVisibility.SHOW_IF_OVERDUE && chore.caughtUp) return false;
+	function shouldShowChore(chore, todayDayName, currentTime) {
+		if (chore.skipDays.includes(todayDayName)) {
+			const skipDayVisibility = chore.skipDayVisibility;
+			if (skipDayVisibility === SkipDayVisibility.HIDE) return false;
+			if (skipDayVisibility === SkipDayVisibility.SHOW_IF_OVERDUE && chore.caughtUp) return false;
+		}
+		if (chore.completedToday) return true;
+		if (chore.startTime && currentTime < chore.startTime) {
+			if (chore.beforeStartTimeVisibility !== BeforeStartTimeVisibility.SHOW_IF_OVERDUE) return false;
+			if (chore.caughtUp) return false;
+		}
 		return true;
+	}
+	/**
+	* Determine if a chore belongs in the "Earlier chores" collapsed section.
+	*
+	* A chore with a deadline that has passed moves to the earlier section when:
+	* - it is completed, or
+	* - it is not completed and its after-deadline setting is "Move to earlier".
+	*/
+	function isEarlierChore(chore, currentTime) {
+		if (!chore.deadline || currentTime < chore.deadline) return false;
+		if (!chore.completedToday && chore.afterDeadlineVisibility === AfterDeadlineVisibility.MOVE_TO_EARLIER) return true;
+		if (chore.completedToday) return true;
+		return false;
+	}
+	/**
+	* Determine if a chore should be styled as overdue based on display options.
+	*
+	* Completed chores are never overdue. A missed chore is overdue when
+	* notCaughtUpDisplay is 'overdue'. A chore past its deadline is overdue when
+	* afterDeadlineVisibility is 'overdue'.
+	*/
+	function isChoreOverdue(chore, currentTime) {
+		if (chore.completedToday) return false;
+		if (!chore.caughtUp && chore.notCaughtUpDisplay === NotCaughtUpDisplay.OVERDUE) return true;
+		if (chore.deadline && currentTime >= chore.deadline && chore.afterDeadlineVisibility === AfterDeadlineVisibility.SHOW_OVERDUE) return true;
+		return false;
+	}
+	/**
+	* Determine if a chore is hidden because its startTime has not been reached yet.
+	*
+	* A chore is considered hidden by start time when it:
+	* - is not hidden by skip-day settings,
+	* - has a startTime that is in the future,
+	* - is not completed today,
+	* - and is configured to hide before startTime (or is caught up with SHOW_IF_OVERDUE).
+	*/
+	function isHiddenByStartTime(chore, todayDayName, currentTime) {
+		if (chore.skipDays.includes(todayDayName)) {
+			const skipDayVisibility = chore.skipDayVisibility;
+			if (skipDayVisibility === SkipDayVisibility.HIDE) return false;
+			if (skipDayVisibility === SkipDayVisibility.SHOW_IF_OVERDUE && chore.caughtUp) return false;
+		}
+		if (!chore.startTime || currentTime >= chore.startTime) return false;
+		if (chore.completedToday) return false;
+		if (chore.beforeStartTimeVisibility === BeforeStartTimeVisibility.SHOW_IF_OVERDUE) return chore.caughtUp;
+		return chore.beforeStartTimeVisibility === BeforeStartTimeVisibility.HIDE;
+	}
+	/**
+	* Get chores that are currently hidden because their startTime has not been reached yet.
+	*/
+	function getHiddenLaterChores(chores, people, personFilter, todayDayName, currentTime) {
+		const filterValue = personFilter?.trim().toLowerCase();
+		const filteredPerson = filterValue ? people.find((person) => person.id.toLowerCase() === filterValue) || people.find((person) => person.name.toLowerCase() === filterValue) : null;
+		return chores.filter((chore) => {
+			if (filteredPerson) if (chore.type === "personal") {
+				if (chore.assignedTo !== filteredPerson.id) return false;
+			} else if (chore.type === "rotating" && chore.rotation?.length) {
+				const currentIndex = chore.rotatingIndex ?? 0;
+				if (chore.rotation[currentIndex] !== filteredPerson.id) return false;
+			} else return false;
+			return isHiddenByStartTime(chore, todayDayName, currentTime);
+		});
 	}
 	/**
 	* Get chores filtered for personal view mode
 	*/
-	function getFilteredChores(chores, people, personFilter, todayDayName) {
+	function getFilteredChores(chores, people, personFilter, todayDayName, currentTime) {
 		const filterValue = personFilter?.trim().toLowerCase();
-		if (!filterValue) return chores.filter((chore) => shouldShowChore(chore, todayDayName));
+		if (!filterValue) return chores.filter((chore) => shouldShowChore(chore, todayDayName, currentTime));
 		const filteredPerson = people.find((person) => person.id.toLowerCase() === filterValue) || people.find((person) => person.name.toLowerCase() === filterValue);
 		if (!filteredPerson) return [];
 		return chores.filter((chore) => {
-			if (!shouldShowChore(chore, todayDayName)) return false;
+			if (!shouldShowChore(chore, todayDayName, currentTime)) return false;
 			if (chore.type === "personal") return chore.assignedTo === filteredPerson.id;
 			if (chore.type === "rotating" && chore.rotation?.length) {
 				const currentIndex = chore.rotatingIndex ?? 0;
@@ -1198,11 +1272,11 @@
 		});
 	}
 	/**
-	* Get chores for summary view: all incomplete + all rotating chores, with skip day filtering
+	* Get chores for summary view: all incomplete + all rotating chores, with skip day and time filtering
 	*/
-	function getSummaryChores(chores, todayDayName) {
+	function getSummaryChores(chores, todayDayName, currentTime) {
 		return chores.filter((chore) => {
-			if (!shouldShowChore(chore, todayDayName)) return false;
+			if (!shouldShowChore(chore, todayDayName, currentTime)) return false;
 			if (!chore.completedToday) return true;
 			if (chore.type === "rotating" && chore.rotation?.length) return true;
 			return false;
@@ -1238,7 +1312,7 @@
 	};
 	//#endregion
 	//#region src/frontend/chore-item.tsx
-	var _tmpl$$6 = /*#__PURE__*/ template(`<div data-testid=chore-item><label class=chore-label><div class=chore-checkbox><input type=checkbox data-testid=chore-checkbox></div><div class=chore-details><div class=chore-name></div><div class=chore-meta><span class=assigned-to>`), _tmpl$2$4 = /*#__PURE__*/ template(`<span class=deadline>`);
+	var _tmpl$$7 = /*#__PURE__*/ template(`<div data-testid=chore-item><label class=chore-label><div class=chore-checkbox><input type=checkbox data-testid=chore-checkbox></div><div class=chore-details><div class=chore-name></div><div class=chore-meta><span class=assigned-to>`), _tmpl$2$5 = /*#__PURE__*/ template(`<span class=deadline>`);
 	var ChoreItem = (props) => {
 		const assignedPerson = () => {
 			const chore = props.chore;
@@ -1253,21 +1327,24 @@
 		const displayPerson = () => assignedPerson() || currentRotationPerson();
 		const personName = () => displayPerson()?.name ?? "Unassigned";
 		const personColor = () => displayPerson()?.color ?? "#ccc";
-		const deadlineStatus = () => getDeadlineStatus(props.chore.deadline, props.chore.completedToday, props.chore.caughtUp);
-		const deadlineClass = () => deadlineStatus() === DeadlineStatus.COMPLETED ? "completed" : deadlineStatus();
+		const deadlineClass = () => {
+			if (props.chore.completedToday) return "completed";
+			if (isChoreOverdue(props.chore, props.currentTime)) return "overdue";
+			return "normal";
+		};
 		const handleChange = (event) => {
 			const target = event.target;
 			props.onToggle(props.chore.id, target.checked);
 		};
 		return (() => {
-			var _el$ = _tmpl$$6(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.firstChild, _el$6 = _el$3.nextSibling.firstChild, _el$7 = _el$6.nextSibling, _el$8 = _el$7.firstChild;
+			var _el$ = _tmpl$$7(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.firstChild, _el$6 = _el$3.nextSibling.firstChild, _el$7 = _el$6.nextSibling, _el$8 = _el$7.firstChild;
 			_el$4.addEventListener("change", handleChange);
 			insert(_el$6, () => escapeHtml(props.chore.name));
 			insert(_el$8, () => escapeHtml(personName()));
 			insert(_el$7, (() => {
 				var _c$ = memo(() => !!props.chore.deadline);
 				return () => _c$() && (() => {
-					var _el$9 = _tmpl$2$4();
+					var _el$9 = _tmpl$2$5();
 					insert(_el$9, () => props.chore.deadline);
 					return _el$9;
 				})();
@@ -1292,45 +1369,124 @@
 		})();
 	};
 	//#endregion
+	//#region src/frontend/later-chores-indicator.tsx
+	var _tmpl$$6 = /*#__PURE__*/ template(`<div class=later-chores-indicator data-testid=later-chores-indicator><span class=later-chores-icon>&#x23F0;</span><span class=later-chores-text> more <!> later`);
+	/**
+	* A non-interactive placeholder that tells the user there are more chores coming later today.
+	*/
+	var LaterChoresIndicator = (props) => {
+		return (() => {
+			var _el$ = _tmpl$$6(), _el$3 = _el$.firstChild.nextSibling, _el$4 = _el$3.firstChild, _el$6 = _el$4.nextSibling;
+			_el$6.nextSibling;
+			insert(_el$3, () => props.count, _el$4);
+			insert(_el$3, () => props.count === 1 ? "chore starts" : "chores start", _el$6);
+			return _el$;
+		})();
+	};
+	//#endregion
 	//#region src/frontend/personal-view.tsx
-	var _tmpl$$5 = /*#__PURE__*/ template(`<div class=chore-list>`), _tmpl$2$3 = /*#__PURE__*/ template(`<div class=empty-state>No chores match the current filter.`);
+	var _tmpl$$5 = /*#__PURE__*/ template(`<div class=chore-list>`), _tmpl$2$4 = /*#__PURE__*/ template(`<div class=chore-list><div class=earlier-chores-container><details class=earlier-chores><summary class=earlier-chores-summary><div class=earlier-chores-header><span class=earlier-chores-title>Earlier chores</span><span class=earlier-chores-count></span></div></summary><div class=earlier-chores-content>`), _tmpl$3$2 = /*#__PURE__*/ template(`<div class=chore-list><div class=empty-state>No chores match the current filter.`);
+	/** Debounce window after the last check/uncheck before moving chores to the earlier section. */
+	var EARLIER_SECTION_DEBOUNCE_MS = 5e3;
 	var PersonalView = (props) => {
 		const visibleChores = createMemo(() => {
 			const data = props.choreData();
-			return getFilteredChores(data.chores, data.people, props.config.personFilter, props.todaysDayOfWeek());
+			return getFilteredChores(data.chores, data.people, props.config.personFilter, props.todaysDayOfWeek(), props.currentTime());
 		});
-		return (() => {
-			var _el$ = _tmpl$$5();
-			insert(_el$, createComponent(Show, {
-				get when() {
-					return visibleChores().length > 0;
-				},
-				get fallback() {
-					return _tmpl$2$3();
-				},
-				get children() {
-					return createComponent(For, {
+		const liveEarlierIds = createMemo(() => {
+			const time = props.currentTime();
+			const ids = /* @__PURE__ */ new Set();
+			for (const chore of visibleChores()) if (isEarlierChore(chore, time)) ids.add(chore.id);
+			return ids;
+		});
+		const [frozenEarlierIds, setFrozenEarlierIds] = createSignal(null);
+		let earlierDebounceTimer;
+		const freezeEarlierSection = () => {
+			setFrozenEarlierIds(liveEarlierIds());
+			if (earlierDebounceTimer) clearTimeout(earlierDebounceTimer);
+			earlierDebounceTimer = window.setTimeout(() => {
+				setFrozenEarlierIds(null);
+			}, EARLIER_SECTION_DEBOUNCE_MS);
+		};
+		const effectiveEarlierIds = createMemo(() => frozenEarlierIds() ?? liveEarlierIds());
+		const mainChores = createMemo(() => visibleChores().filter((chore) => !effectiveEarlierIds().has(chore.id)));
+		const earlierChores = createMemo(() => visibleChores().filter((chore) => effectiveEarlierIds().has(chore.id)));
+		const hiddenLaterChores = createMemo(() => {
+			const data = props.choreData();
+			return getHiddenLaterChores(data.chores, data.people, props.config.personFilter, props.todaysDayOfWeek(), props.currentTime());
+		});
+		const hasVisibleChores = createMemo(() => mainChores().length > 0 || earlierChores().length > 0 || hiddenLaterChores().length > 0);
+		const handleToggle = (choreId, completed) => {
+			freezeEarlierSection();
+			props.onToggle(choreId, completed);
+		};
+		return createComponent(Show, {
+			get when() {
+				return hasVisibleChores();
+			},
+			get fallback() {
+				return _tmpl$3$2();
+			},
+			get children() {
+				return [(() => {
+					var _el$ = _tmpl$$5();
+					insert(_el$, createComponent(For, {
 						get each() {
-							return visibleChores();
+							return mainChores();
 						},
 						children: (chore) => createComponent(ChoreItem, {
 							chore,
 							get people() {
 								return props.choreData().people;
 							},
-							get onToggle() {
-								return props.onToggle;
-							}
+							get currentTime() {
+								return props.currentTime();
+							},
+							onToggle: handleToggle
 						})
-					});
-				}
-			}));
-			return _el$;
-		})();
+					}), null);
+					insert(_el$, createComponent(Show, {
+						get when() {
+							return hiddenLaterChores().length > 0;
+						},
+						get children() {
+							return createComponent(LaterChoresIndicator, { get count() {
+								return hiddenLaterChores().length;
+							} });
+						}
+					}), null);
+					return _el$;
+				})(), createComponent(Show, {
+					get when() {
+						return earlierChores().length > 0;
+					},
+					get children() {
+						var _el$2 = _tmpl$2$4(), _el$5 = _el$2.firstChild.firstChild.firstChild, _el$8 = _el$5.firstChild.firstChild.nextSibling, _el$9 = _el$5.nextSibling;
+						insert(_el$8, () => earlierChores().length);
+						insert(_el$9, createComponent(For, {
+							get each() {
+								return earlierChores();
+							},
+							children: (chore) => createComponent(ChoreItem, {
+								chore,
+								get people() {
+									return props.choreData().people;
+								},
+								get currentTime() {
+									return props.currentTime();
+								},
+								onToggle: handleToggle
+							})
+						}));
+						return _el$2;
+					}
+				})];
+			}
+		});
 	};
 	//#endregion
 	//#region src/frontend/incomplete-by-person.tsx
-	var _tmpl$$4 = /*#__PURE__*/ template(`<div class=incomplete-person-row><span class=person-name></span><span class=incomplete-count>`);
+	var _tmpl$$4 = /*#__PURE__*/ template(`<span class=later-count-note data-testid=later-count-note> +<!> later`), _tmpl$2$3 = /*#__PURE__*/ template(`<div class=incomplete-person-row><span class=person-name></span><span class=incomplete-count>`);
 	var IncompleteByPerson = (props) => {
 		const personRows = createMemo(() => {
 			const choresByPerson = /* @__PURE__ */ new Map();
@@ -1343,12 +1499,21 @@
 					choresByPerson.get(personId)?.push(chore);
 				}
 			});
+			const laterByPerson = /* @__PURE__ */ new Map();
+			props.hiddenLaterChores?.forEach((chore) => {
+				let personId;
+				if (chore.type === ChoreType.PERSONAL) personId = chore.assignedTo;
+				else if (chore.type === ChoreType.ROTATING && chore.rotation && chore.rotatingIndex !== void 0) personId = chore.rotation[chore.rotatingIndex];
+				if (personId) laterByPerson.set(personId, (laterByPerson.get(personId) ?? 0) + 1);
+			});
 			return props.people.map((person) => {
 				const count = (choresByPerson.get(person.id) || []).length;
+				const laterCount = laterByPerson.get(person.id) ?? 0;
 				return {
 					person,
 					count,
-					celebrationEmoji: count === 0 ? "🎉" : ""
+					laterCount,
+					celebrationEmoji: count === 0 && laterCount === 0 ? "🎉" : ""
 				};
 			});
 		});
@@ -1357,11 +1522,22 @@
 				return personRows();
 			},
 			children: (row) => (() => {
-				var _el$ = _tmpl$$4(), _el$2 = _el$.firstChild, _el$3 = _el$2.nextSibling;
+				var _el$ = _tmpl$2$3(), _el$2 = _el$.firstChild, _el$3 = _el$2.nextSibling;
 				insert(_el$2, () => escapeHtml(row.person.name));
 				insert(_el$3, () => row.celebrationEmoji, null);
 				insert(_el$3, () => row.celebrationEmoji && " ", null);
 				insert(_el$3, () => row.count, null);
+				insert(_el$3, createComponent(Show, {
+					get when() {
+						return row.laterCount > 0;
+					},
+					get children() {
+						var _el$4 = _tmpl$$4(), _el$8 = _el$4.firstChild.nextSibling;
+						_el$8.nextSibling;
+						insert(_el$4, () => row.laterCount, _el$8);
+						return _el$4;
+					}
+				}), null);
 				createRenderEffect((_$p) => setStyleProperty(_el$2, "color", row.person.color));
 				return _el$;
 			})()
@@ -1467,13 +1643,12 @@
 	var SummaryView = (props) => {
 		const summaryConfig = () => getSummaryConfig(props.config);
 		const visibleChores = createMemo(() => {
-			return getSummaryChores(props.choreData().chores, props.todaysDayOfWeek());
+			return getSummaryChores(props.choreData().chores, props.todaysDayOfWeek(), props.currentTime());
 		});
 		const incompleteChores = createMemo(() => visibleChores().filter((chore) => !chore.completedToday));
-		const overdueChores = createMemo(() => visibleChores().filter((chore) => {
-			return getDeadlineStatus(chore.deadline, chore.completedToday, chore.caughtUp) === DeadlineStatus.OVERDUE;
-		}));
+		const overdueChores = createMemo(() => visibleChores().filter((chore) => isChoreOverdue(chore, props.currentTime())));
 		const rotatingChores = createMemo(() => visibleChores().filter((chore) => chore.type === "rotating"));
+		const hiddenLaterChores = createMemo(() => getHiddenLaterChores(props.choreData().chores, props.choreData().people, props.config.personFilter, props.todaysDayOfWeek(), props.currentTime()));
 		return (() => {
 			var _el$ = _tmpl$4();
 			insert(_el$, createComponent(Show, {
@@ -1489,6 +1664,9 @@
 						},
 						get people() {
 							return props.choreData().people;
+						},
+						get hiddenLaterChores() {
+							return hiddenLaterChores();
 						}
 					}));
 					return _el$2;
@@ -1562,6 +1740,9 @@
 							get todaysDayOfWeek() {
 								return props.todaysDayOfWeek;
 							},
+							get currentTime() {
+								return props.currentTime;
+							},
 							get config() {
 								return props.config;
 							},
@@ -1575,6 +1756,9 @@
 							choreData: dataAccessor,
 							get todaysDayOfWeek() {
 								return props.todaysDayOfWeek;
+							},
+							get currentTime() {
+								return props.currentTime;
 							},
 							get config() {
 								return props.config;
@@ -1622,17 +1806,21 @@
 			Log.info(`${this.name} is starting`);
 			const [choreData, setChoreData] = createStore({
 				data: null,
-				todaysDayOfWeek: getLocalDayName()
+				todaysDayOfWeek: getLocalDayName(),
+				currentTime: getLocalTimeString()
 			});
 			this.choreDataSignal = () => choreData.data;
 			this.todaysDayOfWeekSignal = () => choreData.todaysDayOfWeek;
+			this.currentTimeSignal = () => choreData.currentTime;
 			this.setChoreDataAndDay = (data) => {
 				setChoreData("data", reconcile(data));
 				setChoreData("todaysDayOfWeek", getLocalDayName());
+				setChoreData("currentTime", getLocalTimeString());
 			};
 			setInterval(() => {
 				const newDay = getLocalDayName();
 				if (newDay !== choreData.todaysDayOfWeek) setChoreData("todaysDayOfWeek", newDay);
+				setChoreData("currentTime", getLocalTimeString());
 			}, 6e4);
 			this.loadData();
 		},
@@ -1655,8 +1843,9 @@
 			};
 			const choreDataSignal = this.choreDataSignal;
 			const todaysDayOfWeekSignal = this.todaysDayOfWeekSignal;
-			if (!choreDataSignal || !todaysDayOfWeekSignal) {
-				Log.error(`${this.name} choreDataSignal or todaysDayOfWeekSignal is not initialized`);
+			const currentTimeSignal = this.currentTimeSignal;
+			if (!choreDataSignal || !todaysDayOfWeekSignal || !currentTimeSignal) {
+				Log.error(`${this.name} a required signal is not initialized`);
 				return container;
 			}
 			render(() => {
@@ -1664,6 +1853,7 @@
 				return createComponent(App, {
 					choreData: choreDataSignal,
 					todaysDayOfWeek: todaysDayOfWeekSignal,
+					currentTime: currentTimeSignal,
 					get config() {
 						return _self$.config;
 					},

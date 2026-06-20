@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { Chore, Person } from '../types/chore-types';
-import { ChoreType, DayOfWeek, SkipDayVisibility } from '../types/chore-types';
+import {
+  AfterDeadlineVisibility,
+  BeforeStartTimeVisibility,
+  ChoreType,
+  DayOfWeek,
+  NotCaughtUpDisplay,
+  SkipDayVisibility,
+} from '../types/chore-types';
 import { generateTestUUID } from '../utils/uuid';
 import {
   validateChore,
@@ -21,6 +28,9 @@ const baseChoreFields = (idNum: number) => ({
   name: 'Chore name',
   skipDays: [] as DayOfWeek[],
   skipDayVisibility: SkipDayVisibility.HIDE,
+  beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+  afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
+  notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
   caughtUp: true,
   completedToday: false,
 });
@@ -135,6 +145,42 @@ describe('validateChore', () => {
     expect(validateChore({ ...personal, deadline: '21:00' }, people).valid).toBe(true);
   });
 
+  it('rejects invalid startTime when present', () => {
+    const personal = {
+      ...baseChoreFields(1),
+      type: ChoreType.PERSONAL,
+      assignedTo: people[0].id,
+      startTime: 1,
+    };
+    expect(validateChore(personal, people).valid).toBe(false);
+    expect(validateChore({ ...personal, startTime: '25:00' }, people).valid).toBe(false);
+    expect(validateChore({ ...personal, startTime: '8:0' }, people).valid).toBe(false);
+  });
+
+  it('accepts valid startTime strings', () => {
+    const personal = {
+      ...baseChoreFields(1),
+      type: ChoreType.PERSONAL,
+      assignedTo: people[0].id,
+      startTime: '8:00',
+    };
+    expect(validateChore(personal, people).valid).toBe(true);
+    expect(validateChore({ ...personal, startTime: '21:00' }, people).valid).toBe(true);
+  });
+
+  it('rejects startTime that is not before deadline', () => {
+    const personal = {
+      ...baseChoreFields(1),
+      type: ChoreType.PERSONAL,
+      assignedTo: people[0].id,
+      startTime: '12:00',
+      deadline: '12:00',
+    };
+    expect(validateChore(personal, people).valid).toBe(false);
+    expect(validateChore({ ...personal, startTime: '13:00' }, people).valid).toBe(false);
+    expect(validateChore({ ...personal, startTime: '11:00' }, people).valid).toBe(true);
+  });
+
   it('rejects invalid skipDays', () => {
     const personal = {
       ...baseChoreFields(1),
@@ -159,6 +205,28 @@ describe('validateChore', () => {
     expect(validateChore({ ...personal, skipDayVisibility: undefined }, people).valid).toBe(false);
     expect(validateChore({ ...personal, caughtUp: 'yes' }, people).valid).toBe(false);
     expect(validateChore({ ...personal, completedToday: 0 }, people).valid).toBe(false);
+  });
+
+  it('rejects missing or invalid display option fields', () => {
+    const personal = {
+      ...baseChoreFields(1),
+      type: ChoreType.PERSONAL,
+      assignedTo: people[0].id,
+    };
+    expect(validateChore({ ...personal, beforeStartTimeVisibility: undefined }, people).valid).toBe(
+      false
+    );
+    expect(validateChore({ ...personal, beforeStartTimeVisibility: 'nope' }, people).valid).toBe(
+      false
+    );
+    expect(validateChore({ ...personal, afterDeadlineVisibility: undefined }, people).valid).toBe(
+      false
+    );
+    expect(validateChore({ ...personal, afterDeadlineVisibility: 'nope' }, people).valid).toBe(
+      false
+    );
+    expect(validateChore({ ...personal, notCaughtUpDisplay: undefined }, people).valid).toBe(false);
+    expect(validateChore({ ...personal, notCaughtUpDisplay: 'nope' }, people).valid).toBe(false);
   });
 
   describe('personal chores', () => {

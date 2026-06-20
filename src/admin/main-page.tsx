@@ -1,31 +1,25 @@
 import type { Component } from 'solid-js';
 import { createSignal, For, Show } from 'solid-js';
 import { deleteChore, deletePerson, downloadBackup } from '../api';
-import type { Chore, DayOfWeek, Person, PersonalChore, RotatingChore } from '../types/chore-types';
+import type { Chore, Person, PersonalChore, RotatingChore } from '../types/chore-types';
 import { ChoreType } from '../types/chore-types';
-import { escapeHtml } from '../utils/browser';
 import { useAdminContext } from './admin-context';
 import { AdvanceRotationsModal } from './advance-rotations-modal';
 import { Button } from './button';
 import { ChoreHistoryModal } from './chore-history-modal';
 import { CopyChoresModal } from './copy-chores-modal';
-import { HelpIcon } from './help-icon';
+import { PeopleTab } from './people-tab';
 import { PersonModal } from './person-modal';
 import { PersonalChoreModal } from './personal-chore-modal';
 import { PinPromptModal } from './pin-prompt-modal';
 import { ResetCaughtUpModal } from './reset-caught-up-modal';
-import { RotatingChoreCard } from './rotating-chore';
 import { RotatingChoreModal } from './rotating-chore-modal';
+import { RotatingChoresTab } from './rotating-chores-tab';
 import { SettingsModal } from './settings-modal';
+import { SystemActionsTab } from './system-actions-tab';
 
 // API base URL
 const API_BASE = '/MMM-FamilyChores';
-
-// Format skip days for display
-const formatSkipDays = (skipDays: DayOfWeek[]): string => {
-  if (!skipDays || skipDays.length === 0) return 'None';
-  return skipDays.map((d) => d.charAt(0).toUpperCase() + d.slice(1)).join(', ');
-};
 
 export const MainPage: Component = () => {
   const { choreData, loadData, pinRequired, setCachedPin, cachedPin } = useAdminContext();
@@ -277,19 +271,19 @@ export const MainPage: Component = () => {
     }
   };
 
-  // Get personal chores for a person
-  const getPersonalChores = (personId: string): PersonalChore[] => {
-    const data = choreData();
-    return data.chores.filter(
-      (chore) => chore.type === ChoreType.PERSONAL && chore.assignedTo === personId
-    ) as PersonalChore[];
-  };
-
   // Get rotating chores
   const getRotatingChores = (): RotatingChore[] => {
     const data = choreData();
     return data.chores.filter((chore) => chore.type === ChoreType.ROTATING) as RotatingChore[];
   };
+
+  const [activeTab, setActiveTab] = createSignal<'people' | 'rotating' | 'system'>('people');
+
+  const tabs = [
+    { id: 'people' as const, label: 'People' },
+    { id: 'rotating' as const, label: 'Rotation Chores' },
+    { id: 'system' as const, label: 'System Actions' },
+  ];
 
   return (
     <>
@@ -317,226 +311,60 @@ export const MainPage: Component = () => {
         </div>
       </header>
       <main class="p-8">
-        {/* People Section */}
-        <section class="mb-10" data-testid="people-section">
-          <div class="mb-5 flex items-center justify-between">
-            <h2 class="m-0 border-b-2 border-indigo-600 pb-2.5 text-2xl text-indigo-600">People</h2>
-            <div class="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="primary"
-                id="addPersonBtn"
-                onClick={() => openPersonModal()}
-              >
-                Add Person
-              </Button>
-              <Show when={choreData().people.length === 0}>
-                <HelpIcon
-                  text="Add at least one person before you can create chores"
-                  class="ml-2"
-                  align="right"
-                />
-              </Show>
-            </div>
-          </div>
-          <div id="peopleList" class="mt-5 grid gap-4">
-            <For each={choreData().people}>
-              {(person) => (
-                <div
-                  class="rounded-lg border border-slate-200 bg-slate-50 p-5 transition-all hover:border-indigo-600 hover:shadow-md"
-                  data-testid="person-card"
-                >
-                  <div class="mb-4 flex items-center justify-between">
-                    <div class="flex-1">
-                      <h3 class="mb-1.5 text-xl text-slate-900">
-                        {escapeHtml(person.name)}{' '}
-                        <span
-                          class="inline-block size-6  rounded-full border-2 border-black/10 align-middle"
-                          style={`background-color: ${person.color}`}
-                        ></span>
-                      </h3>
-                      <p class="text-sm text-slate-500">ID: {person.id}</p>
-                    </div>
-                    <div class="flex gap-2.5">
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => openPersonModal(person)}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => setHistoryPerson(person)}
-                      >
-                        History
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="danger"
-                        size="sm"
-                        onClick={() => handleDeletePerson(person.id)}
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </div>
-                  <div class="mt-4 flex items-center justify-between border-t border-slate-200 pt-4">
-                    <h4 class="m-0 text-lg text-indigo-600">
-                      {escapeHtml(person.name)}'s Personal Chores
-                    </h4>
-                    <div class="flex gap-2">
-                      <Button
-                        type="button"
-                        variant="primary"
-                        size="sm"
-                        onClick={() => {
-                          openPersonalChoreModal(person, null);
-                        }}
-                      >
-                        Add Chore
-                      </Button>
-                      <Show
-                        when={
-                          getPersonalChores(person.id).length > 0 && choreData().people.length > 1
-                        }
-                      >
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => {
-                            openCopyChoresModal(person);
-                          }}
-                        >
-                          Copy Chores
-                        </Button>
-                      </Show>
-                    </div>
-                  </div>
-                  <Show
-                    when={getPersonalChores(person.id).length > 0}
-                    fallback={
-                      <div class="mt-4 border-t border-slate-200 pt-4">
-                        <p class="my-2.5 text-slate-500 italic">No personal chores yet.</p>
-                      </div>
-                    }
+        <nav class="mb-8 border-b border-slate-200">
+          <ul class="flex gap-1">
+            <For each={tabs}>
+              {(tab) => (
+                <li>
+                  <button
+                    type="button"
+                    class="cursor-pointer border-b-2 border-transparent px-4 py-2 text-sm font-medium text-slate-600 transition-all hover:text-indigo-600"
+                    classList={{
+                      'border-indigo-600 text-indigo-600': activeTab() === tab.id,
+                      'border-transparent text-slate-600': activeTab() !== tab.id,
+                    }}
+                    aria-current={activeTab() === tab.id ? 'page' : undefined}
+                    onClick={() => setActiveTab(tab.id)}
                   >
-                    <div class="mt-4 border-t border-slate-200 pt-4">
-                      <For each={getPersonalChores(person.id)}>
-                        {(chore) => (
-                          <>
-                            <div class="mb-2.5 flex items-center justify-between rounded-lg border border-slate-200 bg-white p-2.5 last:mb-0">
-                              <div>
-                                <h4 class="mb-1.5 text-base text-slate-900">
-                                  {escapeHtml(chore.name)}
-                                </h4>
-                                <Show when={chore.deadline}>
-                                  <p class="mt-1.25 text-sm text-indigo-600">
-                                    Deadline: {chore.deadline}
-                                  </p>
-                                </Show>
-                                <p class="mt-1.25 text-sm text-slate-500">
-                                  Skip days: {formatSkipDays(chore.skipDays)}
-                                </p>
-                              </div>
-                              <div class="flex gap-2">
-                                <Button
-                                  type="button"
-                                  variant="secondary"
-                                  size="sm"
-                                  onClick={() => {
-                                    openPersonalChoreModal(person, chore);
-                                  }}
-                                >
-                                  Edit
-                                </Button>
-                                <Button
-                                  type="button"
-                                  variant="danger"
-                                  size="sm"
-                                  onClick={() => handleDeleteChore(chore.id)}
-                                >
-                                  Delete
-                                </Button>
-                              </div>
-                            </div>
-                          </>
-                        )}
-                      </For>
-                    </div>
-                  </Show>
-                </div>
+                    {tab.label}
+                  </button>
+                </li>
               )}
             </For>
-          </div>
-        </section>
+          </ul>
+        </nav>
 
-        {/* Rotating Chores Section */}
-        <Show when={choreData().people.length > 0}>
-          <section class="mb-10" id="rotatingChoresSection">
-            <div class="mb-5 flex items-center justify-between">
-              <h2 class="m-0 border-b-2 border-indigo-600 pb-2.5 text-2xl text-indigo-600">
-                Rotating Chores
-              </h2>
-              <Button
-                type="button"
-                variant="primary"
-                id="addRotatingChoreBtn"
-                onClick={() => openRotatingChoreModal()}
-              >
-                Add Rotating Chore
-              </Button>
-            </div>
-            <div id="rotatingChoresList" class="mt-5 grid gap-4">
-              <For each={getRotatingChores()}>
-                {(chore) => (
-                  <RotatingChoreCard
-                    chore={chore}
-                    people={choreData().people}
-                    onEdit={openRotatingChoreModal}
-                    onDelete={handleDeleteChore}
-                  />
-                )}
-              </For>
-            </div>
-          </section>
+        <Show when={activeTab() === 'people'}>
+          <PeopleTab
+            people={choreData().people}
+            chores={choreData().chores}
+            onAddPerson={openPersonModal}
+            onEditPerson={openPersonModal}
+            onHistory={setHistoryPerson}
+            onDeletePerson={handleDeletePerson}
+            onAddChore={openPersonalChoreModal}
+            onEditChore={openPersonalChoreModal}
+            onDeleteChore={handleDeleteChore}
+            onCopyChores={openCopyChoresModal}
+          />
         </Show>
 
-        {/* System Actions Section */}
-        <section class="mb-10" data-testid="system-actions-section">
-          <div class="mb-5">
-            <h2 class="m-0 border-b-2 border-amber-500 pb-2.5 text-2xl text-amber-600">
-              System Actions
-            </h2>
-            <p class="mt-3 text-sm text-slate-500">
-              Coming back from vacation? Just set up the mirror after it hasn't been used in a
-              while? These tools help you quickly reset or resync the chore state so everything
-              reflects reality again.
-            </p>
-          </div>
-          <div class="flex flex-wrap gap-3">
-            <Button
-              type="button"
-              variant="warning"
-              onClick={handleAdvanceRotations}
-              data-testid="advance-rotations-btn"
-            >
-              ↻ Advance All Rotations
-            </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={handleResetCaughtUp}
-              data-testid="reset-caught-up-btn"
-            >
-              ✓ Reset All Caught Up
-            </Button>
-          </div>
-        </section>
+        <Show when={activeTab() === 'rotating'}>
+          <RotatingChoresTab
+            people={choreData().people}
+            chores={choreData().chores}
+            onAddRotatingChore={openRotatingChoreModal}
+            onEditRotatingChore={openRotatingChoreModal}
+            onDeleteChore={handleDeleteChore}
+          />
+        </Show>
+
+        <Show when={activeTab() === 'system'}>
+          <SystemActionsTab
+            onAdvanceRotations={handleAdvanceRotations}
+            onResetCaughtUp={handleResetCaughtUp}
+          />
+        </Show>
       </main>
 
       {/* Modals */}

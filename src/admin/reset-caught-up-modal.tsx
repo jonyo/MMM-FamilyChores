@@ -6,6 +6,7 @@ import { ChoreType } from '../types/chore-types';
 import { escapeHtml } from '../utils/browser';
 import { useAdminContext } from './admin-context';
 import { Button } from './button';
+import { InfoBox } from './info-box';
 import { PinField } from './pin-field';
 
 interface ResetCaughtUpModalProps {
@@ -62,10 +63,15 @@ export const ResetCaughtUpModal: Component<ResetCaughtUpModalProps> = (props) =>
             ×
           </button>
         </div>
-        <p class="mb-5 text-sm text-slate-500">
-          All chores will be marked as caught up. This is useful after a vacation or extended
-          downtime when overdue indicators no longer reflect reality.
-        </p>
+        <InfoBox icon class="mb-5">
+          <strong>Note:</strong> A chore is <strong>caught up</strong> when it was completed on the
+          previous day it appeared (by default, the previous non-skip day). New and newly rotated
+          chores start as caught up.
+          <br />
+          <br />
+          Clicking reset will mark all chores as caught up. This is useful after a vacation or
+          extended downtime when overdue indicators no longer reflect reality.
+        </InfoBox>
 
         <Show
           when={props.overdue.length > 0}

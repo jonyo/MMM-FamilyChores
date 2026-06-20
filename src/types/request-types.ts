@@ -1,4 +1,14 @@
-import type { Chore, ChoreType, DayOfWeek, Person, SkipDayVisibility, UUID } from './chore-types';
+import type {
+  AfterDeadlineVisibility,
+  BeforeStartTimeVisibility,
+  Chore,
+  ChoreType,
+  DayOfWeek,
+  NotCaughtUpDisplay,
+  Person,
+  SkipDayVisibility,
+  UUID,
+} from './chore-types';
 
 /**
  * JSON **request** bodies for the Express admin routes in `setupAdminRoutes`
@@ -41,9 +51,13 @@ export interface CreateChoreRequest extends PinProtectedRequest {
   assignedTo?: UUID;
   rotation?: UUID[];
   rotatingIndex?: number;
+  startTime?: string;
   deadline?: string;
   skipDays?: DayOfWeek[];
   skipDayVisibility?: SkipDayVisibility;
+  beforeStartTimeVisibility: BeforeStartTimeVisibility;
+  afterDeadlineVisibility: AfterDeadlineVisibility;
+  notCaughtUpDisplay: NotCaughtUpDisplay;
 }
 
 /**

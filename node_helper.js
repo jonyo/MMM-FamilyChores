@@ -139,6 +139,31 @@ var SkipDayVisibility = /* @__PURE__ */ function(SkipDayVisibility) {
 	SkipDayVisibility["SHOW_ALWAYS"] = "show-always";
 	return SkipDayVisibility;
 }({});
+/**
+* Controls how a chore is handled after its deadline
+*/
+var AfterDeadlineVisibility = /* @__PURE__ */ function(AfterDeadlineVisibility) {
+	AfterDeadlineVisibility["SHOW_NORMAL"] = "normal";
+	AfterDeadlineVisibility["SHOW_OVERDUE"] = "overdue";
+	AfterDeadlineVisibility["MOVE_TO_EARLIER"] = "earlier";
+	return AfterDeadlineVisibility;
+}({});
+/**
+* Controls whether a missed chore is shown before its startTime
+*/
+var BeforeStartTimeVisibility = /* @__PURE__ */ function(BeforeStartTimeVisibility) {
+	BeforeStartTimeVisibility["HIDE"] = "hide";
+	BeforeStartTimeVisibility["SHOW_IF_OVERDUE"] = "show-if-overdue";
+	return BeforeStartTimeVisibility;
+}({});
+/**
+* Controls how a chore that is not caught up is displayed
+*/
+var NotCaughtUpDisplay = /* @__PURE__ */ function(NotCaughtUpDisplay) {
+	NotCaughtUpDisplay["NORMAL"] = "normal";
+	NotCaughtUpDisplay["OVERDUE"] = "overdue";
+	return NotCaughtUpDisplay;
+}({});
 var DayOfWeek = /* @__PURE__ */ function(DayOfWeek) {
 	DayOfWeek["SUNDAY"] = "sunday";
 	DayOfWeek["MONDAY"] = "monday";
@@ -154,6 +179,45 @@ var ChoreType = /* @__PURE__ */ function(ChoreType) {
 	ChoreType["ROTATING"] = "rotating";
 	return ChoreType;
 }({});
+//#endregion
+//#region src/backend/data-upgrade.ts
+/**
+* Data migration helper for loading older versions of data.json.
+*
+* This module runs on the raw parsed JSON **before** validation. It is additive
+* and idempotent: it only fills missing fields with safe defaults and never
+* rewrites or removes existing data.
+*/
+/**
+* Upgrade a raw parsed data.json object to the current expected shape.
+*
+* Missing fields are filled with defaults. Existing values are preserved.
+* This function is idempotent: running it on already-upgraded data is a no-op.
+*
+* @param rawData - The parsed JSON from data.json (type unknown for safety)
+* @returns The upgraded data object, still untyped until validation runs
+*/
+var upgradeData = (rawData) => {
+	if (!rawData || typeof rawData !== "object") return {};
+	const data = { ...rawData };
+	data.chores = (Array.isArray(data.chores) ? data.chores : []).map((chore) => upgradeChore(chore));
+	return data;
+};
+/**
+* Upgrade a single raw chore object with default values for missing fields.
+*
+* @param chore - Raw chore object from data.json
+* @returns Upgraded chore object
+*/
+var upgradeChore = (chore) => {
+	if (!chore || typeof chore !== "object") return chore;
+	const choreObj = { ...chore };
+	if (choreObj.beforeStartTimeVisibility === void 0) choreObj.beforeStartTimeVisibility = BeforeStartTimeVisibility.HIDE;
+	if (choreObj.afterDeadlineVisibility === void 0) choreObj.afterDeadlineVisibility = AfterDeadlineVisibility.SHOW_OVERDUE;
+	if (choreObj.afterDeadlineVisibility === "hide") choreObj.afterDeadlineVisibility = AfterDeadlineVisibility.MOVE_TO_EARLIER;
+	if (choreObj.notCaughtUpDisplay === void 0) choreObj.notCaughtUpDisplay = NotCaughtUpDisplay.OVERDUE;
+	return choreObj;
+};
 //#endregion
 //#region src/backend/validator.ts
 var validatePerson = (person) => {
@@ -218,6 +282,16 @@ var validateChore = (chore, people) => {
 		valid: false,
 		error: "Chore type must be either \"personal\" or \"rotating\""
 	};
+	if (choreObj.startTime !== void 0) {
+		if (typeof choreObj.startTime !== "string") return {
+			valid: false,
+			error: "Chore startTime must be a string"
+		};
+		if (!choreObj.startTime.match(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)) return {
+			valid: false,
+			error: "Chore startTime must be in 24-hour format (e.g., \"08:00\" or \"21:00\")"
+		};
+	}
 	if (choreObj.deadline !== void 0) {
 		if (typeof choreObj.deadline !== "string") return {
 			valid: false,
@@ -228,6 +302,10 @@ var validateChore = (chore, people) => {
 			error: "Chore deadline must be in 24-hour format (e.g., \"08:00\" or \"21:00\")"
 		};
 	}
+	if (typeof choreObj.startTime === "string" && typeof choreObj.deadline === "string" && choreObj.startTime >= choreObj.deadline) return {
+		valid: false,
+		error: "Chore startTime must be before deadline"
+	};
 	if (!choreObj.skipDays || !Array.isArray(choreObj.skipDays)) return {
 		valid: false,
 		error: "Chore must have a skipDays array"
@@ -243,6 +321,30 @@ var validateChore = (chore, people) => {
 	if (!Object.values(SkipDayVisibility).includes(choreObj.skipDayVisibility)) return {
 		valid: false,
 		error: "Chore skipDayVisibility must be \"hide\", \"show-if-overdue\", or \"show-always\""
+	};
+	if (!choreObj.beforeStartTimeVisibility || typeof choreObj.beforeStartTimeVisibility !== "string") return {
+		valid: false,
+		error: "Chore must have a beforeStartTimeVisibility"
+	};
+	if (!Object.values(BeforeStartTimeVisibility).includes(choreObj.beforeStartTimeVisibility)) return {
+		valid: false,
+		error: "Chore beforeStartTimeVisibility must be \"hide\" or \"show-if-overdue\""
+	};
+	if (!choreObj.afterDeadlineVisibility || typeof choreObj.afterDeadlineVisibility !== "string") return {
+		valid: false,
+		error: "Chore must have a afterDeadlineVisibility"
+	};
+	if (!Object.values(AfterDeadlineVisibility).includes(choreObj.afterDeadlineVisibility)) return {
+		valid: false,
+		error: "Chore afterDeadlineVisibility must be \"normal\", \"overdue\", or \"earlier\""
+	};
+	if (!choreObj.notCaughtUpDisplay || typeof choreObj.notCaughtUpDisplay !== "string") return {
+		valid: false,
+		error: "Chore must have a notCaughtUpDisplay"
+	};
+	if (!Object.values(NotCaughtUpDisplay).includes(choreObj.notCaughtUpDisplay)) return {
+		valid: false,
+		error: "Chore notCaughtUpDisplay must be \"normal\" or \"overdue\""
 	};
 	if (typeof choreObj.caughtUp !== "boolean") return {
 		valid: false,
@@ -522,7 +624,7 @@ function createAdminHandlers(context) {
 		postChore: (req, res) => {
 			if (!validatePin(req, res, context)) return;
 			try {
-				const { name, type, assignedTo, rotation, rotatingIndex, deadline, skipDays, skipDayVisibility } = req.body;
+				const { name, type, assignedTo, rotation, rotatingIndex, startTime, deadline, skipDays, skipDayVisibility, beforeStartTimeVisibility, afterDeadlineVisibility, notCaughtUpDisplay } = req.body;
 				const choreData = context.getChoreData();
 				if (!choreData) {
 					res.status(500).json(apiErr("No data available"));
@@ -532,9 +634,13 @@ function createAdminHandlers(context) {
 					id: generateUUID(),
 					name: name?.trim() || "",
 					type,
+					startTime: startTime?.trim(),
 					deadline: deadline?.trim(),
 					skipDays: skipDays || [],
 					skipDayVisibility: skipDayVisibility || SkipDayVisibility.SHOW_IF_OVERDUE,
+					beforeStartTimeVisibility: beforeStartTimeVisibility || BeforeStartTimeVisibility.HIDE,
+					afterDeadlineVisibility: afterDeadlineVisibility || AfterDeadlineVisibility.SHOW_OVERDUE,
+					notCaughtUpDisplay: notCaughtUpDisplay || NotCaughtUpDisplay.OVERDUE,
 					caughtUp: true,
 					completedToday: false
 				};
@@ -562,7 +668,7 @@ function createAdminHandlers(context) {
 			if (!validatePin(req, res, context)) return;
 			try {
 				const { id } = req.params;
-				const { name, type, assignedTo, rotation, rotatingIndex, deadline, skipDays, skipDayVisibility } = req.body;
+				const { name, type, assignedTo, rotation, rotatingIndex, startTime, deadline, skipDays, skipDayVisibility, beforeStartTimeVisibility, afterDeadlineVisibility, notCaughtUpDisplay } = req.body;
 				const choreData = context.getChoreData();
 				if (!choreData) {
 					res.status(500).json(apiErr("No data available"));
@@ -580,9 +686,13 @@ function createAdminHandlers(context) {
 				const updatedChore = {
 					...chore,
 					name: name ? name.trim() : chore.name,
+					startTime: startTime ? startTime.trim() : chore.startTime,
 					deadline: deadline ? deadline.trim() : chore.deadline,
 					skipDays: skipDays || chore.skipDays,
-					skipDayVisibility: skipDayVisibility || chore.skipDayVisibility
+					skipDayVisibility: skipDayVisibility || chore.skipDayVisibility,
+					beforeStartTimeVisibility: beforeStartTimeVisibility || chore.beforeStartTimeVisibility,
+					afterDeadlineVisibility: afterDeadlineVisibility || chore.afterDeadlineVisibility,
+					notCaughtUpDisplay: notCaughtUpDisplay || chore.notCaughtUpDisplay
 				};
 				if (chore.type === ChoreType.PERSONAL) updatedChore.assignedTo = assignedTo || chore.assignedTo;
 				else if (chore.type === ChoreType.ROTATING) {
@@ -658,8 +768,12 @@ function createAdminHandlers(context) {
 					res.status(400).json(apiErr("Invalid data format"));
 					return;
 				}
+				const upgradedData = upgradeData(restoredData);
+				const restoredChores = Array.isArray(upgradedData.chores) ? upgradedData.chores : [];
+				const restoredPeople = Array.isArray(upgradedData.people) ? upgradedData.people : [];
+				const restoredCompletions = Array.isArray(upgradedData.dailyCompletions) ? upgradedData.dailyCompletions : [];
 				const validPeople = [];
-				for (const person of restoredData.people) {
+				for (const person of restoredPeople) {
 					const validation = validatePerson(person);
 					if (!validation.valid) {
 						res.status(400).json(apiErr(`Invalid person data: ${validation.error}`));
@@ -668,7 +782,7 @@ function createAdminHandlers(context) {
 					validPeople.push(person);
 				}
 				const validChores = [];
-				for (const chore of restoredData.chores) {
+				for (const chore of restoredChores) {
 					const validation = validateChore(chore, validPeople);
 					if (!validation.valid) {
 						res.status(400).json(apiErr(`Invalid chore data: ${validation.error}`));
@@ -676,7 +790,7 @@ function createAdminHandlers(context) {
 					}
 					validChores.push(chore);
 				}
-				const rawSettings = restoredData.settings ?? { historyEnabled: true };
+				const rawSettings = upgradedData.settings ?? { historyEnabled: true };
 				const settingsValidation = validateSettings(rawSettings);
 				if (!settingsValidation.valid) {
 					res.status(400).json(apiErr(`Invalid settings: ${settingsValidation.error}`));
@@ -687,7 +801,7 @@ function createAdminHandlers(context) {
 				cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
 				const cutoffDateString = getLocalDateString(cutoffDate);
 				const validCompletions = [];
-				if (Array.isArray(restoredData.dailyCompletions)) for (const completion of restoredData.dailyCompletions) {
+				for (const completion of restoredCompletions) {
 					const validation = validateDailyCompletion(completion, validChores);
 					if (!validation.valid) {
 						logger.warn(`Skipping invalid daily completion in restore data: ${validation.error}`);
@@ -701,7 +815,7 @@ function createAdminHandlers(context) {
 					people: validPeople,
 					chores: validChores,
 					dailyCompletions: validCompletions,
-					lastResetDate: restoredData.lastResetDate ?? getLocalDateString(),
+					lastResetDate: typeof upgradedData.lastResetDate === "string" ? upgradedData.lastResetDate : getLocalDateString(),
 					settings: rawSettings
 				});
 				context.saveChoreData();
@@ -745,9 +859,13 @@ function createAdminHandlers(context) {
 						name: chore.name,
 						type: ChoreType.PERSONAL,
 						assignedTo: toPersonId,
+						startTime: chore.startTime,
 						deadline: chore.deadline,
 						skipDays: chore.skipDays,
 						skipDayVisibility: chore.skipDayVisibility,
+						beforeStartTimeVisibility: chore.beforeStartTimeVisibility,
+						afterDeadlineVisibility: chore.afterDeadlineVisibility,
+						notCaughtUpDisplay: chore.notCaughtUpDisplay,
 						caughtUp: true,
 						completedToday: false
 					};
@@ -901,22 +1019,22 @@ var node_helper_default = node_helper.create({
 		try {
 			if (node_fs.existsSync(dataPath)) {
 				const fileContent = node_fs.readFileSync(dataPath, "utf8");
-				const rawData = JSON.parse(fileContent);
-				const rawPeople = Array.isArray(rawData.people) ? rawData.people : [];
+				const upgradedData = upgradeData(JSON.parse(fileContent));
+				const rawPeople = Array.isArray(upgradedData.people) ? upgradedData.people : [];
 				const validPeople = [];
 				for (const person of rawPeople) {
 					const result = validatePerson(person);
 					if (result.valid) validPeople.push(person);
 					else logger.warn(`Skipping invalid person in data file: ${result.error}`);
 				}
-				const rawChores = Array.isArray(rawData.chores) ? rawData.chores : [];
+				const rawChores = Array.isArray(upgradedData.chores) ? upgradedData.chores : [];
 				const validChores = [];
 				for (const chore of rawChores) {
 					const result = validateChore(chore, validPeople);
 					if (result.valid) validChores.push(chore);
 					else logger.warn(`Skipping invalid chore in data file: ${result.error}`);
 				}
-				const rawSettings = rawData.settings;
+				const rawSettings = upgradedData.settings;
 				const settingsResult = validateSettings(rawSettings);
 				let settings;
 				if (settingsResult.valid) settings = rawSettings;
@@ -924,7 +1042,7 @@ var node_helper_default = node_helper.create({
 					logger.warn(`Invalid settings in data file, using defaults: ${settingsResult.error}`);
 					settings = { historyEnabled: true };
 				}
-				const rawCompletions = Array.isArray(rawData.dailyCompletions) ? rawData.dailyCompletions : [];
+				const rawCompletions = Array.isArray(upgradedData.dailyCompletions) ? upgradedData.dailyCompletions : [];
 				const validCompletions = [];
 				for (const completion of rawCompletions) {
 					const result = validateDailyCompletion(completion, validChores);
@@ -935,7 +1053,7 @@ var node_helper_default = node_helper.create({
 					people: validPeople,
 					chores: validChores,
 					dailyCompletions: validCompletions,
-					lastResetDate: typeof rawData.lastResetDate === "string" ? rawData.lastResetDate : getLocalDateString(),
+					lastResetDate: typeof upgradedData.lastResetDate === "string" ? upgradedData.lastResetDate : getLocalDateString(),
 					settings
 				};
 				logger.info(`Loaded chore data from ${dataPath}`);

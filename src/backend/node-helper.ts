@@ -19,6 +19,7 @@ import type {
 import { getLocalDateString, getLocalDayName, getLocalTimeString } from '../utils/date';
 import { generateUUID } from '../utils/uuid';
 import { createAdminHandlers } from './admin-routes';
+import { upgradeData } from './data-upgrade';
 import {
   validateChore,
   validateDailyCompletion,
@@ -121,8 +122,11 @@ const nodeHelper: FamilyChoresNodeHelper = {
         const fileContent = fs.readFileSync(dataPath, 'utf8');
         const rawData = JSON.parse(fileContent) as Record<string, unknown>;
 
+        // Upgrade older data formats before validation (additive, idempotent)
+        const upgradedData = upgradeData(rawData);
+
         // Validate and filter people, skipping any with invalid data
-        const rawPeople = Array.isArray(rawData.people) ? rawData.people : [];
+        const rawPeople = Array.isArray(upgradedData.people) ? upgradedData.people : [];
         const validPeople: Person[] = [];
         for (const person of rawPeople) {
           const result = validatePerson(person);
@@ -134,7 +138,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
         }
 
         // Validate and filter chores against valid people, skipping any with invalid data
-        const rawChores = Array.isArray(rawData.chores) ? rawData.chores : [];
+        const rawChores = Array.isArray(upgradedData.chores) ? upgradedData.chores : [];
         const validChores: Chore[] = [];
         for (const chore of rawChores) {
           const result = validateChore(chore, validPeople);
@@ -146,7 +150,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
         }
 
         // Validate settings, use defaults if invalid
-        const rawSettings = rawData.settings;
+        const rawSettings = upgradedData.settings;
         const settingsResult = validateSettings(rawSettings);
         let settings: Settings;
         if (settingsResult.valid) {
@@ -157,8 +161,8 @@ const nodeHelper: FamilyChoresNodeHelper = {
         }
 
         // Validate and filter daily completions against valid chores
-        const rawCompletions = Array.isArray(rawData.dailyCompletions)
-          ? rawData.dailyCompletions
+        const rawCompletions = Array.isArray(upgradedData.dailyCompletions)
+          ? upgradedData.dailyCompletions
           : [];
         const validCompletions: DailyCompletion[] = [];
         for (const completion of rawCompletions) {
@@ -175,8 +179,8 @@ const nodeHelper: FamilyChoresNodeHelper = {
           chores: validChores,
           dailyCompletions: validCompletions,
           lastResetDate:
-            typeof rawData.lastResetDate === 'string'
-              ? rawData.lastResetDate
+            typeof upgradedData.lastResetDate === 'string'
+              ? upgradedData.lastResetDate
               : getLocalDateString(),
           settings,
         };

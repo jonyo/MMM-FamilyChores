@@ -1,7 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
 import { SocketNotifications } from '../constants/socket-notifications';
 import type { FamilyChoresData, RotatingChore } from '../types/chore-types';
-import { ChoreType, DayOfWeek, SkipDayVisibility } from '../types/chore-types';
+import {
+  AfterDeadlineVisibility,
+  BeforeStartTimeVisibility,
+  ChoreType,
+  DayOfWeek,
+  NotCaughtUpDisplay,
+  SkipDayVisibility,
+} from '../types/chore-types';
 import { getLocalDateString } from '../utils/date';
 import { generateTestUUID } from '../utils/uuid';
 import type { AdminHandlerContext } from './admin-routes';
@@ -74,6 +81,9 @@ function makeBaseData(): FamilyChoresData {
         assignedTo: pid1,
         skipDays: [],
         skipDayVisibility: SkipDayVisibility.HIDE,
+        beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+        afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
+        notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
         caughtUp: true,
         completedToday: false,
       },
@@ -85,6 +95,9 @@ function makeBaseData(): FamilyChoresData {
         rotatingIndex: 0,
         skipDays: [],
         skipDayVisibility: SkipDayVisibility.HIDE,
+        beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+        afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
+        notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
         caughtUp: false,
         completedToday: false,
       },
@@ -519,6 +532,9 @@ describe('createAdminHandlers', () => {
                 assignedTo: pid1,
                 skipDays: [DayOfWeek.TUESDAY],
                 skipDayVisibility: SkipDayVisibility.SHOW_ALWAYS,
+                beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+                afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
+                notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
                 caughtUp: false,
                 completedToday: true,
               },
@@ -591,6 +607,9 @@ describe('createAdminHandlers', () => {
                 assignedTo: generateTestUUID(404),
                 skipDays: [],
                 skipDayVisibility: SkipDayVisibility.HIDE,
+                beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+                afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
+                notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
                 caughtUp: true,
                 completedToday: false,
               },
@@ -643,6 +662,9 @@ describe('createAdminHandlers', () => {
                 assignedTo: pid1,
                 skipDays: [],
                 skipDayVisibility: SkipDayVisibility.HIDE,
+                beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+                afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
+                notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
                 caughtUp: true,
                 completedToday: false,
               },

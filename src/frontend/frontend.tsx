@@ -4,7 +4,7 @@ import { SocketNotifications } from '../constants/socket-notifications';
 import type { DayOfWeek, FamilyChoresData } from '../types/chore-types';
 import type { Config } from '../types/config';
 import type { FamilyChoresModule } from '../types/module';
-import { getLocalDayName } from '../utils/date';
+import { getLocalDayName, getLocalTimeString } from '../utils/date';
 import { App } from './app';
 
 declare global {
@@ -54,23 +54,28 @@ const familyChoresModule: FamilyChoresModule = {
     const [choreData, setChoreData] = createStore<{
       data: FamilyChoresData | null;
       todaysDayOfWeek: DayOfWeek;
+      currentTime: string;
     }>({
       data: null,
       todaysDayOfWeek: getLocalDayName(),
+      currentTime: getLocalTimeString(),
     });
     this.choreDataSignal = () => choreData.data;
     this.todaysDayOfWeekSignal = () => choreData.todaysDayOfWeek;
+    this.currentTimeSignal = () => choreData.currentTime;
     this.setChoreDataAndDay = (data: FamilyChoresData) => {
       setChoreData('data', reconcile(data));
       setChoreData('todaysDayOfWeek', getLocalDayName());
+      setChoreData('currentTime', getLocalTimeString());
     };
 
-    // Check every minute if the date has rolled over and update the reactive signal
+    // Check every minute if the date or time has rolled over and update the reactive signals
     setInterval(() => {
       const newDay = getLocalDayName();
       if (newDay !== choreData.todaysDayOfWeek) {
         setChoreData('todaysDayOfWeek', newDay);
       }
+      setChoreData('currentTime', getLocalTimeString());
     }, 60_000);
 
     this.loadData();
@@ -104,8 +109,9 @@ const familyChoresModule: FamilyChoresModule = {
 
     const choreDataSignal = this.choreDataSignal;
     const todaysDayOfWeekSignal = this.todaysDayOfWeekSignal;
-    if (!choreDataSignal || !todaysDayOfWeekSignal) {
-      Log.error(`${this.name} choreDataSignal or todaysDayOfWeekSignal is not initialized`);
+    const currentTimeSignal = this.currentTimeSignal;
+    if (!choreDataSignal || !todaysDayOfWeekSignal || !currentTimeSignal) {
+      Log.error(`${this.name} a required signal is not initialized`);
       return container;
     }
 
@@ -114,6 +120,7 @@ const familyChoresModule: FamilyChoresModule = {
         <App
           choreData={choreDataSignal}
           todaysDayOfWeek={todaysDayOfWeekSignal}
+          currentTime={currentTimeSignal}
           config={this.config}
           onToggle={handleToggle}
         />
