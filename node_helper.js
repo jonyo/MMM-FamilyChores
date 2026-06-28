@@ -699,11 +699,12 @@ function createAdminHandlers(context) {
 					res.status(400).json(apiErr("Cannot change chore type"));
 					return;
 				}
+				const body = req.body;
 				const updatedChore = {
 					...chore,
 					name: name ? name.trim() : chore.name,
-					startTime: startTime ? startTime.trim() : chore.startTime,
-					deadline: deadline ? deadline.trim() : chore.deadline,
+					startTime: "startTime" in body ? startTime ? startTime.trim() : void 0 : chore.startTime,
+					deadline: "deadline" in body ? deadline ? deadline.trim() : void 0 : chore.deadline,
 					skipDays: skipDays || chore.skipDays,
 					skipDayVisibility: skipDayVisibility || chore.skipDayVisibility,
 					beforeStartTimeVisibility: beforeStartTimeVisibility || chore.beforeStartTimeVisibility,

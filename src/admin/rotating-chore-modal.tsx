@@ -182,8 +182,8 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
     event.preventDefault();
     setFormError('');
 
-    const deadlineValue = deadline() || undefined;
-    const startTimeValue = startTime() || undefined;
+    const deadlineValue = deadline() || null;
+    const startTimeValue = startTime() || null;
     if (deadlineValue && startTimeValue && startTimeValue >= deadlineValue) {
       setFormError('Start time must be before the deadline.');
       return;
@@ -216,8 +216,8 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
           type: ChoreType.ROTATING,
           rotation: currentRotation,
           rotatingIndex,
-          deadline: deadlineValue,
-          startTime: startTimeValue,
+          deadline: deadlineValue ?? undefined,
+          startTime: startTimeValue ?? undefined,
           skipDays: skipDays(),
           skipDayVisibility: skipDayVisibility(),
           beforeStartTimeVisibility: beforeStartTimeVisibility(),

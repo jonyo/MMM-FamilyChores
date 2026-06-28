@@ -453,6 +453,66 @@ describe('createAdminHandlers', () => {
       expect(mockSave).not.toHaveBeenCalled();
     });
 
+    it('clears startTime and deadline when null is sent', () => {
+      const choreWithTimes = {
+        id: cid1,
+        name: 'Personal Chore',
+        type: ChoreType.PERSONAL as const,
+        assignedTo: pid1,
+        startTime: '08:00',
+        deadline: '12:00',
+        skipDays: [],
+        skipDayVisibility: SkipDayVisibility.HIDE,
+        beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+        afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
+        notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
+        caughtUp: true,
+        completedToday: false,
+      };
+      const base = makeBaseData();
+      const { context, getData } = makeContext({
+        ...base,
+        chores: [choreWithTimes, base.chores[1]],
+      });
+      const { putChore } = createAdminHandlers(context);
+      const res = createMockRes();
+      putChore({ body: { startTime: null, deadline: null }, params: { id: cid1 } }, res);
+      expect(res.statusCode).toBe(200);
+      const updated = getData()?.chores.find((c) => c.id === cid1);
+      expect(updated?.startTime).toBeUndefined();
+      expect(updated?.deadline).toBeUndefined();
+    });
+
+    it('preserves startTime and deadline when omitted from request', () => {
+      const choreWithTimes = {
+        id: cid1,
+        name: 'Personal Chore',
+        type: ChoreType.PERSONAL as const,
+        assignedTo: pid1,
+        startTime: '08:00',
+        deadline: '12:00',
+        skipDays: [],
+        skipDayVisibility: SkipDayVisibility.HIDE,
+        beforeStartTimeVisibility: BeforeStartTimeVisibility.HIDE,
+        afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
+        notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
+        caughtUp: true,
+        completedToday: false,
+      };
+      const base = makeBaseData();
+      const { context, getData } = makeContext({
+        ...base,
+        chores: [choreWithTimes, base.chores[1]],
+      });
+      const { putChore } = createAdminHandlers(context);
+      const res = createMockRes();
+      putChore({ body: { name: 'Renamed' }, params: { id: cid1 } }, res);
+      expect(res.statusCode).toBe(200);
+      const updated = getData()?.chores.find((c) => c.id === cid1);
+      expect(updated?.startTime).toBe('08:00');
+      expect(updated?.deadline).toBe('12:00');
+    });
+
     it('returns 500 when data is null', () => {
       const { context } = makeContext(null);
       const { putChore } = createAdminHandlers(context);

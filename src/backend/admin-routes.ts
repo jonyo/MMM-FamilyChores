@@ -343,12 +343,15 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
           return;
         }
 
+        const body = req.body as UpdateChoreRequest;
         // Construct updated chore object with minimal checks (trim strings)
+        // null means "explicitly clear"; undefined (field absent) means "keep existing value"
         const updatedChore: Record<string, unknown> = {
           ...chore,
           name: name ? name.trim() : chore.name,
-          startTime: startTime ? startTime.trim() : chore.startTime,
-          deadline: deadline ? deadline.trim() : chore.deadline,
+          startTime:
+            'startTime' in body ? (startTime ? startTime.trim() : undefined) : chore.startTime,
+          deadline: 'deadline' in body ? (deadline ? deadline.trim() : undefined) : chore.deadline,
           skipDays: skipDays || chore.skipDays,
           skipDayVisibility: skipDayVisibility || chore.skipDayVisibility,
           beforeStartTimeVisibility: beforeStartTimeVisibility || chore.beforeStartTimeVisibility,

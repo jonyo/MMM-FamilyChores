@@ -3058,8 +3058,8 @@
 				console.error("No person selected");
 				return;
 			}
-			const deadlineValue = deadline() || void 0;
-			const startTimeValue = startTime() || void 0;
+			const deadlineValue = deadline() || null;
+			const startTimeValue = startTime() || null;
 			if (deadlineValue && startTimeValue && startTimeValue >= deadlineValue) {
 				setFormError("Start time must be before the deadline.");
 				return;
@@ -3086,8 +3086,8 @@
 					name: name(),
 					type: ChoreType.PERSONAL,
 					assignedTo: person.id,
-					deadline: deadlineValue,
-					startTime: startTimeValue,
+					deadline: deadlineValue ?? void 0,
+					startTime: startTimeValue ?? void 0,
 					skipDays: skipDays(),
 					skipDayVisibility: skipDayVisibility(),
 					beforeStartTimeVisibility: beforeStartTimeVisibility(),
@@ -3509,8 +3509,8 @@
 		const handleSubmit = async (event) => {
 			event.preventDefault();
 			setFormError("");
-			const deadlineValue = deadline() || void 0;
-			const startTimeValue = startTime() || void 0;
+			const deadlineValue = deadline() || null;
+			const startTimeValue = startTime() || null;
 			if (deadlineValue && startTimeValue && startTimeValue >= deadlineValue) {
 				setFormError("Start time must be before the deadline.");
 				return;
@@ -3540,8 +3540,8 @@
 					type: ChoreType.ROTATING,
 					rotation: currentRotation,
 					rotatingIndex,
-					deadline: deadlineValue,
-					startTime: startTimeValue,
+					deadline: deadlineValue ?? void 0,
+					startTime: startTimeValue ?? void 0,
 					skipDays: skipDays(),
 					skipDayVisibility: skipDayVisibility(),
 					beforeStartTimeVisibility: beforeStartTimeVisibility(),

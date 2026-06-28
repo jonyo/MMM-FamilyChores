@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - Start time and deadline inputs now work correctly in Safari, which does not support `<input type="time">`
+- Changing a start time or deadline to "not set" now correctly clears the value when saving if it was previously set
 
 ## [1.4.0](https://github.com/jonyo/MMM-FamilyChores/compare/v1.3.2...v1.4.0) (2026-06-20)
 
