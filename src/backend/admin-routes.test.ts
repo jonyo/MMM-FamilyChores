@@ -8,6 +8,7 @@ import {
   DayOfWeek,
   NotCaughtUpDisplay,
   SkipDayVisibility,
+  TimeFormat,
 } from '../types/chore-types';
 import { getLocalDateString } from '../utils/date';
 import { generateTestUUID } from '../utils/uuid';
@@ -106,6 +107,7 @@ function makeBaseData(): FamilyChoresData {
     lastResetDate: getLocalDateString(),
     settings: {
       historyEnabled: true,
+      timeFormat: TimeFormat.SYSTEM,
     },
   };
 }

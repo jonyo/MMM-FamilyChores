@@ -439,12 +439,14 @@ var validateSettings = (settings) => {
 			error: "Settings adminPin must be a string or null"
 		};
 	}
-	if (settingsObj.timeFormat !== void 0) {
-		if (!Object.values(TimeFormat).includes(settingsObj.timeFormat)) return {
-			valid: false,
-			error: `Settings timeFormat must be one of: ${Object.values(TimeFormat).join(", ")}`
-		};
-	}
+	if (settingsObj.timeFormat === void 0) return {
+		valid: false,
+		error: "Settings timeFormat is required"
+	};
+	if (!Object.values(TimeFormat).includes(settingsObj.timeFormat)) return {
+		valid: false,
+		error: `Settings timeFormat must be one of: ${Object.values(TimeFormat).join(", ")}`
+	};
 	return { valid: true };
 };
 var validateDailyCompletion = (completion, chores) => {
@@ -807,7 +809,10 @@ function createAdminHandlers(context) {
 					}
 					validChores.push(chore);
 				}
-				const rawSettings = upgradedData.settings ?? { historyEnabled: true };
+				const rawSettings = upgradedData.settings ?? {
+					historyEnabled: true,
+					timeFormat: TimeFormat.SYSTEM
+				};
 				const settingsValidation = validateSettings(rawSettings);
 				if (!settingsValidation.valid) {
 					res.status(400).json(apiErr(`Invalid settings: ${settingsValidation.error}`));

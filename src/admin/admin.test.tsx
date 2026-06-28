@@ -8,6 +8,7 @@ import {
   ChoreType,
   NotCaughtUpDisplay,
   SkipDayVisibility,
+  TimeFormat,
 } from '../types/chore-types';
 import { Admin } from './admin';
 
@@ -41,6 +42,7 @@ describe('Admin Component Tests', () => {
         dailyCompletions: [],
         settings: {
           historyEnabled: true,
+          timeFormat: TimeFormat.SYSTEM,
         },
       };
 
@@ -72,6 +74,7 @@ describe('Admin Component Tests', () => {
         lastResetDate: '2024-01-01',
         settings: {
           historyEnabled: true,
+          timeFormat: TimeFormat.SYSTEM,
         },
       };
 
@@ -92,6 +95,7 @@ describe('Admin Component Tests', () => {
         lastResetDate: '2024-01-01',
         settings: {
           historyEnabled: true,
+          timeFormat: TimeFormat.SYSTEM,
         },
       };
 
@@ -118,6 +122,7 @@ describe('Admin Component Tests', () => {
         lastResetDate: '2024-01-01',
         settings: {
           historyEnabled: true,
+          timeFormat: TimeFormat.SYSTEM,
         },
       };
 
@@ -146,6 +151,7 @@ describe('Admin Component Tests', () => {
         lastResetDate: '2024-01-01',
         settings: {
           historyEnabled: true,
+          timeFormat: TimeFormat.SYSTEM,
         },
       };
 
@@ -195,6 +201,7 @@ describe('Admin Component Tests', () => {
         lastResetDate: '2024-01-01',
         settings: {
           historyEnabled: true,
+          timeFormat: TimeFormat.SYSTEM,
         },
       };
 

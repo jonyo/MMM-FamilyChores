@@ -483,8 +483,11 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
           validChores.push(chore as Chore);
         }
 
-        // Validate settings if provided
-        const rawSettings = upgradedData.settings ?? { historyEnabled: true };
+        // Validate settings (use defaults if not provided in restore payload)
+        const rawSettings = upgradedData.settings ?? {
+          historyEnabled: true,
+          timeFormat: TimeFormat.SYSTEM,
+        };
         const settingsValidation = validateSettings(rawSettings);
         if (!settingsValidation.valid) {
           res.status(400).json(apiErr(`Invalid settings: ${settingsValidation.error}`));

@@ -286,14 +286,15 @@ export const validateSettings = (settings: unknown): ValidatedResult => {
     }
   }
 
-  // Validate timeFormat (optional, must be a valid TimeFormat enum value if present)
-  if (settingsObj.timeFormat !== undefined) {
-    if (!Object.values(TimeFormat).includes(settingsObj.timeFormat as TimeFormat)) {
-      return {
-        valid: false,
-        error: `Settings timeFormat must be one of: ${Object.values(TimeFormat).join(', ')}`,
-      };
-    }
+  // Validate timeFormat (required, must be a valid TimeFormat enum value)
+  if (settingsObj.timeFormat === undefined) {
+    return { valid: false, error: 'Settings timeFormat is required' };
+  }
+  if (!Object.values(TimeFormat).includes(settingsObj.timeFormat as TimeFormat)) {
+    return {
+      valid: false,
+      error: `Settings timeFormat must be one of: ${Object.values(TimeFormat).join(', ')}`,
+    };
   }
 
   return { valid: true };

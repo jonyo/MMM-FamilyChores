@@ -62,7 +62,7 @@ const mockChoreData: FamilyChoresData = {
   chores: [mockPersonalChore, mockRotatingChore],
   lastResetDate: '2024-01-01',
   dailyCompletions: [],
-  settings: { historyEnabled: true },
+  settings: { historyEnabled: true, timeFormat: TimeFormat.HOUR_24 },
 };
 
 describe('Frontend Component Tests', () => {

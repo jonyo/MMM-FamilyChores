@@ -182,7 +182,7 @@ export interface Settings {
   /**
    * Time display format for admin panel and frontend. Defaults to 'system' (auto-detect from browser locale).
    */
-  timeFormat?: TimeFormat;
+  timeFormat: TimeFormat;
 }
 
 export interface FamilyChoresData {
