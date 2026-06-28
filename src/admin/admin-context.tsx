@@ -1,6 +1,6 @@
 import type { Accessor } from 'solid-js';
 import { createContext, useContext } from 'solid-js';
-import type { FamilyChoresData } from '../types/chore-types';
+import type { FamilyChoresData, TimeFormat } from '../types/chore-types';
 
 /**
  * Admin context interface
@@ -17,6 +17,8 @@ export interface AdminContextValue {
   setCachedPin: (pin: string) => void;
   /** Accessor for the cached admin PIN */
   cachedPin: Accessor<string>;
+  /** Resolved time format setting (never 'system' — always '12h' or '24h') */
+  resolvedTimeFormat: Accessor<TimeFormat.HOUR_12 | TimeFormat.HOUR_24>;
 }
 
 /**

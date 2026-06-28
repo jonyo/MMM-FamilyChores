@@ -9,6 +9,7 @@ import {
   ChoreType,
   NotCaughtUpDisplay,
   SkipDayVisibility,
+  TimeFormat,
 } from '../types/chore-types';
 import type { Config } from '../types/config';
 import { App } from './app';
@@ -61,7 +62,7 @@ const mockChoreData: FamilyChoresData = {
   chores: [mockPersonalChore, mockRotatingChore],
   lastResetDate: '2024-01-01',
   dailyCompletions: [],
-  settings: { historyEnabled: true },
+  settings: { historyEnabled: true, timeFormat: TimeFormat.HOUR_24 },
 };
 
 describe('Frontend Component Tests', () => {
@@ -73,6 +74,7 @@ describe('Frontend Component Tests', () => {
           chore={mockPersonalChore}
           people={mockPeople}
           currentTime={mockCurrentTime()}
+          timeFormat={TimeFormat.HOUR_24}
           onToggle={onToggle}
         />
       ));
@@ -89,6 +91,7 @@ describe('Frontend Component Tests', () => {
           chore={mockRotatingChore}
           people={mockPeople}
           currentTime={mockCurrentTime()}
+          timeFormat={TimeFormat.HOUR_24}
           onToggle={onToggle}
         />
       ));
@@ -104,6 +107,7 @@ describe('Frontend Component Tests', () => {
           chore={mockPersonalChore}
           people={mockPeople}
           currentTime={mockCurrentTime()}
+          timeFormat={TimeFormat.HOUR_24}
           onToggle={onToggle}
         />
       ));

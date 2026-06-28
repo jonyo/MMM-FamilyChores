@@ -10,6 +10,7 @@ import {
   SkipDayVisibility,
 } from '../types/chore-types';
 import { PeopleTab } from './people-tab';
+import { MockAdminProvider } from './test-utils';
 
 const mockPeople: Person[] = [
   { id: 'p1', name: 'Alice', color: '#FF6B6B' },
@@ -35,18 +36,20 @@ const mockChores: Chore[] = [
 describe('PeopleTab', () => {
   it('renders a person card for each person', () => {
     render(() => (
-      <PeopleTab
-        people={mockPeople}
-        chores={mockChores}
-        onAddPerson={vi.fn()}
-        onEditPerson={vi.fn()}
-        onHistory={vi.fn()}
-        onDeletePerson={vi.fn()}
-        onAddChore={vi.fn()}
-        onEditChore={vi.fn()}
-        onDeleteChore={vi.fn()}
-        onCopyChores={vi.fn()}
-      />
+      <MockAdminProvider>
+        <PeopleTab
+          people={mockPeople}
+          chores={mockChores}
+          onAddPerson={vi.fn()}
+          onEditPerson={vi.fn()}
+          onHistory={vi.fn()}
+          onDeletePerson={vi.fn()}
+          onAddChore={vi.fn()}
+          onEditChore={vi.fn()}
+          onDeleteChore={vi.fn()}
+          onCopyChores={vi.fn()}
+        />
+      </MockAdminProvider>
     ));
 
     const personCards = page.getByTestId('person-card').elements();
@@ -57,18 +60,20 @@ describe('PeopleTab', () => {
     const onAddPerson = vi.fn();
 
     render(() => (
-      <PeopleTab
-        people={mockPeople}
-        chores={mockChores}
-        onAddPerson={onAddPerson}
-        onEditPerson={vi.fn()}
-        onHistory={vi.fn()}
-        onDeletePerson={vi.fn()}
-        onAddChore={vi.fn()}
-        onEditChore={vi.fn()}
-        onDeleteChore={vi.fn()}
-        onCopyChores={vi.fn()}
-      />
+      <MockAdminProvider>
+        <PeopleTab
+          people={mockPeople}
+          chores={mockChores}
+          onAddPerson={onAddPerson}
+          onEditPerson={vi.fn()}
+          onHistory={vi.fn()}
+          onDeletePerson={vi.fn()}
+          onAddChore={vi.fn()}
+          onEditChore={vi.fn()}
+          onDeleteChore={vi.fn()}
+          onCopyChores={vi.fn()}
+        />
+      </MockAdminProvider>
     ));
 
     await page.getByRole('button', { name: 'Add Person' }).click();

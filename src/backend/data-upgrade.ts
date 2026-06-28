@@ -10,6 +10,7 @@ import {
   AfterDeadlineVisibility,
   BeforeStartTimeVisibility,
   NotCaughtUpDisplay,
+  TimeFormat,
 } from '../types/chore-types';
 
 /**
@@ -32,6 +33,14 @@ export const upgradeData = (rawData: unknown): Record<string, unknown> => {
   const upgradedChores = rawChores.map((chore) => upgradeChore(chore));
 
   data.chores = upgradedChores;
+
+  // Upgrade settings: add timeFormat default if missing
+  if (data.settings && typeof data.settings === 'object') {
+    const settings = data.settings as Record<string, unknown>;
+    if (settings.timeFormat === undefined) {
+      settings.timeFormat = TimeFormat.SYSTEM;
+    }
+  }
 
   return data;
 };

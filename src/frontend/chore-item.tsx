@@ -1,7 +1,7 @@
 import type { Component } from 'solid-js';
-import type { Chore, Person } from '../types/chore-types';
+import type { Chore, Person, TimeFormat } from '../types/chore-types';
 import { ChoreType } from '../types/chore-types';
-import { escapeHtml } from '../utils/browser';
+import { escapeHtml, formatTime } from '../utils/browser';
 import { isChoreOverdue } from './chore-filters';
 
 interface ChoreItemProps {
@@ -11,6 +11,8 @@ interface ChoreItemProps {
   people: Person[];
   /** Current local time in HH:MM */
   currentTime: string;
+  /** Resolved time format for display */
+  timeFormat: TimeFormat.HOUR_12 | TimeFormat.HOUR_24;
   /** Callback when checkbox is toggled */
   onToggle: (choreId: string, completed: boolean) => void;
 }
@@ -70,7 +72,9 @@ export const ChoreItem: Component<ChoreItemProps> = (props) => {
             <span class="assigned-to" style={{ color: personColor() }}>
               {escapeHtml(personName())}
             </span>
-            {props.chore.deadline && <span class="deadline">{props.chore.deadline}</span>}
+            {props.chore.deadline && (
+              <span class="deadline">{formatTime(props.chore.deadline, props.timeFormat)}</span>
+            )}
           </div>
         </div>
       </label>

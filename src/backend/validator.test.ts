@@ -7,6 +7,7 @@ import {
   DayOfWeek,
   NotCaughtUpDisplay,
   SkipDayVisibility,
+  TimeFormat,
 } from '../types/chore-types';
 import { generateTestUUID } from '../utils/uuid';
 import {
@@ -308,6 +309,8 @@ describe('validateChore', () => {
   });
 });
 
+const baseSettings = { historyEnabled: true, timeFormat: TimeFormat.SYSTEM };
+
 describe('validateSettings', () => {
   it('rejects non-objects', () => {
     expect(validateSettings(null).valid).toBe(false);
@@ -322,25 +325,32 @@ describe('validateSettings', () => {
     expect(validateSettings({ historyEnabled: 1 }).valid).toBe(false);
   });
 
+  it('rejects missing or invalid timeFormat', () => {
+    expect(validateSettings({ historyEnabled: true }).valid).toBe(false);
+    expect(validateSettings({ ...baseSettings, timeFormat: 'invalid' }).valid).toBe(false);
+    expect(validateSettings({ ...baseSettings, timeFormat: 123 }).valid).toBe(false);
+  });
+
   it('accepts valid settings', () => {
-    expect(validateSettings({ historyEnabled: true }).valid).toBe(true);
-    expect(validateSettings({ historyEnabled: false }).valid).toBe(true);
+    expect(validateSettings(baseSettings).valid).toBe(true);
+    expect(
+      validateSettings({ ...baseSettings, historyEnabled: false, timeFormat: TimeFormat.HOUR_12 })
+        .valid
+    ).toBe(true);
   });
 
   it('accepts valid adminPin values', () => {
-    const base = { historyEnabled: true };
-    expect(validateSettings({ ...base, adminPin: undefined }).valid).toBe(true);
-    expect(validateSettings({ ...base, adminPin: null }).valid).toBe(true);
-    expect(validateSettings({ ...base, adminPin: '1234' }).valid).toBe(true);
-    expect(validateSettings({ ...base, adminPin: 'my-secret-pin' }).valid).toBe(true);
-    expect(validateSettings({ ...base, adminPin: '' }).valid).toBe(true);
+    expect(validateSettings({ ...baseSettings, adminPin: undefined }).valid).toBe(true);
+    expect(validateSettings({ ...baseSettings, adminPin: null }).valid).toBe(true);
+    expect(validateSettings({ ...baseSettings, adminPin: '1234' }).valid).toBe(true);
+    expect(validateSettings({ ...baseSettings, adminPin: 'my-secret-pin' }).valid).toBe(true);
+    expect(validateSettings({ ...baseSettings, adminPin: '' }).valid).toBe(true);
   });
 
   it('rejects invalid adminPin types', () => {
-    const base = { historyEnabled: true };
-    expect(validateSettings({ ...base, adminPin: 1234 }).valid).toBe(false);
-    expect(validateSettings({ ...base, adminPin: true }).valid).toBe(false);
-    expect(validateSettings({ ...base, adminPin: {} }).valid).toBe(false);
+    expect(validateSettings({ ...baseSettings, adminPin: 1234 }).valid).toBe(false);
+    expect(validateSettings({ ...baseSettings, adminPin: true }).valid).toBe(false);
+    expect(validateSettings({ ...baseSettings, adminPin: {} }).valid).toBe(false);
   });
 });
 

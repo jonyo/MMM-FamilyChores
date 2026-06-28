@@ -10,6 +10,7 @@ import {
   SkipDayVisibility,
 } from '../types/chore-types';
 import { RotatingChoresTab } from './rotating-chores-tab';
+import { MockAdminProvider } from './test-utils';
 
 const mockPeople: Person[] = [
   { id: 'p1', name: 'Alice', color: '#FF6B6B' },
@@ -36,13 +37,15 @@ const mockChores: Chore[] = [mockRotatingChore];
 describe('RotatingChoresTab', () => {
   it('renders rotating chore cards when people exist', () => {
     render(() => (
-      <RotatingChoresTab
-        people={mockPeople}
-        chores={mockChores}
-        onAddRotatingChore={vi.fn()}
-        onEditRotatingChore={vi.fn()}
-        onDeleteChore={vi.fn()}
-      />
+      <MockAdminProvider>
+        <RotatingChoresTab
+          people={mockPeople}
+          chores={mockChores}
+          onAddRotatingChore={vi.fn()}
+          onEditRotatingChore={vi.fn()}
+          onDeleteChore={vi.fn()}
+        />
+      </MockAdminProvider>
     ));
 
     expect(page.getByTestId('rotating-chores-section').elements().length).toBe(1);
@@ -67,13 +70,15 @@ describe('RotatingChoresTab', () => {
     const onAddRotatingChore = vi.fn();
 
     render(() => (
-      <RotatingChoresTab
-        people={mockPeople}
-        chores={mockChores}
-        onAddRotatingChore={onAddRotatingChore}
-        onEditRotatingChore={vi.fn()}
-        onDeleteChore={vi.fn()}
-      />
+      <MockAdminProvider>
+        <RotatingChoresTab
+          people={mockPeople}
+          chores={mockChores}
+          onAddRotatingChore={onAddRotatingChore}
+          onEditRotatingChore={vi.fn()}
+          onDeleteChore={vi.fn()}
+        />
+      </MockAdminProvider>
     ));
 
     await page.getByRole('button', { name: 'Add Rotating Chore' }).click();
@@ -84,13 +89,15 @@ describe('RotatingChoresTab', () => {
     const onEditRotatingChore = vi.fn();
 
     render(() => (
-      <RotatingChoresTab
-        people={mockPeople}
-        chores={mockChores}
-        onAddRotatingChore={vi.fn()}
-        onEditRotatingChore={onEditRotatingChore}
-        onDeleteChore={vi.fn()}
-      />
+      <MockAdminProvider>
+        <RotatingChoresTab
+          people={mockPeople}
+          chores={mockChores}
+          onAddRotatingChore={vi.fn()}
+          onEditRotatingChore={onEditRotatingChore}
+          onDeleteChore={vi.fn()}
+        />
+      </MockAdminProvider>
     ));
 
     await page.getByRole('button', { name: 'Edit' }).click();
@@ -102,13 +109,15 @@ describe('RotatingChoresTab', () => {
     window.confirm = vi.fn(() => true);
 
     render(() => (
-      <RotatingChoresTab
-        people={mockPeople}
-        chores={mockChores}
-        onAddRotatingChore={vi.fn()}
-        onEditRotatingChore={vi.fn()}
-        onDeleteChore={onDeleteChore}
-      />
+      <MockAdminProvider>
+        <RotatingChoresTab
+          people={mockPeople}
+          chores={mockChores}
+          onAddRotatingChore={vi.fn()}
+          onEditRotatingChore={vi.fn()}
+          onDeleteChore={onDeleteChore}
+        />
+      </MockAdminProvider>
     ));
 
     await page.getByRole('button', { name: 'Delete' }).click();

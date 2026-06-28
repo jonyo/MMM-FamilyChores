@@ -2,6 +2,8 @@ import type { Component } from 'solid-js';
 import { createSignal, onMount, Show } from 'solid-js';
 import { createStore, reconcile } from 'solid-js/store';
 import type { FamilyChoresData } from '../types/chore-types';
+import { TimeFormat } from '../types/chore-types';
+import { formatTime } from '../utils/browser';
 import AdminContext, { type AdminContextValue } from './admin-context';
 import { MainPage } from './main-page';
 
@@ -17,6 +19,17 @@ export const Admin: Component<Record<string, never>> = () => {
   let pinTimeout: ReturnType<typeof setTimeout> | null = null;
 
   const pinRequired = () => !!choreData.data?.settings?.adminPin;
+
+  const resolvedTimeFormat = (): TimeFormat.HOUR_12 | TimeFormat.HOUR_24 => {
+    const setting = choreData.data?.settings?.timeFormat ?? TimeFormat.SYSTEM;
+    if (setting === TimeFormat.SYSTEM) {
+      // Use formatTime to detect system preference (passing '00:00' and checking the result)
+      return formatTime('00:00', TimeFormat.SYSTEM) === '00:00'
+        ? TimeFormat.HOUR_24
+        : TimeFormat.HOUR_12;
+    }
+    return setting === TimeFormat.HOUR_12 ? TimeFormat.HOUR_12 : TimeFormat.HOUR_24;
+  };
 
   const setCachedPinWithTimeout = (pin: string) => {
     setCachedPin(pin);
@@ -63,6 +76,7 @@ export const Admin: Component<Record<string, never>> = () => {
     pinRequired,
     setCachedPin: setCachedPinWithTimeout,
     cachedPin,
+    resolvedTimeFormat,
   };
 
   return (

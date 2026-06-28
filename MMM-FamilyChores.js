@@ -1164,11 +1164,53 @@
 		NotCaughtUpDisplay["OVERDUE"] = "overdue";
 		return NotCaughtUpDisplay;
 	}({});
+	var TimeFormat = /* @__PURE__ */ function(TimeFormat) {
+		TimeFormat["SYSTEM"] = "system";
+		TimeFormat["HOUR_12"] = "12h";
+		TimeFormat["HOUR_24"] = "24h";
+		return TimeFormat;
+	}({});
 	var ChoreType = /* @__PURE__ */ function(ChoreType) {
 		ChoreType["PERSONAL"] = "personal";
 		ChoreType["ROTATING"] = "rotating";
 		return ChoreType;
 	}({});
+	//#endregion
+	//#region src/utils/browser.ts
+	/**
+	* Escape HTML special characters to prevent XSS attacks
+	* Uses the browser's DOM API to properly escape HTML entities
+	*
+	* @param raw - The raw string to escape
+	* @returns The escaped HTML string
+	*/
+	var escapeHtml = (raw) => {
+		const div = document.createElement("div");
+		div.textContent = raw;
+		return div.innerHTML;
+	};
+	/**
+	* Detect whether the system locale prefers 12-hour or 24-hour time.
+	* Returns true if the system uses 12-hour format.
+	*/
+	var systemUses12Hour = () => {
+		const hourCycle = new Intl.DateTimeFormat(void 0, { hour: "numeric" }).resolvedOptions().hourCycle;
+		return hourCycle === "h11" || hourCycle === "h12";
+	};
+	/**
+	* Format a 24-hour HH:MM time string for display according to the configured time format.
+	*
+	* @param time - Time string in 24-hour HH:MM format (e.g. "14:30")
+	* @param timeFormat - The TimeFormat setting value ("system", "12h", or "24h")
+	* @returns Formatted time string for display (e.g. "2:30 PM" or "14:30")
+	*/
+	var formatTime = (time, timeFormat) => {
+		if (!(timeFormat === "12h" || timeFormat === "system" && systemUses12Hour())) return time;
+		const [hourStr, minuteStr] = time.split(":");
+		const hour = Number.parseInt(hourStr, 10);
+		const ampm = hour < 12 ? "AM" : "PM";
+		return `${hour % 12 === 0 ? 12 : hour % 12}:${minuteStr} ${ampm}`;
+	};
 	//#endregion
 	//#region src/frontend/chore-filters.ts
 	/**
@@ -1297,20 +1339,6 @@
 		};
 	}
 	//#endregion
-	//#region src/utils/browser.ts
-	/**
-	* Escape HTML special characters to prevent XSS attacks
-	* Uses the browser's DOM API to properly escape HTML entities
-	*
-	* @param raw - The raw string to escape
-	* @returns The escaped HTML string
-	*/
-	var escapeHtml = (raw) => {
-		const div = document.createElement("div");
-		div.textContent = raw;
-		return div.innerHTML;
-	};
-	//#endregion
 	//#region src/frontend/chore-item.tsx
 	var _tmpl$$7 = /*#__PURE__*/ template(`<div data-testid=chore-item><label class=chore-label><div class=chore-checkbox><input type=checkbox data-testid=chore-checkbox></div><div class=chore-details><div class=chore-name></div><div class=chore-meta><span class=assigned-to>`), _tmpl$2$5 = /*#__PURE__*/ template(`<span class=deadline>`);
 	var ChoreItem = (props) => {
@@ -1345,7 +1373,7 @@
 				var _c$ = memo(() => !!props.chore.deadline);
 				return () => _c$() && (() => {
 					var _el$9 = _tmpl$2$5();
-					insert(_el$9, () => props.chore.deadline);
+					insert(_el$9, () => formatTime(props.chore.deadline, props.timeFormat));
 					return _el$9;
 				})();
 			})(), null);
@@ -1389,6 +1417,11 @@
 	/** Debounce window after the last check/uncheck before moving chores to the earlier section. */
 	var EARLIER_SECTION_DEBOUNCE_MS = 5e3;
 	var PersonalView = (props) => {
+		const resolvedTimeFormat = () => {
+			const setting = props.choreData().settings?.timeFormat ?? TimeFormat.SYSTEM;
+			if (setting === TimeFormat.SYSTEM) return formatTime("00:00", TimeFormat.SYSTEM) === "00:00" ? TimeFormat.HOUR_24 : TimeFormat.HOUR_12;
+			return setting === TimeFormat.HOUR_12 ? TimeFormat.HOUR_12 : TimeFormat.HOUR_24;
+		};
 		const visibleChores = createMemo(() => {
 			const data = props.choreData();
 			return getFilteredChores(data.chores, data.people, props.config.personFilter, props.todaysDayOfWeek(), props.currentTime());
@@ -1442,6 +1475,9 @@
 							get currentTime() {
 								return props.currentTime();
 							},
+							get timeFormat() {
+								return resolvedTimeFormat();
+							},
 							onToggle: handleToggle
 						})
 					}), null);
@@ -1474,6 +1510,9 @@
 								},
 								get currentTime() {
 									return props.currentTime();
+								},
+								get timeFormat() {
+									return resolvedTimeFormat();
 								},
 								onToggle: handleToggle
 							})

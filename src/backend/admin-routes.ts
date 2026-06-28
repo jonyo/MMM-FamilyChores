@@ -13,6 +13,7 @@ import {
   ChoreType,
   NotCaughtUpDisplay,
   SkipDayVisibility,
+  TimeFormat,
 } from '../types/chore-types';
 import type {
   CopyChoresRequest,
@@ -342,12 +343,15 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
           return;
         }
 
+        const body = req.body as UpdateChoreRequest;
         // Construct updated chore object with minimal checks (trim strings)
+        // null means "explicitly clear"; undefined (field absent) means "keep existing value"
         const updatedChore: Record<string, unknown> = {
           ...chore,
           name: name ? name.trim() : chore.name,
-          startTime: startTime ? startTime.trim() : chore.startTime,
-          deadline: deadline ? deadline.trim() : chore.deadline,
+          startTime:
+            'startTime' in body ? (startTime ? startTime.trim() : undefined) : chore.startTime,
+          deadline: 'deadline' in body ? (deadline ? deadline.trim() : undefined) : chore.deadline,
           skipDays: skipDays || chore.skipDays,
           skipDayVisibility: skipDayVisibility || chore.skipDayVisibility,
           beforeStartTimeVisibility: beforeStartTimeVisibility || chore.beforeStartTimeVisibility,
@@ -479,8 +483,11 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
           validChores.push(chore as Chore);
         }
 
-        // Validate settings if provided
-        const rawSettings = upgradedData.settings ?? { historyEnabled: true };
+        // Validate settings (use defaults if not provided in restore payload)
+        const rawSettings = upgradedData.settings ?? {
+          historyEnabled: true,
+          timeFormat: TimeFormat.SYSTEM,
+        };
         const settingsValidation = validateSettings(rawSettings);
         if (!settingsValidation.valid) {
           res.status(400).json(apiErr(`Invalid settings: ${settingsValidation.error}`));
@@ -675,7 +682,7 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
     putSettings: (req, res) => {
       if (!validatePin(req, res, context)) return;
       try {
-        const { historyEnabled, adminPin } = req.body as UpdateSettingsRequest;
+        const { historyEnabled, adminPin, timeFormat } = req.body as UpdateSettingsRequest;
         const choreData = context.getChoreData();
 
         if (!choreData) {
@@ -687,6 +694,7 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         if (!choreData.settings) {
           choreData.settings = {
             historyEnabled: true,
+            timeFormat: TimeFormat.SYSTEM,
           };
         }
 
@@ -698,6 +706,11 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         // Update admin PIN if explicitly provided (null clears it)
         if (adminPin !== undefined) {
           choreData.settings.adminPin = adminPin || null;
+        }
+
+        // Update time format if provided
+        if (timeFormat !== undefined) {
+          choreData.settings.timeFormat = timeFormat;
         }
 
         context.saveChoreData();

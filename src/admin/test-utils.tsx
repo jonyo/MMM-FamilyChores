@@ -8,6 +8,7 @@ import {
   DayOfWeek,
   NotCaughtUpDisplay,
   SkipDayVisibility,
+  TimeFormat,
 } from '../types/chore-types';
 import AdminContext, { type AdminContextValue } from './admin-context';
 
@@ -60,6 +61,7 @@ export const mockChoreData: FamilyChoresData = {
   chores: [mockPersonalChore, mockRotatingChore],
   settings: {
     historyEnabled: true,
+    timeFormat: TimeFormat.HOUR_24,
   },
   lastResetDate: '2026-01-01',
   dailyCompletions: [],
@@ -86,6 +88,7 @@ export const createMockAdminContextValue = (
     pinRequired: () => pinRequiredValue?.() ?? false,
     setCachedPin: (pin) => setCachedPin(pin),
     cachedPin,
+    resolvedTimeFormat: () => TimeFormat.HOUR_24,
   };
 };
 

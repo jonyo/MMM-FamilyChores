@@ -7,6 +7,7 @@ import type {
   NotCaughtUpDisplay,
   Person,
   SkipDayVisibility,
+  TimeFormat,
   UUID,
 } from './chore-types';
 
@@ -61,9 +62,15 @@ export interface CreateChoreRequest extends PinProtectedRequest {
 }
 
 /**
- * Request body for updating a chore
+ * Request body for updating a chore.
+ * `startTime: null` and `deadline: null` explicitly clear the field (vs. omitting it, which preserves the existing value).
  */
-export interface UpdateChoreRequest extends Partial<CreateChoreRequest> {
+export interface UpdateChoreRequest
+  extends Omit<Partial<CreateChoreRequest>, 'startTime' | 'deadline'> {
+  /** `null` explicitly clears the field; omitting it preserves the existing value. */
+  startTime?: string | null;
+  /** `null` explicitly clears the field; omitting it preserves the existing value. */
+  deadline?: string | null;
   pin?: string;
 }
 
@@ -113,6 +120,7 @@ export interface CopyChoresRequest extends PinProtectedRequest {
 export interface UpdateSettingsRequest extends PinProtectedRequest {
   historyEnabled?: boolean;
   adminPin?: string | null;
+  timeFormat?: TimeFormat;
 }
 
 /**

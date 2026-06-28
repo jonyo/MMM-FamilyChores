@@ -7,6 +7,7 @@ import {
   ChoreType,
   NotCaughtUpDisplay,
   SkipDayVisibility,
+  TimeFormat,
 } from '../types/chore-types';
 import type { Config } from '../types/config';
 import type {
@@ -163,6 +164,7 @@ describe('Node Helper Tests', () => {
       dailyCompletions: [],
       settings: {
         historyEnabled: true,
+        timeFormat: TimeFormat.SYSTEM,
       },
     };
   });
@@ -667,6 +669,7 @@ describe('Node Helper Tests', () => {
       lastResetDate: '2024-05-11',
       settings: {
         historyEnabled: true,
+        timeFormat: TimeFormat.SYSTEM,
       },
     });
 
@@ -1037,6 +1040,7 @@ describe('Node Helper Tests', () => {
         dailyCompletions: [],
         settings: {
           historyEnabled: true,
+          timeFormat: TimeFormat.SYSTEM,
         },
       };
     });
@@ -1142,6 +1146,7 @@ describe('Node Helper Tests', () => {
         dailyCompletions: [],
         settings: {
           historyEnabled: true,
+          timeFormat: TimeFormat.SYSTEM,
         },
       };
     });
@@ -1231,6 +1236,7 @@ describe('Node Helper Tests', () => {
         dailyCompletions: [],
         settings: {
           historyEnabled: true,
+          timeFormat: TimeFormat.SYSTEM,
         },
       };
     });

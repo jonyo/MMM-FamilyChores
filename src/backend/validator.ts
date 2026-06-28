@@ -6,6 +6,7 @@ import {
   DayOfWeek,
   NotCaughtUpDisplay,
   SkipDayVisibility,
+  TimeFormat,
 } from '../types/chore-types';
 import { isValidUUID } from '../utils/uuid';
 
@@ -283,6 +284,17 @@ export const validateSettings = (settings: unknown): ValidatedResult => {
     if (typeof settingsObj.adminPin !== 'string') {
       return { valid: false, error: 'Settings adminPin must be a string or null' };
     }
+  }
+
+  // Validate timeFormat (required, must be a valid TimeFormat enum value)
+  if (settingsObj.timeFormat === undefined) {
+    return { valid: false, error: 'Settings timeFormat is required' };
+  }
+  if (!Object.values(TimeFormat).includes(settingsObj.timeFormat as TimeFormat)) {
+    return {
+      valid: false,
+      error: `Settings timeFormat must be one of: ${Object.values(TimeFormat).join(', ')}`,
+    };
   }
 
   return { valid: true };

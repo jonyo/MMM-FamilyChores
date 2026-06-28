@@ -10,6 +10,7 @@ import type {
   Person,
   Settings,
 } from '../types/chore-types';
+import { TimeFormat } from '../types/chore-types';
 import type { Config } from '../types/config';
 import type {
   ChoreTogglePayload,
@@ -157,7 +158,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
           settings = rawSettings as Settings;
         } else {
           Log.warn(`Invalid settings in data file, using defaults: ${settingsResult.error}`);
-          settings = { historyEnabled: true };
+          settings = { historyEnabled: true, timeFormat: TimeFormat.SYSTEM };
         }
 
         // Validate and filter daily completions against valid chores
@@ -230,6 +231,7 @@ const nodeHelper: FamilyChoresNodeHelper = {
       lastResetDate: getLocalDateString(),
       settings: {
         historyEnabled: true,
+        timeFormat: TimeFormat.SYSTEM,
       },
     };
   },

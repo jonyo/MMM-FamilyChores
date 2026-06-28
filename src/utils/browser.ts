@@ -36,3 +36,34 @@ export const escapeHtml = (raw: string): string => {
   div.textContent = raw;
   return div.innerHTML;
 };
+
+/**
+ * Detect whether the system locale prefers 12-hour or 24-hour time.
+ * Returns true if the system uses 12-hour format.
+ */
+const systemUses12Hour = (): boolean => {
+  const hourCycle = new Intl.DateTimeFormat(undefined, { hour: 'numeric' }).resolvedOptions()
+    .hourCycle;
+  return hourCycle === 'h11' || hourCycle === 'h12';
+};
+
+/**
+ * Format a 24-hour HH:MM time string for display according to the configured time format.
+ *
+ * @param time - Time string in 24-hour HH:MM format (e.g. "14:30")
+ * @param timeFormat - The TimeFormat setting value ("system", "12h", or "24h")
+ * @returns Formatted time string for display (e.g. "2:30 PM" or "14:30")
+ */
+export const formatTime = (time: string, timeFormat: string): string => {
+  const use12Hour = timeFormat === '12h' || (timeFormat === 'system' && systemUses12Hour());
+
+  if (!use12Hour) {
+    return time;
+  }
+
+  const [hourStr, minuteStr] = time.split(':');
+  const hour = Number.parseInt(hourStr, 10);
+  const ampm = hour < 12 ? 'AM' : 'PM';
+  const hour12 = hour % 12 === 0 ? 12 : hour % 12;
+  return `${hour12}:${minuteStr} ${ampm}`;
+};

@@ -8,6 +8,7 @@ import {
   DayOfWeek,
   NotCaughtUpDisplay,
   SkipDayVisibility,
+  TimeFormat,
 } from '../types/chore-types';
 import { RotatingChoreModal } from './rotating-chore-modal';
 import { MockAdminProvider } from './test-utils';
@@ -345,7 +346,7 @@ describe('RotatingChoreModal', () => {
 
       render(() => (
         <MockAdminProvider
-          choreDataOverride={{ settings: { historyEnabled: true } }}
+          choreDataOverride={{ settings: { historyEnabled: true, timeFormat: TimeFormat.SYSTEM } }}
           pinRequired={true}
         >
           <RotatingChoreModal initialChore={undefined} closeModal={closeModal} />
@@ -360,7 +361,7 @@ describe('RotatingChoreModal', () => {
 
       render(() => (
         <MockAdminProvider
-          choreDataOverride={{ settings: { historyEnabled: true } }}
+          choreDataOverride={{ settings: { historyEnabled: true, timeFormat: TimeFormat.SYSTEM } }}
           pinRequired={true}
           initialCachedPin="1234"
         >
@@ -376,7 +377,7 @@ describe('RotatingChoreModal', () => {
 
       render(() => (
         <MockAdminProvider
-          choreDataOverride={{ settings: { historyEnabled: true } }}
+          choreDataOverride={{ settings: { historyEnabled: true, timeFormat: TimeFormat.SYSTEM } }}
           pinRequired={true}
           initialCachedPin="1234"
         >

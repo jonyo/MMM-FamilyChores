@@ -24,6 +24,7 @@ import { Button } from './button';
 import { DisplayOptionsSection } from './display-options-section';
 import { HelpIcon } from './help-icon';
 import { PinField } from './pin-field';
+import { TimeSelect } from './time-select';
 
 interface PersonalChoreModalProps {
   person: Person | null;
@@ -72,8 +73,8 @@ export const PersonalChoreModal: Component<PersonalChoreModalProps> = (props) =>
       return;
     }
 
-    const deadlineValue = deadline() || undefined;
-    const startTimeValue = startTime() || undefined;
+    const deadlineValue = deadline() || null;
+    const startTimeValue = startTime() || null;
     if (deadlineValue && startTimeValue && startTimeValue >= deadlineValue) {
       setFormError('Start time must be before the deadline.');
       return;
@@ -102,8 +103,8 @@ export const PersonalChoreModal: Component<PersonalChoreModalProps> = (props) =>
           name: name(),
           type: ChoreType.PERSONAL,
           assignedTo: person.id,
-          deadline: deadlineValue,
-          startTime: startTimeValue,
+          deadline: deadlineValue ?? undefined,
+          startTime: startTimeValue ?? undefined,
           skipDays: skipDays(),
           skipDayVisibility: skipDayVisibility(),
           beforeStartTimeVisibility: beforeStartTimeVisibility(),
@@ -204,32 +205,14 @@ export const PersonalChoreModal: Component<PersonalChoreModalProps> = (props) =>
                     Start Time (optional)
                   </label>
                   <HelpIcon
-                    text="The chore stays hidden until this time. If a chore that is not caught up is set to 'Show if overdue', it appears early so it can be caught up."
+                    text="The chore stays hidden until this time. If a chore that is not caught up is set to 'Show if overdue', it appears early so it can be caught up. The display format (12/24-hour) can be changed in Settings."
                     position="above"
                     align="center"
                     multiline
                     class="ml-1.5"
                   />
                 </div>
-                <div class="flex items-center gap-2">
-                  <input
-                    type="time"
-                    id="startTime"
-                    value={startTime()}
-                    onInput={(e) => setStartTime(e.currentTarget.value)}
-                    class="w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"
-                  />
-                  <Show when={startTime()}>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => setStartTime('')}
-                    >
-                      Clear
-                    </Button>
-                  </Show>
-                </div>
+                <TimeSelect id="startTime" value={startTime()} onChange={setStartTime} />
               </div>
               <div class="mb-5">
                 <div class="mb-3 flex items-center">
@@ -237,32 +220,14 @@ export const PersonalChoreModal: Component<PersonalChoreModalProps> = (props) =>
                     Deadline (optional)
                   </label>
                   <HelpIcon
-                    text="After-deadline behavior is controlled by the 'After deadline' option in Advanced Display Options. Completed chores past this time move to the 'Earlier chores' section."
+                    text="After-deadline behavior is controlled by the 'After deadline' option in Advanced Display Options. Completed chores past this time move to the 'Earlier chores' section. The display format (12/24-hour) can be changed in Settings."
                     position="above"
                     align="center"
                     multiline
                     class="ml-1.5"
                   />
                 </div>
-                <div class="flex items-center gap-2">
-                  <input
-                    type="time"
-                    id="deadline"
-                    value={deadline()}
-                    onInput={(e) => setDeadline(e.currentTarget.value)}
-                    class="w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"
-                  />
-                  <Show when={deadline()}>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => setDeadline('')}
-                    >
-                      Clear
-                    </Button>
-                  </Show>
-                </div>
+                <TimeSelect id="deadline" value={deadline()} onChange={setDeadline} />
               </div>
               <div class="mb-5">
                 <div class="mb-3 block font-medium text-slate-900">Skip Days</div>

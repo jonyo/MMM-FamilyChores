@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import { copyChores } from '../api';
 import type { Person } from '../types/chore-types';
+import { TimeFormat } from '../types/chore-types';
 import { CopyChoresModal } from './copy-chores-modal';
 import { MockAdminProvider, mockPersonalChore } from './test-utils';
 
@@ -376,7 +377,7 @@ describe('CopyChoresModal', () => {
               },
               { ...mockPersonalChore, id: 'c2', name: 'Do dishes', assignedTo: 'p1' },
             ],
-            settings: { historyEnabled: true },
+            settings: { historyEnabled: true, timeFormat: TimeFormat.SYSTEM },
           }}
           pinRequired={true}
         >
@@ -404,7 +405,7 @@ describe('CopyChoresModal', () => {
               },
               { ...mockPersonalChore, id: 'c2', name: 'Do dishes', assignedTo: 'p1' },
             ],
-            settings: { historyEnabled: true },
+            settings: { historyEnabled: true, timeFormat: TimeFormat.SYSTEM },
           }}
           pinRequired={true}
           initialCachedPin="1234"
@@ -434,7 +435,7 @@ describe('CopyChoresModal', () => {
               },
               { ...mockPersonalChore, id: 'c2', name: 'Do dishes', assignedTo: 'p1' },
             ],
-            settings: { historyEnabled: true },
+            settings: { historyEnabled: true, timeFormat: TimeFormat.SYSTEM },
           }}
           pinRequired={true}
           initialCachedPin="1234"

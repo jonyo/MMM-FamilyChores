@@ -38,6 +38,60 @@ var SocketNotifications = {
 	CHORE_UPDATE_RESULT: "CHORE_UPDATE_RESULT"
 };
 //#endregion
+//#region src/types/chore-types.ts
+var SkipDayVisibility = /* @__PURE__ */ function(SkipDayVisibility) {
+	SkipDayVisibility["HIDE"] = "hide";
+	SkipDayVisibility["SHOW_IF_OVERDUE"] = "show-if-overdue";
+	SkipDayVisibility["SHOW_ALWAYS"] = "show-always";
+	return SkipDayVisibility;
+}({});
+/**
+* Controls how a chore is handled after its deadline
+*/
+var AfterDeadlineVisibility = /* @__PURE__ */ function(AfterDeadlineVisibility) {
+	AfterDeadlineVisibility["SHOW_NORMAL"] = "normal";
+	AfterDeadlineVisibility["SHOW_OVERDUE"] = "overdue";
+	AfterDeadlineVisibility["MOVE_TO_EARLIER"] = "earlier";
+	return AfterDeadlineVisibility;
+}({});
+/**
+* Controls whether a missed chore is shown before its startTime
+*/
+var BeforeStartTimeVisibility = /* @__PURE__ */ function(BeforeStartTimeVisibility) {
+	BeforeStartTimeVisibility["HIDE"] = "hide";
+	BeforeStartTimeVisibility["SHOW_IF_OVERDUE"] = "show-if-overdue";
+	return BeforeStartTimeVisibility;
+}({});
+/**
+* Controls how a chore that is not caught up is displayed
+*/
+var NotCaughtUpDisplay = /* @__PURE__ */ function(NotCaughtUpDisplay) {
+	NotCaughtUpDisplay["NORMAL"] = "normal";
+	NotCaughtUpDisplay["OVERDUE"] = "overdue";
+	return NotCaughtUpDisplay;
+}({});
+var TimeFormat = /* @__PURE__ */ function(TimeFormat) {
+	TimeFormat["SYSTEM"] = "system";
+	TimeFormat["HOUR_12"] = "12h";
+	TimeFormat["HOUR_24"] = "24h";
+	return TimeFormat;
+}({});
+var DayOfWeek = /* @__PURE__ */ function(DayOfWeek) {
+	DayOfWeek["SUNDAY"] = "sunday";
+	DayOfWeek["MONDAY"] = "monday";
+	DayOfWeek["TUESDAY"] = "tuesday";
+	DayOfWeek["WEDNESDAY"] = "wednesday";
+	DayOfWeek["THURSDAY"] = "thursday";
+	DayOfWeek["FRIDAY"] = "friday";
+	DayOfWeek["SATURDAY"] = "saturday";
+	return DayOfWeek;
+}({});
+var ChoreType = /* @__PURE__ */ function(ChoreType) {
+	ChoreType["PERSONAL"] = "personal";
+	ChoreType["ROTATING"] = "rotating";
+	return ChoreType;
+}({});
+//#endregion
 //#region src/utils/date.ts
 /**
 * Gets the local date string in YYYY-MM-DD format
@@ -132,54 +186,6 @@ function isValidUUID(uuid) {
 	return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(uuid);
 }
 //#endregion
-//#region src/types/chore-types.ts
-var SkipDayVisibility = /* @__PURE__ */ function(SkipDayVisibility) {
-	SkipDayVisibility["HIDE"] = "hide";
-	SkipDayVisibility["SHOW_IF_OVERDUE"] = "show-if-overdue";
-	SkipDayVisibility["SHOW_ALWAYS"] = "show-always";
-	return SkipDayVisibility;
-}({});
-/**
-* Controls how a chore is handled after its deadline
-*/
-var AfterDeadlineVisibility = /* @__PURE__ */ function(AfterDeadlineVisibility) {
-	AfterDeadlineVisibility["SHOW_NORMAL"] = "normal";
-	AfterDeadlineVisibility["SHOW_OVERDUE"] = "overdue";
-	AfterDeadlineVisibility["MOVE_TO_EARLIER"] = "earlier";
-	return AfterDeadlineVisibility;
-}({});
-/**
-* Controls whether a missed chore is shown before its startTime
-*/
-var BeforeStartTimeVisibility = /* @__PURE__ */ function(BeforeStartTimeVisibility) {
-	BeforeStartTimeVisibility["HIDE"] = "hide";
-	BeforeStartTimeVisibility["SHOW_IF_OVERDUE"] = "show-if-overdue";
-	return BeforeStartTimeVisibility;
-}({});
-/**
-* Controls how a chore that is not caught up is displayed
-*/
-var NotCaughtUpDisplay = /* @__PURE__ */ function(NotCaughtUpDisplay) {
-	NotCaughtUpDisplay["NORMAL"] = "normal";
-	NotCaughtUpDisplay["OVERDUE"] = "overdue";
-	return NotCaughtUpDisplay;
-}({});
-var DayOfWeek = /* @__PURE__ */ function(DayOfWeek) {
-	DayOfWeek["SUNDAY"] = "sunday";
-	DayOfWeek["MONDAY"] = "monday";
-	DayOfWeek["TUESDAY"] = "tuesday";
-	DayOfWeek["WEDNESDAY"] = "wednesday";
-	DayOfWeek["THURSDAY"] = "thursday";
-	DayOfWeek["FRIDAY"] = "friday";
-	DayOfWeek["SATURDAY"] = "saturday";
-	return DayOfWeek;
-}({});
-var ChoreType = /* @__PURE__ */ function(ChoreType) {
-	ChoreType["PERSONAL"] = "personal";
-	ChoreType["ROTATING"] = "rotating";
-	return ChoreType;
-}({});
-//#endregion
 //#region src/backend/data-upgrade.ts
 /**
 * Data migration helper for loading older versions of data.json.
@@ -201,6 +207,10 @@ var upgradeData = (rawData) => {
 	if (!rawData || typeof rawData !== "object") return {};
 	const data = { ...rawData };
 	data.chores = (Array.isArray(data.chores) ? data.chores : []).map((chore) => upgradeChore(chore));
+	if (data.settings && typeof data.settings === "object") {
+		const settings = data.settings;
+		if (settings.timeFormat === void 0) settings.timeFormat = TimeFormat.SYSTEM;
+	}
 	return data;
 };
 /**
@@ -429,6 +439,14 @@ var validateSettings = (settings) => {
 			error: "Settings adminPin must be a string or null"
 		};
 	}
+	if (settingsObj.timeFormat === void 0) return {
+		valid: false,
+		error: "Settings timeFormat is required"
+	};
+	if (!Object.values(TimeFormat).includes(settingsObj.timeFormat)) return {
+		valid: false,
+		error: `Settings timeFormat must be one of: ${Object.values(TimeFormat).join(", ")}`
+	};
 	return { valid: true };
 };
 var validateDailyCompletion = (completion, chores) => {
@@ -683,11 +701,12 @@ function createAdminHandlers(context) {
 					res.status(400).json(apiErr("Cannot change chore type"));
 					return;
 				}
+				const body = req.body;
 				const updatedChore = {
 					...chore,
 					name: name ? name.trim() : chore.name,
-					startTime: startTime ? startTime.trim() : chore.startTime,
-					deadline: deadline ? deadline.trim() : chore.deadline,
+					startTime: "startTime" in body ? startTime ? startTime.trim() : void 0 : chore.startTime,
+					deadline: "deadline" in body ? deadline ? deadline.trim() : void 0 : chore.deadline,
 					skipDays: skipDays || chore.skipDays,
 					skipDayVisibility: skipDayVisibility || chore.skipDayVisibility,
 					beforeStartTimeVisibility: beforeStartTimeVisibility || chore.beforeStartTimeVisibility,
@@ -790,7 +809,10 @@ function createAdminHandlers(context) {
 					}
 					validChores.push(chore);
 				}
-				const rawSettings = upgradedData.settings ?? { historyEnabled: true };
+				const rawSettings = upgradedData.settings ?? {
+					historyEnabled: true,
+					timeFormat: TimeFormat.SYSTEM
+				};
 				const settingsValidation = validateSettings(rawSettings);
 				if (!settingsValidation.valid) {
 					res.status(400).json(apiErr(`Invalid settings: ${settingsValidation.error}`));
@@ -944,15 +966,19 @@ function createAdminHandlers(context) {
 		putSettings: (req, res) => {
 			if (!validatePin(req, res, context)) return;
 			try {
-				const { historyEnabled, adminPin } = req.body;
+				const { historyEnabled, adminPin, timeFormat } = req.body;
 				const choreData = context.getChoreData();
 				if (!choreData) {
 					res.status(500).json(apiErr("No data available"));
 					return;
 				}
-				if (!choreData.settings) choreData.settings = { historyEnabled: true };
+				if (!choreData.settings) choreData.settings = {
+					historyEnabled: true,
+					timeFormat: TimeFormat.SYSTEM
+				};
 				if (historyEnabled !== void 0) choreData.settings.historyEnabled = historyEnabled;
 				if (adminPin !== void 0) choreData.settings.adminPin = adminPin || null;
+				if (timeFormat !== void 0) choreData.settings.timeFormat = timeFormat;
 				context.saveChoreData();
 				context.sendNotification(SocketNotifications.CHORE_DATA, choreData);
 				logger.info(`Settings updated: historyEnabled=${choreData.settings.historyEnabled}, adminPin=${choreData.settings.adminPin ? "set" : "unset"}`);
@@ -1040,7 +1066,10 @@ var node_helper_default = node_helper.create({
 				if (settingsResult.valid) settings = rawSettings;
 				else {
 					logger.warn(`Invalid settings in data file, using defaults: ${settingsResult.error}`);
-					settings = { historyEnabled: true };
+					settings = {
+						historyEnabled: true,
+						timeFormat: TimeFormat.SYSTEM
+					};
 				}
 				const rawCompletions = Array.isArray(upgradedData.dailyCompletions) ? upgradedData.dailyCompletions : [];
 				const validCompletions = [];
@@ -1092,7 +1121,10 @@ var node_helper_default = node_helper.create({
 			chores: [],
 			dailyCompletions: [],
 			lastResetDate: getLocalDateString(),
-			settings: { historyEnabled: true }
+			settings: {
+				historyEnabled: true,
+				timeFormat: TimeFormat.SYSTEM
+			}
 		};
 	},
 	/**

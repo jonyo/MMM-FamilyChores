@@ -1,9 +1,11 @@
 import type { Component } from 'solid-js';
 import { createSignal, Show } from 'solid-js';
 import { updateSettings } from '../api';
+import { TimeFormat } from '../types/chore-types';
 import type { UpdateSettingsRequest } from '../types/request-types';
 import { useAdminContext } from './admin-context';
 import { Button } from './button';
+import { HelpIcon } from './help-icon';
 
 interface SettingsModalProps {
   closeModal: () => void;
@@ -14,6 +16,9 @@ export const SettingsModal: Component<SettingsModalProps> = (props) => {
   const settings = () => choreData().settings;
 
   const [historyEnabled, setHistoryEnabled] = createSignal(settings().historyEnabled);
+  const [timeFormat, setTimeFormat] = createSignal<TimeFormat>(
+    settings().timeFormat ?? TimeFormat.SYSTEM
+  );
   const [pinEnabled, setPinEnabled] = createSignal(!!settings().adminPin);
   const [currentPin, setCurrentPin] = createSignal('');
   const [newPin, setNewPin] = createSignal('');
@@ -55,6 +60,7 @@ export const SettingsModal: Component<SettingsModalProps> = (props) => {
     try {
       const body: UpdateSettingsRequest = {
         historyEnabled: historyEnabled(),
+        timeFormat: timeFormat(),
         pin: hadPin ? currentPin() || undefined : undefined,
       };
 
@@ -103,6 +109,29 @@ export const SettingsModal: Component<SettingsModalProps> = (props) => {
             <small class="mt-2 block text-sm text-slate-500">
               Track daily chore completions (keeps last 14 days)
             </small>
+          </div>
+          <div class="mb-5">
+            <div class="mb-3 flex items-center gap-1.5">
+              <label for="timeFormat" class="font-medium text-slate-900">
+                Time Format
+              </label>
+              <HelpIcon
+                text="Controls how times are displayed in the admin panel and on the mirror. 'System' auto-detects from the browser locale — if times appear in the wrong format on the mirror, set this to 12-hour or 24-hour to override it."
+                position="above"
+                align="center"
+                multiline
+              />
+            </div>
+            <select
+              id="timeFormat"
+              value={timeFormat()}
+              onChange={(e) => setTimeFormat(e.currentTarget.value as TimeFormat)}
+              class="w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"
+            >
+              <option value={TimeFormat.SYSTEM}>System (auto-detect)</option>
+              <option value={TimeFormat.HOUR_12}>12-hour (e.g. 2:30 PM)</option>
+              <option value={TimeFormat.HOUR_24}>24-hour (e.g. 14:30)</option>
+            </select>
           </div>
           <div class="mb-5 rounded-lg border border-slate-200 bg-slate-50 p-4">
             <h4 class="mb-3 font-medium text-slate-900">Admin PIN Protection</h4>
