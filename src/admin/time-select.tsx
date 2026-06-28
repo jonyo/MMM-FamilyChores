@@ -13,11 +13,14 @@ interface TimeSelectProps {
 
 const MINUTES = ['00', '30'];
 
-/** All standard 30-minute-increment options in HH:MM 24-hour format */
+/** All standard 30-minute-increment options in HH:MM 24-hour format starting at 00:30 */
 const STANDARD_OPTIONS: string[] = [];
 for (let h = 0; h < 24; h++) {
   for (const m of MINUTES) {
-    STANDARD_OPTIONS.push(`${String(h).padStart(2, '0')}:${m}`);
+    const time = `${String(h).padStart(2, '0')}:${m}`;
+    // Skip 00:00 — midnight is not a practical start or deadline time for a chore.
+    if (time === '00:00') continue;
+    STANDARD_OPTIONS.push(time);
   }
 }
 

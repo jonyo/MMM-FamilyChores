@@ -2934,9 +2934,13 @@
 	//#region src/admin/time-select.tsx
 	var _tmpl$$10 = /*#__PURE__*/ template(`<optgroup label=AM>`), _tmpl$2$8 = /*#__PURE__*/ template(`<optgroup label=PM>`), _tmpl$3$7 = /*#__PURE__*/ template(`<select class="w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option value>— Not set —`), _tmpl$4$5 = /*#__PURE__*/ template(`<option>`);
 	var MINUTES = ["00", "30"];
-	/** All standard 30-minute-increment options in HH:MM 24-hour format */
+	/** All standard 30-minute-increment options in HH:MM 24-hour format starting at 00:30 */
 	var STANDARD_OPTIONS = [];
-	for (let h = 0; h < 24; h++) for (const m of MINUTES) STANDARD_OPTIONS.push(`${String(h).padStart(2, "0")}:${m}`);
+	for (let h = 0; h < 24; h++) for (const m of MINUTES) {
+		const time = `${String(h).padStart(2, "0")}:${m}`;
+		if (time === "00:00") continue;
+		STANDARD_OPTIONS.push(time);
+	}
 	/**
 	* Convert a 24-hour HH:MM string to a display label based on time format.
 	*/
