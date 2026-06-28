@@ -10,6 +10,7 @@ import {
   SkipDayVisibility,
 } from '../types/chore-types';
 import { PersonCard } from './person-card';
+import { MockAdminProvider } from './test-utils';
 
 const mockPerson: Person = {
   id: 'p1',
@@ -32,45 +33,38 @@ const mockChore: PersonalChore = {
 };
 
 describe('PersonCard', () => {
-  it('renders collapsed with name, color, and personal chore count', async () => {
+  const renderCard = (overrideProps?: Partial<Parameters<typeof PersonCard>[0]>) => {
+    const defaultProps = {
+      person: mockPerson,
+      chores: [mockChore],
+      canCopyChores: false,
+      onEditPerson: vi.fn(),
+      onHistory: vi.fn(),
+      onDeletePerson: vi.fn(),
+      onAddChore: vi.fn(),
+      onEditChore: vi.fn(),
+      onDeleteChore: vi.fn(),
+      onCopyChores: vi.fn(),
+      ...overrideProps,
+    };
     render(() => (
-      <PersonCard
-        person={mockPerson}
-        chores={[mockChore]}
-        canCopyChores={false}
-        onEditPerson={vi.fn()}
-        onHistory={vi.fn()}
-        onDeletePerson={vi.fn()}
-        onAddChore={vi.fn()}
-        onEditChore={vi.fn()}
-        onDeleteChore={vi.fn()}
-        onCopyChores={vi.fn()}
-      />
+      <MockAdminProvider>
+        <PersonCard {...defaultProps} />
+      </MockAdminProvider>
     ));
+    return defaultProps;
+  };
 
+  it('renders collapsed with name, color, and personal chore count', async () => {
+    renderCard();
     await expect.element(page.getByText('Alice')).toBeVisible();
     await expect.element(page.getByText('1 personal chore')).toBeVisible();
     expect(page.getByRole('button', { name: 'Add Chore' }).elements().length).toBe(0);
   });
 
   it('expands to show chores and action buttons', async () => {
-    render(() => (
-      <PersonCard
-        person={mockPerson}
-        chores={[mockChore]}
-        canCopyChores={true}
-        onEditPerson={vi.fn()}
-        onHistory={vi.fn()}
-        onDeletePerson={vi.fn()}
-        onAddChore={vi.fn()}
-        onEditChore={vi.fn()}
-        onDeleteChore={vi.fn()}
-        onCopyChores={vi.fn()}
-      />
-    ));
-
+    renderCard({ canCopyChores: true });
     await page.getByTestId('expand-person-chores').click();
-
     await expect.element(page.getByText("Alice's Personal Chores")).toBeVisible();
     await expect.element(page.getByRole('button', { name: 'Add Chore' })).toBeVisible();
     await expect.element(page.getByRole('button', { name: 'Copy Chores' })).toBeVisible();
@@ -78,46 +72,14 @@ describe('PersonCard', () => {
   });
 
   it('shows empty state when no chores', async () => {
-    render(() => (
-      <PersonCard
-        person={mockPerson}
-        chores={[]}
-        canCopyChores={false}
-        onEditPerson={vi.fn()}
-        onHistory={vi.fn()}
-        onDeletePerson={vi.fn()}
-        onAddChore={vi.fn()}
-        onEditChore={vi.fn()}
-        onDeleteChore={vi.fn()}
-        onCopyChores={vi.fn()}
-      />
-    ));
-
+    renderCard({ chores: [] });
     await page.getByTestId('expand-person-chores').click();
-
     await expect.element(page.getByText('No personal chores yet.')).toBeVisible();
   });
 
   it('calls onEditPerson and onHistory when action buttons are clicked', async () => {
-    const onEditPerson = vi.fn();
-    const onHistory = vi.fn();
-    const onDeletePerson = vi.fn();
     window.confirm = vi.fn(() => true);
-
-    render(() => (
-      <PersonCard
-        person={mockPerson}
-        chores={[]}
-        canCopyChores={false}
-        onEditPerson={onEditPerson}
-        onHistory={onHistory}
-        onDeletePerson={onDeletePerson}
-        onAddChore={vi.fn()}
-        onEditChore={vi.fn()}
-        onDeleteChore={vi.fn()}
-        onCopyChores={vi.fn()}
-      />
-    ));
+    const { onEditPerson, onHistory, onDeletePerson } = renderCard({ chores: [] });
 
     await page.getByRole('button', { name: 'Edit' }).click();
     expect(onEditPerson).toHaveBeenCalledWith(mockPerson);
@@ -130,25 +92,8 @@ describe('PersonCard', () => {
   });
 
   it('calls onAddChore and onEditChore when expanded chore buttons are clicked', async () => {
-    const onAddChore = vi.fn();
-    const onEditChore = vi.fn();
-    const onDeleteChore = vi.fn();
     window.confirm = vi.fn(() => true);
-
-    render(() => (
-      <PersonCard
-        person={mockPerson}
-        chores={[mockChore]}
-        canCopyChores={false}
-        onEditPerson={vi.fn()}
-        onHistory={vi.fn()}
-        onDeletePerson={vi.fn()}
-        onAddChore={onAddChore}
-        onEditChore={onEditChore}
-        onDeleteChore={onDeleteChore}
-        onCopyChores={vi.fn()}
-      />
-    ));
+    const { onAddChore, onEditChore, onDeleteChore } = renderCard();
 
     await page.getByTestId('expand-person-chores').click();
 
@@ -163,21 +108,7 @@ describe('PersonCard', () => {
   });
 
   it('hides Copy Chores when there are no other people', async () => {
-    render(() => (
-      <PersonCard
-        person={mockPerson}
-        chores={[mockChore]}
-        canCopyChores={false}
-        onEditPerson={vi.fn()}
-        onHistory={vi.fn()}
-        onDeletePerson={vi.fn()}
-        onAddChore={vi.fn()}
-        onEditChore={vi.fn()}
-        onDeleteChore={vi.fn()}
-        onCopyChores={vi.fn()}
-      />
-    ));
-
+    renderCard({ canCopyChores: false });
     await page.getByTestId('expand-person-chores').click();
     expect(page.getByRole('button', { name: 'Copy Chores' }).elements().length).toBe(0);
   });

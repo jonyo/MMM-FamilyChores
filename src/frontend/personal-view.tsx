@@ -1,7 +1,9 @@
 import type { Accessor, Component } from 'solid-js';
 import { createMemo, createSignal, For, Show } from 'solid-js';
 import type { DayOfWeek, FamilyChoresData } from '../types/chore-types';
+import { TimeFormat } from '../types/chore-types';
 import type { Config } from '../types/config';
+import { formatTime } from '../utils/browser';
 import { getFilteredChores, getHiddenLaterChores, isEarlierChore } from './chore-filters';
 import { ChoreItem } from './chore-item';
 import { LaterChoresIndicator } from './later-chores-indicator';
@@ -23,6 +25,16 @@ interface PersonalViewProps {
 }
 
 export const PersonalView: Component<PersonalViewProps> = (props) => {
+  const resolvedTimeFormat = (): TimeFormat.HOUR_12 | TimeFormat.HOUR_24 => {
+    const setting = props.choreData().settings?.timeFormat ?? TimeFormat.SYSTEM;
+    if (setting === TimeFormat.SYSTEM) {
+      return formatTime('00:00', TimeFormat.SYSTEM) === '00:00'
+        ? TimeFormat.HOUR_24
+        : TimeFormat.HOUR_12;
+    }
+    return setting === TimeFormat.HOUR_12 ? TimeFormat.HOUR_12 : TimeFormat.HOUR_24;
+  };
+
   const visibleChores = createMemo(() => {
     const data = props.choreData();
     return getFilteredChores(
@@ -106,6 +118,7 @@ export const PersonalView: Component<PersonalViewProps> = (props) => {
               chore={chore}
               people={props.choreData().people}
               currentTime={props.currentTime()}
+              timeFormat={resolvedTimeFormat()}
               onToggle={handleToggle}
             />
           )}
@@ -132,6 +145,7 @@ export const PersonalView: Component<PersonalViewProps> = (props) => {
                       chore={chore}
                       people={props.choreData().people}
                       currentTime={props.currentTime()}
+                      timeFormat={resolvedTimeFormat()}
                       onToggle={handleToggle}
                     />
                   )}

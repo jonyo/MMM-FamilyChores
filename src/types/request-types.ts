@@ -7,6 +7,7 @@ import type {
   NotCaughtUpDisplay,
   Person,
   SkipDayVisibility,
+  TimeFormat,
   UUID,
 } from './chore-types';
 
@@ -113,6 +114,7 @@ export interface CopyChoresRequest extends PinProtectedRequest {
 export interface UpdateSettingsRequest extends PinProtectedRequest {
   historyEnabled?: boolean;
   adminPin?: string | null;
+  timeFormat?: TimeFormat;
 }
 
 /**

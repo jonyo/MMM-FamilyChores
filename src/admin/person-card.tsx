@@ -1,7 +1,8 @@
 import type { Component } from 'solid-js';
 import { createSignal, For, Show } from 'solid-js';
 import type { DayOfWeek, Person, PersonalChore } from '../types/chore-types';
-import { escapeHtml } from '../utils/browser';
+import { escapeHtml, formatTime } from '../utils/browser';
+import { useAdminContext } from './admin-context';
 import { Button } from './button';
 
 /** Props for the PersonCard component */
@@ -36,6 +37,7 @@ const formatSkipDays = (skipDays: DayOfWeek[]): string => {
 
 /** Card displaying a person and their personal chores with an accordion */
 export const PersonCard: Component<PersonCardProps> = (props) => {
+  const { resolvedTimeFormat } = useAdminContext();
   const [expanded, setExpanded] = createSignal(false);
 
   const choreCount = () => props.chores.length;
@@ -142,11 +144,15 @@ export const PersonCard: Component<PersonCardProps> = (props) => {
                       <h4 class="mb-1.5 text-base text-slate-900">{escapeHtml(chore.name)}</h4>
                       <Show when={chore.deadline || chore.startTime}>
                         <p class="mt-1.25 text-sm text-indigo-600">
-                          <Show when={chore.startTime}>Start: {chore.startTime}</Show>
+                          <Show when={chore.startTime}>
+                            Start: {formatTime(chore.startTime ?? '', resolvedTimeFormat())}
+                          </Show>
                           <Show when={chore.deadline && chore.startTime}>
                             <span class="mx-1">|</span>
                           </Show>
-                          <Show when={chore.deadline}>Deadline: {chore.deadline}</Show>
+                          <Show when={chore.deadline}>
+                            Deadline: {formatTime(chore.deadline ?? '', resolvedTimeFormat())}
+                          </Show>
                         </p>
                       </Show>
                       <p class="mt-1.25 text-sm text-slate-500">

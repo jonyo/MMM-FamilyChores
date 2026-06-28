@@ -37,6 +37,12 @@ export enum NotCaughtUpDisplay {
   OVERDUE = 'overdue',
 }
 
+export enum TimeFormat {
+  SYSTEM = 'system',
+  HOUR_12 = '12h',
+  HOUR_24 = '24h',
+}
+
 export enum DayOfWeek {
   SUNDAY = 'sunday',
   MONDAY = 'monday',
@@ -173,6 +179,10 @@ export interface Settings {
    * PIN for protecting admin actions. null or undefined = no PIN required.
    */
   adminPin?: string | null;
+  /**
+   * Time display format for admin panel and frontend. Defaults to 'system' (auto-detect from browser locale).
+   */
+  timeFormat?: TimeFormat;
 }
 
 export interface FamilyChoresData {

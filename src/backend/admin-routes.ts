@@ -13,6 +13,7 @@ import {
   ChoreType,
   NotCaughtUpDisplay,
   SkipDayVisibility,
+  TimeFormat,
 } from '../types/chore-types';
 import type {
   CopyChoresRequest,
@@ -675,7 +676,7 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
     putSettings: (req, res) => {
       if (!validatePin(req, res, context)) return;
       try {
-        const { historyEnabled, adminPin } = req.body as UpdateSettingsRequest;
+        const { historyEnabled, adminPin, timeFormat } = req.body as UpdateSettingsRequest;
         const choreData = context.getChoreData();
 
         if (!choreData) {
@@ -687,6 +688,7 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         if (!choreData.settings) {
           choreData.settings = {
             historyEnabled: true,
+            timeFormat: TimeFormat.SYSTEM,
           };
         }
 
@@ -698,6 +700,11 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         // Update admin PIN if explicitly provided (null clears it)
         if (adminPin !== undefined) {
           choreData.settings.adminPin = adminPin || null;
+        }
+
+        // Update time format if provided
+        if (timeFormat !== undefined) {
+          choreData.settings.timeFormat = timeFormat;
         }
 
         context.saveChoreData();

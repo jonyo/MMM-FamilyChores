@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.0](https://github.com/jonyo/MMM-FamilyChores/compare/v1.4.0...v1.5.0) (2026-06-28)
+
+### Added
+- Add a **Time Format** setting (System / 12-hour / 24-hour) in the admin Settings panel — controls how times are displayed throughout the admin panel and on the mirror
+- Replace the native time input in chore modals with a dropdown time picker using 30-minute increments; times previously saved at non-30-minute intervals continue to appear correctly as an extra option
+
+### Fixed
+- Start time and deadline inputs now work correctly in Safari, which does not support `<input type="time">`
+
 ## [1.4.0](https://github.com/jonyo/MMM-FamilyChores/compare/v1.3.2...v1.4.0) (2026-06-20)
 
 ### Added

@@ -1,7 +1,8 @@
 import type { Component } from 'solid-js';
 import { createMemo, Show } from 'solid-js';
 import type { Person, RotatingChore } from '../types/chore-types';
-import { escapeHtml } from '../utils/browser';
+import { escapeHtml, formatTime } from '../utils/browser';
+import { useAdminContext } from './admin-context';
 import { Button } from './button';
 
 /** Props for the RotatingChoreCard component */
@@ -24,6 +25,7 @@ const formatSkipDays = (skipDays: string[]): string => {
 
 /** Display card for a rotating chore in the admin interface */
 export const RotatingChoreCard: Component<RotatingChoreCardProps> = (props) => {
+  const { resolvedTimeFormat } = useAdminContext();
   // Get rotation list names
   const rotationNames = createMemo(() =>
     props.chore.rotation
@@ -65,11 +67,15 @@ export const RotatingChoreCard: Component<RotatingChoreCardProps> = (props) => {
         <p class="text-sm text-slate-500">Rotation: {rotationText()}</p>
         <Show when={props.chore.deadline || props.chore.startTime}>
           <p class="mt-1.25 text-sm text-indigo-600">
-            <Show when={props.chore.startTime}>Start: {props.chore.startTime}</Show>
+            <Show when={props.chore.startTime}>
+              Start: {formatTime(props.chore.startTime ?? '', resolvedTimeFormat())}
+            </Show>
             <Show when={props.chore.deadline && props.chore.startTime}>
               <span class="mx-1">|</span>
             </Show>
-            <Show when={props.chore.deadline}>Deadline: {props.chore.deadline}</Show>
+            <Show when={props.chore.deadline}>
+              Deadline: {formatTime(props.chore.deadline ?? '', resolvedTimeFormat())}
+            </Show>
           </p>
         </Show>
         <p class="mt-1.25 text-sm text-slate-500">
