@@ -804,6 +804,10 @@ To make changes:
     rotate: -90deg;
   }
 
+  .rotate-180 {
+    rotate: 180deg;
+  }
+
   .animate-loading-pulse {
     animation: var(--animate-loading-pulse);
   }

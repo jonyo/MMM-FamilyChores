@@ -56,12 +56,29 @@ export const PersonCard: Component<PersonCardProps> = (props) => {
           <button
             type="button"
             data-testid="expand-person-chores"
-            class="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-white text-lg font-semibold text-indigo-600 shadow-sm transition-all hover:border-indigo-600 hover:bg-indigo-50 hover:shadow-md"
+            class="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-white text-indigo-600 shadow-sm transition-all hover:border-indigo-600 hover:bg-indigo-50 hover:shadow-md"
             aria-label={expanded() ? 'Collapse chores' : 'Expand chores'}
             aria-expanded={expanded()}
             onClick={toggleExpanded}
           >
-            {expanded() ? '−' : '+'}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="transition-transform duration-200"
+              classList={{
+                'rotate-180': expanded(),
+              }}
+              aria-hidden="true"
+            >
+              <path d="M5 8l5 5 5-5" />
+            </svg>
           </button>
           <div>
             <h3 class="mb-1 text-xl text-slate-900">

@@ -2378,7 +2378,7 @@
 	delegateEvents(["click", "input"]);
 	//#endregion
 	//#region src/admin/person-card.tsx
-	var _tmpl$$15 = /*#__PURE__*/ template(`<div class="grid gap-2.5">`), _tmpl$2$11 = /*#__PURE__*/ template(`<div class="mt-4 border-t border-slate-200 pt-4"><div class="mb-4 flex items-center justify-between"><h4 class="m-0 text-lg text-indigo-600">'s Personal Chores</h4><div class="flex gap-2">`), _tmpl$3$9 = /*#__PURE__*/ template(`<div class="rounded-lg border border-slate-200 bg-slate-50 p-5 transition-all hover:border-indigo-600 hover:shadow-md"data-testid=person-card><div class="flex items-start justify-between gap-4"><div class="flex items-start gap-3"><button type=button data-testid=expand-person-chores class="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-white text-lg font-semibold text-indigo-600 shadow-sm transition-all hover:border-indigo-600 hover:bg-indigo-50 hover:shadow-md"></button><div><h3 class="mb-1 text-xl text-slate-900"> <span class="inline-block size-6 rounded-full border-2 border-black/10 align-middle"></span></h3><p class="text-sm font-medium text-slate-500"></p></div></div><div class="flex gap-2.5">`), _tmpl$4$7 = /*#__PURE__*/ template(`<div><p class="my-2.5 text-slate-500 italic">No personal chores yet.`), _tmpl$5$4 = /*#__PURE__*/ template(`<span class=mx-1>|`), _tmpl$6$4 = /*#__PURE__*/ template(`<p class="mt-1.25 text-sm text-indigo-600">`), _tmpl$7$4 = /*#__PURE__*/ template(`<div class="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-2.5"><div><h4 class="mb-1.5 text-base text-slate-900"></h4><p class="mt-1.25 text-sm text-slate-500">Skip days: </p></div><div class="flex gap-2">`);
+	var _tmpl$$15 = /*#__PURE__*/ template(`<div class="grid gap-2.5">`), _tmpl$2$11 = /*#__PURE__*/ template(`<div class="mt-4 border-t border-slate-200 pt-4"><div class="mb-4 flex items-center justify-between"><h4 class="m-0 text-lg text-indigo-600">'s Personal Chores</h4><div class="flex gap-2">`), _tmpl$3$9 = /*#__PURE__*/ template(`<div class="rounded-lg border border-slate-200 bg-slate-50 p-5 transition-all hover:border-indigo-600 hover:shadow-md"data-testid=person-card><div class="flex items-start justify-between gap-4"><div class="flex items-start gap-3"><button type=button data-testid=expand-person-chores class="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-white text-indigo-600 shadow-sm transition-all hover:border-indigo-600 hover:bg-indigo-50 hover:shadow-md"><svg xmlns=http://www.w3.org/2000/svg width=20 height=20 viewBox="0 0 20 20"fill=none stroke=currentColor stroke-width=2.5 stroke-linecap=round stroke-linejoin=round class="transition-transform duration-200"aria-hidden=true><path d="M5 8l5 5 5-5"></path></svg></button><div><h3 class="mb-1 text-xl text-slate-900"> <span class="inline-block size-6 rounded-full border-2 border-black/10 align-middle"></span></h3><p class="text-sm font-medium text-slate-500"></p></div></div><div class="flex gap-2.5">`), _tmpl$4$7 = /*#__PURE__*/ template(`<div><p class="my-2.5 text-slate-500 italic">No personal chores yet.`), _tmpl$5$4 = /*#__PURE__*/ template(`<span class=mx-1>|`), _tmpl$6$4 = /*#__PURE__*/ template(`<p class="mt-1.25 text-sm text-indigo-600">`), _tmpl$7$4 = /*#__PURE__*/ template(`<div class="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-2.5"><div><h4 class="mb-1.5 text-base text-slate-900"></h4><p class="mt-1.25 text-sm text-slate-500">Skip days: </p></div><div class="flex gap-2">`);
 	var formatSkipDays$1 = (skipDays) => {
 		if (!skipDays || skipDays.length === 0) return "None";
 		return skipDays.map((d) => d.charAt(0).toUpperCase() + d.slice(1)).join(", ");
@@ -2391,26 +2391,25 @@
 		const choreCountLabel = () => `${choreCount()} ${choreCount() === 1 ? "personal chore" : "personal chores"}`;
 		const toggleExpanded = () => setExpanded((prev) => !prev);
 		return (() => {
-			var _el$ = _tmpl$3$9(), _el$3 = _el$.firstChild.firstChild, _el$4 = _el$3.firstChild, _el$6 = _el$4.nextSibling.firstChild, _el$7 = _el$6.firstChild, _el$8 = _el$7.nextSibling, _el$9 = _el$6.nextSibling, _el$0 = _el$3.nextSibling;
+			var _el$ = _tmpl$3$9(), _el$3 = _el$.firstChild.firstChild, _el$4 = _el$3.firstChild, _el$5 = _el$4.firstChild, _el$7 = _el$4.nextSibling.firstChild, _el$8 = _el$7.firstChild, _el$9 = _el$8.nextSibling, _el$0 = _el$7.nextSibling, _el$1 = _el$3.nextSibling;
 			_el$4.$$click = toggleExpanded;
-			insert(_el$4, () => expanded() ? "−" : "+");
-			insert(_el$6, () => escapeHtml(props.person.name), _el$7);
-			insert(_el$9, choreCountLabel);
-			insert(_el$0, createComponent(Button, {
+			insert(_el$7, () => escapeHtml(props.person.name), _el$8);
+			insert(_el$0, choreCountLabel);
+			insert(_el$1, createComponent(Button, {
 				type: "button",
 				variant: "secondary",
 				size: "sm",
 				onClick: () => props.onEditPerson(props.person),
 				children: "Edit"
 			}), null);
-			insert(_el$0, createComponent(Button, {
+			insert(_el$1, createComponent(Button, {
 				type: "button",
 				variant: "secondary",
 				size: "sm",
 				onClick: () => props.onHistory(props.person),
 				children: "History"
 			}), null);
-			insert(_el$0, createComponent(Button, {
+			insert(_el$1, createComponent(Button, {
 				type: "button",
 				variant: "danger",
 				size: "sm",
@@ -2422,16 +2421,16 @@
 					return expanded();
 				},
 				get children() {
-					var _el$1 = _tmpl$2$11(), _el$11 = _el$1.firstChild.firstChild, _el$12 = _el$11.firstChild, _el$13 = _el$11.nextSibling;
-					insert(_el$11, () => escapeHtml(props.person.name), _el$12);
-					insert(_el$13, createComponent(Button, {
+					var _el$10 = _tmpl$2$11(), _el$12 = _el$10.firstChild.firstChild, _el$13 = _el$12.firstChild, _el$14 = _el$12.nextSibling;
+					insert(_el$12, () => escapeHtml(props.person.name), _el$13);
+					insert(_el$14, createComponent(Button, {
 						type: "button",
 						variant: "primary",
 						size: "sm",
 						onClick: () => props.onAddChore(props.person),
 						children: "Add Chore"
 					}), null);
-					insert(_el$13, createComponent(Show, {
+					insert(_el$14, createComponent(Show, {
 						get when() {
 							return memo(() => choreCount() > 0)() && props.canCopyChores;
 						},
@@ -2445,7 +2444,7 @@
 							});
 						}
 					}), null);
-					insert(_el$1, createComponent(Show, {
+					insert(_el$10, createComponent(Show, {
 						get when() {
 							return choreCount() > 0;
 						},
@@ -2453,23 +2452,23 @@
 							return _tmpl$4$7();
 						},
 						get children() {
-							var _el$14 = _tmpl$$15();
-							insert(_el$14, createComponent(For, {
+							var _el$15 = _tmpl$$15();
+							insert(_el$15, createComponent(For, {
 								get each() {
 									return props.chores;
 								},
 								children: (chore) => (() => {
-									var _el$16 = _tmpl$7$4(), _el$17 = _el$16.firstChild, _el$18 = _el$17.firstChild, _el$21 = _el$18.nextSibling;
-									_el$21.firstChild;
-									var _el$23 = _el$17.nextSibling;
-									insert(_el$18, () => escapeHtml(chore.name));
-									insert(_el$17, createComponent(Show, {
+									var _el$17 = _tmpl$7$4(), _el$18 = _el$17.firstChild, _el$19 = _el$18.firstChild, _el$22 = _el$19.nextSibling;
+									_el$22.firstChild;
+									var _el$24 = _el$18.nextSibling;
+									insert(_el$19, () => escapeHtml(chore.name));
+									insert(_el$18, createComponent(Show, {
 										get when() {
 											return chore.deadline || chore.startTime;
 										},
 										get children() {
-											var _el$19 = _tmpl$6$4();
-											insert(_el$19, createComponent(Show, {
+											var _el$20 = _tmpl$6$4();
+											insert(_el$20, createComponent(Show, {
 												get when() {
 													return chore.startTime;
 												},
@@ -2477,7 +2476,7 @@
 													return ["Start: ", memo(() => formatTime(chore.startTime ?? "", resolvedTimeFormat()))];
 												}
 											}), null);
-											insert(_el$19, createComponent(Show, {
+											insert(_el$20, createComponent(Show, {
 												get when() {
 													return memo(() => !!chore.deadline)() && chore.startTime;
 												},
@@ -2485,7 +2484,7 @@
 													return _tmpl$5$4();
 												}
 											}), null);
-											insert(_el$19, createComponent(Show, {
+											insert(_el$20, createComponent(Show, {
 												get when() {
 													return chore.deadline;
 												},
@@ -2493,43 +2492,45 @@
 													return ["Deadline: ", memo(() => formatTime(chore.deadline ?? "", resolvedTimeFormat()))];
 												}
 											}), null);
-											return _el$19;
+											return _el$20;
 										}
-									}), _el$21);
-									insert(_el$21, () => formatSkipDays$1(chore.skipDays), null);
-									insert(_el$23, createComponent(Button, {
+									}), _el$22);
+									insert(_el$22, () => formatSkipDays$1(chore.skipDays), null);
+									insert(_el$24, createComponent(Button, {
 										type: "button",
 										variant: "secondary",
 										size: "sm",
 										onClick: () => props.onEditChore(props.person, chore),
 										children: "Edit"
 									}), null);
-									insert(_el$23, createComponent(Button, {
+									insert(_el$24, createComponent(Button, {
 										type: "button",
 										variant: "danger",
 										size: "sm",
 										onClick: () => props.onDeleteChore(chore.id),
 										children: "Delete"
 									}), null);
-									return _el$16;
+									return _el$17;
 								})()
 							}));
-							return _el$14;
+							return _el$15;
 						}
 					}), null);
-					return _el$1;
+					return _el$10;
 				}
 			}), null);
 			createRenderEffect((_p$) => {
-				var _v$ = expanded() ? "Collapse chores" : "Expand chores", _v$2 = expanded(), _v$3 = `background-color: ${props.person.color}`;
+				var _v$ = expanded() ? "Collapse chores" : "Expand chores", _v$2 = expanded(), _v$3 = !!expanded(), _v$4 = `background-color: ${props.person.color}`;
 				_v$ !== _p$.e && setAttribute(_el$4, "aria-label", _p$.e = _v$);
 				_v$2 !== _p$.t && setAttribute(_el$4, "aria-expanded", _p$.t = _v$2);
-				_p$.a = style(_el$8, _v$3, _p$.a);
+				_v$3 !== _p$.a && _el$5.classList.toggle("rotate-180", _p$.a = _v$3);
+				_p$.o = style(_el$9, _v$4, _p$.o);
 				return _p$;
 			}, {
 				e: void 0,
 				t: void 0,
-				a: void 0
+				a: void 0,
+				o: void 0
 			});
 			return _el$;
 		})();
@@ -4088,7 +4089,7 @@
 	};
 	//#endregion
 	//#region src/admin/main-page.tsx
-	var _tmpl$$1 = /*#__PURE__*/ template(`<header class="flex flex-wrap items-center justify-between gap-4 bg-slate-100 p-8 text-slate-900"><h1 class="text-3xl font-semibold">Family Chores Admin</h1><div class="flex gap-2.5"><label for=restoreFile class="cursor-pointer rounded-lg border-none bg-gray-600 px-5 py-2.5 text-sm font-medium text-white transition-all hover:-translate-y-0.5 hover:bg-gray-700 hover:shadow-md">Restore Backup</label><input type=file id=restoreFile accept=.json hidden>`), _tmpl$2$1 = /*#__PURE__*/ template(`<main class=p-8><nav class="mb-8 border-b border-slate-200"><ul class="flex gap-1">`), _tmpl$3$1 = /*#__PURE__*/ template(`<li><button type=button class="cursor-pointer border-b-2 border-transparent px-4 py-2 text-sm font-medium text-slate-600 transition-all hover:text-indigo-600">`);
+	var _tmpl$$1 = /*#__PURE__*/ template(`<header class="flex flex-wrap items-center justify-between gap-4 bg-slate-100 p-8 text-slate-900"><h1 class="text-3xl font-semibold">Family Chores Admin</h1><div class="flex gap-2.5"><label for=restoreFile class="cursor-pointer rounded-lg border-none bg-gray-600 px-5 py-2.5 text-sm font-medium text-white transition-all hover:-translate-y-0.5 hover:bg-gray-700 hover:shadow-md">Restore Backup</label><input type=file id=restoreFile accept=.json hidden>`), _tmpl$2$1 = /*#__PURE__*/ template(`<main class=p-8><nav class="mb-8 border-b border-slate-200"><ul class="flex gap-1">`), _tmpl$3$1 = /*#__PURE__*/ template(`<li><button type=button class="cursor-pointer border-b-2 px-4 py-2 text-sm font-medium transition-all hover:text-indigo-600">`);
 	var API_BASE$1 = "/MMM-FamilyChores";
 	var MainPage = () => {
 		const { choreData, loadData, pinRequired, setCachedPin, cachedPin } = useAdminContext();

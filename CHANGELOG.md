@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.1](https://github.com/jonyo/MMM-FamilyChores/compare/v1.5.0...v1.5.1) (2026-06-29)
+
+### Changed
+- In the admin People tab, replace the `+` / `−` accordion toggle with a chevron icon that rotates to show expand/collapse state
+
+### Fixed
+- Active tab styling not applied on initial page load — the People tab appeared unselected until you switched away and back
+
 ## [1.5.0](https://github.com/jonyo/MMM-FamilyChores/compare/v1.4.0...v1.5.0) (2026-06-28)
 
 ### Added

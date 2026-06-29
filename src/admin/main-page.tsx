@@ -318,7 +318,7 @@ export const MainPage: Component = () => {
                 <li>
                   <button
                     type="button"
-                    class="cursor-pointer border-b-2 border-transparent px-4 py-2 text-sm font-medium text-slate-600 transition-all hover:text-indigo-600"
+                    class="cursor-pointer border-b-2 px-4 py-2 text-sm font-medium transition-all hover:text-indigo-600"
                     classList={{
                       'border-indigo-600 text-indigo-600': activeTab() === tab.id,
                       'border-transparent text-slate-600': activeTab() !== tab.id,
