@@ -190,6 +190,40 @@ describe('Admin Component Tests', () => {
   });
 
   describe('Tabs', () => {
+    it('shows People tab as active by default', async () => {
+      const mockData: FamilyChoresData = {
+        people: [{ id: 'p1', name: 'Alice', color: '#FF6B6B' }],
+        chores: [],
+        dailyCompletions: [],
+        lastResetDate: '2024-01-01',
+        settings: {
+          historyEnabled: true,
+          timeFormat: TimeFormat.SYSTEM,
+        },
+      };
+
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockData,
+      } as Response);
+
+      render(() => <Admin />);
+
+      await expect.element(page.getByRole('button', { name: 'People' })).toBeVisible();
+
+      const peopleTab = page.getByRole('button', { name: 'People' }).element();
+      expect(peopleTab.classList.contains('border-indigo-600')).toBe(true);
+      expect(peopleTab.classList.contains('text-indigo-600')).toBe(true);
+
+      const rotatingTab = page.getByRole('button', { name: 'Rotation Chores' }).element();
+      expect(rotatingTab.classList.contains('border-transparent')).toBe(true);
+      expect(rotatingTab.classList.contains('text-slate-600')).toBe(true);
+
+      const systemTab = page.getByRole('button', { name: 'System Actions' }).element();
+      expect(systemTab.classList.contains('border-transparent')).toBe(true);
+      expect(systemTab.classList.contains('text-slate-600')).toBe(true);
+    });
+
     it('should switch between tabs', async () => {
       const mockData: FamilyChoresData = {
         people: [
