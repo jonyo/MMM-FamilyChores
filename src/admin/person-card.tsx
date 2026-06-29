@@ -71,7 +71,10 @@ export const PersonCard: Component<PersonCardProps> = (props) => {
               stroke-width="2.5"
               stroke-linecap="round"
               stroke-linejoin="round"
-              class={`transition-transform duration-200 ${expanded() ? 'rotate-180' : ''}`}
+              class="transition-transform duration-200"
+              classList={{
+                'rotate-180': expanded(),
+              }}
               aria-hidden="true"
             >
               <path d="M5 8l5 5 5-5" />
