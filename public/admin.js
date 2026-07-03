@@ -2539,7 +2539,7 @@
 	delegateEvents(["click"]);
 	//#endregion
 	//#region src/admin/people-tab.tsx
-	var _tmpl$$14 = /*#__PURE__*/ template(`<section data-testid=people-section><div class="mb-5 flex items-center justify-between"><h2 class="m-0 border-b-2 border-indigo-600 pb-2.5 text-2xl text-indigo-600">People</h2><div class="flex items-center gap-2"></div></div><div id=peopleList class="mt-5 grid gap-4">`);
+	var _tmpl$$14 = /*#__PURE__*/ template(`<section data-testid=people-section><div class="mb-5 flex items-center justify-between"><h2 class="m-0 border-b-2 border-indigo-600 pb-2.5 text-2xl text-indigo-600">People</h2><div class="flex items-center gap-2"></div></div><div class="mt-5 grid gap-4">`);
 	/** Tab showing all people as accordion cards */
 	var PeopleTab = (props) => {
 		const getPersonalChores = (personId) => props.chores.filter((chore) => chore.type === ChoreType.PERSONAL && chore.assignedTo === personId);
@@ -2549,7 +2549,6 @@
 			insert(_el$4, createComponent(Button, {
 				type: "button",
 				variant: "primary",
-				id: "addPersonBtn",
 				onClick: () => props.onAddPerson(),
 				children: "Add Person"
 			}), null);
@@ -3834,7 +3833,7 @@
 	};
 	//#endregion
 	//#region src/admin/rotating-chores-tab.tsx
-	var _tmpl$$4 = /*#__PURE__*/ template(`<section id=rotatingChoresSection data-testid=rotating-chores-section><div class="mb-5 flex items-center justify-between"><h2 class="m-0 border-b-2 border-indigo-600 pb-2.5 text-2xl text-indigo-600">Rotating Chores</h2></div><div id=rotatingChoresList class="mt-5 grid gap-4">`);
+	var _tmpl$$4 = /*#__PURE__*/ template(`<section data-testid=rotating-chores-section><div class="mb-5 flex items-center justify-between"><h2 class="m-0 border-b-2 border-indigo-600 pb-2.5 text-2xl text-indigo-600">Rotating Chores</h2></div><div class="mt-5 grid gap-4">`);
 	/** Tab showing all rotating chores */
 	var RotatingChoresTab = (props) => {
 		const rotatingChores = () => props.chores.filter((chore) => chore.type === ChoreType.ROTATING);
@@ -3849,7 +3848,6 @@
 				insert(_el$2, createComponent(Button, {
 					type: "button",
 					variant: "primary",
-					id: "addRotatingChoreBtn",
 					onClick: () => props.onAddRotatingChore(),
 					children: "Add Rotating Chore"
 				}), null);
@@ -4306,7 +4304,6 @@
 				insert(_el$3, createComponent(Button, {
 					type: "button",
 					variant: "secondary",
-					id: "backupBtn",
 					onClick: handleDownloadBackup,
 					children: "Download Backup"
 				}), _el$4);
@@ -4314,7 +4311,6 @@
 				insert(_el$3, createComponent(Button, {
 					type: "button",
 					variant: "secondary",
-					id: "settingsBtn",
 					onClick: () => setSettingsModalOpen(true),
 					children: "⚙️ Settings"
 				}), null);

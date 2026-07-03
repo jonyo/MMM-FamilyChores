@@ -157,8 +157,7 @@ describe('Admin Component Tests', () => {
       await expect.element(page.getByText('Family Chores Admin')).toBeVisible();
 
       // Verify rotating chores section is not present when no people exist
-      const rotatingSection = document.getElementById('rotatingChoresSection');
-      expect(rotatingSection).toBeFalsy();
+      expect(page.getByTestId('rotating-chores-section').elements().length).toBe(0);
     });
   });
 

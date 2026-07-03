@@ -290,7 +290,7 @@ export const MainPage: Component = () => {
       <header class="flex flex-wrap items-center justify-between gap-4 bg-slate-100 p-8 text-slate-900">
         <h1 class="text-3xl font-semibold">Family Chores Admin</h1>
         <div class="flex gap-2.5">
-          <Button type="button" variant="secondary" id="backupBtn" onClick={handleDownloadBackup}>
+          <Button type="button" variant="secondary" onClick={handleDownloadBackup}>
             Download Backup
           </Button>
           <label
@@ -300,12 +300,7 @@ export const MainPage: Component = () => {
             Restore Backup
           </label>
           <input type="file" id="restoreFile" accept=".json" hidden onInput={handleRestore} />
-          <Button
-            type="button"
-            variant="secondary"
-            id="settingsBtn"
-            onClick={() => setSettingsModalOpen(true)}
-          >
+          <Button type="button" variant="secondary" onClick={() => setSettingsModalOpen(true)}>
             ⚙️ Settings
           </Button>
         </div>
