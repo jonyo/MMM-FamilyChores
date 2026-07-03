@@ -189,6 +189,40 @@ describe('Admin Component Tests', () => {
     });
   });
 
+  describe('Rotating Chore Modal', () => {
+    it('should open rotating chore modal when clicking Add Rotating Chore button', async () => {
+      const mockData: FamilyChoresData = {
+        people: [
+          { id: 'p1', name: 'Alice', color: '#FF6B6B' },
+          { id: 'p2', name: 'Bob', color: '#4ECDC4' },
+        ],
+        chores: [],
+        dailyCompletions: [],
+        lastResetDate: '2024-01-01',
+        settings: {
+          historyEnabled: true,
+          timeFormat: TimeFormat.SYSTEM,
+        },
+      };
+
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockData,
+      } as Response);
+
+      render(() => <Admin />);
+
+      // Switch to Rotation Chores tab
+      await page.getByRole('button', { name: 'Rotation Chores' }).click();
+      await expect.element(page.getByTestId('rotating-chores-section')).toBeVisible();
+
+      // Click Add Rotating Chore — should open modal without crashing
+      await page.getByRole('button', { name: 'Add Rotating Chore' }).click();
+      await expect.element(page.getByTestId('modal-title')).toBeVisible();
+      await expect.element(page.getByTestId('modal-title')).toHaveTextContent('Add Rotating Chore');
+    });
+  });
+
   describe('Tabs', () => {
     it('shows People tab as active by default', async () => {
       const mockData: FamilyChoresData = {

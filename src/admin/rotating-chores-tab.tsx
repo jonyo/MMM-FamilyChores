@@ -35,7 +35,7 @@ export const RotatingChoresTab: Component<RotatingChoresTabProps> = (props) => {
             type="button"
             variant="primary"
             id="addRotatingChoreBtn"
-            onClick={props.onAddRotatingChore}
+            onClick={() => props.onAddRotatingChore()}
           >
             Add Rotating Chore
           </Button>

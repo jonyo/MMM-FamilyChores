@@ -3851,9 +3851,7 @@
 					type: "button",
 					variant: "primary",
 					id: "addRotatingChoreBtn",
-					get onClick() {
-						return props.onAddRotatingChore;
-					},
+					onClick: () => props.onAddRotatingChore(),
 					children: "Add Rotating Chore"
 				}), null);
 				insert(_el$4, createComponent(For, {
