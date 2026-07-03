@@ -100,6 +100,17 @@ pnpm run lint         # Run Biome (primary) and ESLint (reactivity errors)
 pnpm run test         # Run tests
 ```
 
+**MANDATORY: After completing ALL code changes, you MUST run these and include the following checklist in your final response:**
+
+```
+## Verification
+- [✅/❌] `pnpm run lint`
+- [✅/❌] `pnpm run build`
+- [✅/❌] `pnpm run test`
+```
+
+Use ✅ if it passed, ❌ if it failed (and explain why). You MAY omit items that are genuinely not applicable (e.g. skip `build` and `test` for documentation-only changes, skip `build` if you are mid-task and have not finished yet) — but if you skip an item, **say so explicitly** rather than silently omitting it. Never omit all three without explanation.
+
 **CRITICAL: Before committing changes, you MUST:**
 
 ```bash
