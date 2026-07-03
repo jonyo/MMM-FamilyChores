@@ -2500,6 +2500,7 @@
 										type: "button",
 										variant: "secondary",
 										size: "sm",
+										dataTestId: "chore-edit-btn",
 										onClick: () => props.onEditChore(props.person, chore),
 										children: "Edit"
 									}), null);
@@ -2549,9 +2550,7 @@
 				type: "button",
 				variant: "primary",
 				id: "addPersonBtn",
-				get onClick() {
-					return props.onAddPerson;
-				},
+				onClick: () => props.onAddPerson(),
 				children: "Add Person"
 			}), null);
 			insert(_el$4, createComponent(Show, {

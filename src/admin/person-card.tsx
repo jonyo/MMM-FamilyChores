@@ -181,6 +181,7 @@ export const PersonCard: Component<PersonCardProps> = (props) => {
                         type="button"
                         variant="secondary"
                         size="sm"
+                        dataTestId="chore-edit-btn"
                         onClick={() => props.onEditChore(props.person, chore)}
                       >
                         Edit
