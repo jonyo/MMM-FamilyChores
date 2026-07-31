@@ -21,6 +21,7 @@ import { getLocalDateString, getLocalDayName, getLocalTimeString } from '../util
 import { generateUUID } from '../utils/uuid';
 import { createAdminHandlers } from './admin-routes';
 import { upgradeData } from './data-upgrade';
+import { parseJsonBody } from './json-body-middleware';
 import {
   validateChore,
   validateDailyCompletion,
@@ -477,6 +478,11 @@ const nodeHelper: FamilyChoresNodeHelper = {
       sendNotification: (notification, payload) =>
         this.sendSocketNotification?.(notification, payload),
     });
+
+    // Parse JSON bodies for our routes ourselves - MagicMirror core does not guarantee
+    // JSON body-parsing middleware is registered on the shared expressApp (it may depend
+    // on whether another installed module happens to add its own express.json()).
+    this.expressApp?.use('/MMM-FamilyChores', parseJsonBody);
 
     this.expressApp?.get('/MMM-FamilyChores/data', handlers.getData);
     this.expressApp?.post('/MMM-FamilyChores/people', handlers.postPerson);

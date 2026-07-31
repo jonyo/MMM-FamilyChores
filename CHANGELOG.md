@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.3](https://github.com/jonyo/MMM-FamilyChores/compare/v1.5.2...v1.5.3) (2026-07-31)
+
+### Fixed
+- Editing a person or chore in the admin panel could fail with "Failed to update chore" / "Failed to update person" if no other installed MagicMirror module happened to register JSON body-parsing middleware on the shared server. The module now parses JSON request bodies for its own routes itself, so it no longer depends on other modules for this.
+
 ## [1.5.2](https://github.com/jonyo/MMM-FamilyChores/compare/v1.5.1...v1.5.2) (2026-07-03)
 
 ### Fixed
