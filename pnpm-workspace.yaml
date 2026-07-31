@@ -1,0 +1,7 @@
+overrides:
+  # brace-expansion is pulled in as a transitive dependency of eslint's own
+  # dependency tree (eslint > @eslint/config-array > minimatch > brace-expansion)
+  # at a version older than what eslint's own semver range would otherwise
+  # allow. Force resolution to the patched version to fix
+  # GHSA-3jxr-9vmj-r5cp / GHSA-mh99-v99m-4gvg until eslint bumps its own pin.
+  brace-expansion: ">=5.0.9"

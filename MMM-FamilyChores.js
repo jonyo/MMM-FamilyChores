@@ -831,7 +831,10 @@
 	}
 	//#endregion
 	//#region node_modules/.pnpm/solid-js@1.9.12/node_modules/solid-js/store/dist/store.js
-	var $RAW = Symbol("store-raw"), $NODE = Symbol("store-node"), $HAS = Symbol("store-has"), $SELF = Symbol("store-self");
+	var $RAW = Symbol("store-raw");
+	var $NODE = Symbol("store-node");
+	var $HAS = Symbol("store-has");
+	var $SELF = Symbol("store-self");
 	function wrap$1(value) {
 		let p = value[$PROXY];
 		if (!p) {
@@ -1340,7 +1343,8 @@
 	}
 	//#endregion
 	//#region src/frontend/chore-item.tsx
-	var _tmpl$$7 = /*#__PURE__*/ template(`<div data-testid=chore-item><label class=chore-label><div class=chore-checkbox><input type=checkbox data-testid=chore-checkbox></div><div class=chore-details><div class=chore-name></div><div class=chore-meta><span class=assigned-to>`), _tmpl$2$5 = /*#__PURE__*/ template(`<span class=deadline>`);
+	var _tmpl$$7 = /*#__PURE__*/ template(`<div data-testid=chore-item><label class=chore-label><div class=chore-checkbox><input type=checkbox data-testid=chore-checkbox></div><div class=chore-details><div class=chore-name></div><div class=chore-meta><span class=assigned-to>`);
+	var _tmpl$2$5 = /*#__PURE__*/ template(`<span class=deadline>`);
 	var ChoreItem = (props) => {
 		const assignedPerson = () => {
 			const chore = props.chore;
@@ -1413,7 +1417,9 @@
 	};
 	//#endregion
 	//#region src/frontend/personal-view.tsx
-	var _tmpl$$5 = /*#__PURE__*/ template(`<div class=chore-list>`), _tmpl$2$4 = /*#__PURE__*/ template(`<div class=chore-list><div class=earlier-chores-container><details class=earlier-chores><summary class=earlier-chores-summary><div class=earlier-chores-header><span class=earlier-chores-title>Earlier chores</span><span class=earlier-chores-count></span></div></summary><div class=earlier-chores-content>`), _tmpl$3$2 = /*#__PURE__*/ template(`<div class=chore-list><div class=empty-state>No chores match the current filter.`);
+	var _tmpl$$5 = /*#__PURE__*/ template(`<div class=chore-list>`);
+	var _tmpl$2$4 = /*#__PURE__*/ template(`<div class=chore-list><div class=earlier-chores-container><details class=earlier-chores><summary class=earlier-chores-summary><div class=earlier-chores-header><span class=earlier-chores-title>Earlier chores</span><span class=earlier-chores-count></span></div></summary><div class=earlier-chores-content>`);
+	var _tmpl$3$2 = /*#__PURE__*/ template(`<div class=chore-list><div class=empty-state>No chores match the current filter.`);
 	/** Debounce window after the last check/uncheck before moving chores to the earlier section. */
 	var EARLIER_SECTION_DEBOUNCE_MS = 5e3;
 	var PersonalView = (props) => {
@@ -1525,7 +1531,8 @@
 	};
 	//#endregion
 	//#region src/frontend/incomplete-by-person.tsx
-	var _tmpl$$4 = /*#__PURE__*/ template(`<span class=later-count-note data-testid=later-count-note> +<!> later`), _tmpl$2$3 = /*#__PURE__*/ template(`<div class=incomplete-person-row><span class=person-name></span><span class=incomplete-count>`);
+	var _tmpl$$4 = /*#__PURE__*/ template(`<span class=later-count-note data-testid=later-count-note> +<!> later`);
+	var _tmpl$2$3 = /*#__PURE__*/ template(`<div class=incomplete-person-row><span class=person-name></span><span class=incomplete-count>`);
 	var IncompleteByPerson = (props) => {
 		const personRows = createMemo(() => {
 			const choresByPerson = /* @__PURE__ */ new Map();
@@ -1584,7 +1591,9 @@
 	};
 	//#endregion
 	//#region src/frontend/overdue-by-person.tsx
-	var _tmpl$$3 = /*#__PURE__*/ template(`<div class=overdue-person-group><div class=overdue-person-name></div><div class=overdue-chores-list>`), _tmpl$2$2 = /*#__PURE__*/ template(`<div class=overdue-chore-item data-testid=overdue-chore-item>`), _tmpl$3$1 = /*#__PURE__*/ template(`<div class=overdue-more>...<!> more`);
+	var _tmpl$$3 = /*#__PURE__*/ template(`<div class=overdue-person-group><div class=overdue-person-name></div><div class=overdue-chores-list>`);
+	var _tmpl$2$2 = /*#__PURE__*/ template(`<div class=overdue-chore-item data-testid=overdue-chore-item>`);
+	var _tmpl$3$1 = /*#__PURE__*/ template(`<div class=overdue-more>...<!> more`);
 	var OverdueByPerson = (props) => {
 		const personGroups = createMemo(() => {
 			const choresByPerson = /* @__PURE__ */ new Map();
@@ -1678,7 +1687,10 @@
 	};
 	//#endregion
 	//#region src/frontend/summary-view.tsx
-	var _tmpl$$1 = /*#__PURE__*/ template(`<div class="summary-section incomplete-section"><h3 class="section-title incomplete-title"></h3><div class=incomplete-list>`), _tmpl$2$1 = /*#__PURE__*/ template(`<div class="summary-section rotating-section"><h3 class="section-title rotating-title"></h3><div class=chore-list>`), _tmpl$3 = /*#__PURE__*/ template(`<div class="summary-section overdue-section"><h3 class="section-title overdue-title"></h3><div class=overdue-list>`), _tmpl$4 = /*#__PURE__*/ template(`<div class=summary-view>`);
+	var _tmpl$$1 = /*#__PURE__*/ template(`<div class="summary-section incomplete-section"><h3 class="section-title incomplete-title"></h3><div class=incomplete-list>`);
+	var _tmpl$2$1 = /*#__PURE__*/ template(`<div class="summary-section rotating-section"><h3 class="section-title rotating-title"></h3><div class=chore-list>`);
+	var _tmpl$3 = /*#__PURE__*/ template(`<div class="summary-section overdue-section"><h3 class="section-title overdue-title"></h3><div class=overdue-list>`);
+	var _tmpl$4 = /*#__PURE__*/ template(`<div class=summary-view>`);
 	var SummaryView = (props) => {
 		const summaryConfig = () => getSummaryConfig(props.config);
 		const visibleChores = createMemo(() => {
@@ -1758,7 +1770,8 @@
 	};
 	//#endregion
 	//#region src/frontend/app.tsx
-	var _tmpl$ = /*#__PURE__*/ template(`<div class=module-content>`), _tmpl$2 = /*#__PURE__*/ template(`<div class=loading>Loading...`);
+	var _tmpl$ = /*#__PURE__*/ template(`<div class=module-content>`);
+	var _tmpl$2 = /*#__PURE__*/ template(`<div class=loading>Loading...`);
 	var App = (props) => {
 		return (() => {
 			var _el$ = _tmpl$();

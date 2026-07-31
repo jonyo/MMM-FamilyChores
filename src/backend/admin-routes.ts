@@ -383,7 +383,9 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         Log.info(`Chore updated: ${chore.name} (${chore.id})`);
         res.json(chore);
       } catch (error) {
-        Log.error(`Error updating chore: ${error}`);
+        Log.error(
+          `Error updating chore ${req.params?.id}: ${error instanceof Error ? error.stack : error}`
+        );
         res.status(500).json(apiErr('Failed to update chore'));
       }
     },

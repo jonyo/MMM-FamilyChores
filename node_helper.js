@@ -16,7 +16,7 @@ var __copyProps = (to, from, except, desc) => {
 	}
 	return to;
 };
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", {
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule || !__hasOwnProp.call(mod, "default") ? __defProp(target, "default", {
 	value: mod,
 	enumerable: true
 }) : target, mod));
@@ -164,7 +164,7 @@ var getLocalDayName = (date = /* @__PURE__ */ new Date()) => {
 * @returns A new UUID v4 string
 */
 function generateUUID() {
-	const bytes = new Uint8Array(16);
+	const bytes = /* @__PURE__ */ new Uint8Array(16);
 	crypto.getRandomValues(bytes);
 	bytes[6] = bytes[6] & 15 | 64;
 	bytes[8] = bytes[8] & 63 | 128;
@@ -729,7 +729,7 @@ function createAdminHandlers(context) {
 				logger.info(`Chore updated: ${chore.name} (${chore.id})`);
 				res.json(chore);
 			} catch (error) {
-				logger.error(`Error updating chore: ${error}`);
+				logger.error(`Error updating chore ${req.params?.id}: ${error instanceof Error ? error.stack : error}`);
 				res.status(500).json(apiErr("Failed to update chore"));
 			}
 		},
@@ -991,6 +991,73 @@ function createAdminHandlers(context) {
 			}
 		}
 	};
+}
+//#endregion
+//#region src/backend/json-body-middleware.ts
+/** Reject bodies larger than this to avoid unbounded memory use from a bad/malicious request. */
+var MAX_BODY_BYTES = 5242880;
+/**
+* Minimal stand-in for `express.json()`, implemented without adding express/body-parser
+* as a dependency (keeps the compiled node_helper.js small and avoids relying on whatever
+* body-parsing middleware, if any, other installed modules happen to register on the shared
+* MagicMirror core `expressApp`).
+*
+* Parses the raw request body into `req.body` when the `Content-Type` is `application/json`.
+* Leaves `req.body` as `undefined` for other content types or empty bodies, matching
+* `express.json()` behavior for GET/DELETE requests with no body.
+*/
+function parseJsonBody(req, res, next) {
+	if (req.body !== void 0) {
+		next();
+		return;
+	}
+	if (!(req.headers["content-type"] ?? "").includes("application/json")) {
+		next();
+		return;
+	}
+	const chunks = [];
+	let totalBytes = 0;
+	let settled = false;
+	const fail = (statusCode, message) => {
+		if (settled) return;
+		settled = true;
+		res.statusCode = statusCode;
+		res.setHeader("Content-Type", "application/json");
+		res.end(JSON.stringify({ error: message }));
+	};
+	req.on("data", (chunk) => {
+		if (settled) return;
+		totalBytes += chunk.length;
+		if (totalBytes > MAX_BODY_BYTES) {
+			fail(413, "Request body too large");
+			req.destroy();
+			return;
+		}
+		chunks.push(chunk);
+	});
+	req.on("end", () => {
+		if (settled) return;
+		const raw = Buffer.concat(chunks).toString("utf8");
+		if (!raw) {
+			req.body = void 0;
+			settled = true;
+			next();
+			return;
+		}
+		try {
+			req.body = JSON.parse(raw);
+		} catch {
+			fail(400, "Invalid JSON in request body");
+			return;
+		}
+		settled = true;
+		next();
+	});
+	req.on("error", (error) => {
+		if (settled) return;
+		settled = true;
+		next(error);
+	});
 }
 var node_helper_default = node_helper.create({
 	choreData: null,
@@ -1272,6 +1339,7 @@ var node_helper_default = node_helper.create({
 			saveChoreData: () => this.saveChoreData(),
 			sendNotification: (notification, payload) => this.sendSocketNotification?.(notification, payload)
 		});
+		this.expressApp?.use("/MMM-FamilyChores", parseJsonBody);
 		this.expressApp?.get("/MMM-FamilyChores/data", handlers.getData);
 		this.expressApp?.post("/MMM-FamilyChores/people", handlers.postPerson);
 		this.expressApp?.put("/MMM-FamilyChores/people/:id", handlers.putPerson);
