@@ -16,7 +16,7 @@ var __copyProps = (to, from, except, desc) => {
 	}
 	return to;
 };
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", {
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule || !__hasOwnProp.call(mod, "default") ? __defProp(target, "default", {
 	value: mod,
 	enumerable: true
 }) : target, mod));
@@ -164,7 +164,7 @@ var getLocalDayName = (date = /* @__PURE__ */ new Date()) => {
 * @returns A new UUID v4 string
 */
 function generateUUID() {
-	const bytes = new Uint8Array(16);
+	const bytes = /* @__PURE__ */ new Uint8Array(16);
 	crypto.getRandomValues(bytes);
 	bytes[6] = bytes[6] & 15 | 64;
 	bytes[8] = bytes[8] & 63 | 128;
@@ -995,7 +995,7 @@ function createAdminHandlers(context) {
 //#endregion
 //#region src/backend/json-body-middleware.ts
 /** Reject bodies larger than this to avoid unbounded memory use from a bad/malicious request. */
-var MAX_BODY_BYTES = 5 * 1024 * 1024;
+var MAX_BODY_BYTES = 5242880;
 /**
 * Minimal stand-in for `express.json()`, implemented without adding express/body-parser
 * as a dependency (keeps the compiled node_helper.js small and avoids relying on whatever
