@@ -37,7 +37,6 @@ const { nodeHelperInstance, setNodeHelperInstance } = vi.hoisted(() => {
       post: (path: string, handler: (req: unknown, res: unknown) => void) => void;
       put: (path: string, handler: (req: unknown, res: unknown) => void) => void;
       delete: (path: string, handler: (req: unknown, res: unknown) => void) => void;
-      use: (path: string, handler: (req: unknown, res: unknown, next: () => void) => void) => void;
     };
     socketNotificationReceived: (
       notificationIdentifier: string,
@@ -1000,10 +999,8 @@ describe('Node Helper Tests', () => {
         post: (path: string) => registeredRoutes.push(`POST ${path}`),
         put: (path: string) => registeredRoutes.push(`PUT ${path}`),
         delete: (path: string) => registeredRoutes.push(`DELETE ${path}`),
-        use: (path: string) => registeredRoutes.push(`USE ${path}`),
       };
       nodeHelper.setupAdminRoutes();
-      expect(registeredRoutes).toContain('USE /MMM-FamilyChores');
       expect(registeredRoutes).toContain('GET /MMM-FamilyChores/data');
       expect(registeredRoutes).toContain('POST /MMM-FamilyChores/people');
       expect(registeredRoutes).toContain('PUT /MMM-FamilyChores/people/:id');

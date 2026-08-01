@@ -136,108 +136,111 @@ function makeContext(data: FamilyChoresData | null = makeBaseData()): {
 
 describe('createAdminHandlers', () => {
   describe('getData', () => {
-    it('returns chore data with 200', () => {
+    it('returns chore data with 200', async () => {
       const { context } = makeContext();
       const { getData } = createAdminHandlers(context);
       const res = createMockRes();
-      getData({ body: undefined, params: {} }, res);
+      await getData({ body: undefined, params: {} }, res);
       expect(res.statusCode).toBe(200);
       expect(res.jsonBody).toMatchObject({ people: expect.any(Array), chores: expect.any(Array) });
     });
 
-    it('returns 500 when data is null', () => {
+    it('returns 500 when data is null', async () => {
       const { context } = makeContext(null);
       const { getData } = createAdminHandlers(context);
       const res = createMockRes();
-      getData({ body: undefined, params: {} }, res);
+      await getData({ body: undefined, params: {} }, res);
       expect(res.statusCode).toBe(500);
     });
   });
 
   describe('postPerson', () => {
-    it('adds a valid person and saves', () => {
+    it('adds a valid person and saves', async () => {
       const { context, mockSave, mockNotify, getData } = makeContext();
       const { postPerson } = createAdminHandlers(context);
       const res = createMockRes();
-      postPerson({ body: { name: 'Alice', color: '#aabbcc' }, params: {} }, res);
+      await postPerson({ body: { name: 'Alice', color: '#aabbcc' }, params: {} }, res);
       expect(res.statusCode).toBe(200);
       expect(getData()?.people).toHaveLength(3);
       expect(mockSave).toHaveBeenCalled();
       expect(mockNotify).toHaveBeenCalledWith(SocketNotifications.CHORE_DATA, expect.anything());
     });
 
-    it('returns 400 when name is blank', () => {
+    it('returns 400 when name is blank', async () => {
       const { context, mockSave } = makeContext();
       const { postPerson } = createAdminHandlers(context);
       const res = createMockRes();
-      postPerson({ body: { name: '  ', color: '#fff' }, params: {} }, res);
+      await postPerson({ body: { name: '  ', color: '#fff' }, params: {} }, res);
       expect(res.statusCode).toBe(400);
       expect(res.jsonBody).toMatchObject({ error: expect.any(String) });
       expect(mockSave).not.toHaveBeenCalled();
     });
 
-    it('returns 400 when color is not hex', () => {
+    it('returns 400 when color is not hex', async () => {
       const { context, mockSave } = makeContext();
       const { postPerson } = createAdminHandlers(context);
       const res = createMockRes();
-      postPerson({ body: { name: 'Valid', color: 'not-hex' }, params: {} }, res);
+      await postPerson({ body: { name: 'Valid', color: 'not-hex' }, params: {} }, res);
       expect(res.statusCode).toBe(400);
       expect(mockSave).not.toHaveBeenCalled();
     });
 
-    it('returns 500 when data is null', () => {
+    it('returns 500 when data is null', async () => {
       const { context } = makeContext(null);
       const { postPerson } = createAdminHandlers(context);
       const res = createMockRes();
-      postPerson({ body: { name: 'X', color: '#abc' }, params: {} }, res);
+      await postPerson({ body: { name: 'X', color: '#abc' }, params: {} }, res);
       expect(res.statusCode).toBe(500);
     });
   });
 
   describe('putPerson', () => {
-    it('updates an existing person', () => {
+    it('updates an existing person', async () => {
       const { context, mockSave, getData } = makeContext();
       const { putPerson } = createAdminHandlers(context);
       const res = createMockRes();
-      putPerson({ body: { name: 'Updated', color: '#aabbcc' }, params: { id: pid1 } }, res);
+      await putPerson({ body: { name: 'Updated', color: '#aabbcc' }, params: { id: pid1 } }, res);
       expect(res.statusCode).toBe(200);
       expect(getData()?.people.find((p) => p.id === pid1)?.name).toBe('Updated');
       expect(mockSave).toHaveBeenCalled();
     });
 
-    it('returns 404 when person not found', () => {
+    it('returns 404 when person not found', async () => {
       const { context, mockSave } = makeContext();
       const { putPerson } = createAdminHandlers(context);
       const res = createMockRes();
-      putPerson({ body: { name: 'X', color: '#abc' }, params: { id: generateTestUUID(999) } }, res);
+      await putPerson(
+        { body: { name: 'X', color: '#abc' }, params: { id: generateTestUUID(999) } },
+        res
+      );
       expect(res.statusCode).toBe(404);
       expect(mockSave).not.toHaveBeenCalled();
     });
 
-    it('returns 400 when updated data fails validation', () => {
+    it('returns 400 when updated data fails validation', async () => {
       const { context, mockSave } = makeContext();
       const { putPerson } = createAdminHandlers(context);
       const res = createMockRes();
-      putPerson({ body: { name: 'Ok', color: '#gggggg' }, params: { id: pid1 } }, res);
+      await putPerson({ body: { name: 'Ok', color: '#gggggg' }, params: { id: pid1 } }, res);
       expect(res.statusCode).toBe(400);
       expect(mockSave).not.toHaveBeenCalled();
     });
 
-    it('returns 500 when data is null', () => {
+    it('returns 500 when data is null', async () => {
       const { context } = makeContext(null);
       const { putPerson } = createAdminHandlers(context);
       const res = createMockRes();
-      putPerson({ body: { name: 'X', color: '#abc' }, params: { id: pid1 } }, res);
+      await putPerson({ body: { name: 'X', color: '#abc' }, params: { id: pid1 } }, res);
       expect(res.statusCode).toBe(500);
     });
   });
 
   describe('deletePerson', () => {
-    it('removes the person and their personal chores', () => {
+    it('removes the person and their personal chores', async () => {
       const { context, mockSave, getData } = makeContext();
       const { deletePerson } = createAdminHandlers(context);
       const res = createMockRes();
-      deletePerson({ body: undefined, params: { id: pid1 } }, res);
+      await deletePerson({ body: undefined, params: { id: pid1 } }, res);
       expect(res.statusCode).toBe(200);
       expect(getData()?.people.find((p) => p.id === pid1)).toBeUndefined();
       // cid1 is personal chore assigned to pid1 — should be removed
@@ -245,51 +248,51 @@ describe('createAdminHandlers', () => {
       expect(mockSave).toHaveBeenCalled();
     });
 
-    it('removes person from rotating chores and keeps chore when rotation not empty', () => {
+    it('removes person from rotating chores and keeps chore when rotation not empty', async () => {
       const { context, getData } = makeContext();
       const { deletePerson } = createAdminHandlers(context);
       const res = createMockRes();
-      deletePerson({ body: undefined, params: { id: pid1 } }, res);
+      await deletePerson({ body: undefined, params: { id: pid1 } }, res);
       const rotating = getData()?.chores.find((c) => c.id === cid2) as RotatingChore | undefined;
       // cid2 rotating chore had [pid1, pid2] — pid1 removed, pid2 remains
       expect(rotating).toBeDefined();
       expect(rotating?.rotation).toEqual([pid2]);
     });
 
-    it('removes rotating chore when rotation becomes empty', () => {
+    it('removes rotating chore when rotation becomes empty', async () => {
       const { context, getData } = makeContext();
       const { deletePerson } = createAdminHandlers(context);
       const res = createMockRes();
       // Delete both people — after pid1, rotation has [pid2]; after pid2, rotation is empty
-      deletePerson({ body: undefined, params: { id: pid1 } }, res);
-      deletePerson({ body: undefined, params: { id: pid2 } }, res);
+      await deletePerson({ body: undefined, params: { id: pid1 } }, res);
+      await deletePerson({ body: undefined, params: { id: pid2 } }, res);
       expect(getData()?.chores.find((c) => c.id === cid2)).toBeUndefined();
     });
 
-    it('returns 404 when person not found', () => {
+    it('returns 404 when person not found', async () => {
       const { context, mockSave } = makeContext();
       const { deletePerson } = createAdminHandlers(context);
       const res = createMockRes();
-      deletePerson({ body: undefined, params: { id: generateTestUUID(999) } }, res);
+      await deletePerson({ body: undefined, params: { id: generateTestUUID(999) } }, res);
       expect(res.statusCode).toBe(404);
       expect(mockSave).not.toHaveBeenCalled();
     });
 
-    it('returns 500 when data is null', () => {
+    it('returns 500 when data is null', async () => {
       const { context } = makeContext(null);
       const { deletePerson } = createAdminHandlers(context);
       const res = createMockRes();
-      deletePerson({ body: undefined, params: { id: pid1 } }, res);
+      await deletePerson({ body: undefined, params: { id: pid1 } }, res);
       expect(res.statusCode).toBe(500);
     });
   });
 
   describe('postChore', () => {
-    it('adds a valid personal chore', () => {
+    it('adds a valid personal chore', async () => {
       const { context, mockSave, getData } = makeContext();
       const { postChore } = createAdminHandlers(context);
       const res = createMockRes();
-      postChore(
+      await postChore(
         {
           body: {
             name: 'New Task',
@@ -307,11 +310,11 @@ describe('createAdminHandlers', () => {
       expect(mockSave).toHaveBeenCalled();
     });
 
-    it('adds a valid rotating chore', () => {
+    it('adds a valid rotating chore', async () => {
       const { context, getData } = makeContext();
       const { postChore } = createAdminHandlers(context);
       const res = createMockRes();
-      postChore(
+      await postChore(
         {
           body: {
             name: 'Rotate',
@@ -328,11 +331,11 @@ describe('createAdminHandlers', () => {
       expect(getData()?.chores).toHaveLength(3);
     });
 
-    it('uses explicit rotatingIndex when creating a rotating chore', () => {
+    it('uses explicit rotatingIndex when creating a rotating chore', async () => {
       const { context, getData } = makeContext();
       const { postChore } = createAdminHandlers(context);
       const res = createMockRes();
-      postChore(
+      await postChore(
         {
           body: {
             name: 'Rotate',
@@ -354,11 +357,11 @@ describe('createAdminHandlers', () => {
       expect(newChore?.rotatingIndex).toBe(1);
     });
 
-    it('returns 400 when validation fails (invalid skip day)', () => {
+    it('returns 400 when validation fails (invalid skip day)', async () => {
       const { context, mockSave } = makeContext();
       const { postChore } = createAdminHandlers(context);
       const res = createMockRes();
-      postChore(
+      await postChore(
         {
           body: {
             name: 'Task',
@@ -375,11 +378,11 @@ describe('createAdminHandlers', () => {
       expect(mockSave).not.toHaveBeenCalled();
     });
 
-    it('returns 400 when rotating chore references unknown person', () => {
+    it('returns 400 when rotating chore references unknown person', async () => {
       const { context, mockSave } = makeContext();
       const { postChore } = createAdminHandlers(context);
       const res = createMockRes();
-      postChore(
+      await postChore(
         {
           body: {
             name: 'Rotate',
@@ -396,31 +399,31 @@ describe('createAdminHandlers', () => {
       expect(mockSave).not.toHaveBeenCalled();
     });
 
-    it('returns 500 when data is null', () => {
+    it('returns 500 when data is null', async () => {
       const { context } = makeContext(null);
       const { postChore } = createAdminHandlers(context);
       const res = createMockRes();
-      postChore({ body: { name: 'X', type: 'personal', assignedTo: pid1 }, params: {} }, res);
+      await postChore({ body: { name: 'X', type: 'personal', assignedTo: pid1 }, params: {} }, res);
       expect(res.statusCode).toBe(500);
     });
   });
 
   describe('putChore', () => {
-    it('updates an existing chore name', () => {
+    it('updates an existing chore name', async () => {
       const { context, mockSave, getData } = makeContext();
       const { putChore } = createAdminHandlers(context);
       const res = createMockRes();
-      putChore({ body: { name: 'Renamed' }, params: { id: cid1 } }, res);
+      await putChore({ body: { name: 'Renamed' }, params: { id: cid1 } }, res);
       expect(res.statusCode).toBe(200);
       expect(getData()?.chores.find((c) => c.id === cid1)?.name).toBe('Renamed');
       expect(mockSave).toHaveBeenCalled();
     });
 
-    it('updates rotatingIndex on an existing rotating chore', () => {
+    it('updates rotatingIndex on an existing rotating chore', async () => {
       const { context, mockSave, getData } = makeContext();
       const { putChore } = createAdminHandlers(context);
       const res = createMockRes();
-      putChore(
+      await putChore(
         {
           body: { rotation: [pid2, pid1], rotatingIndex: 1 },
           params: { id: cid2 },
@@ -437,25 +440,25 @@ describe('createAdminHandlers', () => {
       expect(mockSave).toHaveBeenCalled();
     });
 
-    it('returns 400 when attempting to change chore type', () => {
+    it('returns 400 when attempting to change chore type', async () => {
       const { context, mockSave } = makeContext();
       const { putChore } = createAdminHandlers(context);
       const res = createMockRes();
-      putChore({ body: { type: 'rotating' }, params: { id: cid1 } }, res);
+      await putChore({ body: { type: 'rotating' }, params: { id: cid1 } }, res);
       expect(res.statusCode).toBe(400);
       expect(mockSave).not.toHaveBeenCalled();
     });
 
-    it('returns 404 when chore not found', () => {
+    it('returns 404 when chore not found', async () => {
       const { context, mockSave } = makeContext();
       const { putChore } = createAdminHandlers(context);
       const res = createMockRes();
-      putChore({ body: { name: 'X' }, params: { id: generateTestUUID(999) } }, res);
+      await putChore({ body: { name: 'X' }, params: { id: generateTestUUID(999) } }, res);
       expect(res.statusCode).toBe(404);
       expect(mockSave).not.toHaveBeenCalled();
     });
 
-    it('clears startTime and deadline when null is sent', () => {
+    it('clears startTime and deadline when null is sent', async () => {
       const choreWithTimes = {
         id: cid1,
         name: 'Personal Chore',
@@ -478,14 +481,14 @@ describe('createAdminHandlers', () => {
       });
       const { putChore } = createAdminHandlers(context);
       const res = createMockRes();
-      putChore({ body: { startTime: null, deadline: null }, params: { id: cid1 } }, res);
+      await putChore({ body: { startTime: null, deadline: null }, params: { id: cid1 } }, res);
       expect(res.statusCode).toBe(200);
       const updated = getData()?.chores.find((c) => c.id === cid1);
       expect(updated?.startTime).toBeUndefined();
       expect(updated?.deadline).toBeUndefined();
     });
 
-    it('preserves startTime and deadline when omitted from request', () => {
+    it('preserves startTime and deadline when omitted from request', async () => {
       const choreWithTimes = {
         id: cid1,
         name: 'Personal Chore',
@@ -508,78 +511,78 @@ describe('createAdminHandlers', () => {
       });
       const { putChore } = createAdminHandlers(context);
       const res = createMockRes();
-      putChore({ body: { name: 'Renamed' }, params: { id: cid1 } }, res);
+      await putChore({ body: { name: 'Renamed' }, params: { id: cid1 } }, res);
       expect(res.statusCode).toBe(200);
       const updated = getData()?.chores.find((c) => c.id === cid1);
       expect(updated?.startTime).toBe('08:00');
       expect(updated?.deadline).toBe('12:00');
     });
 
-    it('returns 500 when data is null', () => {
+    it('returns 500 when data is null', async () => {
       const { context } = makeContext(null);
       const { putChore } = createAdminHandlers(context);
       const res = createMockRes();
-      putChore({ body: { name: 'X' }, params: { id: cid1 } }, res);
+      await putChore({ body: { name: 'X' }, params: { id: cid1 } }, res);
       expect(res.statusCode).toBe(500);
     });
   });
 
   describe('deleteChore', () => {
-    it('removes an existing chore', () => {
+    it('removes an existing chore', async () => {
       const { context, mockSave, getData } = makeContext();
       const { deleteChore } = createAdminHandlers(context);
       const res = createMockRes();
-      deleteChore({ body: undefined, params: { id: cid1 } }, res);
+      await deleteChore({ body: undefined, params: { id: cid1 } }, res);
       expect(res.statusCode).toBe(200);
       expect(getData()?.chores.find((c) => c.id === cid1)).toBeUndefined();
       expect(mockSave).toHaveBeenCalled();
     });
 
-    it('returns 404 when chore not found', () => {
+    it('returns 404 when chore not found', async () => {
       const { context, mockSave } = makeContext();
       const { deleteChore } = createAdminHandlers(context);
       const res = createMockRes();
-      deleteChore({ body: undefined, params: { id: generateTestUUID(999) } }, res);
+      await deleteChore({ body: undefined, params: { id: generateTestUUID(999) } }, res);
       expect(res.statusCode).toBe(404);
       expect(mockSave).not.toHaveBeenCalled();
     });
 
-    it('returns 500 when data is null', () => {
+    it('returns 500 when data is null', async () => {
       const { context } = makeContext(null);
       const { deleteChore } = createAdminHandlers(context);
       const res = createMockRes();
-      deleteChore({ body: undefined, params: { id: cid1 } }, res);
+      await deleteChore({ body: undefined, params: { id: cid1 } }, res);
       expect(res.statusCode).toBe(500);
     });
   });
 
   describe('getBackup', () => {
-    it('returns JSON with content-disposition header', () => {
+    it('returns JSON with content-disposition header', async () => {
       const { context } = makeContext();
       const { getBackup } = createAdminHandlers(context);
       const res = createMockRes();
-      getBackup({ body: undefined, params: {} }, res);
+      await getBackup({ body: undefined, params: {} }, res);
       expect(res.statusCode).toBe(200);
       expect(res.headers['Content-Disposition']).toMatch(/attachment; filename=".+\.json"/);
       expect(res.sentBody).toContain('"people"');
     });
 
-    it('returns 500 when data is null', () => {
+    it('returns 500 when data is null', async () => {
       const { context } = makeContext(null);
       const { getBackup } = createAdminHandlers(context);
       const res = createMockRes();
-      getBackup({ body: undefined, params: {} }, res);
+      await getBackup({ body: undefined, params: {} }, res);
       expect(res.statusCode).toBe(500);
     });
   });
 
   describe('postRestore', () => {
-    it('persists a valid restore payload', () => {
+    it('persists a valid restore payload', async () => {
       const choreId = generateTestUUID(302);
       const { context, mockSave, mockNotify, getData } = makeContext();
       const { postRestore } = createAdminHandlers(context);
       const res = createMockRes();
-      postRestore(
+      await postRestore(
         {
           body: {
             people: [
@@ -615,29 +618,29 @@ describe('createAdminHandlers', () => {
       expect(mockNotify).toHaveBeenCalledWith(SocketNotifications.CHORE_DATA, expect.anything());
     });
 
-    it('returns 400 when body is missing chores', () => {
+    it('returns 400 when body is missing chores', async () => {
       const { context, mockSave } = makeContext();
       const { postRestore } = createAdminHandlers(context);
       const res = createMockRes();
-      postRestore({ body: { people: [] }, params: {} }, res);
+      await postRestore({ body: { people: [] }, params: {} }, res);
       expect(res.statusCode).toBe(400);
       expect(mockSave).not.toHaveBeenCalled();
     });
 
-    it('returns 400 when people is not an array', () => {
+    it('returns 400 when people is not an array', async () => {
       const { context, mockSave } = makeContext();
       const { postRestore } = createAdminHandlers(context);
       const res = createMockRes();
-      postRestore({ body: { people: 'bad', chores: [] }, params: {} }, res);
+      await postRestore({ body: { people: 'bad', chores: [] }, params: {} }, res);
       expect(res.statusCode).toBe(400);
       expect(mockSave).not.toHaveBeenCalled();
     });
 
-    it('returns 400 when a person fails validation', () => {
+    it('returns 400 when a person fails validation', async () => {
       const { context, mockSave } = makeContext();
       const { postRestore } = createAdminHandlers(context);
       const res = createMockRes();
-      postRestore(
+      await postRestore(
         {
           body: { people: [{ id: 'x', name: 'Bad', color: '#fff' }], chores: [] },
           params: {},
@@ -649,11 +652,11 @@ describe('createAdminHandlers', () => {
       expect(mockSave).not.toHaveBeenCalled();
     });
 
-    it('returns 400 when a chore fails validation', () => {
+    it('returns 400 when a chore fails validation', async () => {
       const { context, mockSave } = makeContext();
       const { postRestore } = createAdminHandlers(context);
       const res = createMockRes();
-      postRestore(
+      await postRestore(
         {
           body: {
             people: [
@@ -686,11 +689,11 @@ describe('createAdminHandlers', () => {
       expect(mockSave).not.toHaveBeenCalled();
     });
 
-    it('returns 400 when settings fail validation', () => {
+    it('returns 400 when settings fail validation', async () => {
       const { context, mockSave } = makeContext();
       const { postRestore } = createAdminHandlers(context);
       const res = createMockRes();
-      postRestore(
+      await postRestore(
         {
           body: {
             people: [{ id: pid1, name: 'A', color: '#fff' }],
@@ -706,13 +709,13 @@ describe('createAdminHandlers', () => {
       expect(mockSave).not.toHaveBeenCalled();
     });
 
-    it('skips invalid daily completions and filters old ones', () => {
+    it('skips invalid daily completions and filters old ones', async () => {
       const { context, mockSave, getData } = makeContext();
       const { postRestore } = createAdminHandlers(context);
       const res = createMockRes();
       const oldDate = '2020-01-01';
       const recentDate = getLocalDateString();
-      postRestore(
+      await postRestore(
         {
           body: {
             people: [{ id: pid1, name: 'A', color: '#fff' }],
@@ -772,11 +775,11 @@ describe('createAdminHandlers', () => {
   });
 
   describe('postCopyChores', () => {
-    it('copies a personal chore to another person', () => {
+    it('copies a personal chore to another person', async () => {
       const { context, mockSave, getData } = makeContext();
       const { postCopyChores } = createAdminHandlers(context);
       const res = createMockRes();
-      postCopyChores(
+      await postCopyChores(
         { body: { fromPersonId: pid1, toPersonId: pid2, choreIds: [cid1] }, params: {} },
         res
       );
@@ -790,12 +793,12 @@ describe('createAdminHandlers', () => {
       expect(mockSave).toHaveBeenCalled();
     });
 
-    it('skips chores not assigned to fromPersonId', () => {
+    it('skips chores not assigned to fromPersonId', async () => {
       const { context, getData } = makeContext();
       const { postCopyChores } = createAdminHandlers(context);
       const res = createMockRes();
       // cid1 is assigned to pid1, not pid2
-      postCopyChores(
+      await postCopyChores(
         { body: { fromPersonId: pid2, toPersonId: pid1, choreIds: [cid1] }, params: {} },
         res
       );
@@ -805,11 +808,11 @@ describe('createAdminHandlers', () => {
       expect(getData()?.chores).toHaveLength(2);
     });
 
-    it('skips rotating chores', () => {
+    it('skips rotating chores', async () => {
       const { context, getData } = makeContext();
       const { postCopyChores } = createAdminHandlers(context);
       const res = createMockRes();
-      postCopyChores(
+      await postCopyChores(
         { body: { fromPersonId: pid1, toPersonId: pid2, choreIds: [cid2] }, params: {} },
         res
       );
@@ -819,11 +822,11 @@ describe('createAdminHandlers', () => {
       expect(getData()?.chores).toHaveLength(2);
     });
 
-    it('skips unknown chore IDs', () => {
+    it('skips unknown chore IDs', async () => {
       const { context, getData } = makeContext();
       const { postCopyChores } = createAdminHandlers(context);
       const res = createMockRes();
-      postCopyChores(
+      await postCopyChores(
         {
           body: { fromPersonId: pid1, toPersonId: pid2, choreIds: [generateTestUUID(999)] },
           params: {},
@@ -835,20 +838,20 @@ describe('createAdminHandlers', () => {
       expect(getData()?.chores).toHaveLength(2);
     });
 
-    it('returns 400 when required fields are missing', () => {
+    it('returns 400 when required fields are missing', async () => {
       const { context, mockSave } = makeContext();
       const { postCopyChores } = createAdminHandlers(context);
       const res = createMockRes();
-      postCopyChores({ body: { fromPersonId: pid1 }, params: {} }, res);
+      await postCopyChores({ body: { fromPersonId: pid1 }, params: {} }, res);
       expect(res.statusCode).toBe(400);
       expect(mockSave).not.toHaveBeenCalled();
     });
 
-    it('returns 500 when data is null', () => {
+    it('returns 500 when data is null', async () => {
       const { context } = makeContext(null);
       const { postCopyChores } = createAdminHandlers(context);
       const res = createMockRes();
-      postCopyChores(
+      await postCopyChores(
         { body: { fromPersonId: pid1, toPersonId: pid2, choreIds: [cid1] }, params: {} },
         res
       );
@@ -857,11 +860,11 @@ describe('createAdminHandlers', () => {
   });
 
   describe('postAdvanceRotations', () => {
-    it('advances all rotating chores with 2+ people and returns count', () => {
+    it('advances all rotating chores with 2+ people and returns count', async () => {
       const { context, mockSave, mockNotify, getData } = makeContext();
       const { postAdvanceRotations } = createAdminHandlers(context);
       const res = createMockRes();
-      postAdvanceRotations({ body: {}, params: {} }, res);
+      await postAdvanceRotations({ body: {}, params: {} }, res);
       expect(res.statusCode).toBe(200);
       const body = res.jsonBody as { success: boolean; advanced: number };
       expect(body.success).toBe(true);
@@ -875,20 +878,20 @@ describe('createAdminHandlers', () => {
       expect(mockNotify).toHaveBeenCalledWith(SocketNotifications.CHORE_DATA, expect.anything());
     });
 
-    it('wraps rotation index around correctly', () => {
+    it('wraps rotation index around correctly', async () => {
       const data = makeBaseData();
       const rotating = data.chores.find((c) => c.id === cid2) as RotatingChore;
       rotating.rotatingIndex = 1; // already at last person
       const { context, getData } = makeContext(data);
       const { postAdvanceRotations } = createAdminHandlers(context);
       const res = createMockRes();
-      postAdvanceRotations({ body: {}, params: {} }, res);
+      await postAdvanceRotations({ body: {}, params: {} }, res);
       expect(res.statusCode).toBe(200);
       const advanced = getData()?.chores.find((c) => c.id === cid2) as RotatingChore | undefined;
       expect(advanced?.rotatingIndex).toBe(0);
     });
 
-    it('skips rotating chores with only 1 person in rotation', () => {
+    it('skips rotating chores with only 1 person in rotation', async () => {
       const data = makeBaseData();
       const rotating = data.chores.find((c) => c.id === cid2) as RotatingChore;
       rotating.rotation = [pid1];
@@ -896,7 +899,7 @@ describe('createAdminHandlers', () => {
       const { context, getData } = makeContext(data);
       const { postAdvanceRotations } = createAdminHandlers(context);
       const res = createMockRes();
-      postAdvanceRotations({ body: {}, params: {} }, res);
+      await postAdvanceRotations({ body: {}, params: {} }, res);
       expect(res.statusCode).toBe(200);
       const body = res.jsonBody as { advanced: number };
       expect(body.advanced).toBe(0);
@@ -904,7 +907,7 @@ describe('createAdminHandlers', () => {
       expect(unchanged?.rotatingIndex).toBe(0);
     });
 
-    it('returns 503 when daily reset is pending', () => {
+    it('returns 503 when daily reset is pending', async () => {
       const data = makeBaseData();
       // Set lastResetDate to yesterday so today > lastResetDate
       const yesterday = new Date();
@@ -913,41 +916,41 @@ describe('createAdminHandlers', () => {
       const { context, mockSave } = makeContext(data);
       const { postAdvanceRotations } = createAdminHandlers(context);
       const res = createMockRes();
-      postAdvanceRotations({ body: {}, params: {} }, res);
+      await postAdvanceRotations({ body: {}, params: {} }, res);
       expect(res.statusCode).toBe(503);
       expect(res.jsonBody).toMatchObject({ error: expect.any(String) });
       expect(mockSave).not.toHaveBeenCalled();
     });
 
-    it('returns 500 when data is null', () => {
+    it('returns 500 when data is null', async () => {
       const { context, mockSave } = makeContext(null);
       const { postAdvanceRotations } = createAdminHandlers(context);
       const res = createMockRes();
-      postAdvanceRotations({ body: {}, params: {} }, res);
+      await postAdvanceRotations({ body: {}, params: {} }, res);
       expect(res.statusCode).toBe(500);
       expect(mockSave).not.toHaveBeenCalled();
     });
 
-    it('returns 403 with wrong PIN', () => {
+    it('returns 403 with wrong PIN', async () => {
       const data = makeBaseData();
       data.settings.adminPin = 'secret';
       const { context, mockSave } = makeContext(data);
       const { postAdvanceRotations } = createAdminHandlers(context);
       const res = createMockRes();
-      postAdvanceRotations({ body: { pin: 'wrong' }, params: {} }, res);
+      await postAdvanceRotations({ body: { pin: 'wrong' }, params: {} }, res);
       expect(res.statusCode).toBe(403);
       expect(mockSave).not.toHaveBeenCalled();
     });
   });
 
   describe('postResetCaughtUp', () => {
-    it('resets all not-caught-up chores and returns count', () => {
+    it('resets all not-caught-up chores and returns count', async () => {
       const data = makeBaseData();
       // cid1 is already caughtUp:true, cid2 is caughtUp:false
       const { context, mockSave, mockNotify, getData } = makeContext(data);
       const { postResetCaughtUp } = createAdminHandlers(context);
       const res = createMockRes();
-      postResetCaughtUp({ body: {}, params: {} }, res);
+      await postResetCaughtUp({ body: {}, params: {} }, res);
       expect(res.statusCode).toBe(200);
       const body = res.jsonBody as { success: boolean; reset: number };
       expect(body.success).toBe(true);
@@ -958,46 +961,46 @@ describe('createAdminHandlers', () => {
       expect(mockNotify).toHaveBeenCalledWith(SocketNotifications.CHORE_DATA, expect.anything());
     });
 
-    it('returns reset=0 when all chores are already caught up', () => {
+    it('returns reset=0 when all chores are already caught up', async () => {
       const data = makeBaseData();
       for (const chore of data.chores) chore.caughtUp = true;
       const { context, mockSave } = makeContext(data);
       const { postResetCaughtUp } = createAdminHandlers(context);
       const res = createMockRes();
-      postResetCaughtUp({ body: {}, params: {} }, res);
+      await postResetCaughtUp({ body: {}, params: {} }, res);
       expect(res.statusCode).toBe(200);
       const body = res.jsonBody as { reset: number };
       expect(body.reset).toBe(0);
       expect(mockSave).toHaveBeenCalled();
     });
 
-    it('returns 500 when data is null', () => {
+    it('returns 500 when data is null', async () => {
       const { context, mockSave } = makeContext(null);
       const { postResetCaughtUp } = createAdminHandlers(context);
       const res = createMockRes();
-      postResetCaughtUp({ body: {}, params: {} }, res);
+      await postResetCaughtUp({ body: {}, params: {} }, res);
       expect(res.statusCode).toBe(500);
       expect(mockSave).not.toHaveBeenCalled();
     });
 
-    it('returns 403 with wrong PIN', () => {
+    it('returns 403 with wrong PIN', async () => {
       const data = makeBaseData();
       data.settings.adminPin = 'secret';
       const { context, mockSave } = makeContext(data);
       const { postResetCaughtUp } = createAdminHandlers(context);
       const res = createMockRes();
-      postResetCaughtUp({ body: { pin: 'wrong' }, params: {} }, res);
+      await postResetCaughtUp({ body: { pin: 'wrong' }, params: {} }, res);
       expect(res.statusCode).toBe(403);
       expect(mockSave).not.toHaveBeenCalled();
     });
 
-    it('succeeds with correct PIN', () => {
+    it('succeeds with correct PIN', async () => {
       const data = makeBaseData();
       data.settings.adminPin = 'secret';
       const { context, getData } = makeContext(data);
       const { postResetCaughtUp } = createAdminHandlers(context);
       const res = createMockRes();
-      postResetCaughtUp({ body: { pin: 'secret' }, params: {} }, res);
+      await postResetCaughtUp({ body: { pin: 'secret' }, params: {} }, res);
       expect(res.statusCode).toBe(200);
       expect(getData()?.chores.find((c) => c.id === cid2)?.caughtUp).toBe(true);
     });
