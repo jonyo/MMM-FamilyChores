@@ -28,6 +28,8 @@ import type { ApiErrorBody } from '../types/response-types';
 import { getLocalDateString } from '../utils/date';
 import { generateUUID } from '../utils/uuid';
 import { upgradeData } from './data-upgrade';
+import type { AdminRequest } from './request-body';
+import { getRequestBody, RequestBodyError } from './request-body';
 import {
   validateChore,
   validateDailyCompletion,
@@ -35,12 +37,8 @@ import {
   validateSettings,
 } from './validator';
 
-// Use more flexible types for MagicMirror's Express implementation
-interface Request {
-  params: Record<string, string>;
-  body: unknown;
-  query?: unknown;
-}
+// Use a more flexible type for MagicMirror's Express implementation
+type Request = AdminRequest;
 
 interface Response {
   status(code: number): Response;
@@ -48,6 +46,21 @@ interface Response {
   send(data: unknown): Response;
   sendFile(path: string): void;
   setHeader(name: string, value: string): Response;
+}
+
+const apiErr = (message: string): ApiErrorBody => ({ error: message });
+
+/**
+ * Send the appropriate error response for a caught handler error. `RequestBodyError` (thrown by
+ * `getRequestBody` for malformed/oversized JSON) carries its own status code and message;
+ * anything else falls back to a generic 500 with the handler's own message.
+ */
+function sendErrorResponse(res: Response, error: unknown, fallbackMessage: string): void {
+  if (error instanceof RequestBodyError) {
+    res.status(error.statusCode).json(apiErr(error.message));
+    return;
+  }
+  res.status(500).json(apiErr(fallbackMessage));
 }
 
 export interface AdminHandlerContext {
@@ -61,12 +74,18 @@ export interface AdminHandlerContext {
  * Validate PIN for protected actions. Returns true if allowed, false if blocked (and sends response).
  * Checks body first, then query params (for DELETE requests without body).
  */
-function validatePin(req: Request, res: Response, context: AdminHandlerContext): boolean {
+async function validatePin(
+  req: Request,
+  res: Response,
+  context: AdminHandlerContext
+): Promise<boolean> {
   const choreData = context.getChoreData();
   const adminPin = choreData?.settings?.adminPin;
   if (!adminPin) return true; // No PIN configured, allow
 
-  const body = req.body as { pin?: string } | undefined;
+  // A malformed body here just means no PIN was provided via the body - fall back to the
+  // query param rather than failing the request before the handler gets a chance to run.
+  const body = (await getRequestBody(req).catch(() => undefined)) as { pin?: string } | undefined;
   const query = req.query as { pin?: string } | undefined;
   const providedPin = body?.pin ?? query?.pin;
   if (providedPin !== adminPin) {
@@ -78,23 +97,21 @@ function validatePin(req: Request, res: Response, context: AdminHandlerContext):
 
 export interface AdminHandlers {
   getData: (req: Request, res: Response) => void;
-  postPerson: (req: Request, res: Response) => void;
-  putPerson: (req: Request, res: Response) => void;
-  deletePerson: (req: Request, res: Response) => void;
-  postChore: (req: Request, res: Response) => void;
-  putChore: (req: Request, res: Response) => void;
-  deleteChore: (req: Request, res: Response) => void;
-  getBackup: (req: Request, res: Response) => void;
-  postRestore: (req: Request, res: Response) => void;
-  postCopyChores: (req: Request, res: Response) => void;
-  putSettings: (req: Request, res: Response) => void;
-  postAdvanceRotations: (req: Request, res: Response) => void;
-  postResetCaughtUp: (req: Request, res: Response) => void;
+  postPerson: (req: Request, res: Response) => Promise<void>;
+  putPerson: (req: Request, res: Response) => Promise<void>;
+  deletePerson: (req: Request, res: Response) => Promise<void>;
+  postChore: (req: Request, res: Response) => Promise<void>;
+  putChore: (req: Request, res: Response) => Promise<void>;
+  deleteChore: (req: Request, res: Response) => Promise<void>;
+  getBackup: (req: Request, res: Response) => Promise<void>;
+  postRestore: (req: Request, res: Response) => Promise<void>;
+  postCopyChores: (req: Request, res: Response) => Promise<void>;
+  putSettings: (req: Request, res: Response) => Promise<void>;
+  postAdvanceRotations: (req: Request, res: Response) => Promise<void>;
+  postResetCaughtUp: (req: Request, res: Response) => Promise<void>;
 }
 
 export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers {
-  const apiErr = (message: string): ApiErrorBody => ({ error: message });
-
   return {
     getData: (_req, res) => {
       const choreData = context.getChoreData();
@@ -111,10 +128,10 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
       res.json(data);
     },
 
-    postPerson: (req, res) => {
-      if (!validatePin(req, res, context)) return;
+    postPerson: async (req, res) => {
+      if (!(await validatePin(req, res, context))) return;
       try {
-        const { name, color } = req.body as CreatePersonRequest;
+        const { name, color } = (await getRequestBody(req)) as CreatePersonRequest;
         const choreData = context.getChoreData();
 
         if (!choreData) {
@@ -144,15 +161,15 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         res.json(newPerson);
       } catch (error) {
         Log.error(`Error adding person: ${error}`);
-        res.status(500).json(apiErr('Failed to add person'));
+        sendErrorResponse(res, error, 'Failed to add person');
       }
     },
 
-    putPerson: (req, res) => {
-      if (!validatePin(req, res, context)) return;
+    putPerson: async (req, res) => {
+      if (!(await validatePin(req, res, context))) return;
       try {
         const { id } = req.params;
-        const { name, color } = req.body as UpdatePersonRequest;
+        const { name, color } = (await getRequestBody(req)) as UpdatePersonRequest;
         const choreData = context.getChoreData();
 
         if (!choreData) {
@@ -188,12 +205,12 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         res.json(person);
       } catch (error) {
         Log.error(`Error updating person: ${error}`);
-        res.status(500).json(apiErr('Failed to update person'));
+        sendErrorResponse(res, error, 'Failed to update person');
       }
     },
 
-    deletePerson: (req, res) => {
-      if (!validatePin(req, res, context)) return;
+    deletePerson: async (req, res) => {
+      if (!(await validatePin(req, res, context))) return;
       try {
         const { id } = req.params;
         const choreData = context.getChoreData();
@@ -234,12 +251,12 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         res.json({ success: true });
       } catch (error) {
         Log.error(`Error deleting person: ${error}`);
-        res.status(500).json(apiErr('Failed to delete person'));
+        sendErrorResponse(res, error, 'Failed to delete person');
       }
     },
 
-    postChore: (req, res) => {
-      if (!validatePin(req, res, context)) return;
+    postChore: async (req, res) => {
+      if (!(await validatePin(req, res, context))) return;
       try {
         const {
           name,
@@ -254,7 +271,7 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
           beforeStartTimeVisibility,
           afterDeadlineVisibility,
           notCaughtUpDisplay,
-        } = req.body as CreateChoreRequest;
+        } = (await getRequestBody(req)) as CreateChoreRequest;
         const choreData = context.getChoreData();
 
         if (!choreData) {
@@ -304,14 +321,15 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         res.json(newChore);
       } catch (error) {
         Log.error(`Error adding chore: ${error}`);
-        res.status(500).json(apiErr('Failed to add chore'));
+        sendErrorResponse(res, error, 'Failed to add chore');
       }
     },
 
-    putChore: (req, res) => {
-      if (!validatePin(req, res, context)) return;
+    putChore: async (req, res) => {
+      if (!(await validatePin(req, res, context))) return;
       try {
         const { id } = req.params;
+        const body = (await getRequestBody(req)) as UpdateChoreRequest;
         const {
           name,
           type,
@@ -325,7 +343,7 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
           beforeStartTimeVisibility,
           afterDeadlineVisibility,
           notCaughtUpDisplay,
-        } = req.body as UpdateChoreRequest;
+        } = body;
         const choreData = context.getChoreData();
 
         if (!choreData) {
@@ -343,7 +361,6 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
           return;
         }
 
-        const body = req.body as UpdateChoreRequest;
         // Construct updated chore object with minimal checks (trim strings)
         // null means "explicitly clear"; undefined (field absent) means "keep existing value"
         const updatedChore: Record<string, unknown> = {
@@ -386,12 +403,12 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         Log.error(
           `Error updating chore ${req.params?.id}: ${error instanceof Error ? error.stack : error}`
         );
-        res.status(500).json(apiErr('Failed to update chore'));
+        sendErrorResponse(res, error, 'Failed to update chore');
       }
     },
 
-    deleteChore: (req, res) => {
-      if (!validatePin(req, res, context)) return;
+    deleteChore: async (req, res) => {
+      if (!(await validatePin(req, res, context))) return;
       try {
         const { id } = req.params;
         const choreData = context.getChoreData();
@@ -415,12 +432,12 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         res.json({ success: true });
       } catch (error) {
         Log.error(`Error deleting chore: ${error}`);
-        res.status(500).json(apiErr('Failed to delete chore'));
+        sendErrorResponse(res, error, 'Failed to delete chore');
       }
     },
 
-    getBackup: (req, res) => {
-      if (!validatePin(req, res, context)) return;
+    getBackup: async (req, res) => {
+      if (!(await validatePin(req, res, context))) return;
       try {
         const choreData = context.getChoreData();
         if (!choreData) {
@@ -435,14 +452,14 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         Log.info(`Backup downloaded: ${filename}`);
       } catch (error) {
         Log.error(`Error creating backup: ${error}`);
-        res.status(500).json(apiErr('Failed to create backup'));
+        sendErrorResponse(res, error, 'Failed to create backup');
       }
     },
 
-    postRestore: (req, res) => {
-      if (!validatePin(req, res, context)) return;
+    postRestore: async (req, res) => {
+      if (!(await validatePin(req, res, context))) return;
       try {
-        const restoredData = req.body as RestoreDataRequest;
+        const restoredData = (await getRequestBody(req)) as RestoreDataRequest;
 
         if (!restoredData?.people || !restoredData.chores) {
           res.status(400).json(apiErr('Invalid data format'));
@@ -535,14 +552,16 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         res.json({ success: true, message: 'Data restored successfully' });
       } catch (error) {
         Log.error(`Error restoring data: ${error}`);
-        res.status(500).json(apiErr('Failed to restore data'));
+        sendErrorResponse(res, error, 'Failed to restore data');
       }
     },
 
-    postCopyChores: (req, res) => {
-      if (!validatePin(req, res, context)) return;
+    postCopyChores: async (req, res) => {
+      if (!(await validatePin(req, res, context))) return;
       try {
-        const { fromPersonId, toPersonId, choreIds } = req.body as CopyChoresRequest;
+        const { fromPersonId, toPersonId, choreIds } = (await getRequestBody(
+          req
+        )) as CopyChoresRequest;
 
         if (!fromPersonId || !toPersonId || !choreIds) {
           res.status(400).json(apiErr('fromPersonId, toPersonId, and choreIds are required'));
@@ -603,12 +622,12 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         res.json(newChores);
       } catch (error) {
         Log.error(`Error copying chores: ${error}`);
-        res.status(500).json(apiErr('Failed to copy chores'));
+        sendErrorResponse(res, error, 'Failed to copy chores');
       }
     },
 
-    postAdvanceRotations: (req, res) => {
-      if (!validatePin(req, res, context)) return;
+    postAdvanceRotations: async (req, res) => {
+      if (!(await validatePin(req, res, context))) return;
       try {
         const choreData = context.getChoreData();
 
@@ -648,12 +667,12 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         res.json({ success: true, advanced });
       } catch (error) {
         Log.error(`Error advancing rotations: ${error}`);
-        res.status(500).json(apiErr('Failed to advance rotations'));
+        sendErrorResponse(res, error, 'Failed to advance rotations');
       }
     },
 
-    postResetCaughtUp: (req, res) => {
-      if (!validatePin(req, res, context)) return;
+    postResetCaughtUp: async (req, res) => {
+      if (!(await validatePin(req, res, context))) return;
       try {
         const choreData = context.getChoreData();
 
@@ -677,14 +696,16 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         res.json({ success: true, reset });
       } catch (error) {
         Log.error(`Error resetting caught up status: ${error}`);
-        res.status(500).json(apiErr('Failed to reset caught up status'));
+        sendErrorResponse(res, error, 'Failed to reset caught up status');
       }
     },
 
-    putSettings: (req, res) => {
-      if (!validatePin(req, res, context)) return;
+    putSettings: async (req, res) => {
+      if (!(await validatePin(req, res, context))) return;
       try {
-        const { historyEnabled, adminPin, timeFormat } = req.body as UpdateSettingsRequest;
+        const { historyEnabled, adminPin, timeFormat } = (await getRequestBody(
+          req
+        )) as UpdateSettingsRequest;
         const choreData = context.getChoreData();
 
         if (!choreData) {
@@ -730,7 +751,7 @@ export function createAdminHandlers(context: AdminHandlerContext): AdminHandlers
         res.json(responseSettings);
       } catch (error) {
         Log.error(`Error updating settings: ${error}`);
-        res.status(500).json(apiErr('Failed to update settings'));
+        sendErrorResponse(res, error, 'Failed to update settings');
       }
     },
   };

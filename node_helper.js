@@ -229,6 +229,85 @@ var upgradeChore = (chore) => {
 	return choreObj;
 };
 //#endregion
+//#region src/backend/request-body.ts
+/** Error thrown by `getRequestBody` for malformed/oversized bodies, carrying the HTTP status to respond with. */
+var RequestBodyError = class extends Error {
+	statusCode;
+	constructor(statusCode, message) {
+		super(message);
+		this.name = "RequestBodyError";
+		this.statusCode = statusCode;
+	}
+};
+/** Reject bodies larger than this to avoid unbounded memory use from a bad/malicious request. */
+var MAX_BODY_BYTES = 5242880;
+/**
+* Lazily read and parse a request's JSON body, without registering any Express middleware.
+*
+* Each route handler calls this directly (rather than reading `req.body`), so the raw request
+* stream is only ever consumed by our own route handlers - never by an `app.use()` middleware
+* that could also run for (and interfere with) other modules' routes on the shared MagicMirror
+* core `expressApp`. The result is memoized per-request so multiple calls (e.g. from a PIN check
+* and the handler itself) share a single read of the stream.
+*
+* If some other module's middleware already parsed the body (e.g. it registered its own
+* `express.json()` earlier in the shared app), `req.body` will already be set and is used as-is.
+*/
+function getRequestBody(req) {
+	if (req._bodyPromise) return req._bodyPromise;
+	if (req.body !== void 0) {
+		req._bodyPromise = Promise.resolve(req.body);
+		return req._bodyPromise;
+	}
+	req._bodyPromise = new Promise((resolve, reject) => {
+		if (!req.on || !req.headers) {
+			resolve(void 0);
+			return;
+		}
+		if (!(req.headers["content-type"] ?? "").includes("application/json")) {
+			resolve(void 0);
+			return;
+		}
+		const chunks = [];
+		let totalBytes = 0;
+		let settled = false;
+		req.on("data", (chunk) => {
+			if (settled) return;
+			totalBytes += chunk.length;
+			if (totalBytes > MAX_BODY_BYTES) {
+				settled = true;
+				req.destroy?.();
+				reject(new RequestBodyError(413, "Request body too large"));
+				return;
+			}
+			chunks.push(chunk);
+		});
+		req.on("end", () => {
+			if (settled) return;
+			settled = true;
+			const raw = Buffer.concat(chunks).toString("utf8");
+			if (!raw) {
+				req.body = void 0;
+				resolve(void 0);
+				return;
+			}
+			try {
+				req.body = JSON.parse(raw);
+			} catch {
+				reject(new RequestBodyError(400, "Invalid JSON in request body"));
+				return;
+			}
+			resolve(req.body);
+		});
+		req.on("error", (error) => {
+			if (settled) return;
+			settled = true;
+			reject(error);
+		});
+	});
+	return req._bodyPromise;
+}
+//#endregion
 //#region src/backend/validator.ts
 var validatePerson = (person) => {
 	if (!person || typeof person !== "object") return {
@@ -513,14 +592,27 @@ var validateDailyCompletion = (completion, chores) => {
 };
 //#endregion
 //#region src/backend/admin-routes.ts
+var apiErr = (message) => ({ error: message });
+/**
+* Send the appropriate error response for a caught handler error. `RequestBodyError` (thrown by
+* `getRequestBody` for malformed/oversized JSON) carries its own status code and message;
+* anything else falls back to a generic 500 with the handler's own message.
+*/
+function sendErrorResponse(res, error, fallbackMessage) {
+	if (error instanceof RequestBodyError) {
+		res.status(error.statusCode).json(apiErr(error.message));
+		return;
+	}
+	res.status(500).json(apiErr(fallbackMessage));
+}
 /**
 * Validate PIN for protected actions. Returns true if allowed, false if blocked (and sends response).
 * Checks body first, then query params (for DELETE requests without body).
 */
-function validatePin(req, res, context) {
+async function validatePin(req, res, context) {
 	const adminPin = context.getChoreData()?.settings?.adminPin;
 	if (!adminPin) return true;
-	const body = req.body;
+	const body = await getRequestBody(req).catch(() => void 0);
 	const query = req.query;
 	if ((body?.pin ?? query?.pin) !== adminPin) {
 		res.status(403).json({ error: "Invalid PIN" });
@@ -529,7 +621,6 @@ function validatePin(req, res, context) {
 	return true;
 }
 function createAdminHandlers(context) {
-	const apiErr = (message) => ({ error: message });
 	return {
 		getData: (_req, res) => {
 			const choreData = context.getChoreData();
@@ -542,10 +633,10 @@ function createAdminHandlers(context) {
 			if (settings?.adminPin) settings.adminPin = true;
 			res.json(data);
 		},
-		postPerson: (req, res) => {
-			if (!validatePin(req, res, context)) return;
+		postPerson: async (req, res) => {
+			if (!await validatePin(req, res, context)) return;
 			try {
-				const { name, color } = req.body;
+				const { name, color } = await getRequestBody(req);
 				const choreData = context.getChoreData();
 				if (!choreData) {
 					res.status(500).json(apiErr("No data available"));
@@ -568,14 +659,14 @@ function createAdminHandlers(context) {
 				res.json(newPerson);
 			} catch (error) {
 				logger.error(`Error adding person: ${error}`);
-				res.status(500).json(apiErr("Failed to add person"));
+				sendErrorResponse(res, error, "Failed to add person");
 			}
 		},
-		putPerson: (req, res) => {
-			if (!validatePin(req, res, context)) return;
+		putPerson: async (req, res) => {
+			if (!await validatePin(req, res, context)) return;
 			try {
 				const { id } = req.params;
-				const { name, color } = req.body;
+				const { name, color } = await getRequestBody(req);
 				const choreData = context.getChoreData();
 				if (!choreData) {
 					res.status(500).json(apiErr("No data available"));
@@ -603,11 +694,11 @@ function createAdminHandlers(context) {
 				res.json(person);
 			} catch (error) {
 				logger.error(`Error updating person: ${error}`);
-				res.status(500).json(apiErr("Failed to update person"));
+				sendErrorResponse(res, error, "Failed to update person");
 			}
 		},
-		deletePerson: (req, res) => {
-			if (!validatePin(req, res, context)) return;
+		deletePerson: async (req, res) => {
+			if (!await validatePin(req, res, context)) return;
 			try {
 				const { id } = req.params;
 				const choreData = context.getChoreData();
@@ -636,13 +727,13 @@ function createAdminHandlers(context) {
 				res.json({ success: true });
 			} catch (error) {
 				logger.error(`Error deleting person: ${error}`);
-				res.status(500).json(apiErr("Failed to delete person"));
+				sendErrorResponse(res, error, "Failed to delete person");
 			}
 		},
-		postChore: (req, res) => {
-			if (!validatePin(req, res, context)) return;
+		postChore: async (req, res) => {
+			if (!await validatePin(req, res, context)) return;
 			try {
-				const { name, type, assignedTo, rotation, rotatingIndex, startTime, deadline, skipDays, skipDayVisibility, beforeStartTimeVisibility, afterDeadlineVisibility, notCaughtUpDisplay } = req.body;
+				const { name, type, assignedTo, rotation, rotatingIndex, startTime, deadline, skipDays, skipDayVisibility, beforeStartTimeVisibility, afterDeadlineVisibility, notCaughtUpDisplay } = await getRequestBody(req);
 				const choreData = context.getChoreData();
 				if (!choreData) {
 					res.status(500).json(apiErr("No data available"));
@@ -679,14 +770,15 @@ function createAdminHandlers(context) {
 				res.json(newChore);
 			} catch (error) {
 				logger.error(`Error adding chore: ${error}`);
-				res.status(500).json(apiErr("Failed to add chore"));
+				sendErrorResponse(res, error, "Failed to add chore");
 			}
 		},
-		putChore: (req, res) => {
-			if (!validatePin(req, res, context)) return;
+		putChore: async (req, res) => {
+			if (!await validatePin(req, res, context)) return;
 			try {
 				const { id } = req.params;
-				const { name, type, assignedTo, rotation, rotatingIndex, startTime, deadline, skipDays, skipDayVisibility, beforeStartTimeVisibility, afterDeadlineVisibility, notCaughtUpDisplay } = req.body;
+				const body = await getRequestBody(req);
+				const { name, type, assignedTo, rotation, rotatingIndex, startTime, deadline, skipDays, skipDayVisibility, beforeStartTimeVisibility, afterDeadlineVisibility, notCaughtUpDisplay } = body;
 				const choreData = context.getChoreData();
 				if (!choreData) {
 					res.status(500).json(apiErr("No data available"));
@@ -701,7 +793,6 @@ function createAdminHandlers(context) {
 					res.status(400).json(apiErr("Cannot change chore type"));
 					return;
 				}
-				const body = req.body;
 				const updatedChore = {
 					...chore,
 					name: name ? name.trim() : chore.name,
@@ -730,11 +821,11 @@ function createAdminHandlers(context) {
 				res.json(chore);
 			} catch (error) {
 				logger.error(`Error updating chore ${req.params?.id}: ${error instanceof Error ? error.stack : error}`);
-				res.status(500).json(apiErr("Failed to update chore"));
+				sendErrorResponse(res, error, "Failed to update chore");
 			}
 		},
-		deleteChore: (req, res) => {
-			if (!validatePin(req, res, context)) return;
+		deleteChore: async (req, res) => {
+			if (!await validatePin(req, res, context)) return;
 			try {
 				const { id } = req.params;
 				const choreData = context.getChoreData();
@@ -754,11 +845,11 @@ function createAdminHandlers(context) {
 				res.json({ success: true });
 			} catch (error) {
 				logger.error(`Error deleting chore: ${error}`);
-				res.status(500).json(apiErr("Failed to delete chore"));
+				sendErrorResponse(res, error, "Failed to delete chore");
 			}
 		},
-		getBackup: (req, res) => {
-			if (!validatePin(req, res, context)) return;
+		getBackup: async (req, res) => {
+			if (!await validatePin(req, res, context)) return;
 			try {
 				const choreData = context.getChoreData();
 				if (!choreData) {
@@ -772,13 +863,13 @@ function createAdminHandlers(context) {
 				logger.info(`Backup downloaded: ${filename}`);
 			} catch (error) {
 				logger.error(`Error creating backup: ${error}`);
-				res.status(500).json(apiErr("Failed to create backup"));
+				sendErrorResponse(res, error, "Failed to create backup");
 			}
 		},
-		postRestore: (req, res) => {
-			if (!validatePin(req, res, context)) return;
+		postRestore: async (req, res) => {
+			if (!await validatePin(req, res, context)) return;
 			try {
-				const restoredData = req.body;
+				const restoredData = await getRequestBody(req);
 				if (!restoredData?.people || !restoredData.chores) {
 					res.status(400).json(apiErr("Invalid data format"));
 					return;
@@ -849,13 +940,13 @@ function createAdminHandlers(context) {
 				});
 			} catch (error) {
 				logger.error(`Error restoring data: ${error}`);
-				res.status(500).json(apiErr("Failed to restore data"));
+				sendErrorResponse(res, error, "Failed to restore data");
 			}
 		},
-		postCopyChores: (req, res) => {
-			if (!validatePin(req, res, context)) return;
+		postCopyChores: async (req, res) => {
+			if (!await validatePin(req, res, context)) return;
 			try {
-				const { fromPersonId, toPersonId, choreIds } = req.body;
+				const { fromPersonId, toPersonId, choreIds } = await getRequestBody(req);
 				if (!fromPersonId || !toPersonId || !choreIds) {
 					res.status(400).json(apiErr("fromPersonId, toPersonId, and choreIds are required"));
 					return;
@@ -900,11 +991,11 @@ function createAdminHandlers(context) {
 				res.json(newChores);
 			} catch (error) {
 				logger.error(`Error copying chores: ${error}`);
-				res.status(500).json(apiErr("Failed to copy chores"));
+				sendErrorResponse(res, error, "Failed to copy chores");
 			}
 		},
-		postAdvanceRotations: (req, res) => {
-			if (!validatePin(req, res, context)) return;
+		postAdvanceRotations: async (req, res) => {
+			if (!await validatePin(req, res, context)) return;
 			try {
 				const choreData = context.getChoreData();
 				if (!choreData) {
@@ -935,11 +1026,11 @@ function createAdminHandlers(context) {
 				});
 			} catch (error) {
 				logger.error(`Error advancing rotations: ${error}`);
-				res.status(500).json(apiErr("Failed to advance rotations"));
+				sendErrorResponse(res, error, "Failed to advance rotations");
 			}
 		},
-		postResetCaughtUp: (req, res) => {
-			if (!validatePin(req, res, context)) return;
+		postResetCaughtUp: async (req, res) => {
+			if (!await validatePin(req, res, context)) return;
 			try {
 				const choreData = context.getChoreData();
 				if (!choreData) {
@@ -960,13 +1051,13 @@ function createAdminHandlers(context) {
 				});
 			} catch (error) {
 				logger.error(`Error resetting caught up status: ${error}`);
-				res.status(500).json(apiErr("Failed to reset caught up status"));
+				sendErrorResponse(res, error, "Failed to reset caught up status");
 			}
 		},
-		putSettings: (req, res) => {
-			if (!validatePin(req, res, context)) return;
+		putSettings: async (req, res) => {
+			if (!await validatePin(req, res, context)) return;
 			try {
-				const { historyEnabled, adminPin, timeFormat } = req.body;
+				const { historyEnabled, adminPin, timeFormat } = await getRequestBody(req);
 				const choreData = context.getChoreData();
 				if (!choreData) {
 					res.status(500).json(apiErr("No data available"));
@@ -987,77 +1078,10 @@ function createAdminHandlers(context) {
 				res.json(responseSettings);
 			} catch (error) {
 				logger.error(`Error updating settings: ${error}`);
-				res.status(500).json(apiErr("Failed to update settings"));
+				sendErrorResponse(res, error, "Failed to update settings");
 			}
 		}
 	};
-}
-//#endregion
-//#region src/backend/json-body-middleware.ts
-/** Reject bodies larger than this to avoid unbounded memory use from a bad/malicious request. */
-var MAX_BODY_BYTES = 5242880;
-/**
-* Minimal stand-in for `express.json()`, implemented without adding express/body-parser
-* as a dependency (keeps the compiled node_helper.js small and avoids relying on whatever
-* body-parsing middleware, if any, other installed modules happen to register on the shared
-* MagicMirror core `expressApp`).
-*
-* Parses the raw request body into `req.body` when the `Content-Type` is `application/json`.
-* Leaves `req.body` as `undefined` for other content types or empty bodies, matching
-* `express.json()` behavior for GET/DELETE requests with no body.
-*/
-function parseJsonBody(req, res, next) {
-	if (req.body !== void 0) {
-		next();
-		return;
-	}
-	if (!(req.headers["content-type"] ?? "").includes("application/json")) {
-		next();
-		return;
-	}
-	const chunks = [];
-	let totalBytes = 0;
-	let settled = false;
-	const fail = (statusCode, message) => {
-		if (settled) return;
-		settled = true;
-		res.statusCode = statusCode;
-		res.setHeader("Content-Type", "application/json");
-		res.end(JSON.stringify({ error: message }));
-	};
-	req.on("data", (chunk) => {
-		if (settled) return;
-		totalBytes += chunk.length;
-		if (totalBytes > MAX_BODY_BYTES) {
-			fail(413, "Request body too large");
-			req.destroy();
-			return;
-		}
-		chunks.push(chunk);
-	});
-	req.on("end", () => {
-		if (settled) return;
-		const raw = Buffer.concat(chunks).toString("utf8");
-		if (!raw) {
-			req.body = void 0;
-			settled = true;
-			next();
-			return;
-		}
-		try {
-			req.body = JSON.parse(raw);
-		} catch {
-			fail(400, "Invalid JSON in request body");
-			return;
-		}
-		settled = true;
-		next();
-	});
-	req.on("error", (error) => {
-		if (settled) return;
-		settled = true;
-		next(error);
-	});
 }
 var node_helper_default = node_helper.create({
 	choreData: null,
@@ -1339,7 +1363,6 @@ var node_helper_default = node_helper.create({
 			saveChoreData: () => this.saveChoreData(),
 			sendNotification: (notification, payload) => this.sendSocketNotification?.(notification, payload)
 		});
-		this.expressApp?.use("/MMM-FamilyChores", parseJsonBody);
 		this.expressApp?.get("/MMM-FamilyChores/data", handlers.getData);
 		this.expressApp?.post("/MMM-FamilyChores/people", handlers.postPerson);
 		this.expressApp?.put("/MMM-FamilyChores/people/:id", handlers.putPerson);

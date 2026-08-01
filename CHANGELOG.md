@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.5](https://github.com/jonyo/MMM-FamilyChores/compare/v1.5.4...v1.5.5) (2026-07-31)
+
+### Fixed
+- Follow-up to the 1.5.3 fix, to ensure better compatibility with other modules — no longer registers global request-parsing middleware, so it can't interfere with (or be broken by) other installed modules, like MMM-Remote-Control, that do something similar.
+
 ## [1.5.4](https://github.com/jonyo/MMM-FamilyChores/compare/v1.5.3...v1.5.4) (2026-07-31)
 
 ### Fixed
