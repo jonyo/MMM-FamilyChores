@@ -1,6 +1,6 @@
 import { render } from '@solidjs/testing-library';
 import { createSignal } from 'solid-js';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import type { Chore, DayOfWeek, FamilyChoresData, Person } from '../types/chore-types';
 import {
@@ -294,6 +294,77 @@ describe('Frontend Component Tests', () => {
 
       expect(page.getByTestId('later-chores-indicator').elements().length).toBe(0);
       await expect.element(page.getByText('Later chore')).toBeVisible();
+    });
+
+    describe('earlier section debounce', () => {
+      beforeEach(() => {
+        vi.useFakeTimers();
+      });
+
+      afterEach(() => {
+        vi.useRealTimers();
+      });
+
+      it('does not move an already-frozen chore early when a second chore is toggled', async () => {
+        const deadlineChoreOne: Chore = {
+          ...mockPersonalChore,
+          id: 'c-deadline-1',
+          name: 'Deadline chore one',
+          deadline: '09:00',
+          afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
+        };
+        const deadlineChoreTwo: Chore = {
+          ...mockPersonalChore,
+          id: 'c-deadline-2',
+          name: 'Deadline chore two',
+          deadline: '09:00',
+          afterDeadlineVisibility: AfterDeadlineVisibility.SHOW_OVERDUE,
+        };
+        const [choreData, setChoreData] = createSignal<FamilyChoresData>({
+          ...mockChoreData,
+          chores: [deadlineChoreOne, deadlineChoreTwo],
+        });
+
+        render(() => (
+          <PersonalView
+            choreData={choreData}
+            todaysDayOfWeek={mockTodaysDayOfWeek}
+            currentTime={mockCurrentTime}
+            config={{ viewMode: 'personal', personFilter: null } as Config}
+            onToggle={(choreId, completed) => {
+              setChoreData((prev) => ({
+                ...prev,
+                chores: prev.chores.map((chore) =>
+                  chore.id === choreId ? { ...chore, completedToday: completed } : chore
+                ),
+              }));
+            }}
+          />
+        ));
+
+        await expect.element(page.getByText('Deadline chore one')).toBeVisible();
+        await expect.element(page.getByText('Deadline chore two')).toBeVisible();
+
+        const checkboxes = page.getByTestId('chore-checkbox');
+        await checkboxes.nth(0).click();
+
+        // Simulate the first toggle's data already having round-tripped from
+        // the backend before the second toggle happens, and let some time
+        // pass, but not enough to clear the freeze.
+        await vi.advanceTimersByTimeAsync(2000);
+        await checkboxes.nth(1).click();
+
+        // Chore one must still be in the main list; it should not jump to the
+        // earlier section just because chore two was toggled.
+        expect(page.getByText('Earlier chores').elements().length).toBe(0);
+        await expect.element(page.getByText('Deadline chore one')).toBeVisible();
+        await expect.element(page.getByText('Deadline chore two')).toBeVisible();
+
+        // Once the full debounce window has elapsed, both completed chores
+        // move to the earlier section together.
+        await vi.advanceTimersByTimeAsync(5000);
+        await expect.element(page.getByText('Earlier chores')).toBeVisible();
+      });
     });
   });
 

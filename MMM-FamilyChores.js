@@ -1441,7 +1441,7 @@
 		const [frozenEarlierIds, setFrozenEarlierIds] = createSignal(null);
 		let earlierDebounceTimer;
 		const freezeEarlierSection = () => {
-			setFrozenEarlierIds(liveEarlierIds());
+			if (frozenEarlierIds() === null) setFrozenEarlierIds(liveEarlierIds());
 			if (earlierDebounceTimer) clearTimeout(earlierDebounceTimer);
 			earlierDebounceTimer = window.setTimeout(() => {
 				setFrozenEarlierIds(null);
