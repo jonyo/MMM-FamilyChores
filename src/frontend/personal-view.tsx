@@ -63,7 +63,15 @@ export const PersonalView: Component<PersonalViewProps> = (props) => {
   let earlierDebounceTimer: number | undefined;
 
   const freezeEarlierSection = () => {
-    setFrozenEarlierIds(liveEarlierIds());
+    // Only take a fresh snapshot if there isn't already an active freeze. If we
+    // re-snapshotted on every toggle, a toggle that lands while a previous
+    // toggle's freeze is still active would capture `liveEarlierIds()` *after*
+    // that earlier toggle's data had already round-tripped from the backend,
+    // which would immediately reveal its moved state and cause the list to
+    // jump instead of waiting out its own debounce window.
+    if (frozenEarlierIds() === null) {
+      setFrozenEarlierIds(liveEarlierIds());
+    }
     if (earlierDebounceTimer) {
       clearTimeout(earlierDebounceTimer);
     }

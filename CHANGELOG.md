@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.4](https://github.com/jonyo/MMM-FamilyChores/compare/v1.5.3...v1.5.4) (2026-07-31)
+
+### Fixed
+- Checking off a second chore with a deadline while the "move to earlier chores" delay for a previously checked chore was still counting down would cause the whole list to jump/reshuffle immediately, instead of each chore waiting out its own delay before moving to the Earlier chores section.
+
 ## [1.5.3](https://github.com/jonyo/MMM-FamilyChores/compare/v1.5.2...v1.5.3) (2026-07-31)
 
 ### Fixed
