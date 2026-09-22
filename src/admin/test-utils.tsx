@@ -10,7 +10,8 @@ import {
   SkipDayVisibility,
   TimeFormat,
 } from '../types/chore-types';
-import AdminContext, { type AdminContextValue } from './admin-context';
+import type { AdminContextValue } from './admin-context';
+import AdminContext from './admin-context';
 
 // Mock data for testing
 export const mockPerson: Person = {

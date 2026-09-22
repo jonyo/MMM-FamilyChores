@@ -735,7 +735,7 @@ describe('Node Helper Tests', () => {
       expect(nodeHelper.choreData?.chores[1].completedToday).toBe(false);
       expect(nodeHelper.choreData?.chores[0].caughtUp).toBe(true); // was completed yesterday
       expect(nodeHelper.choreData?.chores[1].caughtUp).toBe(true); // was completed yesterday
-      expect((nodeHelper.choreData?.chores[0] as RotatingChore).rotatingIndex).toBe(1); // rotated
+      expect((nodeHelper.choreData?.chores[0] as RotatingChore | undefined)?.rotatingIndex).toBe(1); // rotated
       // Verify that lastResetDate was updated (check it's no longer old value)
       expect(nodeHelper.choreData?.lastResetDate).not.toBe('2024-05-11');
     });

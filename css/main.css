@@ -196,7 +196,7 @@
   border-bottom: none;
 }
 
-.MMM-FamilyChores .rotating-inline .chore-name {
+.MMM-FamilyChores .summary-view .rotating-inline .chore-name {
   font-weight: 500;
   color: #fff;
   flex: 1;

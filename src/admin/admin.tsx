@@ -4,7 +4,8 @@ import { createStore, reconcile } from 'solid-js/store';
 import type { FamilyChoresData } from '../types/chore-types';
 import { TimeFormat } from '../types/chore-types';
 import { formatTime } from '../utils/browser';
-import AdminContext, { type AdminContextValue } from './admin-context';
+import type { AdminContextValue } from './admin-context';
+import AdminContext from './admin-context';
 import { MainPage } from './main-page';
 
 // API base URL

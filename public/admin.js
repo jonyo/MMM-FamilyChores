@@ -1,7 +1,7 @@
 // ⚠️  STOP — This file is auto-generated and will be overwritten!
 // Edit src/admin/*.tsx files and run: pnpm build
 (function() {
-	//#region node_modules/.pnpm/solid-js@1.9.12/node_modules/solid-js/dist/solid.js
+	//#region node_modules/.pnpm/solid-js@1.9.15/node_modules/solid-js/dist/solid.js
 	var sharedConfig = {
 		context: void 0,
 		registry: void 0,
@@ -76,8 +76,10 @@
 			comparator: options.equals || void 0
 		};
 		const setter = (value) => {
-			if (typeof value === "function") if (Transition && Transition.running && Transition.sources.has(s)) value = value(s.tValue);
-			else value = value(s.value);
+			if (typeof value === "function") {
+				if (Transition && Transition.running && Transition.sources.has(s)) value = value(s.tValue);
+				else value = value(s.value);
+			}
 			return writeSignal(s, value);
 		};
 		return [readSignal.bind(s), setter];
@@ -185,28 +187,33 @@
 	var SuspenseContext;
 	function readSignal() {
 		const runningTransition = Transition && Transition.running;
-		if (this.sources && (runningTransition ? this.tState : this.state)) if ((runningTransition ? this.tState : this.state) === STALE) updateComputation(this);
-		else {
-			const updates = Updates;
-			Updates = null;
-			runUpdates(() => lookUpstream(this), false);
-			Updates = updates;
+		if (this.sources && (runningTransition ? this.tState : this.state)) {
+			if ((runningTransition ? this.tState : this.state) === STALE) updateComputation(this);
+			else {
+				const updates = Updates;
+				Updates = null;
+				runUpdates(() => lookUpstream(this), false);
+				Updates = updates;
+			}
 		}
 		if (Listener) {
-			const sSlot = this.observers ? this.observers.length : 0;
-			if (!Listener.sources) {
-				Listener.sources = [this];
-				Listener.sourceSlots = [sSlot];
-			} else {
-				Listener.sources.push(this);
-				Listener.sourceSlots.push(sSlot);
-			}
-			if (!this.observers) {
-				this.observers = [Listener];
-				this.observerSlots = [Listener.sources.length - 1];
-			} else {
-				this.observers.push(Listener);
-				this.observerSlots.push(Listener.sources.length - 1);
+			const observers = this.observers;
+			if (!observers || observers[observers.length - 1] !== Listener) {
+				const sSlot = observers ? observers.length : 0;
+				if (!Listener.sources) {
+					Listener.sources = [this];
+					Listener.sourceSlots = [sSlot];
+				} else {
+					Listener.sources.push(this);
+					Listener.sourceSlots.push(sSlot);
+				}
+				if (!observers) {
+					this.observers = [Listener];
+					this.observerSlots = [Listener.sources.length - 1];
+				} else {
+					observers.push(Listener);
+					this.observerSlots.push(Listener.sources.length - 1);
+				}
 			}
 		}
 		if (runningTransition && Transition.sources.has(this)) return this.tValue;
@@ -265,14 +272,16 @@
 		try {
 			nextValue = node.fn(value);
 		} catch (err) {
-			if (node.pure) if (Transition && Transition.running) {
-				node.tState = STALE;
-				node.tOwned && node.tOwned.forEach(cleanNode);
-				node.tOwned = void 0;
-			} else {
-				node.state = STALE;
-				node.owned && node.owned.forEach(cleanNode);
-				node.owned = null;
+			if (node.pure) {
+				if (Transition && Transition.running) {
+					node.tState = STALE;
+					node.tOwned && node.tOwned.forEach(cleanNode);
+					node.tOwned = void 0;
+				} else {
+					node.state = STALE;
+					node.owned && node.owned.forEach(cleanNode);
+					node.owned = null;
+				}
 			}
 			node.updatedAt = time + 1;
 			return handleError(err);
@@ -309,20 +318,25 @@
 			c.tState = state;
 		}
 		if (Owner === null);
-		else if (Owner !== UNOWNED) if (Transition && Transition.running && Owner.pure) if (!Owner.tOwned) Owner.tOwned = [c];
-		else Owner.tOwned.push(c);
-		else if (!Owner.owned) Owner.owned = [c];
-		else Owner.owned.push(c);
+		else if (Owner !== UNOWNED) {
+			if (Transition && Transition.running && Owner.pure) {
+				if (!Owner.tOwned) Owner.tOwned = [c];
+				else Owner.tOwned.push(c);
+			} else if (!Owner.owned) Owner.owned = [c];
+			else Owner.owned.push(c);
+		}
 		if (ExternalSourceConfig && c.fn) {
 			const sourceFn = c.fn;
 			const [track, trigger] = createSignal(void 0, { equals: false });
 			const ordinary = ExternalSourceConfig.factory(sourceFn, trigger);
 			onCleanup(() => ordinary.dispose());
 			let inTransition;
+			let trackedOrdinary = false;
 			const triggerInTransition = () => startTransition(trigger).then(() => {
 				if (inTransition) {
 					inTransition.dispose();
 					inTransition = void 0;
+					if (!trackedOrdinary) trigger();
 				}
 			});
 			c.fn = (x) => {
@@ -331,6 +345,7 @@
 					if (!inTransition) inTransition = ExternalSourceConfig.factory(sourceFn, triggerInTransition);
 					return inTransition.track(x);
 				}
+				trackedOrdinary = true;
 				return ordinary.track(x);
 			};
 		}
@@ -556,7 +571,10 @@
 			const results = [];
 			for (let i = 0; i < children.length; i++) {
 				const result = resolveChildren(children[i]);
-				Array.isArray(result) ? results.push.apply(results, result) : results.push(result);
+				if (Array.isArray(result)) {
+					if (result.length < 32768) results.push.apply(results, result);
+					else for (let j = 0; j < result.length; j++) results.push(result[j]);
+				} else results.push(result);
 			}
 			return results;
 		}
@@ -828,7 +846,7 @@
 		return props;
 	}
 	//#endregion
-	//#region node_modules/.pnpm/solid-js@1.9.12/node_modules/solid-js/web/dist/web.js
+	//#region node_modules/.pnpm/solid-js@1.9.15/node_modules/solid-js/web/dist/web.js
 	var memo = (fn) => createMemo(() => fn());
 	function reconcileArrays(parentNode, a, b) {
 		let bLength = b.length, aEnd = a.length, bEnd = bLength, aStart = 0, bStart = 0, after = a[aEnd - 1].nextSibling, map = null;
@@ -861,18 +879,19 @@
 					while (i < bEnd) map.set(b[i], i++);
 				}
 				const index = map.get(a[aStart]);
-				if (index != null) if (bStart < index && index < bEnd) {
-					let i = aStart, sequence = 1, t;
-					while (++i < aEnd && i < bEnd) {
-						if ((t = map.get(a[i])) == null || t !== index + sequence) break;
-						sequence++;
-					}
-					if (sequence > index - bStart) {
-						const node = a[aStart];
-						while (bStart < index) parentNode.insertBefore(b[bStart++], node);
-					} else parentNode.replaceChild(b[bStart++], a[aStart++]);
-				} else aStart++;
-				else a[aStart++].remove();
+				if (index != null) {
+					if (bStart < index && index < bEnd) {
+						let i = aStart, sequence = 1, t;
+						while (++i < aEnd && i < bEnd) {
+							if ((t = map.get(a[i])) == null || t !== index + sequence) break;
+							sequence++;
+						}
+						if (sequence > index - bStart) {
+							const node = a[aStart];
+							while (bStart < index) parentNode.insertBefore(b[bStart++], node);
+						} else parentNode.replaceChild(b[bStart++], a[aStart++]);
+					} else aStart++;
+				} else a[aStart++].remove();
 			}
 		}
 	}
@@ -920,11 +939,12 @@
 		else node.className = value;
 	}
 	function addEventListener(node, name, handler, delegate) {
-		if (delegate) if (Array.isArray(handler)) {
-			node[`$$${name}`] = handler[0];
-			node[`$$${name}Data`] = handler[1];
-		} else node[`$$${name}`] = handler;
-		else if (Array.isArray(handler)) {
+		if (delegate) {
+			if (Array.isArray(handler)) {
+				node[`$$${name}`] = handler[0];
+				node[`$$${name}Data`] = handler[1];
+			} else node[`$$${name}`] = handler;
+		} else if (Array.isArray(handler)) {
 			const handlerFn = handler[0];
 			node.addEventListener(name, handler[0] = (e) => handlerFn.call(node, handler[1], e));
 		} else node.addEventListener(name, handler, typeof handler !== "function" && handler);
@@ -1085,9 +1105,10 @@
 			if (array.length === 0) {
 				current = cleanChildren(parent, current, marker);
 				if (multi) return current;
-			} else if (currentArray) if (current.length === 0) appendNodes(parent, array, marker);
-			else reconcileArrays(parent, current, array);
-			else {
+			} else if (currentArray) {
+				if (current.length === 0) appendNodes(parent, array, marker);
+				else reconcileArrays(parent, current, array);
+			} else {
 				current && cleanChildren(parent);
 				appendNodes(parent, array);
 			}
@@ -1110,14 +1131,15 @@
 			if (item == null || item === true || item === false);
 			else if ((t = typeof item) === "object" && item.nodeType) normalized.push(item);
 			else if (Array.isArray(item)) dynamic = normalizeIncomingArray(normalized, item, prev) || dynamic;
-			else if (t === "function") if (unwrap) {
-				while (typeof item === "function") item = item();
-				dynamic = normalizeIncomingArray(normalized, Array.isArray(item) ? item : [item], Array.isArray(prev) ? prev : [prev]) || dynamic;
+			else if (t === "function") {
+				if (unwrap) {
+					while (typeof item === "function") item = item();
+					dynamic = normalizeIncomingArray(normalized, Array.isArray(item) ? item : [item], Array.isArray(prev) ? prev : [prev]) || dynamic;
+				} else {
+					normalized.push(item);
+					dynamic = true;
+				}
 			} else {
-				normalized.push(item);
-				dynamic = true;
-			}
-			else {
 				const value = String(item);
 				if (prev && prev.nodeType === 3 && prev.data === value) normalized.push(prev);
 				else normalized.push(document.createTextNode(value));
@@ -1145,7 +1167,7 @@
 		return [node];
 	}
 	//#endregion
-	//#region node_modules/.pnpm/solid-js@1.9.12/node_modules/solid-js/store/dist/store.js
+	//#region node_modules/.pnpm/solid-js@1.9.15/node_modules/solid-js/store/dist/store.js
 	var $RAW = Symbol("store-raw");
 	var $NODE = Symbol("store-node");
 	var $HAS = Symbol("store-has");
@@ -1155,10 +1177,18 @@
 		if (!p) {
 			Object.defineProperty(value, $PROXY, { value: p = new Proxy(value, proxyTraps$1) });
 			if (!Array.isArray(value)) {
-				const keys = Object.keys(value), desc = Object.getOwnPropertyDescriptors(value);
+				const keys = Object.keys(value), desc = Object.getOwnPropertyDescriptors(value), proto = Object.getPrototypeOf(value);
+				const isClass = proto !== null && value !== null && typeof value === "object" && !Array.isArray(value) && proto !== Object.prototype;
+				if (isClass) {
+					const descriptors = Object.getOwnPropertyDescriptors(proto);
+					keys.push(...Object.keys(descriptors));
+					Object.assign(desc, descriptors);
+				}
 				for (let i = 0, l = keys.length; i < l; i++) {
 					const prop = keys[i];
+					if (isClass && prop === "constructor") continue;
 					if (desc[prop].get) Object.defineProperty(value, prop, {
+						configurable: true,
 						enumerable: desc[prop].enumerable,
 						get: desc[prop].get.bind(p)
 					});
@@ -1238,7 +1268,7 @@
 			if (property === $NODE || property === $HAS || property === "__proto__") return value;
 			if (!tracked) {
 				const desc = Object.getOwnPropertyDescriptor(target, property);
-				if (getListener() && (typeof value !== "function" || target.hasOwnProperty(property)) && !(desc && desc.get)) value = getNode(nodes, property, value)();
+				if (getListener() && (typeof value !== "function" || Object.prototype.hasOwnProperty.call(target, property)) && !(desc && desc.get)) value = getNode(nodes, property, value)();
 			}
 			return isWrappable(value) ? wrap$1(value) : value;
 		},
@@ -1257,6 +1287,7 @@
 		getOwnPropertyDescriptor: proxyDescriptor$1
 	};
 	function setProperty(state, property, value, deleting = false) {
+		if (property === "__proto__") return;
 		if (!deleting && state[property] === value) return;
 		const prev = state[property], len = state.length;
 		if (value === void 0) {
@@ -1278,8 +1309,12 @@
 		const keys = Object.keys(value);
 		for (let i = 0; i < keys.length; i += 1) {
 			const key = keys[i];
+			if (isUnsafeKey$1(key)) continue;
 			setProperty(state, key, value[key]);
 		}
+	}
+	function isUnsafeKey$1(property) {
+		return property === "__proto__" || property === "constructor" || property === "prototype";
 	}
 	function updateArray(current, next) {
 		if (typeof next === "function") next = next(current);
@@ -1299,6 +1334,7 @@
 		if (path.length > 1) {
 			part = path.shift();
 			const partType = typeof part, isArray = Array.isArray(current);
+			if (partType === "string" && (part === "__proto__" || path.length > 1 && isUnsafeKey$1(part))) return;
 			if (Array.isArray(part)) {
 				for (let i = 0; i < part.length; i++) updatePath(current, [part[i]].concat(path), traversed);
 				return;
@@ -1338,7 +1374,11 @@
 		return [wrappedStore, setStore];
 	}
 	var $ROOT = Symbol("store-root");
+	function isUnsafeKey(property) {
+		return property === "__proto__" || property === "constructor" || property === "prototype";
+	}
 	function applyState(target, parent, property, merge, key) {
+		if (isUnsafeKey(property)) return;
 		const previous = parent[property];
 		if (target === previous) return;
 		const isArray = Array.isArray(target);
@@ -1388,7 +1428,10 @@
 			return;
 		}
 		const targetKeys = Object.keys(target);
-		for (let i = 0, len = targetKeys.length; i < len; i++) applyState(target[targetKeys[i]], previous, targetKeys[i], merge, key);
+		for (let i = 0, len = targetKeys.length; i < len; i++) {
+			if (isUnsafeKey(targetKeys[i])) continue;
+			applyState(target[targetKeys[i]], previous, targetKeys[i], merge, key);
+		}
 		const previousKeys = Object.keys(previous);
 		for (let i = 0, len = previousKeys.length; i < len; i++) if (target[previousKeys[i]] === void 0) setProperty(previous, previousKeys[i], void 0);
 	}
@@ -3334,22 +3377,21 @@
 									return getDays();
 								},
 								children: (day) => {
-									const completion = getCompletionDetails(chore.id, day.date);
-									const skipDay = isSkipDay(chore, day);
-									const emptyDay = !skipDay && !completion;
+									const completion = createMemo(() => getCompletionDetails(chore.id, day.date));
+									const skipDay = createMemo(() => isSkipDay(chore, day));
+									const emptyDay = () => !skipDay() && !completion();
 									const getEmptyTooltip = () => {
 										return chore.type === "rotating" ? "Either it was someone else's turn (rotating chore), MagicMirror² was not running this day, the chore was not created yet, or history tracking was disabled when the chore was checked." : "Either MagicMirror² was not running this day, the chore was not created yet, or history tracking was disabled when the chore was checked.";
 									};
 									const getTooltipText = () => {
-										if (completion?.completed) return `Completed at ${completion.completedAt} (24h)`;
-										if (completion && !completion.completed) return "Not completed";
-										if (skipDay) return "Skip day";
-										if (emptyDay) return getEmptyTooltip();
+										if (completion()?.completed) return `Completed at ${completion()?.completedAt} (24h)`;
+										if (completion() && !completion()?.completed) return "Not completed";
+										if (skipDay()) return "Skip day";
+										if (emptyDay()) return getEmptyTooltip();
 										return "";
 									};
 									return (() => {
 										var _el$18 = _tmpl$7$5();
-										_el$18.classList.toggle("bg-slate-100", !!skipDay);
 										insert(_el$18, createComponent(Switch, {
 											get fallback() {
 												return createComponent(Tooltip, {
@@ -3358,7 +3400,9 @@
 													},
 													position: "above",
 													align: "right",
-													multiline: emptyDay,
+													get multiline() {
+														return emptyDay();
+													},
 													get children() {
 														return _tmpl$8$3();
 													}
@@ -3367,7 +3411,7 @@
 											get children() {
 												return [createComponent(Match, {
 													get when() {
-														return completion?.completed;
+														return completion()?.completed;
 													},
 													get children() {
 														return createComponent(Tooltip, {
@@ -3384,20 +3428,20 @@
 																	"rounded-full": true,
 																	"text-center": true,
 																	"leading-8": true,
-																	"bg-yellow-500": completion?.wasLate,
-																	"bg-green-500": !completion?.wasLate,
+																	"bg-yellow-500": completion()?.wasLate,
+																	"bg-green-500": !completion()?.wasLate,
 																	"text-white": true
 																};
 															},
 															get dataTestId() {
-																return completion?.wasLate ? "completion-late" : "completion-ontime";
+																return completion()?.wasLate ? "completion-late" : "completion-ontime";
 															},
 															children: "✓"
 														});
 													}
 												}), createComponent(Match, {
 													get when() {
-														return completion?.completed === false;
+														return completion()?.completed === false;
 													},
 													get children() {
 														return createComponent(Tooltip, {
@@ -3414,6 +3458,7 @@
 												})];
 											}
 										}));
+										createRenderEffect(() => _el$18.classList.toggle("bg-slate-100", !!skipDay()));
 										return _el$18;
 									})();
 								}
