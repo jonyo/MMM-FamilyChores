@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Added a bulk-edit wizard to the _People_ and _Rotating Chores_ tabs for safely changing one chore setting across multiple chores, with compact and detailed selection views, PIN protection, sequential updates, per-chore progress, and a backup reminder.
+- Added two equivalent ways to edit chore schedules: choose days to skip or choose only the days when the chore is active. Chore cards show whichever active/skip-day description is shorter.
 
 ### Changed
 - Updated development dependencies to resolve known security vulnerabilities reported by `pnpm audit`. This includes some code changes as result of newer versions of linting libraries.

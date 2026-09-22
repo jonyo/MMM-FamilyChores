@@ -796,10 +796,6 @@ To make changes:
     max-width: 500px;
   }
 
-  .max-w-\[560px\] {
-    max-width: 560px;
-  }
-
   .max-w-\[600px\] {
     max-width: 600px;
   }
@@ -1195,6 +1191,10 @@ To make changes:
     padding: calc(var(--spacing) * .5);
   }
 
+  .p-1 {
+    padding: var(--spacing);
+  }
+
   .p-2 {
     padding: calc(var(--spacing) * 2);
   }
@@ -1435,6 +1435,10 @@ To make changes:
 
   .text-slate-600 {
     color: var(--color-slate-600);
+  }
+
+  .text-slate-700 {
+    color: var(--color-slate-700);
   }
 
   .text-slate-800 {

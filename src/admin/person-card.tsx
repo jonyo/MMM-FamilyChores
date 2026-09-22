@@ -1,9 +1,10 @@
 import type { Component } from 'solid-js';
 import { createSignal, For, Show } from 'solid-js';
-import type { DayOfWeek, Person, PersonalChore } from '../types/chore-types';
+import type { Person, PersonalChore } from '../types/chore-types';
 import { formatTime } from '../utils/browser';
 import { useAdminContext } from './admin-context';
 import { Button } from './button';
+import { ScheduleDaysSummary } from './schedule-days-summary';
 
 /** Props for the PersonCard component */
 interface PersonCardProps {
@@ -28,12 +29,6 @@ interface PersonCardProps {
   /** Callback to copy chores from this person */
   onCopyChores: (person: Person) => void;
 }
-
-// Format skip days for display
-const formatSkipDays = (skipDays: DayOfWeek[]): string => {
-  if (!skipDays || skipDays.length === 0) return 'None';
-  return skipDays.map((d) => d.charAt(0).toUpperCase() + d.slice(1)).join(', ');
-};
 
 /** Card displaying a person and their personal chores with an accordion */
 export const PersonCard: Component<PersonCardProps> = (props) => {
@@ -170,9 +165,7 @@ export const PersonCard: Component<PersonCardProps> = (props) => {
                           </Show>
                         </p>
                       </Show>
-                      <p class="mt-1.25 text-sm text-slate-500">
-                        Skip days: {formatSkipDays(chore.skipDays)}
-                      </p>
+                      <ScheduleDaysSummary skipDays={chore.skipDays} />
                     </div>
                     <div class="flex gap-2">
                       <Button

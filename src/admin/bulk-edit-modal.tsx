@@ -5,6 +5,7 @@ import type {
   AfterDeadlineVisibility,
   BeforeStartTimeVisibility,
   Chore,
+  DayOfWeek,
   NotCaughtUpDisplay,
   Person,
   SkipDayVisibility,
@@ -13,7 +14,6 @@ import {
   AfterDeadlineVisibility as AfterDeadlineVisibilityEnum,
   BeforeStartTimeVisibility as BeforeStartTimeVisibilityEnum,
   ChoreType,
-  DayOfWeek,
   NotCaughtUpDisplay as NotCaughtUpDisplayEnum,
   SkipDayVisibility as SkipDayVisibilityEnum,
 } from '../types/chore-types';
@@ -24,6 +24,7 @@ import { triggerBackupDownload } from './backup-actions';
 import { Button } from './button';
 import { InfoBox } from './info-box';
 import { PinField } from './pin-field';
+import { ScheduleDaysSelector } from './schedule-days-selector';
 import { TimeSelect } from './time-select';
 import { Tooltip } from './tooltip';
 
@@ -478,11 +479,6 @@ export const BulkEditModal: Component<BulkEditModalProps> = (props) => {
     }
   };
 
-  const handleSkipDayToggle = (day: DayOfWeek, checked: boolean) => {
-    const current = value() as DayOfWeek[];
-    setValue(checked ? [...current, day] : current.filter((d) => d !== day));
-  };
-
   const handleDownloadBackup = async () => {
     try {
       const pinValue = pinToUse();
@@ -721,20 +717,10 @@ export const BulkEditModal: Component<BulkEditModalProps> = (props) => {
                 </Show>
 
                 <Show when={f() === 'skipDays'}>
-                  <div class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <For each={Object.values(DayOfWeek)}>
-                      {(day) => (
-                        <label class="flex cursor-pointer items-center gap-2 font-normal">
-                          <input
-                            type="checkbox"
-                            checked={(value() as DayOfWeek[]).includes(day)}
-                            onInput={(e) => handleSkipDayToggle(day, e.currentTarget.checked)}
-                          />
-                          {day.charAt(0).toUpperCase() + day.slice(1)}
-                        </label>
-                      )}
-                    </For>
-                  </div>
+                  <ScheduleDaysSelector
+                    skipDays={() => value() as DayOfWeek[]}
+                    setSkipDays={setValue}
+                  />
                 </Show>
 
                 <Show when={RADIO_OPTIONS[f()]}>

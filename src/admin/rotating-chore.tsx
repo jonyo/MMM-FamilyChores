@@ -4,6 +4,7 @@ import type { Person, RotatingChore } from '../types/chore-types';
 import { formatTime } from '../utils/browser';
 import { useAdminContext } from './admin-context';
 import { Button } from './button';
+import { ScheduleDaysSummary } from './schedule-days-summary';
 
 /** Props for the RotatingChoreCard component */
 interface RotatingChoreCardProps {
@@ -16,12 +17,6 @@ interface RotatingChoreCardProps {
   /** Callback when the delete button is clicked */
   onDelete: (choreId: string) => void;
 }
-
-/** Format skip days for display */
-const formatSkipDays = (skipDays: string[]): string => {
-  if (!skipDays || skipDays.length === 0) return 'None';
-  return skipDays.map((d) => d.charAt(0).toUpperCase() + d.slice(1)).join(', ');
-};
 
 /** Display card for a rotating chore in the admin interface */
 export const RotatingChoreCard: Component<RotatingChoreCardProps> = (props) => {
@@ -78,9 +73,7 @@ export const RotatingChoreCard: Component<RotatingChoreCardProps> = (props) => {
             </Show>
           </p>
         </Show>
-        <p class="mt-1.25 text-sm text-slate-500">
-          Skip days: {formatSkipDays(props.chore.skipDays)}
-        </p>
+        <ScheduleDaysSummary skipDays={props.chore.skipDays} />
       </div>
       <div class="flex gap-2.5">
         <Button

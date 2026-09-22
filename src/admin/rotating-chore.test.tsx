@@ -104,6 +104,15 @@ describe('RotatingChoreCard', () => {
     await expect.element(page.getByText('Skip days: Monday, Wednesday')).toBeVisible();
   });
 
+  it('displays active days when they are the shorter schedule description', async () => {
+    const choreWithFewActiveDays: RotatingChore = {
+      ...mockChore,
+      skipDays: [DayOfWeek.SUNDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY],
+    };
+    renderCard(choreWithFewActiveDays, mockPeople);
+    await expect.element(page.getByText('Active days: Monday, Thursday, Saturday')).toBeVisible();
+  });
+
   it('displays "None" for skip days when empty', async () => {
     renderCard(mockChore, mockPeople);
     await expect.element(page.getByText('Skip days: None')).toBeVisible();
