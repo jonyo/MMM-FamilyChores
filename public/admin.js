@@ -1655,10 +1655,10 @@
 	};
 	//#endregion
 	//#region src/admin/button.tsx
-	var _tmpl$$21 = /*#__PURE__*/ template(`<button class="cursor-pointer rounded-lg border-none px-5 py-2.5 text-sm font-medium transition-all hover:-translate-y-0.5 hover:shadow-md">`);
+	var _tmpl$$22 = /*#__PURE__*/ template(`<button class="cursor-pointer rounded-lg border-none px-5 py-2.5 text-sm font-medium transition-all hover:-translate-y-0.5 hover:shadow-md">`);
 	var Button = (props) => {
 		return (() => {
-			var _el$ = _tmpl$$21();
+			var _el$ = _tmpl$$22();
 			_el$.$$click = (event) => props.onClick?.(event);
 			insert(_el$, () => props.children);
 			createRenderEffect((_p$) => {
@@ -1691,7 +1691,7 @@
 	delegateEvents(["click"]);
 	//#endregion
 	//#region src/admin/tooltip.tsx
-	var _tmpl$$20 = /*#__PURE__*/ template(`<span>`);
+	var _tmpl$$21 = /*#__PURE__*/ template(`<span>`);
 	var Tooltip = (rawProps) => {
 		const props = mergeProps({
 			position: "above",
@@ -1701,7 +1701,7 @@
 			classList: {}
 		}, rawProps);
 		return (() => {
-			var _el$ = _tmpl$$20();
+			var _el$ = _tmpl$$21();
 			insert(_el$, () => props.children);
 			createRenderEffect((_p$) => {
 				var _v$ = {
@@ -1760,16 +1760,16 @@
 	});
 	//#endregion
 	//#region src/admin/pin-field.tsx
-	var _tmpl$$19 = /*#__PURE__*/ template(`<label class="mt-3 flex cursor-pointer items-center gap-2"><input type=checkbox class="size-4.5 cursor-pointer">Remember PIN for 10 minutes`);
-	var _tmpl$2$15 = /*#__PURE__*/ template(`<button type=button class="cursor-help text-sm text-indigo-600 underline">Forgot PIN?`);
-	var _tmpl$3$13 = /*#__PURE__*/ template(`<div class="mb-5 rounded-lg border border-amber-200 bg-amber-50 p-4"><label for=adminPin class="mb-2 block font-medium text-amber-900">Admin PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=adminPin placeholder="Enter admin PIN"required class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"><button type=button class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100"></button></div><small class="mt-1 block text-sm text-amber-700">PIN is required to make changes</small><div class=mt-1>`);
+	var _tmpl$$20 = /*#__PURE__*/ template(`<label class="mt-3 flex cursor-pointer items-center gap-2"><input type=checkbox class="size-4.5 cursor-pointer">Remember PIN for 10 minutes`);
+	var _tmpl$2$16 = /*#__PURE__*/ template(`<button type=button class="cursor-help text-sm text-indigo-600 underline">Forgot PIN?`);
+	var _tmpl$3$14 = /*#__PURE__*/ template(`<div class="mb-5 rounded-lg border border-amber-200 bg-amber-50 p-4"><label for=adminPin class="mb-2 block font-medium text-amber-900">Admin PIN <span class=text-amber-700>*</span></label><div class="flex gap-2"><input id=adminPin placeholder="Enter admin PIN"required class="flex-1 rounded-lg border border-amber-300 p-2.5 text-base transition-colors focus:border-amber-600 focus:outline-none"><button type=button class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800 transition-colors hover:bg-amber-100"></button></div><small class="mt-1 block text-sm text-amber-700">PIN is required to make changes</small><div class=mt-1>`);
 	/**
 	* Reusable PIN input field for admin modals.
 	*/
 	var PinField = (props) => {
 		const [showPin, setShowPin] = createSignal(false);
 		return (() => {
-			var _el$ = _tmpl$3$13(), _el$3 = _el$.firstChild.nextSibling, _el$4 = _el$3.firstChild, _el$5 = _el$4.nextSibling, _el$9 = _el$3.nextSibling, _el$0 = _el$9.nextSibling;
+			var _el$ = _tmpl$3$14(), _el$3 = _el$.firstChild.nextSibling, _el$4 = _el$3.firstChild, _el$5 = _el$4.nextSibling, _el$9 = _el$3.nextSibling, _el$0 = _el$9.nextSibling;
 			_el$4.$$input = (e) => props.onPinChange(e.currentTarget.value);
 			_el$5.$$click = () => setShowPin(!showPin());
 			insert(_el$5, createComponent(Show, {
@@ -1784,7 +1784,7 @@
 					return props.onRememberChange;
 				},
 				get children() {
-					var _el$6 = _tmpl$$19(), _el$7 = _el$6.firstChild;
+					var _el$6 = _tmpl$$20(), _el$7 = _el$6.firstChild;
 					_el$7.nextSibling;
 					_el$7.$$input = (e) => props.onRememberChange?.(e.currentTarget.checked);
 					insert(_el$6, createComponent(HelpIcon, {
@@ -1803,7 +1803,7 @@
 				align: "left",
 				multiline: true,
 				get children() {
-					return _tmpl$2$15();
+					return _tmpl$2$16();
 				}
 			}));
 			createRenderEffect(() => setAttribute(_el$4, "type", showPin() ? "text" : "password"));
@@ -1814,10 +1814,10 @@
 	delegateEvents(["input", "click"]);
 	//#endregion
 	//#region src/admin/advance-rotations-modal.tsx
-	var _tmpl$$18 = /*#__PURE__*/ template(`<div class="mb-5 overflow-hidden rounded-lg border border-slate-200"data-testid=rotation-preview-list><div class="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3 border-b border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold tracking-wide text-slate-500 uppercase"><span>Chore</span><span></span><span>Next Up`);
-	var _tmpl$2$14 = /*#__PURE__*/ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[560px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"data-testid=advance-rotations-modal><div class="mb-2 flex items-center justify-between"><h3 class="text-2xl text-indigo-600">Advance All Rotations</h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><p class="mb-5 text-sm text-slate-500">Each rotating chore will move to the next person in its rotation. Completion state will be cleared.</p><div class="mt-6 flex justify-end gap-2.5">`);
-	var _tmpl$3$12 = /*#__PURE__*/ template(`<p class="my-4 text-slate-500 italic"data-testid=no-chores-message>No rotating chores with 2+ people to advance.`);
-	var _tmpl$4$10 = /*#__PURE__*/ template(`<div class="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3 px-4 py-3"><div><span class="font-medium text-slate-800"></span><div class="mt-0.5 text-sm text-slate-500"></div></div><span class="text-lg text-slate-400">→</span><div class="text-sm font-semibold text-indigo-600">`);
+	var _tmpl$$19 = /*#__PURE__*/ template(`<div class="mb-5 overflow-hidden rounded-lg border border-slate-200"data-testid=rotation-preview-list><div class="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3 border-b border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold tracking-wide text-slate-500 uppercase"><span>Chore</span><span></span><span>Next Up`);
+	var _tmpl$2$15 = /*#__PURE__*/ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[560px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"data-testid=advance-rotations-modal><div class="mb-2 flex items-center justify-between"><h3 class="text-2xl text-indigo-600">Advance All Rotations</h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><p class="mb-5 text-sm text-slate-500">Each rotating chore will move to the next person in its rotation. Completion state will be cleared.</p><div class="mt-6 flex justify-end gap-2.5">`);
+	var _tmpl$3$13 = /*#__PURE__*/ template(`<p class="my-4 text-slate-500 italic"data-testid=no-chores-message>No rotating chores with 2+ people to advance.`);
+	var _tmpl$4$11 = /*#__PURE__*/ template(`<div class="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3 px-4 py-3"><div><span class="font-medium text-slate-800"></span><div class="mt-0.5 text-sm text-slate-500"></div></div><span class="text-lg text-slate-400">→</span><div class="text-sm font-semibold text-indigo-600">`);
 	var AdvanceRotationsModal = (props) => {
 		const { choreData, pinRequired, cachedPin, setCachedPin } = useAdminContext();
 		const [pin, setPin] = createSignal("");
@@ -1840,24 +1840,24 @@
 			}
 		};
 		return (() => {
-			var _el$ = _tmpl$2$14(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$5 = _el$3.firstChild.nextSibling, _el$9 = _el$3.nextSibling.nextSibling;
+			var _el$ = _tmpl$2$15(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$5 = _el$3.firstChild.nextSibling, _el$9 = _el$3.nextSibling.nextSibling;
 			_el$5.$$click = () => props.closeModal();
 			insert(_el$2, createComponent(Show, {
 				get when() {
 					return advanceable().length > 0;
 				},
 				get fallback() {
-					return _tmpl$3$12();
+					return _tmpl$3$13();
 				},
 				get children() {
-					var _el$7 = _tmpl$$18();
+					var _el$7 = _tmpl$$19();
 					_el$7.firstChild;
 					insert(_el$7, createComponent(For, {
 						get each() {
 							return advanceable();
 						},
 						children: (chore, index) => (() => {
-							var _el$1 = _tmpl$4$10(), _el$10 = _el$1.firstChild, _el$11 = _el$10.firstChild, _el$12 = _el$11.nextSibling, _el$14 = _el$10.nextSibling.nextSibling;
+							var _el$1 = _tmpl$4$11(), _el$10 = _el$1.firstChild, _el$11 = _el$10.firstChild, _el$12 = _el$11.nextSibling, _el$14 = _el$10.nextSibling.nextSibling;
 							insert(_el$11, () => escapeHtml(chore.name));
 							insert(_el$12, () => getPersonName((chore.rotation ?? [])[chore.rotatingIndex ?? 0] ?? ""));
 							insert(_el$14, () => getPersonName(getNextPersonId(chore)));
@@ -1916,6 +1916,1218 @@
 		})();
 	};
 	delegateEvents(["click"]);
+	//#endregion
+	//#region src/admin/backup-actions.ts
+	/**
+	* Triggers a browser download of the family chores backup JSON.
+	*
+	* The caller is responsible for resolving and providing the admin PIN (if required) before
+	* invoking this helper. If the API rejects, the error is propagated to the caller.
+	*
+	* @param pin - The admin PIN, or `undefined` if the server does not require one.
+	*/
+	async function triggerBackupDownload(pin) {
+		const blob = await downloadBackup(pin);
+		const url = window.URL.createObjectURL(blob);
+		const a = document.createElement("a");
+		a.href = url;
+		a.download = "family-chores-backup.json";
+		document.body.appendChild(a);
+		a.click();
+		window.URL.revokeObjectURL(url);
+		document.body.removeChild(a);
+	}
+	//#endregion
+	//#region src/admin/info-box.tsx
+	var _tmpl$$18 = /*#__PURE__*/ template(`<span class="inline-flex size-5 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-slate-200 text-xs font-bold text-slate-600">i`);
+	var _tmpl$2$14 = /*#__PURE__*/ template(`<div><div>`);
+	/**
+	* Inline info box for contextual help text within the admin panel.
+	*/
+	var InfoBox = (props) => (() => {
+		var _el$ = _tmpl$2$14(), _el$3 = _el$.firstChild;
+		insert(_el$, createComponent(Show, {
+			get when() {
+				return props.icon;
+			},
+			get children() {
+				return _tmpl$$18();
+			}
+		}), _el$3);
+		insert(_el$3, () => props.children);
+		createRenderEffect(() => className(_el$, `flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600 ${props.class || ""}`));
+		return _el$;
+	})();
+	//#endregion
+	//#region src/admin/time-select.tsx
+	var _tmpl$$17 = /*#__PURE__*/ template(`<optgroup label=AM>`);
+	var _tmpl$2$13 = /*#__PURE__*/ template(`<optgroup label=PM>`);
+	var _tmpl$3$12 = /*#__PURE__*/ template(`<select class="w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option value>— Not set —`);
+	var _tmpl$4$10 = /*#__PURE__*/ template(`<option>`);
+	var MINUTES = ["00", "30"];
+	/** All standard 30-minute-increment options in HH:MM 24-hour format starting at 00:30 */
+	var STANDARD_OPTIONS = [];
+	for (let h = 0; h < 24; h++) for (const m of MINUTES) {
+		const time = `${String(h).padStart(2, "0")}:${m}`;
+		if (time === "00:00") continue;
+		STANDARD_OPTIONS.push(time);
+	}
+	/**
+	* Convert a 24-hour HH:MM string to a display label based on time format.
+	*/
+	var toLabel = (time, use12Hour) => {
+		if (!use12Hour) return time;
+		const [hourStr, minuteStr] = time.split(":");
+		const hour = Number.parseInt(hourStr, 10);
+		const ampm = hour < 12 ? "AM" : "PM";
+		return `${hour % 12 === 0 ? 12 : hour % 12}:${minuteStr} ${ampm}`;
+	};
+	var TimeSelect = (props) => {
+		const { resolvedTimeFormat } = useAdminContext();
+		const use12Hour = () => resolvedTimeFormat() === TimeFormat.HOUR_12;
+		const options = () => {
+			const base = [...STANDARD_OPTIONS];
+			if (props.value && !base.includes(props.value)) return [...base, props.value].sort();
+			return base;
+		};
+		const handleChange = (e) => {
+			props.onChange(e.currentTarget.value);
+		};
+		return (() => {
+			var _el$ = _tmpl$3$12(), _el$2 = _el$.firstChild;
+			_el$.addEventListener("change", handleChange);
+			insert(_el$, createComponent(Show, {
+				get when() {
+					return !use12Hour();
+				},
+				get children() {
+					return createComponent(For, {
+						get each() {
+							return options();
+						},
+						children: (opt) => (() => {
+							var _el$5 = _tmpl$4$10();
+							_el$5.value = opt;
+							insert(_el$5, () => toLabel(opt, false));
+							createRenderEffect(() => _el$5.selected = opt === props.value);
+							return _el$5;
+						})()
+					});
+				}
+			}), null);
+			insert(_el$, createComponent(Show, {
+				get when() {
+					return use12Hour();
+				},
+				get children() {
+					return [(() => {
+						var _el$3 = _tmpl$$17();
+						insert(_el$3, createComponent(For, {
+							get each() {
+								return options().filter((o) => Number.parseInt(o.split(":")[0], 10) < 12);
+							},
+							children: (opt) => (() => {
+								var _el$6 = _tmpl$4$10();
+								_el$6.value = opt;
+								insert(_el$6, () => toLabel(opt, true));
+								createRenderEffect(() => _el$6.selected = opt === props.value);
+								return _el$6;
+							})()
+						}));
+						return _el$3;
+					})(), (() => {
+						var _el$4 = _tmpl$2$13();
+						insert(_el$4, createComponent(For, {
+							get each() {
+								return options().filter((o) => Number.parseInt(o.split(":")[0], 10) >= 12);
+							},
+							children: (opt) => (() => {
+								var _el$7 = _tmpl$4$10();
+								_el$7.value = opt;
+								insert(_el$7, () => toLabel(opt, true));
+								createRenderEffect(() => _el$7.selected = opt === props.value);
+								return _el$7;
+							})()
+						}));
+						return _el$4;
+					})()];
+				}
+			}), null);
+			createRenderEffect((_p$) => {
+				var _v$ = props.id, _v$2 = props.value === "";
+				_v$ !== _p$.e && setAttribute(_el$, "id", _p$.e = _v$);
+				_v$2 !== _p$.t && (_el$2.selected = _p$.t = _v$2);
+				return _p$;
+			}, {
+				e: void 0,
+				t: void 0
+			});
+			return _el$;
+		})();
+	};
+	//#endregion
+	//#region src/admin/bulk-edit-modal.tsx
+	var _tmpl$$16 = /*#__PURE__*/ template(`<button type=button class="flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors"><span class="flex size-3.5 shrink-0 items-center justify-center rounded-[3px] border text-[10px] leading-none">`);
+	var _tmpl$2$12 = /*#__PURE__*/ template(`<button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×`);
+	var _tmpl$3$11 = /*#__PURE__*/ template(`<div class="flex flex-col gap-2"><span><strong>Recommended:</strong> download a backup before making bulk changes, in case you want to undo.</span><div class="flex justify-end">`);
+	var _tmpl$4$9 = /*#__PURE__*/ template(`<div data-testid=step-field><div class=mb-4><h4 class="mb-2 font-medium text-slate-900">Main Settings</h4><div class="flex flex-col gap-2"></div></div><div class=mb-4><h4 class="mb-2 font-medium text-slate-900">Advanced Display Settings</h4><div class="flex flex-col gap-2"></div></div><div class="mt-6 flex justify-end gap-2.5">`);
+	var _tmpl$5$7 = /*#__PURE__*/ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] scale-95 overflow-y-auto rounded-xl bg-white shadow-2xl transition-[transform,max-width] duration-200"data-testid=modal-content><div class="sticky top-0 z-10 rounded-t-xl border-b border-slate-100 bg-white px-8 pt-8 pb-4"data-testid=modal-header><div class="mb-2 flex items-center justify-between"><h3 class="text-2xl text-indigo-600"data-testid=modal-title>Bulk Edit <!> Chore Settings</h3></div><div class="flex flex-wrap items-center gap-2 text-sm font-medium text-slate-400"data-testid=wizard-breadcrumb><span>① Field</span><span>→</span><span>② Value</span><span>→</span><span>③ Chores</span><span>→</span><span>④ Confirm</span></div></div><div class="px-8 pt-4 pb-8"data-testid=modal-body>`);
+	var _tmpl$6$7 = /*#__PURE__*/ template(`<div class="rounded-lg border border-slate-200 p-3"><label class="flex cursor-pointer items-center gap-2"><input type=radio name=bulk-edit-field><span class="font-medium text-slate-900"></span></label><p class="mt-1 ml-6 text-sm text-slate-500">`);
+	var _tmpl$7$6 = /*#__PURE__*/ template(`<div class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3">`);
+	var _tmpl$8$4 = /*#__PURE__*/ template(`<div data-testid=step-value><h4 class="mb-3 font-medium text-slate-900">New value for </h4><div class="mt-6 flex justify-end gap-2.5">`);
+	var _tmpl$9$1 = /*#__PURE__*/ template(`<label class="flex cursor-pointer items-center gap-2 font-normal"><input type=checkbox>`);
+	var _tmpl$0$1 = /*#__PURE__*/ template(`<div class="flex flex-col gap-2">`);
+	var _tmpl$1$1 = /*#__PURE__*/ template(`<div class="rounded-lg border border-slate-200 p-3"><label class="flex cursor-pointer items-center gap-2"><input type=radio name=bulk-edit-value><span class="font-medium text-slate-900"></span></label><p class="mt-1 ml-6 text-sm text-slate-500">`);
+	var _tmpl$10$1 = /*#__PURE__*/ template(`<div class="rounded-lg border border-slate-200"data-testid=compact-chore-list>`);
+	var _tmpl$11$1 = /*#__PURE__*/ template(`<th class=p-2>Person`);
+	var _tmpl$12$1 = /*#__PURE__*/ template(`<div class="overflow-x-auto rounded-lg border border-slate-200"data-testid=detailed-chore-table><table class="w-full text-sm"><thead><tr class="bg-slate-50 text-left text-xs text-slate-500 uppercase"><th class=p-2></th><th class=p-2>Chore</th><th class=p-2>Start Time</th><th class=p-2>Deadline</th><th class=p-2>Skip Days</th><th class=p-2>Skip Day Visibility</th><th class=p-2>Before Start Time</th><th class=p-2>After Deadline</th><th class=p-2>Not Caught Up Display</th></tr></thead><tbody>`);
+	var _tmpl$13$1 = /*#__PURE__*/ template(`<div data-testid=step-chores><div class="mb-4 flex items-center justify-between rounded-lg border border-indigo-100 bg-indigo-50 p-3 text-sm"><span><strong></strong> → </span><button type=button class="text-indigo-600 underline"data-testid=edit-field-link>Edit</button></div><div class="mb-3 inline-flex rounded-lg border border-slate-300 bg-slate-100 p-0.5 text-sm"role=tablist aria-label="Chore list view"><button type=button role=tab class="rounded-md px-3 py-1 font-medium transition-colors"data-testid=view-mode-compact>Compact</button><button type=button role=tab class="rounded-md px-3 py-1 font-medium transition-colors"data-testid=view-mode-detailed>Detailed table</button></div><div class="mb-3 flex flex-wrap gap-2"data-testid=smart-select-shortcuts><button type=button class="rounded-full border border-slate-300 bg-white px-2.5 py-1 text-xs font-medium text-slate-500 transition-colors hover:bg-slate-50"data-testid=select-none-chip>Clear</button></div><div class="mt-6 flex justify-end gap-2.5">`);
+	var _tmpl$14$1 = /*#__PURE__*/ template(`<p class="my-4 text-slate-500 italic"data-testid=no-chores-message>No chores of this type yet.`);
+	var _tmpl$15 = /*#__PURE__*/ template(`<div>`);
+	var _tmpl$16 = /*#__PURE__*/ template(`<div class="border-t border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-600 first:border-t-0">`);
+	var _tmpl$17 = /*#__PURE__*/ template(`<span class="text-xs text-slate-400">(why?)`);
+	var _tmpl$18 = /*#__PURE__*/ template(`<label class="flex items-center gap-2 border-t border-slate-100 px-3 py-2 transition-colors"><input type=checkbox><span></span><span class="text-sm text-slate-500">— currently: `);
+	var _tmpl$19 = /*#__PURE__*/ template(`<td class="border-t border-slate-100 p-2">`);
+	var _tmpl$20 = /*#__PURE__*/ template(`<tr><td class="border-t border-slate-100 p-2"><input type=checkbox></td><td class="border-t border-slate-100 p-2"></td><td class="border-t border-slate-100 p-2"></td><td class="border-t border-slate-100 p-2"></td><td class="border-t border-slate-100 p-2"></td><td class="border-t border-slate-100 p-2"></td><td class="border-t border-slate-100 p-2"></td><td class="border-t border-slate-100 p-2"></td><td class="border-t border-slate-100 p-2">`);
+	var _tmpl$21 = /*#__PURE__*/ template(`<div data-testid=step-confirm><div class="mb-4 overflow-hidden rounded-lg border border-slate-200"data-testid=confirm-grid><div class="grid grid-cols-[1.5fr_1fr_auto_1fr_auto] items-center gap-x-3 border-b border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold tracking-wide text-slate-500 uppercase"><span>Chore</span><span>Current</span><span></span><span>New</span><span>Status</span></div></div><div class="mt-6 flex justify-end gap-2.5">`);
+	var _tmpl$22 = /*#__PURE__*/ template(`<div class="border-t border-slate-100 bg-slate-50 px-4 py-1.5 text-sm font-semibold text-slate-600">`);
+	var _tmpl$23 = /*#__PURE__*/ template(`<div class="grid grid-cols-[1.5fr_1fr_auto_1fr_auto] items-center gap-x-3 border-t border-slate-100 px-4 py-2"><span class="font-medium text-slate-800"></span><span class="text-sm text-slate-500"></span><span class=text-slate-400>→</span><span class="text-sm font-semibold text-indigo-600"></span><span>`);
+	var MAIN_FIELDS = [
+		"startTime",
+		"deadline",
+		"skipDays"
+	];
+	var ADVANCED_FIELDS = [
+		"notCaughtUpDisplay",
+		"beforeStartTimeVisibility",
+		"afterDeadlineVisibility",
+		"skipDayVisibility"
+	];
+	var FIELD_LABELS = {
+		startTime: "Start Time",
+		deadline: "Deadline",
+		skipDays: "Skip Days",
+		notCaughtUpDisplay: "Not Caught Up Display",
+		beforeStartTimeVisibility: "Before Start Time Visibility",
+		afterDeadlineVisibility: "After Deadline Visibility",
+		skipDayVisibility: "Skip Day Visibility"
+	};
+	var FIELD_DESCRIPTIONS = {
+		startTime: "The time each selected chore first becomes visible.",
+		deadline: "The time each selected chore is due by.",
+		skipDays: "Days of the week each selected chore does not need to be done.",
+		notCaughtUpDisplay: "Whether a chore that is not caught up is styled as overdue or normal.",
+		beforeStartTimeVisibility: "Whether a chore that is not caught up can appear before its start time.",
+		afterDeadlineVisibility: "How a chore behaves after its deadline passes.",
+		skipDayVisibility: "How a chore behaves on its own skip days."
+	};
+	var NOT_CAUGHT_UP_LABELS = {
+		[NotCaughtUpDisplay.OVERDUE]: "Overdue styling",
+		[NotCaughtUpDisplay.NORMAL]: "Normal styling"
+	};
+	var BEFORE_START_LABELS = {
+		[BeforeStartTimeVisibility.HIDE]: "Hide",
+		[BeforeStartTimeVisibility.SHOW_IF_OVERDUE]: "Show if overdue"
+	};
+	var AFTER_DEADLINE_LABELS = {
+		[AfterDeadlineVisibility.SHOW_NORMAL]: "Show normally",
+		[AfterDeadlineVisibility.SHOW_OVERDUE]: "Show as overdue",
+		[AfterDeadlineVisibility.MOVE_TO_EARLIER]: "Move to earlier chores"
+	};
+	var SKIP_DAY_VIS_LABELS = {
+		[SkipDayVisibility.HIDE]: "Hide",
+		[SkipDayVisibility.SHOW_ALWAYS]: "Always Show",
+		[SkipDayVisibility.SHOW_IF_OVERDUE]: "Show If Overdue"
+	};
+	var RADIO_OPTIONS = {
+		notCaughtUpDisplay: [{
+			value: NotCaughtUpDisplay.OVERDUE,
+			label: "Overdue styling",
+			description: "If the chore is not caught up, it is styled as overdue (default style is yellow)."
+		}, {
+			value: NotCaughtUpDisplay.NORMAL,
+			label: "Normal styling",
+			description: "If the chore is not caught up, it is styled as normal."
+		}],
+		beforeStartTimeVisibility: [{
+			value: BeforeStartTimeVisibility.HIDE,
+			label: "Hide",
+			description: "The chore stays hidden until its start time even if it is not caught up."
+		}, {
+			value: BeforeStartTimeVisibility.SHOW_IF_OVERDUE,
+			label: "Show if overdue",
+			description: "If the chore is not caught up, it appears before its start time so it can be caught up early."
+		}],
+		afterDeadlineVisibility: [
+			{
+				value: AfterDeadlineVisibility.SHOW_NORMAL,
+				label: "Show normally",
+				description: "Stays in the main list after the deadline until completed."
+			},
+			{
+				value: AfterDeadlineVisibility.SHOW_OVERDUE,
+				label: "Show as overdue",
+				description: "Stays in the main list and turns yellow after the deadline until completed."
+			},
+			{
+				value: AfterDeadlineVisibility.MOVE_TO_EARLIER,
+				label: "Move to earlier chores",
+				description: "Moves to the \"Earlier chores\" section after the deadline whether complete or not."
+			}
+		],
+		skipDayVisibility: [
+			{
+				value: SkipDayVisibility.HIDE,
+				label: "Hide",
+				description: "The chore disappears completely on skip days. It's a true day off."
+			},
+			{
+				value: SkipDayVisibility.SHOW_ALWAYS,
+				label: "Always Show",
+				description: "The chore stays visible on skip days (a grace day if already caught up)."
+			},
+			{
+				value: SkipDayVisibility.SHOW_IF_OVERDUE,
+				label: "Show If Overdue",
+				description: "The chore appears on skip days only if it is not caught up."
+			}
+		]
+	};
+	var isFieldEligibleForChore = (field, chore) => {
+		switch (field) {
+			case "beforeStartTimeVisibility": return !!chore.startTime;
+			case "afterDeadlineVisibility": return !!chore.deadline;
+			case "skipDayVisibility": return chore.skipDays.length > 0;
+			default: return true;
+		}
+	};
+	var ineligibleReason = (field) => {
+		switch (field) {
+			case "beforeStartTimeVisibility": return "This setting has no effect until the chore has a start time.";
+			case "afterDeadlineVisibility": return "This setting has no effect until the chore has a deadline.";
+			case "skipDayVisibility": return "This setting has no effect until the chore has skip days configured.";
+			default: return "";
+		}
+	};
+	var defaultValueForField = (field) => {
+		switch (field) {
+			case "startTime":
+			case "deadline": return "";
+			case "skipDays": return [];
+			case "notCaughtUpDisplay": return NotCaughtUpDisplay.OVERDUE;
+			case "beforeStartTimeVisibility": return BeforeStartTimeVisibility.HIDE;
+			case "afterDeadlineVisibility": return AfterDeadlineVisibility.SHOW_OVERDUE;
+			case "skipDayVisibility": return SkipDayVisibility.HIDE;
+		}
+	};
+	var getChoreValue = (chore, field) => {
+		switch (field) {
+			case "startTime": return chore.startTime ?? "";
+			case "deadline": return chore.deadline ?? "";
+			case "skipDays": return chore.skipDays;
+			case "notCaughtUpDisplay": return chore.notCaughtUpDisplay;
+			case "beforeStartTimeVisibility": return chore.beforeStartTimeVisibility;
+			case "afterDeadlineVisibility": return chore.afterDeadlineVisibility;
+			case "skipDayVisibility": return chore.skipDayVisibility;
+		}
+	};
+	var formatSkipDays$2 = (days) => {
+		if (!days || days.length === 0) return "None";
+		return days.map((d) => d.charAt(0).toUpperCase() + d.slice(1)).join(", ");
+	};
+	var formatFieldValue = (field, value, timeFormat) => {
+		switch (field) {
+			case "startTime":
+			case "deadline": return value ? formatTime(value, timeFormat) : "Not set";
+			case "skipDays": return formatSkipDays$2(value);
+			case "notCaughtUpDisplay": return NOT_CAUGHT_UP_LABELS[value] ?? String(value);
+			case "beforeStartTimeVisibility": return BEFORE_START_LABELS[value] ?? String(value);
+			case "afterDeadlineVisibility": return AFTER_DEADLINE_LABELS[value] ?? String(value);
+			case "skipDayVisibility": return SKIP_DAY_VIS_LABELS[value] ?? String(value);
+		}
+	};
+	var valueMatchesChore = (field, expected, chore) => {
+		const actual = getChoreValue(chore, field);
+		if (field === "skipDays") {
+			const actualDays = actual;
+			const expectedDays = expected;
+			return actualDays.length === expectedDays.length && expectedDays.every((d) => actualDays.includes(d));
+		}
+		if (field === "startTime" || field === "deadline") return (actual || "") === (expected || "");
+		return actual === expected;
+	};
+	var buildFieldPayload = (field, value) => {
+		switch (field) {
+			case "startTime": return { startTime: value === "" ? null : value };
+			case "deadline": return { deadline: value === "" ? null : value };
+			case "skipDays": return { skipDays: value };
+			case "notCaughtUpDisplay": return { notCaughtUpDisplay: value };
+			case "beforeStartTimeVisibility": return { beforeStartTimeVisibility: value };
+			case "afterDeadlineVisibility": return { afterDeadlineVisibility: value };
+			case "skipDayVisibility": return { skipDayVisibility: value };
+		}
+	};
+	var statusLabel = (status) => {
+		switch (status) {
+			case "pending": return "Pending";
+			case "in-progress": return "…";
+			case "done": return "✓ Done";
+			case "failed": return "✗ Failed";
+		}
+	};
+	/**
+	* Small checkbox-style toggle chip used for the Step 3 smart-select shortcuts.
+	* Shows a checkmark when every matching chore is selected, a dash when only
+	* some are, and an empty box when none are — clicking toggles the whole group.
+	*/
+	var SelectionChip = (props) => (() => {
+		var _el$ = _tmpl$$16(), _el$2 = _el$.firstChild;
+		_el$.$$click = () => props.onClick();
+		insert(_el$2, createComponent(Show, {
+			get when() {
+				return props.state === "all";
+			},
+			children: "✓"
+		}), null);
+		insert(_el$2, createComponent(Show, {
+			get when() {
+				return props.state === "some";
+			},
+			children: "–"
+		}), null);
+		insert(_el$, () => props.label, null);
+		createRenderEffect((_p$) => {
+			var _v$ = props.dataTestId, _v$2 = {
+				"border-indigo-300 bg-indigo-50 text-indigo-700": props.state !== "none",
+				"border-slate-300 bg-white text-slate-600 hover:bg-slate-50": props.state === "none"
+			}, _v$3 = {
+				"border-indigo-500 bg-indigo-500 text-white": props.state === "all",
+				"border-indigo-400 bg-white text-indigo-500": props.state === "some",
+				"border-slate-300 bg-white": props.state === "none"
+			};
+			_v$ !== _p$.e && setAttribute(_el$, "data-testid", _p$.e = _v$);
+			_p$.t = classList(_el$, _v$2, _p$.t);
+			_p$.a = classList(_el$2, _v$3, _p$.a);
+			return _p$;
+		}, {
+			e: void 0,
+			t: void 0,
+			a: void 0
+		});
+		return _el$;
+	})();
+	/**
+	* Wizard modal for changing a single chore setting across many chores of one type
+	* (personal or rotating) at once. See docs/plan for the full design rationale.
+	*/
+	var BulkEditModal = (props) => {
+		const { choreData, loadData, pinRequired, cachedPin, setCachedPin, resolvedTimeFormat } = useAdminContext();
+		const [step, setStep] = createSignal(1);
+		const [field, setFieldRaw] = createSignal(null);
+		const [value, setValue] = createSignal("");
+		const [selectedChoreIds, setSelectedChoreIds] = createSignal([]);
+		const [viewMode, setViewMode] = createSignal("compact");
+		const [pin, setPin] = createSignal("");
+		const [rememberPin, setRememberPin] = createSignal(false);
+		const [submitStatus, setSubmitStatus] = createSignal({});
+		const [isSubmitting, setIsSubmitting] = createSignal(false);
+		const [finished, setFinished] = createSignal(false);
+		const [pinError, setPinError] = createSignal(false);
+		const [submitError, setSubmitError] = createSignal("");
+		const pinToUse = () => cachedPin() || pin();
+		const chooseField = (newField) => {
+			setFieldRaw(newField);
+			setValue(defaultValueForField(newField));
+			setSelectedChoreIds([]);
+		};
+		const choresForType = createMemo(() => choreData().chores.filter((c) => c.type === props.choreType));
+		const groupedChores = createMemo(() => {
+			if (props.choreType === ChoreType.ROTATING) return [{
+				person: null,
+				chores: choresForType()
+			}];
+			return choreData().people.map((person) => ({
+				person,
+				chores: choresForType().filter((c) => c.type === ChoreType.PERSONAL && c.assignedTo === person.id)
+			})).filter((group) => group.chores.length > 0);
+		});
+		const eligibleChores = createMemo(() => {
+			const f = field();
+			if (!f) return [];
+			return choresForType().filter((c) => isFieldEligibleForChore(f, c));
+		});
+		const valueBuckets = createMemo(() => {
+			const f = field();
+			if (!f) return [];
+			if (f === "skipDays" || f === "startTime" || f === "deadline") {
+				const hasValue = [];
+				const noValue = [];
+				for (const chore of eligibleChores()) {
+					const v = getChoreValue(chore, f);
+					((Array.isArray(v) ? v.length === 0 : !v) ? noValue : hasValue).push(chore.id);
+				}
+				const buckets = [];
+				const noun = f === "skipDays" ? "skip day" : "value";
+				if (hasValue.length > 0) buckets.push({
+					label: `has a ${noun} set`,
+					choreIds: hasValue
+				});
+				if (noValue.length > 0) buckets.push({
+					label: `has no ${noun} set`,
+					choreIds: noValue
+				});
+				return buckets;
+			}
+			const byValue = /* @__PURE__ */ new Map();
+			for (const chore of eligibleChores()) {
+				const key = String(getChoreValue(chore, f));
+				const ids = byValue.get(key) ?? [];
+				ids.push(chore.id);
+				byValue.set(key, ids);
+			}
+			return Array.from(byValue.entries()).map(([key, ids]) => ({
+				label: `is currently "${formatFieldValue(f, key, resolvedTimeFormat())}"`,
+				choreIds: ids
+			}));
+		});
+		const toggleChore = (id, checked) => {
+			if (checked) setSelectedChoreIds([...selectedChoreIds(), id]);
+			else setSelectedChoreIds(selectedChoreIds().filter((choreId) => choreId !== id));
+		};
+		const selectNone = () => setSelectedChoreIds([]);
+		const bucketSelectionState = (ids) => {
+			if (ids.length === 0) return "none";
+			const selected = selectedChoreIds();
+			const selectedCount = ids.filter((id) => selected.includes(id)).length;
+			if (selectedCount === 0) return "none";
+			return selectedCount === ids.length ? "all" : "some";
+		};
+		const toggleBucketSelection = (ids) => {
+			if (bucketSelectionState(ids) === "all") setSelectedChoreIds(selectedChoreIds().filter((id) => !ids.includes(id)));
+			else setSelectedChoreIds(Array.from(/* @__PURE__ */ new Set([...selectedChoreIds(), ...ids])));
+		};
+		const handleSkipDayToggle = (day, checked) => {
+			const current = value();
+			setValue(checked ? [...current, day] : current.filter((d) => d !== day));
+		};
+		const handleDownloadBackup = async () => {
+			try {
+				const pinValue = pinToUse();
+				if (pinRequired() && !pinValue) {
+					alert("Enter your admin PIN below first, then click Download Backup again.");
+					return;
+				}
+				await triggerBackupDownload(pinValue || void 0);
+			} catch (error) {
+				console.error("Error downloading backup:", error);
+				alert(`Failed to download backup: ${error instanceof Error ? error.message : "Please try again."}`);
+			}
+		};
+		const doneCount = () => Object.values(submitStatus()).filter((s) => s === "done").length;
+		const handleApply = async () => {
+			const f = field();
+			if (!f) return;
+			const ids = selectedChoreIds();
+			const initialStatus = {};
+			for (const id of ids) initialStatus[id] = "pending";
+			setSubmitStatus(initialStatus);
+			setPinError(false);
+			setSubmitError("");
+			setIsSubmitting(true);
+			const payload = buildFieldPayload(f, value());
+			const expected = value();
+			let stoppedEarly = false;
+			for (const id of ids) {
+				setSubmitStatus((prev) => ({
+					...prev,
+					[id]: "in-progress"
+				}));
+				try {
+					const pinValue = pinRequired() ? pinToUse() || void 0 : void 0;
+					if (!valueMatchesChore(f, expected, await updateChore(id, {
+						...payload,
+						pin: pinValue
+					}))) throw new Error("Update did not apply as expected");
+					setSubmitStatus((prev) => ({
+						...prev,
+						[id]: "done"
+					}));
+				} catch (error) {
+					setSubmitStatus((prev) => ({
+						...prev,
+						[id]: "failed"
+					}));
+					if (error instanceof Error && error.message === "Invalid PIN") {
+						setPinError(true);
+						setCachedPin("");
+					} else setSubmitError(error instanceof Error ? error.message : "Unknown error");
+					stoppedEarly = true;
+					break;
+				}
+			}
+			if (!stoppedEarly && !cachedPin() && rememberPin() && pin()) setCachedPin(pin());
+			setIsSubmitting(false);
+			setFinished(true);
+		};
+		const handleClose = async () => {
+			await loadData();
+			props.closeModal();
+		};
+		const canApply = () => !(pinRequired() && !cachedPin() && !pin());
+		const isWideLayout = () => step() === 3 && viewMode() === "detailed";
+		return (() => {
+			var _el$3 = _tmpl$5$7(), _el$4 = _el$3.firstChild, _el$5 = _el$4.firstChild, _el$6 = _el$5.firstChild, _el$7 = _el$6.firstChild, _el$0 = _el$7.firstChild.nextSibling;
+			_el$0.nextSibling;
+			var _el$11 = _el$6.nextSibling.firstChild, _el$13 = _el$11.nextSibling.nextSibling, _el$15 = _el$13.nextSibling.nextSibling, _el$17 = _el$15.nextSibling.nextSibling, _el$18 = _el$5.nextSibling;
+			insert(_el$7, () => props.choreType === ChoreType.PERSONAL ? "Personal" : "Rotating", _el$0);
+			insert(_el$6, createComponent(Show, {
+				get when() {
+					return !isSubmitting();
+				},
+				get children() {
+					var _el$1 = _tmpl$2$12();
+					_el$1.$$click = () => props.closeModal();
+					return _el$1;
+				}
+			}), null);
+			insert(_el$18, createComponent(Show, {
+				get when() {
+					return step() === 1;
+				},
+				get children() {
+					var _el$19 = _tmpl$4$9(), _el$23 = _el$19.firstChild, _el$25 = _el$23.firstChild.nextSibling, _el$26 = _el$23.nextSibling, _el$28 = _el$26.firstChild.nextSibling, _el$29 = _el$26.nextSibling;
+					insert(_el$19, createComponent(InfoBox, {
+						icon: true,
+						"class": "mb-4",
+						get children() {
+							var _el$20 = _tmpl$3$11(), _el$22 = _el$20.firstChild.nextSibling;
+							insert(_el$22, createComponent(Button, {
+								type: "button",
+								variant: "secondary",
+								size: "sm",
+								onClick: handleDownloadBackup,
+								dataTestId: "backup-download-btn",
+								children: "Download Backup"
+							}));
+							return _el$20;
+						}
+					}), _el$23);
+					insert(_el$19, createComponent(Show, {
+						get when() {
+							return memo(() => !!pinRequired())() && !cachedPin();
+						},
+						get children() {
+							return createComponent(PinField, {
+								get pin() {
+									return pin();
+								},
+								onPinChange: setPin,
+								get remember() {
+									return rememberPin();
+								},
+								onRememberChange: setRememberPin
+							});
+						}
+					}), _el$23);
+					insert(_el$19, createComponent(InfoBox, {
+						"class": "mb-4",
+						children: "Because these settings can interact with each other, you can only bulk-edit one setting at a time. To change multiple settings, run this tool again for each one."
+					}), _el$23);
+					insert(_el$25, createComponent(For, {
+						each: MAIN_FIELDS,
+						children: (f) => (() => {
+							var _el$30 = _tmpl$6$7(), _el$31 = _el$30.firstChild, _el$32 = _el$31.firstChild, _el$33 = _el$32.nextSibling, _el$34 = _el$31.nextSibling;
+							setAttribute(_el$31, "for", `field-${f}`);
+							_el$32.$$input = () => chooseField(f);
+							setAttribute(_el$32, "id", `field-${f}`);
+							insert(_el$33, () => FIELD_LABELS[f]);
+							insert(_el$34, () => FIELD_DESCRIPTIONS[f]);
+							createRenderEffect(() => _el$32.checked = field() === f);
+							return _el$30;
+						})()
+					}));
+					insert(_el$28, createComponent(For, {
+						each: ADVANCED_FIELDS,
+						children: (f) => (() => {
+							var _el$35 = _tmpl$6$7(), _el$36 = _el$35.firstChild, _el$37 = _el$36.firstChild, _el$38 = _el$37.nextSibling, _el$39 = _el$36.nextSibling;
+							setAttribute(_el$36, "for", `field-${f}`);
+							_el$37.$$input = () => chooseField(f);
+							setAttribute(_el$37, "id", `field-${f}`);
+							insert(_el$38, () => FIELD_LABELS[f]);
+							insert(_el$39, () => FIELD_DESCRIPTIONS[f]);
+							createRenderEffect(() => _el$37.checked = field() === f);
+							return _el$35;
+						})()
+					}));
+					insert(_el$29, createComponent(Button, {
+						type: "button",
+						variant: "secondary",
+						onClick: () => props.closeModal(),
+						children: "Cancel"
+					}), null);
+					insert(_el$29, createComponent(Button, {
+						type: "button",
+						variant: "primary",
+						get disabled() {
+							return !field();
+						},
+						onClick: () => setStep(2),
+						dataTestId: "next-button",
+						children: "Next"
+					}), null);
+					return _el$19;
+				}
+			}), null);
+			insert(_el$18, createComponent(Show, {
+				get when() {
+					return memo(() => step() === 2)() && field();
+				},
+				children: (f) => (() => {
+					var _el$40 = _tmpl$8$4(), _el$41 = _el$40.firstChild;
+					_el$41.firstChild;
+					var _el$44 = _el$41.nextSibling;
+					insert(_el$41, () => FIELD_LABELS[f()], null);
+					insert(_el$40, createComponent(Show, {
+						get when() {
+							return f() === "startTime" || f() === "deadline";
+						},
+						get children() {
+							return createComponent(TimeSelect, {
+								id: "bulk-value-time",
+								get value() {
+									return value();
+								},
+								onChange: setValue
+							});
+						}
+					}), _el$44);
+					insert(_el$40, createComponent(Show, {
+						get when() {
+							return f() === "skipDays";
+						},
+						get children() {
+							var _el$43 = _tmpl$7$6();
+							insert(_el$43, createComponent(For, {
+								get each() {
+									return Object.values(DayOfWeek);
+								},
+								children: (day) => (() => {
+									var _el$45 = _tmpl$9$1(), _el$46 = _el$45.firstChild;
+									_el$46.$$input = (e) => handleSkipDayToggle(day, e.currentTarget.checked);
+									insert(_el$45, () => day.charAt(0).toUpperCase() + day.slice(1), null);
+									createRenderEffect(() => _el$46.checked = value().includes(day));
+									return _el$45;
+								})()
+							}));
+							return _el$43;
+						}
+					}), _el$44);
+					insert(_el$40, createComponent(Show, {
+						get when() {
+							return RADIO_OPTIONS[f()];
+						},
+						children: (options) => (() => {
+							var _el$47 = _tmpl$0$1();
+							insert(_el$47, createComponent(For, {
+								get each() {
+									return options();
+								},
+								children: (opt) => (() => {
+									var _el$48 = _tmpl$1$1(), _el$49 = _el$48.firstChild, _el$50 = _el$49.firstChild, _el$51 = _el$50.nextSibling, _el$52 = _el$49.nextSibling;
+									_el$50.$$input = () => setValue(opt.value);
+									insert(_el$51, () => opt.label);
+									insert(_el$52, () => opt.description);
+									createRenderEffect((_p$) => {
+										var _v$9 = `value-${opt.value}`, _v$0 = `value-${opt.value}`;
+										_v$9 !== _p$.e && setAttribute(_el$49, "for", _p$.e = _v$9);
+										_v$0 !== _p$.t && setAttribute(_el$50, "id", _p$.t = _v$0);
+										return _p$;
+									}, {
+										e: void 0,
+										t: void 0
+									});
+									createRenderEffect(() => _el$50.checked = value() === opt.value);
+									return _el$48;
+								})()
+							}));
+							return _el$47;
+						})()
+					}), _el$44);
+					insert(_el$44, createComponent(Button, {
+						type: "button",
+						variant: "secondary",
+						onClick: () => setStep(1),
+						children: "Back"
+					}), null);
+					insert(_el$44, createComponent(Button, {
+						type: "button",
+						variant: "primary",
+						onClick: () => setStep(3),
+						dataTestId: "next-button",
+						children: "Next"
+					}), null);
+					return _el$40;
+				})()
+			}), null);
+			insert(_el$18, createComponent(Show, {
+				get when() {
+					return memo(() => step() === 3)() && field();
+				},
+				children: (f) => (() => {
+					var _el$53 = _tmpl$13$1(), _el$54 = _el$53.firstChild, _el$55 = _el$54.firstChild, _el$56 = _el$55.firstChild;
+					_el$56.nextSibling;
+					var _el$59 = _el$55.nextSibling, _el$60 = _el$54.nextSibling, _el$61 = _el$60.firstChild, _el$62 = _el$61.nextSibling, _el$63 = _el$60.nextSibling, _el$64 = _el$63.firstChild, _el$81 = _el$63.nextSibling;
+					insert(_el$56, () => FIELD_LABELS[f()]);
+					insert(_el$55, () => formatFieldValue(f(), value(), resolvedTimeFormat()), null);
+					_el$59.$$click = () => setStep(1);
+					_el$61.$$click = () => setViewMode("compact");
+					_el$62.$$click = () => setViewMode("detailed");
+					insert(_el$63, createComponent(SelectionChip, {
+						label: "All",
+						get state() {
+							return bucketSelectionState(eligibleChores().map((c) => c.id));
+						},
+						onClick: () => toggleBucketSelection(eligibleChores().map((c) => c.id)),
+						dataTestId: "select-all-chip"
+					}), _el$64);
+					_el$64.$$click = selectNone;
+					insert(_el$63, createComponent(For, {
+						get each() {
+							return valueBuckets();
+						},
+						children: (bucket) => createComponent(SelectionChip, {
+							get label() {
+								return bucket.label;
+							},
+							get state() {
+								return bucketSelectionState(bucket.choreIds);
+							},
+							onClick: () => toggleBucketSelection(bucket.choreIds)
+						})
+					}), null);
+					insert(_el$53, createComponent(Show, {
+						get when() {
+							return choresForType().length > 0;
+						},
+						get fallback() {
+							return _tmpl$14$1();
+						},
+						get children() {
+							return [createComponent(Show, {
+								get when() {
+									return viewMode() === "compact";
+								},
+								get children() {
+									var _el$65 = _tmpl$10$1();
+									insert(_el$65, createComponent(For, {
+										get each() {
+											return groupedChores();
+										},
+										children: (group) => (() => {
+											var _el$83 = _tmpl$15();
+											insert(_el$83, createComponent(Show, {
+												get when() {
+													return group.person;
+												},
+												children: (person) => (() => {
+													var _el$84 = _tmpl$16();
+													insert(_el$84, () => escapeHtml(person().name));
+													return _el$84;
+												})()
+											}), null);
+											insert(_el$83, createComponent(For, {
+												get each() {
+													return group.chores;
+												},
+												children: (chore) => {
+													const eligible = () => isFieldEligibleForChore(f(), chore);
+													return (() => {
+														var _el$85 = _tmpl$18(), _el$86 = _el$85.firstChild, _el$87 = _el$86.nextSibling, _el$88 = _el$87.nextSibling;
+														_el$88.firstChild;
+														_el$86.$$input = (e) => toggleChore(chore.id, e.currentTarget.checked);
+														insert(_el$87, () => escapeHtml(chore.name));
+														insert(_el$88, () => formatFieldValue(f(), getChoreValue(chore, f()), resolvedTimeFormat()), null);
+														insert(_el$85, createComponent(Show, {
+															get when() {
+																return !eligible();
+															},
+															get children() {
+																return createComponent(Tooltip, {
+																	get text() {
+																		return ineligibleReason(f());
+																	},
+																	position: "above",
+																	align: "left",
+																	get children() {
+																		return _tmpl$17();
+																	}
+																});
+															}
+														}), null);
+														createRenderEffect((_p$) => {
+															var _v$20 = {
+																"cursor-not-allowed opacity-50": !eligible(),
+																"cursor-pointer hover:bg-slate-50": eligible()
+															}, _v$21 = `chore-row-${chore.id}`, _v$22 = !eligible();
+															_p$.e = classList(_el$85, _v$20, _p$.e);
+															_v$21 !== _p$.t && setAttribute(_el$85, "data-testid", _p$.t = _v$21);
+															_v$22 !== _p$.a && (_el$86.disabled = _p$.a = _v$22);
+															return _p$;
+														}, {
+															e: void 0,
+															t: void 0,
+															a: void 0
+														});
+														createRenderEffect(() => _el$86.checked = selectedChoreIds().includes(chore.id));
+														return _el$85;
+													})();
+												}
+											}), null);
+											return _el$83;
+										})()
+									}));
+									return _el$65;
+								}
+							}), createComponent(Show, {
+								get when() {
+									return viewMode() === "detailed";
+								},
+								get children() {
+									var _el$66 = _tmpl$12$1(), _el$68 = _el$66.firstChild.firstChild, _el$69 = _el$68.firstChild, _el$73 = _el$69.firstChild.nextSibling.nextSibling, _el$74 = _el$73.nextSibling, _el$75 = _el$74.nextSibling, _el$76 = _el$75.nextSibling, _el$77 = _el$76.nextSibling, _el$78 = _el$77.nextSibling, _el$79 = _el$78.nextSibling, _el$80 = _el$68.nextSibling;
+									insert(_el$69, createComponent(Show, {
+										get when() {
+											return props.choreType === ChoreType.PERSONAL;
+										},
+										get children() {
+											return _tmpl$11$1();
+										}
+									}), _el$73);
+									insert(_el$80, createComponent(For, {
+										get each() {
+											return groupedChores();
+										},
+										children: (group) => createComponent(For, {
+											get each() {
+												return group.chores;
+											},
+											children: (chore) => {
+												const eligible = () => isFieldEligibleForChore(f(), chore);
+												const handleRowClick = (e) => {
+													if (!eligible()) return;
+													if (e.target.tagName === "INPUT") return;
+													toggleChore(chore.id, !selectedChoreIds().includes(chore.id));
+												};
+												return (() => {
+													var _el$92 = _tmpl$20(), _el$93 = _el$92.firstChild, _el$94 = _el$93.firstChild, _el$95 = _el$93.nextSibling, _el$97 = _el$95.nextSibling, _el$98 = _el$97.nextSibling, _el$99 = _el$98.nextSibling, _el$100 = _el$99.nextSibling, _el$101 = _el$100.nextSibling, _el$102 = _el$101.nextSibling, _el$103 = _el$102.nextSibling;
+													_el$92.$$click = handleRowClick;
+													_el$94.$$input = (e) => toggleChore(chore.id, e.currentTarget.checked);
+													insert(_el$95, () => escapeHtml(chore.name));
+													insert(_el$92, createComponent(Show, {
+														get when() {
+															return props.choreType === ChoreType.PERSONAL;
+														},
+														get children() {
+															var _el$96 = _tmpl$19();
+															insert(_el$96, () => escapeHtml(group.person?.name ?? ""));
+															return _el$96;
+														}
+													}), _el$97);
+													insert(_el$97, (() => {
+														var _c$ = memo(() => !!chore.startTime);
+														return () => _c$() ? formatTime(chore.startTime, resolvedTimeFormat()) : "—";
+													})());
+													insert(_el$98, (() => {
+														var _c$2 = memo(() => !!chore.deadline);
+														return () => _c$2() ? formatTime(chore.deadline, resolvedTimeFormat()) : "—";
+													})());
+													insert(_el$99, () => formatSkipDays$2(chore.skipDays));
+													insert(_el$100, () => SKIP_DAY_VIS_LABELS[chore.skipDayVisibility]);
+													insert(_el$101, () => BEFORE_START_LABELS[chore.beforeStartTimeVisibility]);
+													insert(_el$102, () => AFTER_DEADLINE_LABELS[chore.afterDeadlineVisibility]);
+													insert(_el$103, () => NOT_CAUGHT_UP_LABELS[chore.notCaughtUpDisplay]);
+													createRenderEffect((_p$) => {
+														var _v$23 = {
+															"cursor-not-allowed opacity-50": !eligible(),
+															"cursor-pointer hover:bg-slate-50": eligible()
+														}, _v$24 = `detailed-row-${chore.id}`, _v$25 = !eligible(), _v$26 = !!(f() === "startTime"), _v$27 = !!(f() === "deadline"), _v$28 = !!(f() === "skipDays"), _v$29 = !!(f() === "skipDayVisibility"), _v$30 = !!(f() === "beforeStartTimeVisibility"), _v$31 = !!(f() === "afterDeadlineVisibility"), _v$32 = !!(f() === "notCaughtUpDisplay");
+														_p$.e = classList(_el$92, _v$23, _p$.e);
+														_v$24 !== _p$.t && setAttribute(_el$92, "data-testid", _p$.t = _v$24);
+														_v$25 !== _p$.a && (_el$94.disabled = _p$.a = _v$25);
+														_v$26 !== _p$.o && _el$97.classList.toggle("bg-indigo-50", _p$.o = _v$26);
+														_v$27 !== _p$.i && _el$98.classList.toggle("bg-indigo-50", _p$.i = _v$27);
+														_v$28 !== _p$.n && _el$99.classList.toggle("bg-indigo-50", _p$.n = _v$28);
+														_v$29 !== _p$.s && _el$100.classList.toggle("bg-indigo-50", _p$.s = _v$29);
+														_v$30 !== _p$.h && _el$101.classList.toggle("bg-indigo-50", _p$.h = _v$30);
+														_v$31 !== _p$.r && _el$102.classList.toggle("bg-indigo-50", _p$.r = _v$31);
+														_v$32 !== _p$.d && _el$103.classList.toggle("bg-indigo-50", _p$.d = _v$32);
+														return _p$;
+													}, {
+														e: void 0,
+														t: void 0,
+														a: void 0,
+														o: void 0,
+														i: void 0,
+														n: void 0,
+														s: void 0,
+														h: void 0,
+														r: void 0,
+														d: void 0
+													});
+													createRenderEffect(() => _el$94.checked = selectedChoreIds().includes(chore.id));
+													return _el$92;
+												})();
+											}
+										})
+									}));
+									createRenderEffect((_p$) => {
+										var _v$1 = { "bg-indigo-100 text-indigo-700": f() === "startTime" }, _v$10 = { "bg-indigo-100 text-indigo-700": f() === "deadline" }, _v$11 = { "bg-indigo-100 text-indigo-700": f() === "skipDays" }, _v$12 = { "bg-indigo-100 text-indigo-700": f() === "skipDayVisibility" }, _v$13 = { "bg-indigo-100 text-indigo-700": f() === "beforeStartTimeVisibility" }, _v$14 = { "bg-indigo-100 text-indigo-700": f() === "afterDeadlineVisibility" }, _v$15 = { "bg-indigo-100 text-indigo-700": f() === "notCaughtUpDisplay" };
+										_p$.e = classList(_el$73, _v$1, _p$.e);
+										_p$.t = classList(_el$74, _v$10, _p$.t);
+										_p$.a = classList(_el$75, _v$11, _p$.a);
+										_p$.o = classList(_el$76, _v$12, _p$.o);
+										_p$.i = classList(_el$77, _v$13, _p$.i);
+										_p$.n = classList(_el$78, _v$14, _p$.n);
+										_p$.s = classList(_el$79, _v$15, _p$.s);
+										return _p$;
+									}, {
+										e: void 0,
+										t: void 0,
+										a: void 0,
+										o: void 0,
+										i: void 0,
+										n: void 0,
+										s: void 0
+									});
+									return _el$66;
+								}
+							})];
+						}
+					}), _el$81);
+					insert(_el$81, createComponent(Button, {
+						type: "button",
+						variant: "secondary",
+						onClick: () => setStep(2),
+						children: "Back"
+					}), null);
+					insert(_el$81, createComponent(Button, {
+						type: "button",
+						variant: "primary",
+						get disabled() {
+							return selectedChoreIds().length === 0;
+						},
+						onClick: () => setStep(4),
+						dataTestId: "next-button",
+						children: "Next"
+					}), null);
+					createRenderEffect((_p$) => {
+						var _v$16 = viewMode() === "compact", _v$17 = {
+							"bg-white text-indigo-600 shadow-sm": viewMode() === "compact",
+							"text-slate-500 hover:text-slate-700": viewMode() !== "compact"
+						}, _v$18 = viewMode() === "detailed", _v$19 = {
+							"bg-white text-indigo-600 shadow-sm": viewMode() === "detailed",
+							"text-slate-500 hover:text-slate-700": viewMode() !== "detailed"
+						};
+						_v$16 !== _p$.e && setAttribute(_el$61, "aria-selected", _p$.e = _v$16);
+						_p$.t = classList(_el$61, _v$17, _p$.t);
+						_v$18 !== _p$.a && setAttribute(_el$62, "aria-selected", _p$.a = _v$18);
+						_p$.o = classList(_el$62, _v$19, _p$.o);
+						return _p$;
+					}, {
+						e: void 0,
+						t: void 0,
+						a: void 0,
+						o: void 0
+					});
+					return _el$53;
+				})()
+			}), null);
+			insert(_el$18, createComponent(Show, {
+				get when() {
+					return memo(() => step() === 4)() && field();
+				},
+				children: (f) => (() => {
+					var _el$104 = _tmpl$21(), _el$105 = _el$104.firstChild;
+					_el$105.firstChild;
+					var _el$107 = _el$105.nextSibling;
+					insert(_el$105, createComponent(For, {
+						get each() {
+							return groupedChores();
+						},
+						children: (group) => {
+							const selectedInGroup = () => group.chores.filter((c) => selectedChoreIds().includes(c.id));
+							return createComponent(Show, {
+								get when() {
+									return selectedInGroup().length > 0;
+								},
+								get children() {
+									return [createComponent(Show, {
+										get when() {
+											return group.person;
+										},
+										children: (person) => (() => {
+											var _el$108 = _tmpl$22();
+											insert(_el$108, () => escapeHtml(person().name));
+											return _el$108;
+										})()
+									}), createComponent(For, {
+										get each() {
+											return selectedInGroup();
+										},
+										children: (chore) => (() => {
+											var _el$109 = _tmpl$23(), _el$110 = _el$109.firstChild, _el$111 = _el$110.nextSibling, _el$113 = _el$111.nextSibling.nextSibling, _el$114 = _el$113.nextSibling;
+											insert(_el$110, () => escapeHtml(chore.name));
+											insert(_el$111, () => formatFieldValue(f(), getChoreValue(chore, f()), resolvedTimeFormat()));
+											insert(_el$113, () => formatFieldValue(f(), value(), resolvedTimeFormat()));
+											insert(_el$114, () => statusLabel(submitStatus()[chore.id] ?? "pending"));
+											createRenderEffect((_p$) => {
+												var _v$33 = `confirm-row-${chore.id}`, _v$34 = `confirm-status-${chore.id}`;
+												_v$33 !== _p$.e && setAttribute(_el$109, "data-testid", _p$.e = _v$33);
+												_v$34 !== _p$.t && setAttribute(_el$114, "data-testid", _p$.t = _v$34);
+												return _p$;
+											}, {
+												e: void 0,
+												t: void 0
+											});
+											return _el$109;
+										})()
+									})];
+								}
+							});
+						}
+					}), null);
+					insert(_el$104, createComponent(Show, {
+						get when() {
+							return pinError();
+						},
+						get children() {
+							return createComponent(InfoBox, {
+								icon: true,
+								"class": "mb-4 border-red-200 bg-red-50 text-red-700",
+								children: "Incorrect PIN — no further chores were attempted. Check the PIN and try again; none of the remaining chores were touched."
+							});
+						}
+					}), _el$107);
+					insert(_el$104, createComponent(Show, {
+						get when() {
+							return memo(() => !!submitError())() && !pinError();
+						},
+						get children() {
+							return createComponent(InfoBox, {
+								icon: true,
+								"class": "mb-4 border-red-200 bg-red-50 text-red-700",
+								get children() {
+									return [
+										"Applied to ",
+										memo(() => doneCount()),
+										" of ",
+										memo(() => selectedChoreIds().length),
+										" chores before failing:",
+										" ",
+										memo(() => submitError())
+									];
+								}
+							});
+						}
+					}), _el$107);
+					insert(_el$104, createComponent(Show, {
+						get when() {
+							return memo(() => !!pinRequired())() && !cachedPin();
+						},
+						get children() {
+							return createComponent(PinField, {
+								get pin() {
+									return pin();
+								},
+								onPinChange: setPin,
+								get remember() {
+									return rememberPin();
+								},
+								onRememberChange: setRememberPin
+							});
+						}
+					}), _el$107);
+					insert(_el$104, createComponent(Show, {
+						get when() {
+							return isSubmitting();
+						},
+						get children() {
+							return createComponent(InfoBox, {
+								icon: true,
+								"class": "mb-4 border-amber-200 bg-amber-50 text-amber-800",
+								children: "Applying changes — please don't close or refresh this page until this finishes."
+							});
+						}
+					}), _el$107);
+					insert(_el$107, createComponent(Show, {
+						get when() {
+							return memo(() => !!!isSubmitting())() && !finished();
+						},
+						get children() {
+							return [
+								createComponent(Button, {
+									type: "button",
+									variant: "secondary",
+									onClick: () => setStep(3),
+									children: "Back"
+								}),
+								createComponent(Button, {
+									type: "button",
+									variant: "secondary",
+									onClick: () => props.closeModal(),
+									children: "Cancel"
+								}),
+								createComponent(Button, {
+									type: "button",
+									variant: "warning",
+									get disabled() {
+										return !canApply();
+									},
+									onClick: handleApply,
+									dataTestId: "apply-button",
+									children: "Apply Changes"
+								})
+							];
+						}
+					}), null);
+					insert(_el$107, createComponent(Show, {
+						get when() {
+							return finished();
+						},
+						get children() {
+							return createComponent(Button, {
+								type: "button",
+								variant: "primary",
+								onClick: handleClose,
+								dataTestId: "close-button",
+								children: "Close"
+							});
+						}
+					}), null);
+					return _el$104;
+				})()
+			}), null);
+			createRenderEffect((_p$) => {
+				var _v$4 = {
+					"w-[90%] max-w-[720px]": !isWideLayout(),
+					"w-[95%] max-w-[1600px]": isWideLayout()
+				}, _v$5 = !!(step() === 1), _v$6 = !!(step() === 2), _v$7 = !!(step() === 3), _v$8 = !!(step() === 4);
+				_p$.e = classList(_el$4, _v$4, _p$.e);
+				_v$5 !== _p$.t && _el$11.classList.toggle("text-indigo-600", _p$.t = _v$5);
+				_v$6 !== _p$.a && _el$13.classList.toggle("text-indigo-600", _p$.a = _v$6);
+				_v$7 !== _p$.o && _el$15.classList.toggle("text-indigo-600", _p$.o = _v$7);
+				_v$8 !== _p$.i && _el$17.classList.toggle("text-indigo-600", _p$.i = _v$8);
+				return _p$;
+			}, {
+				e: void 0,
+				t: void 0,
+				a: void 0,
+				o: void 0,
+				i: void 0
+			});
+			return _el$3;
+		})();
+	};
+	delegateEvents(["click", "input"]);
 	//#endregion
 	//#region src/utils/date.ts
 	/**
@@ -2010,10 +3222,10 @@
 	};
 	//#endregion
 	//#region src/admin/chore-history-modal.tsx
-	var _tmpl$$17 = /*#__PURE__*/ template(`<div class="mb-5 rounded-md border border-amber-200 bg-amber-50 p-4"><div class=flex><div class=shrink-0><svg class="size-5 text-amber-400"viewBox="0 0 20 20"fill=currentColor aria-hidden=true><path fill-rule=evenodd d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"clip-rule=evenodd></path></svg></div><div class=ml-3><p class="text-sm font-medium text-amber-800">History tracking is currently disabled</p><p class="mt-1 text-sm text-amber-700">No new completion entries will be recorded until history is re-enabled in settings.`);
-	var _tmpl$2$13 = /*#__PURE__*/ template(`<div class="py-4 text-center text-slate-500">Loading history...`);
-	var _tmpl$3$11 = /*#__PURE__*/ template(`<div class=overflow-x-auto><table class="w-full border-collapse border border-slate-200"data-testid=history-table><thead><tr><th class="border border-slate-200 p-2.5 text-left text-base font-medium whitespace-nowrap text-slate-900">Chore</th></tr></thead><tbody>`);
-	var _tmpl$4$9 = /*#__PURE__*/ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"data-testid=modal><div class="max-h-[90vh] w-[90%] max-w-[95vw] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"data-testid=modal-content><div class="mb-5 flex items-center justify-between"><h3 class="text-2xl text-indigo-600">'s Chore History</h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><div class="mt-6 flex justify-end gap-2.5">`);
+	var _tmpl$$15 = /*#__PURE__*/ template(`<div class="mb-5 rounded-md border border-amber-200 bg-amber-50 p-4"><div class=flex><div class=shrink-0><svg class="size-5 text-amber-400"viewBox="0 0 20 20"fill=currentColor aria-hidden=true><path fill-rule=evenodd d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"clip-rule=evenodd></path></svg></div><div class=ml-3><p class="text-sm font-medium text-amber-800">History tracking is currently disabled</p><p class="mt-1 text-sm text-amber-700">No new completion entries will be recorded until history is re-enabled in settings.`);
+	var _tmpl$2$11 = /*#__PURE__*/ template(`<div class="py-4 text-center text-slate-500">Loading history...`);
+	var _tmpl$3$10 = /*#__PURE__*/ template(`<div class=overflow-x-auto><table class="w-full border-collapse border border-slate-200"data-testid=history-table><thead><tr><th class="border border-slate-200 p-2.5 text-left text-base font-medium whitespace-nowrap text-slate-900">Chore</th></tr></thead><tbody>`);
+	var _tmpl$4$8 = /*#__PURE__*/ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"data-testid=modal><div class="max-h-[90vh] w-[90%] max-w-[95vw] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"data-testid=modal-content><div class="mb-5 flex items-center justify-between"><h3 class="text-2xl text-indigo-600">'s Chore History</h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><div class="mt-6 flex justify-end gap-2.5">`);
 	var _tmpl$5$6 = /*#__PURE__*/ template(`<th class="relative h-[100px] w-[50px] overflow-visible border border-slate-200 p-2.5 text-left text-base font-medium text-slate-900"><span class="absolute top-1/2 left-1/2 -translate-1/2 -rotate-90 whitespace-nowrap">`);
 	var _tmpl$6$6 = /*#__PURE__*/ template(`<tr><td class="border border-slate-200 p-2.5 text-base whitespace-nowrap text-slate-900">`);
 	var _tmpl$7$5 = /*#__PURE__*/ template(`<td class="border border-slate-200 p-2.5 text-center">`);
@@ -2059,7 +3271,7 @@
 			return chore.skipDays.includes(day.dayName);
 		};
 		return (() => {
-			var _el$ = _tmpl$4$9(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.firstChild, _el$5 = _el$4.firstChild, _el$6 = _el$4.nextSibling, _el$13 = _el$3.nextSibling;
+			var _el$ = _tmpl$4$8(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.firstChild, _el$5 = _el$4.firstChild, _el$6 = _el$4.nextSibling, _el$13 = _el$3.nextSibling;
 			insert(_el$4, () => escapeHtml(props.person.name), _el$5);
 			_el$6.$$click = () => props.closeModal();
 			insert(_el$2, createComponent(Show, {
@@ -2067,7 +3279,7 @@
 					return memo(() => !!!loading())() && !choreData().settings?.historyEnabled;
 				},
 				get children() {
-					return _tmpl$$17();
+					return _tmpl$$15();
 				}
 			}), _el$13);
 			insert(_el$2, createComponent(Show, {
@@ -2075,7 +3287,7 @@
 					return loading();
 				},
 				get children() {
-					return _tmpl$2$13();
+					return _tmpl$2$11();
 				}
 			}), _el$13);
 			insert(_el$2, createComponent(Show, {
@@ -2083,7 +3295,7 @@
 					return !loading();
 				},
 				get children() {
-					var _el$9 = _tmpl$3$11(), _el$1 = _el$9.firstChild.firstChild, _el$10 = _el$1.firstChild;
+					var _el$9 = _tmpl$3$10(), _el$1 = _el$9.firstChild.firstChild, _el$10 = _el$1.firstChild;
 					_el$10.firstChild;
 					var _el$12 = _el$1.nextSibling;
 					insert(_el$10, createComponent(For, {
@@ -2225,10 +3437,10 @@
 	delegateEvents(["click"]);
 	//#endregion
 	//#region src/admin/copy-chores-modal.tsx
-	var _tmpl$$16 = /*#__PURE__*/ template(`<div class="my-2.5 text-slate-500 italic"data-testid=empty-message><p data-testid=empty-message-text>No other people available to copy chores to.`);
-	var _tmpl$2$12 = /*#__PURE__*/ template(`<form><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Select Person to Copy To</div><select id=toPerson required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option value>-- Select a person --</option></select></div><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Select Chores to Copy</div><div class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3"data-testid=checkbox-list></div></div><div class="mt-6 flex justify-end gap-2.5">`);
-	var _tmpl$3$10 = /*#__PURE__*/ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><div class="mb-5 flex items-center justify-between"><h3 class="text-2xl text-indigo-600"data-testid=modal-title>Copy Chores</h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><div class="mb-5 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-base"data-testid=copy-from-display><span class="inline-block size-6 rounded-full border-2 border-black/10 align-middle"data-testid=person-color-badge></span><strong>From:</strong> `);
-	var _tmpl$4$8 = /*#__PURE__*/ template(`<div class="my-2.5 text-slate-500 italic"data-testid=empty-message><p data-testid=empty-message-text>No personal chores to copy for <!>.`);
+	var _tmpl$$14 = /*#__PURE__*/ template(`<div class="my-2.5 text-slate-500 italic"data-testid=empty-message><p data-testid=empty-message-text>No other people available to copy chores to.`);
+	var _tmpl$2$10 = /*#__PURE__*/ template(`<form><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Select Person to Copy To</div><select id=toPerson required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option value>-- Select a person --</option></select></div><div class=mb-5><div class="mb-3 block font-medium text-slate-900">Select Chores to Copy</div><div class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3"data-testid=checkbox-list></div></div><div class="mt-6 flex justify-end gap-2.5">`);
+	var _tmpl$3$9 = /*#__PURE__*/ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><div class="mb-5 flex items-center justify-between"><h3 class="text-2xl text-indigo-600"data-testid=modal-title>Copy Chores</h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><div class="mb-5 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-base"data-testid=copy-from-display><span class="inline-block size-6 rounded-full border-2 border-black/10 align-middle"data-testid=person-color-badge></span><strong>From:</strong> `);
+	var _tmpl$4$7 = /*#__PURE__*/ template(`<div class="my-2.5 text-slate-500 italic"data-testid=empty-message><p data-testid=empty-message-text>No personal chores to copy for <!>.`);
 	var _tmpl$5$5 = /*#__PURE__*/ template(`<option>`);
 	var _tmpl$6$5 = /*#__PURE__*/ template(`<label class="flex cursor-pointer items-center gap-2 font-normal"><input type=checkbox class="size-4.5 cursor-pointer">`);
 	var CopyChoresModal = (props) => {
@@ -2281,7 +3493,7 @@
 			}
 		};
 		return (() => {
-			var _el$ = _tmpl$3$10(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$5 = _el$3.firstChild.nextSibling, _el$6 = _el$3.nextSibling, _el$7 = _el$6.firstChild;
+			var _el$ = _tmpl$3$9(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$5 = _el$3.firstChild.nextSibling, _el$6 = _el$3.nextSibling, _el$7 = _el$6.firstChild;
 			_el$7.nextSibling.nextSibling;
 			_el$5.$$click = () => props.closeModal();
 			insert(_el$6, () => escapeHtml(props.fromPerson.name), null);
@@ -2291,7 +3503,7 @@
 				},
 				get fallback() {
 					return (() => {
-						var _el$19 = _tmpl$4$8(), _el$20 = _el$19.firstChild, _el$23 = _el$20.firstChild.nextSibling;
+						var _el$19 = _tmpl$4$7(), _el$20 = _el$19.firstChild, _el$23 = _el$20.firstChild.nextSibling;
 						_el$23.nextSibling;
 						insert(_el$20, () => escapeHtml(props.fromPerson.name), _el$23);
 						insert(_el$19, createComponent(Button, {
@@ -2309,7 +3521,7 @@
 							return availablePeople().length === 0;
 						},
 						get children() {
-							var _el$0 = _tmpl$$16();
+							var _el$0 = _tmpl$$14();
 							_el$0.firstChild;
 							insert(_el$0, createComponent(Button, {
 								type: "button",
@@ -2324,7 +3536,7 @@
 							return availablePeople().length > 0;
 						},
 						get children() {
-							var _el$10 = _tmpl$2$12(), _el$11 = _el$10.firstChild, _el$13 = _el$11.firstChild.nextSibling;
+							var _el$10 = _tmpl$2$10(), _el$11 = _el$10.firstChild, _el$13 = _el$11.firstChild.nextSibling;
 							_el$13.firstChild;
 							var _el$15 = _el$11.nextSibling, _el$17 = _el$15.firstChild.nextSibling, _el$18 = _el$15.nextSibling;
 							_el$10.addEventListener("submit", handleSubmit);
@@ -2399,10 +3611,10 @@
 	delegateEvents(["click", "input"]);
 	//#endregion
 	//#region src/admin/person-card.tsx
-	var _tmpl$$15 = /*#__PURE__*/ template(`<div class="grid gap-2.5">`);
-	var _tmpl$2$11 = /*#__PURE__*/ template(`<div class="mt-4 border-t border-slate-200 pt-4"><div class="mb-4 flex items-center justify-between"><h4 class="m-0 text-lg text-indigo-600">'s Personal Chores</h4><div class="flex gap-2">`);
-	var _tmpl$3$9 = /*#__PURE__*/ template(`<div class="rounded-lg border border-slate-200 bg-slate-50 p-5 transition-all hover:border-indigo-600 hover:shadow-md"data-testid=person-card><div class="flex items-start justify-between gap-4"><div class="flex items-start gap-3"><button type=button data-testid=expand-person-chores class="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-white text-indigo-600 shadow-sm transition-all hover:border-indigo-600 hover:bg-indigo-50 hover:shadow-md"><svg xmlns=http://www.w3.org/2000/svg width=20 height=20 viewBox="0 0 20 20"fill=none stroke=currentColor stroke-width=2.5 stroke-linecap=round stroke-linejoin=round class="transition-transform duration-200"aria-hidden=true><path d="M5 8l5 5 5-5"></path></svg></button><div><h3 class="mb-1 text-xl text-slate-900"> <span class="inline-block size-6 rounded-full border-2 border-black/10 align-middle"></span></h3><p class="text-sm font-medium text-slate-500"></p></div></div><div class="flex gap-2.5">`);
-	var _tmpl$4$7 = /*#__PURE__*/ template(`<div><p class="my-2.5 text-slate-500 italic">No personal chores yet.`);
+	var _tmpl$$13 = /*#__PURE__*/ template(`<div class="grid gap-2.5">`);
+	var _tmpl$2$9 = /*#__PURE__*/ template(`<div class="mt-4 border-t border-slate-200 pt-4"><div class="mb-4 flex items-center justify-between"><h4 class="m-0 text-lg text-indigo-600">'s Personal Chores</h4><div class="flex gap-2">`);
+	var _tmpl$3$8 = /*#__PURE__*/ template(`<div class="rounded-lg border border-slate-200 bg-slate-50 p-5 transition-all hover:border-indigo-600 hover:shadow-md"data-testid=person-card><div class="flex items-start justify-between gap-4"><div class="flex items-start gap-3"><button type=button data-testid=expand-person-chores class="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-white text-indigo-600 shadow-sm transition-all hover:border-indigo-600 hover:bg-indigo-50 hover:shadow-md"><svg xmlns=http://www.w3.org/2000/svg width=20 height=20 viewBox="0 0 20 20"fill=none stroke=currentColor stroke-width=2.5 stroke-linecap=round stroke-linejoin=round class="transition-transform duration-200"aria-hidden=true><path d="M5 8l5 5 5-5"></path></svg></button><div><h3 class="mb-1 text-xl text-slate-900"> <span class="inline-block size-6 rounded-full border-2 border-black/10 align-middle"></span></h3><p class="text-sm font-medium text-slate-500"></p></div></div><div class="flex gap-2.5">`);
+	var _tmpl$4$6 = /*#__PURE__*/ template(`<div><p class="my-2.5 text-slate-500 italic">No personal chores yet.`);
 	var _tmpl$5$4 = /*#__PURE__*/ template(`<span class=mx-1>|`);
 	var _tmpl$6$4 = /*#__PURE__*/ template(`<p class="mt-1.25 text-sm text-indigo-600">`);
 	var _tmpl$7$4 = /*#__PURE__*/ template(`<div class="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-2.5"><div><h4 class="mb-1.5 text-base text-slate-900"></h4><p class="mt-1.25 text-sm text-slate-500">Skip days: </p></div><div class="flex gap-2">`);
@@ -2418,7 +3630,7 @@
 		const choreCountLabel = () => `${choreCount()} ${choreCount() === 1 ? "personal chore" : "personal chores"}`;
 		const toggleExpanded = () => setExpanded((prev) => !prev);
 		return (() => {
-			var _el$ = _tmpl$3$9(), _el$3 = _el$.firstChild.firstChild, _el$4 = _el$3.firstChild, _el$5 = _el$4.firstChild, _el$7 = _el$4.nextSibling.firstChild, _el$8 = _el$7.firstChild, _el$9 = _el$8.nextSibling, _el$0 = _el$7.nextSibling, _el$1 = _el$3.nextSibling;
+			var _el$ = _tmpl$3$8(), _el$3 = _el$.firstChild.firstChild, _el$4 = _el$3.firstChild, _el$5 = _el$4.firstChild, _el$7 = _el$4.nextSibling.firstChild, _el$8 = _el$7.firstChild, _el$9 = _el$8.nextSibling, _el$0 = _el$7.nextSibling, _el$1 = _el$3.nextSibling;
 			_el$4.$$click = toggleExpanded;
 			insert(_el$7, () => escapeHtml(props.person.name), _el$8);
 			insert(_el$0, choreCountLabel);
@@ -2448,7 +3660,7 @@
 					return expanded();
 				},
 				get children() {
-					var _el$10 = _tmpl$2$11(), _el$12 = _el$10.firstChild.firstChild, _el$13 = _el$12.firstChild, _el$14 = _el$12.nextSibling;
+					var _el$10 = _tmpl$2$9(), _el$12 = _el$10.firstChild.firstChild, _el$13 = _el$12.firstChild, _el$14 = _el$12.nextSibling;
 					insert(_el$12, () => escapeHtml(props.person.name), _el$13);
 					insert(_el$14, createComponent(Button, {
 						type: "button",
@@ -2476,10 +3688,10 @@
 							return choreCount() > 0;
 						},
 						get fallback() {
-							return _tmpl$4$7();
+							return _tmpl$4$6();
 						},
 						get children() {
-							var _el$15 = _tmpl$$15();
+							var _el$15 = _tmpl$$13();
 							insert(_el$15, createComponent(For, {
 								get each() {
 									return props.chores;
@@ -2566,18 +3778,33 @@
 	delegateEvents(["click"]);
 	//#endregion
 	//#region src/admin/people-tab.tsx
-	var _tmpl$$14 = /*#__PURE__*/ template(`<section data-testid=people-section><div class="mb-5 flex items-center justify-between"><h2 class="m-0 border-b-2 border-indigo-600 pb-2.5 text-2xl text-indigo-600">People</h2><div class="flex items-center gap-2"></div></div><div class="mt-5 grid gap-4">`);
+	var _tmpl$$12 = /*#__PURE__*/ template(`<section data-testid=people-section><div class="mb-5 flex items-center justify-between"><h2 class="m-0 border-b-2 border-indigo-600 pb-2.5 text-2xl text-indigo-600">People</h2><div class="flex items-center gap-2"></div></div><div class="mt-5 grid gap-4">`);
 	/** Tab showing all people as accordion cards */
 	var PeopleTab = (props) => {
 		const getPersonalChores = (personId) => props.chores.filter((chore) => chore.type === ChoreType.PERSONAL && chore.assignedTo === personId);
 		const canCopyChores = () => props.people.length > 1;
+		const hasPersonalChores = () => props.chores.some((chore) => chore.type === ChoreType.PERSONAL);
 		return (() => {
-			var _el$ = _tmpl$$14(), _el$2 = _el$.firstChild, _el$4 = _el$2.firstChild.nextSibling, _el$5 = _el$2.nextSibling;
+			var _el$ = _tmpl$$12(), _el$2 = _el$.firstChild, _el$4 = _el$2.firstChild.nextSibling, _el$5 = _el$2.nextSibling;
 			insert(_el$4, createComponent(Button, {
 				type: "button",
 				variant: "primary",
 				onClick: () => props.onAddPerson(),
 				children: "Add Person"
+			}), null);
+			insert(_el$4, createComponent(Show, {
+				get when() {
+					return memo(() => props.people.length > 0)() && hasPersonalChores();
+				},
+				get children() {
+					return createComponent(Button, {
+						type: "button",
+						variant: "secondary",
+						onClick: () => props.onBulkEdit(),
+						dataTestId: "bulk-edit-people-btn",
+						children: "Bulk Edit Settings"
+					});
+				}
 			}), null);
 			insert(_el$4, createComponent(Show, {
 				get when() {
@@ -2631,7 +3858,7 @@
 	};
 	//#endregion
 	//#region src/admin/person-modal.tsx
-	var _tmpl$$13 = /*#__PURE__*/ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><div class="mb-5 flex items-center justify-between"><h3 class="text-2xl text-indigo-600"data-testid=modal-title></h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><form><div class=mb-5><label for=personName class="mb-3 block font-medium text-slate-900">Name</label><input type=text id=personName required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><label for=personColor class="mb-3 block font-medium text-slate-900">Text Color</label><div class="flex items-center gap-2.5"><input type=color id=personColor required class="h-10 w-15 cursor-pointer rounded-lg border border-slate-300"></div></div><div class="mt-6 flex justify-end gap-2.5">`);
+	var _tmpl$$11 = /*#__PURE__*/ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><div class="mb-5 flex items-center justify-between"><h3 class="text-2xl text-indigo-600"data-testid=modal-title></h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><form><div class=mb-5><label for=personName class="mb-3 block font-medium text-slate-900">Name</label><input type=text id=personName required class="mb-2 w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"></div><div class=mb-5><label for=personColor class="mb-3 block font-medium text-slate-900">Text Color</label><div class="flex items-center gap-2.5"><input type=color id=personColor required class="h-10 w-15 cursor-pointer rounded-lg border border-slate-300"></div></div><div class="mt-6 flex justify-end gap-2.5">`);
 	var PersonModal = (props) => {
 		const { loadData, pinRequired, cachedPin, setCachedPin } = useAdminContext();
 		const [name, setName] = createSignal(props.initialPerson?.name ?? "");
@@ -2668,7 +3895,7 @@
 			}
 		};
 		return (() => {
-			var _el$ = _tmpl$$13(), _el$3 = _el$.firstChild.firstChild, _el$4 = _el$3.firstChild, _el$5 = _el$4.nextSibling, _el$6 = _el$3.nextSibling, _el$7 = _el$6.firstChild, _el$9 = _el$7.firstChild.nextSibling, _el$0 = _el$7.nextSibling, _el$10 = _el$0.firstChild.nextSibling, _el$11 = _el$10.firstChild, _el$12 = _el$0.nextSibling;
+			var _el$ = _tmpl$$11(), _el$3 = _el$.firstChild.firstChild, _el$4 = _el$3.firstChild, _el$5 = _el$4.nextSibling, _el$6 = _el$3.nextSibling, _el$7 = _el$6.firstChild, _el$9 = _el$7.firstChild.nextSibling, _el$0 = _el$7.nextSibling, _el$10 = _el$0.firstChild.nextSibling, _el$11 = _el$10.firstChild, _el$12 = _el$0.nextSibling;
 			insert(_el$4, () => props.initialPerson ? "Edit Person" : "Add Person");
 			_el$5.$$click = () => props.closeModal();
 			_el$6.addEventListener("submit", handleSubmit);
@@ -2718,32 +3945,11 @@
 	};
 	delegateEvents(["click", "input"]);
 	//#endregion
-	//#region src/admin/info-box.tsx
-	var _tmpl$$12 = /*#__PURE__*/ template(`<span class="inline-flex size-5 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-slate-200 text-xs font-bold text-slate-600">i`);
-	var _tmpl$2$10 = /*#__PURE__*/ template(`<div><div>`);
-	/**
-	* Inline info box for contextual help text within the admin panel.
-	*/
-	var InfoBox = (props) => (() => {
-		var _el$ = _tmpl$2$10(), _el$3 = _el$.firstChild;
-		insert(_el$, createComponent(Show, {
-			get when() {
-				return props.icon;
-			},
-			get children() {
-				return _tmpl$$12();
-			}
-		}), _el$3);
-		insert(_el$3, () => props.children);
-		createRenderEffect(() => className(_el$, `flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600 ${props.class || ""}`));
-		return _el$;
-	})();
-	//#endregion
 	//#region src/admin/display-options-section.tsx
-	var _tmpl$$11 = /*#__PURE__*/ template(`<span class="text-xs text-indigo-600">Customized`);
-	var _tmpl$2$9 = /*#__PURE__*/ template(`<strong>Note:`);
-	var _tmpl$3$8 = /*#__PURE__*/ template(`<strong>caught up`);
-	var _tmpl$4$6 = /*#__PURE__*/ template(`<strong>Overdue styling:`);
+	var _tmpl$$10 = /*#__PURE__*/ template(`<span class="text-xs text-indigo-600">Customized`);
+	var _tmpl$2$8 = /*#__PURE__*/ template(`<strong>Note:`);
+	var _tmpl$3$7 = /*#__PURE__*/ template(`<strong>caught up`);
+	var _tmpl$4$5 = /*#__PURE__*/ template(`<strong>Overdue styling:`);
 	var _tmpl$5$3 = /*#__PURE__*/ template(`<strong>Normal styling:`);
 	var _tmpl$6$3 = /*#__PURE__*/ template(`<strong>Hide:`);
 	var _tmpl$7$3 = /*#__PURE__*/ template(`<strong>Show if overdue:`);
@@ -2780,7 +3986,7 @@
 					return hasNonDefaultValue();
 				},
 				get children() {
-					return _tmpl$$11();
+					return _tmpl$$10();
 				}
 			}), _el$7);
 			insert(_el$7, () => isOpen() ? "−" : "+");
@@ -2788,9 +3994,9 @@
 				icon: true,
 				get children() {
 					return [
-						_tmpl$2$9(),
+						_tmpl$2$8(),
 						" A chore is ",
-						_tmpl$3$8(),
+						_tmpl$3$7(),
 						" when it was completed on the previous day it appeared (by default, the previous non-skip day). New and newly rotated chores start as caught up."
 					];
 				}
@@ -2802,7 +4008,7 @@
 						return props.notCaughtUpDisplay() === NotCaughtUpDisplay.OVERDUE;
 					},
 					get children() {
-						return [_tmpl$4$6(), " If the chore is not caught up, it is styled as overdue (default style is yellow)."];
+						return [_tmpl$4$5(), " If the chore is not caught up, it is styled as overdue (default style is yellow)."];
 					}
 				}), createComponent(Show, {
 					get when() {
@@ -2972,113 +4178,6 @@
 		})();
 	};
 	delegateEvents(["input"]);
-	//#endregion
-	//#region src/admin/time-select.tsx
-	var _tmpl$$10 = /*#__PURE__*/ template(`<optgroup label=AM>`);
-	var _tmpl$2$8 = /*#__PURE__*/ template(`<optgroup label=PM>`);
-	var _tmpl$3$7 = /*#__PURE__*/ template(`<select class="w-full rounded-lg border border-slate-300 p-2.5 text-base transition-colors focus:border-indigo-600 focus:outline-none"><option value>— Not set —`);
-	var _tmpl$4$5 = /*#__PURE__*/ template(`<option>`);
-	var MINUTES = ["00", "30"];
-	/** All standard 30-minute-increment options in HH:MM 24-hour format starting at 00:30 */
-	var STANDARD_OPTIONS = [];
-	for (let h = 0; h < 24; h++) for (const m of MINUTES) {
-		const time = `${String(h).padStart(2, "0")}:${m}`;
-		if (time === "00:00") continue;
-		STANDARD_OPTIONS.push(time);
-	}
-	/**
-	* Convert a 24-hour HH:MM string to a display label based on time format.
-	*/
-	var toLabel = (time, use12Hour) => {
-		if (!use12Hour) return time;
-		const [hourStr, minuteStr] = time.split(":");
-		const hour = Number.parseInt(hourStr, 10);
-		const ampm = hour < 12 ? "AM" : "PM";
-		return `${hour % 12 === 0 ? 12 : hour % 12}:${minuteStr} ${ampm}`;
-	};
-	var TimeSelect = (props) => {
-		const { resolvedTimeFormat } = useAdminContext();
-		const use12Hour = () => resolvedTimeFormat() === TimeFormat.HOUR_12;
-		const options = () => {
-			const base = [...STANDARD_OPTIONS];
-			if (props.value && !base.includes(props.value)) return [...base, props.value].sort();
-			return base;
-		};
-		const handleChange = (e) => {
-			props.onChange(e.currentTarget.value);
-		};
-		return (() => {
-			var _el$ = _tmpl$3$7(), _el$2 = _el$.firstChild;
-			_el$.addEventListener("change", handleChange);
-			insert(_el$, createComponent(Show, {
-				get when() {
-					return !use12Hour();
-				},
-				get children() {
-					return createComponent(For, {
-						get each() {
-							return options();
-						},
-						children: (opt) => (() => {
-							var _el$5 = _tmpl$4$5();
-							_el$5.value = opt;
-							insert(_el$5, () => toLabel(opt, false));
-							createRenderEffect(() => _el$5.selected = opt === props.value);
-							return _el$5;
-						})()
-					});
-				}
-			}), null);
-			insert(_el$, createComponent(Show, {
-				get when() {
-					return use12Hour();
-				},
-				get children() {
-					return [(() => {
-						var _el$3 = _tmpl$$10();
-						insert(_el$3, createComponent(For, {
-							get each() {
-								return options().filter((o) => Number.parseInt(o.split(":")[0], 10) < 12);
-							},
-							children: (opt) => (() => {
-								var _el$6 = _tmpl$4$5();
-								_el$6.value = opt;
-								insert(_el$6, () => toLabel(opt, true));
-								createRenderEffect(() => _el$6.selected = opt === props.value);
-								return _el$6;
-							})()
-						}));
-						return _el$3;
-					})(), (() => {
-						var _el$4 = _tmpl$2$8();
-						insert(_el$4, createComponent(For, {
-							get each() {
-								return options().filter((o) => Number.parseInt(o.split(":")[0], 10) >= 12);
-							},
-							children: (opt) => (() => {
-								var _el$7 = _tmpl$4$5();
-								_el$7.value = opt;
-								insert(_el$7, () => toLabel(opt, true));
-								createRenderEffect(() => _el$7.selected = opt === props.value);
-								return _el$7;
-							})()
-						}));
-						return _el$4;
-					})()];
-				}
-			}), null);
-			createRenderEffect((_p$) => {
-				var _v$ = props.id, _v$2 = props.value === "";
-				_v$ !== _p$.e && setAttribute(_el$, "id", _p$.e = _v$);
-				_v$2 !== _p$.t && (_el$2.selected = _p$.t = _v$2);
-				return _p$;
-			}, {
-				e: void 0,
-				t: void 0
-			});
-			return _el$;
-		})();
-	};
 	//#endregion
 	//#region src/admin/personal-chore-modal.tsx
 	var _tmpl$$9 = /*#__PURE__*/ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[500px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"><div class="mb-5 flex items-center justify-between"><h3 class="text-2xl text-indigo-600">Error</h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><p>Person not found. Please refresh the page.`);
@@ -3899,7 +4998,7 @@
 	};
 	//#endregion
 	//#region src/admin/rotating-chores-tab.tsx
-	var _tmpl$$4 = /*#__PURE__*/ template(`<section data-testid=rotating-chores-section><div class="mb-5 flex items-center justify-between"><h2 class="m-0 border-b-2 border-indigo-600 pb-2.5 text-2xl text-indigo-600">Rotating Chores</h2></div><div class="mt-5 grid gap-4">`);
+	var _tmpl$$4 = /*#__PURE__*/ template(`<section data-testid=rotating-chores-section><div class="mb-5 flex items-center justify-between"><h2 class="m-0 border-b-2 border-indigo-600 pb-2.5 text-2xl text-indigo-600">Rotating Chores</h2><div class="flex items-center gap-2"></div></div><div class="mt-5 grid gap-4">`);
 	/** Tab showing all rotating chores */
 	var RotatingChoresTab = (props) => {
 		const rotatingChores = () => props.chores.filter((chore) => chore.type === ChoreType.ROTATING);
@@ -3908,16 +5007,28 @@
 				return props.people.length > 0;
 			},
 			get children() {
-				var _el$ = _tmpl$$4(), _el$2 = _el$.firstChild;
-				_el$2.firstChild;
-				var _el$4 = _el$2.nextSibling;
-				insert(_el$2, createComponent(Button, {
+				var _el$ = _tmpl$$4(), _el$2 = _el$.firstChild, _el$4 = _el$2.firstChild.nextSibling, _el$5 = _el$2.nextSibling;
+				insert(_el$4, createComponent(Button, {
 					type: "button",
 					variant: "primary",
 					onClick: () => props.onAddRotatingChore(),
 					children: "Add Rotating Chore"
 				}), null);
-				insert(_el$4, createComponent(For, {
+				insert(_el$4, createComponent(Show, {
+					get when() {
+						return rotatingChores().length > 0;
+					},
+					get children() {
+						return createComponent(Button, {
+							type: "button",
+							variant: "secondary",
+							onClick: () => props.onBulkEdit(),
+							dataTestId: "bulk-edit-rotating-btn",
+							children: "Bulk Edit Settings"
+						});
+					}
+				}), null);
+				insert(_el$5, createComponent(For, {
 					get each() {
 						return rotatingChores();
 					},
@@ -4198,6 +5309,7 @@
 		const [rotatingChoreModalOpen, setRotatingChoreModalOpen] = createSignal(false);
 		const [copyChoresModalOpen, setCopyChoresModalOpen] = createSignal(false);
 		const [settingsModalOpen, setSettingsModalOpen] = createSignal(false);
+		const [bulkEditChoreType, setBulkEditChoreType] = createSignal(null);
 		const [editingPerson, setEditingPerson] = createSignal(null);
 		const [editingChore, setEditingChore] = createSignal(null);
 		const [editingChorePerson, setEditingChorePerson] = createSignal(null);
@@ -4260,6 +5372,10 @@
 			setSettingsModalOpen(false);
 			await loadData();
 		};
+		const closeBulkEditModal = async () => {
+			setBulkEditChoreType(null);
+			await loadData();
+		};
 		const handleDownloadBackup = async () => {
 			try {
 				let pin = cachedPin();
@@ -4270,16 +5386,8 @@
 					pin = result.pin;
 					rememberPin = result.remember;
 				}
-				const blob = await downloadBackup(pin || void 0);
+				await triggerBackupDownload(pin || void 0);
 				if (rememberPin) setCachedPin(pin);
-				const url = window.URL.createObjectURL(blob);
-				const a = document.createElement("a");
-				a.href = url;
-				a.download = "family-chores-backup.json";
-				document.body.appendChild(a);
-				a.click();
-				window.URL.revokeObjectURL(url);
-				document.body.removeChild(a);
 			} catch (error) {
 				console.error("Error downloading backup:", error);
 				alert(`Failed to download backup: ${error instanceof Error ? error.message : "Please try again."}`);
@@ -4433,7 +5541,8 @@
 							onAddChore: openPersonalChoreModal,
 							onEditChore: openPersonalChoreModal,
 							onDeleteChore: handleDeleteChore,
-							onCopyChores: openCopyChoresModal
+							onCopyChores: openCopyChoresModal,
+							onBulkEdit: () => setBulkEditChoreType(ChoreType.PERSONAL)
 						});
 					}
 				}), null);
@@ -4451,7 +5560,8 @@
 							},
 							onAddRotatingChore: openRotatingChoreModal,
 							onEditRotatingChore: openRotatingChoreModal,
-							onDeleteChore: handleDeleteChore
+							onDeleteChore: handleDeleteChore,
+							onBulkEdit: () => setBulkEditChoreType(ChoreType.ROTATING)
 						});
 					}
 				}), null);
@@ -4543,6 +5653,17 @@
 				get children() {
 					return createComponent(SettingsModal, { closeModal: closeSettingsModal });
 				}
+			}),
+			createComponent(Show, {
+				get when() {
+					return bulkEditChoreType();
+				},
+				children: (choreType) => createComponent(BulkEditModal, {
+					get choreType() {
+						return choreType();
+					},
+					closeModal: closeBulkEditModal
+				})
 			}),
 			createComponent(Show, {
 				get when() {

@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.0](https://github.com/jonyo/MMM-FamilyChores/compare/v1.5.5...v1.6.0) (2026-09-22)
+
+### Added
+- Added a bulk-edit wizard to the People and Rotating Chores tabs for safely changing one chore setting across multiple chores, with compact and detailed selection views, PIN protection, sequential updates, per-chore progress, and a backup reminder.
+
 ## [1.5.5](https://github.com/jonyo/MMM-FamilyChores/compare/v1.5.4...v1.5.5) (2026-07-31)
 
 ### Fixed

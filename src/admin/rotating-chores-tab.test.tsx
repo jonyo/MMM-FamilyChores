@@ -44,6 +44,7 @@ describe('RotatingChoresTab', () => {
           onAddRotatingChore={vi.fn()}
           onEditRotatingChore={vi.fn()}
           onDeleteChore={vi.fn()}
+          onBulkEdit={vi.fn()}
         />
       </MockAdminProvider>
     ));
@@ -60,6 +61,7 @@ describe('RotatingChoresTab', () => {
         onAddRotatingChore={vi.fn()}
         onEditRotatingChore={vi.fn()}
         onDeleteChore={vi.fn()}
+        onBulkEdit={vi.fn()}
       />
     ));
 
@@ -77,6 +79,7 @@ describe('RotatingChoresTab', () => {
           onAddRotatingChore={onAddRotatingChore}
           onEditRotatingChore={vi.fn()}
           onDeleteChore={vi.fn()}
+          onBulkEdit={vi.fn()}
         />
       </MockAdminProvider>
     ));
@@ -96,11 +99,12 @@ describe('RotatingChoresTab', () => {
           onAddRotatingChore={vi.fn()}
           onEditRotatingChore={onEditRotatingChore}
           onDeleteChore={vi.fn()}
+          onBulkEdit={vi.fn()}
         />
       </MockAdminProvider>
     ));
 
-    await page.getByRole('button', { name: 'Edit' }).click();
+    await page.getByRole('button', { name: 'Edit', exact: true }).click();
     expect(onEditRotatingChore).toHaveBeenCalledWith(mockRotatingChore);
   });
 
@@ -116,11 +120,49 @@ describe('RotatingChoresTab', () => {
           onAddRotatingChore={vi.fn()}
           onEditRotatingChore={vi.fn()}
           onDeleteChore={onDeleteChore}
+          onBulkEdit={vi.fn()}
         />
       </MockAdminProvider>
     ));
 
     await page.getByRole('button', { name: 'Delete' }).click();
     expect(onDeleteChore).toHaveBeenCalledWith(mockRotatingChore.id);
+  });
+
+  it('calls onBulkEdit when Bulk Edit Settings button is clicked', async () => {
+    const onBulkEdit = vi.fn();
+
+    render(() => (
+      <MockAdminProvider>
+        <RotatingChoresTab
+          people={mockPeople}
+          chores={mockChores}
+          onAddRotatingChore={vi.fn()}
+          onEditRotatingChore={vi.fn()}
+          onDeleteChore={vi.fn()}
+          onBulkEdit={onBulkEdit}
+        />
+      </MockAdminProvider>
+    ));
+
+    await page.getByRole('button', { name: 'Bulk Edit Settings' }).click();
+    expect(onBulkEdit).toHaveBeenCalled();
+  });
+
+  it('hides Bulk Edit Settings button when there are no rotating chores', () => {
+    render(() => (
+      <MockAdminProvider>
+        <RotatingChoresTab
+          people={mockPeople}
+          chores={[]}
+          onAddRotatingChore={vi.fn()}
+          onEditRotatingChore={vi.fn()}
+          onDeleteChore={vi.fn()}
+          onBulkEdit={vi.fn()}
+        />
+      </MockAdminProvider>
+    ));
+
+    expect(page.getByTestId('bulk-edit-rotating-btn').elements().length).toBe(0);
   });
 });

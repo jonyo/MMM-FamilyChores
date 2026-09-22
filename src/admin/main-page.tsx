@@ -1,10 +1,12 @@
 import type { Component } from 'solid-js';
 import { createSignal, For, Show } from 'solid-js';
-import { deleteChore, deletePerson, downloadBackup } from '../api';
+import { deleteChore, deletePerson } from '../api';
 import type { Chore, Person, PersonalChore, RotatingChore } from '../types/chore-types';
 import { ChoreType } from '../types/chore-types';
 import { useAdminContext } from './admin-context';
 import { AdvanceRotationsModal } from './advance-rotations-modal';
+import { triggerBackupDownload } from './backup-actions';
+import { BulkEditModal } from './bulk-edit-modal';
 import { Button } from './button';
 import { ChoreHistoryModal } from './chore-history-modal';
 import { CopyChoresModal } from './copy-chores-modal';
@@ -62,6 +64,7 @@ export const MainPage: Component = () => {
   const [rotatingChoreModalOpen, setRotatingChoreModalOpen] = createSignal(false);
   const [copyChoresModalOpen, setCopyChoresModalOpen] = createSignal(false);
   const [settingsModalOpen, setSettingsModalOpen] = createSignal(false);
+  const [bulkEditChoreType, setBulkEditChoreType] = createSignal<ChoreType | null>(null);
   const [editingPerson, setEditingPerson] = createSignal<Person | null>(null);
   const [editingChore, setEditingChore] = createSignal<Chore | null>(null);
   const [editingChorePerson, setEditingChorePerson] = createSignal<Person | null>(null);
@@ -144,6 +147,12 @@ export const MainPage: Component = () => {
     await loadData();
   };
 
+  // Bulk edit modal handlers
+  const closeBulkEditModal = async () => {
+    setBulkEditChoreType(null);
+    await loadData();
+  };
+
   // Backup/restore handlers
   const handleDownloadBackup = async () => {
     try {
@@ -156,16 +165,8 @@ export const MainPage: Component = () => {
         rememberPin = result.remember;
       }
 
-      const blob = await downloadBackup(pin || undefined);
+      await triggerBackupDownload(pin || undefined);
       if (rememberPin) setCachedPin(pin);
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'family-chores-backup.json';
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
     } catch (error) {
       console.error('Error downloading backup:', error);
       alert(
@@ -341,6 +342,7 @@ export const MainPage: Component = () => {
             onEditChore={openPersonalChoreModal}
             onDeleteChore={handleDeleteChore}
             onCopyChores={openCopyChoresModal}
+            onBulkEdit={() => setBulkEditChoreType(ChoreType.PERSONAL)}
           />
         </Show>
 
@@ -351,6 +353,7 @@ export const MainPage: Component = () => {
             onAddRotatingChore={openRotatingChoreModal}
             onEditRotatingChore={openRotatingChoreModal}
             onDeleteChore={handleDeleteChore}
+            onBulkEdit={() => setBulkEditChoreType(ChoreType.ROTATING)}
           />
         </Show>
 
@@ -393,6 +396,9 @@ export const MainPage: Component = () => {
       </Show>
       <Show when={settingsModalOpen()}>
         <SettingsModal closeModal={closeSettingsModal} />
+      </Show>
+      <Show when={bulkEditChoreType()}>
+        {(choreType) => <BulkEditModal choreType={choreType()} closeModal={closeBulkEditModal} />}
       </Show>
       <Show when={advanceRotationsModalOpen()}>
         <AdvanceRotationsModal

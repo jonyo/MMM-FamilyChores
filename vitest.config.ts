@@ -16,6 +16,7 @@ export default defineConfig({
             // run utils in both modes to make sure they work in node
             'src/utils/**/*.test.ts',
             'src/api/**/*.test.ts',
+            'src/admin/**/*.test.ts',
           ],
           // exclude browser-only utils from node tests
           exclude: ['src/utils/browser.test.ts'],

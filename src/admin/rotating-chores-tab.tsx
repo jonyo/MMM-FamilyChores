@@ -17,6 +17,8 @@ interface RotatingChoresTabProps {
   onEditRotatingChore: (chore: RotatingChore) => void;
   /** Callback to delete a rotating chore */
   onDeleteChore: (choreId: string) => void;
+  /** Callback to open the bulk-edit wizard for rotating chores */
+  onBulkEdit: () => void;
 }
 
 /** Tab showing all rotating chores */
@@ -31,9 +33,21 @@ export const RotatingChoresTab: Component<RotatingChoresTabProps> = (props) => {
           <h2 class="m-0 border-b-2 border-indigo-600 pb-2.5 text-2xl text-indigo-600">
             Rotating Chores
           </h2>
-          <Button type="button" variant="primary" onClick={() => props.onAddRotatingChore()}>
-            Add Rotating Chore
-          </Button>
+          <div class="flex items-center gap-2">
+            <Button type="button" variant="primary" onClick={() => props.onAddRotatingChore()}>
+              Add Rotating Chore
+            </Button>
+            <Show when={rotatingChores().length > 0}>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => props.onBulkEdit()}
+                dataTestId="bulk-edit-rotating-btn"
+              >
+                Bulk Edit Settings
+              </Button>
+            </Show>
+          </div>
         </div>
         <div class="mt-5 grid gap-4">
           <For each={rotatingChores()}>

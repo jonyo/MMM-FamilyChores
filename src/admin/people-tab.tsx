@@ -28,6 +28,8 @@ interface PeopleTabProps {
   onDeleteChore: (choreId: string) => void;
   /** Callback to copy chores from a person */
   onCopyChores: (person: Person) => void;
+  /** Callback to open the bulk-edit wizard for personal chores */
+  onBulkEdit: () => void;
 }
 
 /** Tab showing all people as accordion cards */
@@ -38,6 +40,7 @@ export const PeopleTab: Component<PeopleTabProps> = (props) => {
     ) as PersonalChore[];
 
   const canCopyChores = () => props.people.length > 1;
+  const hasPersonalChores = () => props.chores.some((chore) => chore.type === ChoreType.PERSONAL);
 
   return (
     <section data-testid="people-section">
@@ -47,6 +50,16 @@ export const PeopleTab: Component<PeopleTabProps> = (props) => {
           <Button type="button" variant="primary" onClick={() => props.onAddPerson()}>
             Add Person
           </Button>
+          <Show when={props.people.length > 0 && hasPersonalChores()}>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => props.onBulkEdit()}
+              dataTestId="bulk-edit-people-btn"
+            >
+              Bulk Edit Settings
+            </Button>
+          </Show>
           <Show when={props.people.length === 0}>
             <HelpIcon
               text="Add at least one person before you can create chores"
