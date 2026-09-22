@@ -18,7 +18,6 @@ import {
   SkipDayVisibility as SkipDayVisibilityEnum,
 } from '../types/chore-types';
 import type { CreateChoreRequest, UpdateChoreRequest } from '../types/request-types';
-import { escapeHtml } from '../utils/browser';
 import { useAdminContext } from './admin-context';
 import { Button } from './button';
 import { DisplayOptionsSection } from './display-options-section';
@@ -183,7 +182,7 @@ export const PersonalChoreModal: Component<PersonalChoreModalProps> = (props) =>
                 style={`background-color: ${person.color}`}
                 data-testid="person-color-badge"
               ></span>
-              <strong>Assigned to:</strong> {escapeHtml(person.name)}
+              <strong>Assigned to:</strong> {person.name}
             </div>
             <form onSubmit={handleSubmit}>
               <div class="mb-5">

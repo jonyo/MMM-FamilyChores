@@ -10,6 +10,9 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Updated development dependencies to resolve known security vulnerabilities reported by `pnpm audit`. This includes some code changes as result of newer versions of linting libraries.
 
+### Fixed
+- Person and chore names containing HTML-sensitive characters such as `&`, `<`, and `>` now display correctly instead of showing encoded entities.
+
 ## [1.5.5](https://github.com/jonyo/MMM-FamilyChores/compare/v1.5.4...v1.5.5) (2026-07-31)
 
 ### Fixed

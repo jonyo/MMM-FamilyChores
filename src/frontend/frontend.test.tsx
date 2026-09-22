@@ -84,6 +84,23 @@ describe('Frontend Component Tests', () => {
       await expect.element(page.getByText('Alice')).toBeVisible();
     });
 
+    it('should render HTML-sensitive characters in names without double encoding', async () => {
+      const onToggle = vi.fn();
+      render(() => (
+        <ChoreItem
+          chore={{ ...mockPersonalChore, name: 'Laundry & <Dishes>' }}
+          people={[{ ...mockPeople[0], name: 'Alice & Bob' }]}
+          currentTime={mockCurrentTime()}
+          timeFormat={TimeFormat.HOUR_24}
+          onToggle={onToggle}
+        />
+      ));
+
+      await expect.element(page.getByText('Laundry & <Dishes>')).toBeVisible();
+      await expect.element(page.getByText('Alice & Bob')).toBeVisible();
+      expect(page.getByText('Laundry &amp; &lt;Dishes&gt;').elements().length).toBe(0);
+    });
+
     it('should render rotating chore with current rotation person', async () => {
       const onToggle = vi.fn();
       render(() => (

@@ -1,7 +1,6 @@
 import type { Component } from 'solid-js';
 import { createMemo, createSignal, For, Match, onMount, Show, Switch } from 'solid-js';
 import type { Chore, DayOfWeek, Person } from '../types/chore-types';
-import { escapeHtml } from '../utils/browser';
 import {
   getLocalDateString,
   getLocalDayName,
@@ -107,7 +106,7 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
         data-testid="modal-content"
       >
         <div class="mb-5 flex items-center justify-between">
-          <h3 class="text-2xl text-indigo-600">{escapeHtml(props.person.name)}'s Chore History</h3>
+          <h3 class="text-2xl text-indigo-600">{props.person.name}'s Chore History</h3>
           <button
             type="button"
             class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"
@@ -176,7 +175,7 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
                   {(chore) => (
                     <tr>
                       <td class="border border-slate-200 p-2.5 text-base whitespace-nowrap text-slate-900">
-                        {escapeHtml(chore.name)}
+                        {chore.name}
                         <Show when={chore.type === 'rotating'}>
                           {' '}
                           <Tooltip

@@ -2,7 +2,6 @@ import type { Component } from 'solid-js';
 import { createSignal, For, Show } from 'solid-js';
 import { advanceRotations } from '../api';
 import type { RotatingChore } from '../types/chore-types';
-import { escapeHtml } from '../utils/browser';
 import { useAdminContext } from './admin-context';
 import { Button } from './button';
 import { PinField } from './pin-field';
@@ -18,7 +17,7 @@ export const AdvanceRotationsModal: Component<AdvanceRotationsModalProps> = (pro
   const [rememberPin, setRememberPin] = createSignal(false);
 
   const getPersonName = (id: string) =>
-    escapeHtml(choreData().people.find((p) => p.id === id)?.name ?? 'Unknown');
+    choreData().people.find((p) => p.id === id)?.name ?? 'Unknown';
 
   const advanceable = () => props.rotatingChores.filter((c) => (c.rotation ?? []).length >= 2);
 
@@ -47,7 +46,7 @@ export const AdvanceRotationsModal: Component<AdvanceRotationsModalProps> = (pro
   return (
     <div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50">
       <div
-        class="max-h-[90vh] w-[90%] max-w-[560px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"
+        class="max-h-[90vh] w-[90%] max-w-140 scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"
         data-testid="advance-rotations-modal"
       >
         <div class="mb-2 flex items-center justify-between">
@@ -91,7 +90,7 @@ export const AdvanceRotationsModal: Component<AdvanceRotationsModalProps> = (pro
                   data-testid={`rotation-row-${chore.id}`}
                 >
                   <div>
-                    <span class="font-medium text-slate-800">{escapeHtml(chore.name)}</span>
+                    <span class="font-medium text-slate-800">{chore.name}</span>
                     <div class="mt-0.5 text-sm text-slate-500">
                       {getPersonName((chore.rotation ?? [])[chore.rotatingIndex ?? 0] ?? '')}
                     </div>

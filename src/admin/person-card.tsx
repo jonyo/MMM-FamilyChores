@@ -1,7 +1,7 @@
 import type { Component } from 'solid-js';
 import { createSignal, For, Show } from 'solid-js';
 import type { DayOfWeek, Person, PersonalChore } from '../types/chore-types';
-import { escapeHtml, formatTime } from '../utils/browser';
+import { formatTime } from '../utils/browser';
 import { useAdminContext } from './admin-context';
 import { Button } from './button';
 
@@ -82,7 +82,7 @@ export const PersonCard: Component<PersonCardProps> = (props) => {
           </button>
           <div>
             <h3 class="mb-1 text-xl text-slate-900">
-              {escapeHtml(props.person.name)}{' '}
+              {props.person.name}{' '}
               <span
                 class="inline-block size-6 rounded-full border-2 border-black/10 align-middle"
                 style={`background-color: ${props.person.color}`}
@@ -121,9 +121,7 @@ export const PersonCard: Component<PersonCardProps> = (props) => {
       <Show when={expanded()}>
         <div class="mt-4 border-t border-slate-200 pt-4">
           <div class="mb-4 flex items-center justify-between">
-            <h4 class="m-0 text-lg text-indigo-600">
-              {escapeHtml(props.person.name)}'s Personal Chores
-            </h4>
+            <h4 class="m-0 text-lg text-indigo-600">{props.person.name}'s Personal Chores</h4>
             <div class="flex gap-2">
               <Button
                 type="button"
@@ -158,7 +156,7 @@ export const PersonCard: Component<PersonCardProps> = (props) => {
                 {(chore) => (
                   <div class="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-2.5">
                     <div>
-                      <h4 class="mb-1.5 text-base text-slate-900">{escapeHtml(chore.name)}</h4>
+                      <h4 class="mb-1.5 text-base text-slate-900">{chore.name}</h4>
                       <Show when={chore.deadline || chore.startTime}>
                         <p class="mt-1.25 text-sm text-indigo-600">
                           <Show when={chore.startTime}>

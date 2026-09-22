@@ -17,7 +17,6 @@ import {
   SkipDayVisibility as SkipDayVisibilityEnum,
 } from '../types/chore-types';
 import type { CreateChoreRequest, UpdateChoreRequest } from '../types/request-types';
-import { escapeHtml } from '../utils/browser';
 import { useAdminContext } from './admin-context';
 import { Button } from './button';
 import { DisplayOptionsSection } from './display-options-section';
@@ -300,7 +299,7 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
                         <span data-drag-handle class="shrink-0">
                           <GrabHandle />
                         </span>
-                        <span class="text-sm">{escapeHtml(person.name)}</span>
+                        <span class="text-sm">{person.name}</span>
                       </li>
                     )}
                   </For>
@@ -356,7 +355,7 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
                             class="size-4 cursor-pointer"
                             data-testid={`active-person-radio-${personId}`}
                           />
-                          <span class="text-sm">{escapeHtml(getPersonName(personId))}</span>
+                          <span class="text-sm">{getPersonName(personId)}</span>
                         </label>
                       </li>
                     )}

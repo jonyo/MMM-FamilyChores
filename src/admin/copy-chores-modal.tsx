@@ -3,7 +3,6 @@ import { createMemo, createSignal, For, onMount, Show } from 'solid-js';
 import { copyChores } from '../api';
 import type { Person, PersonalChore } from '../types/chore-types';
 import { ChoreType } from '../types/chore-types';
-import { escapeHtml } from '../utils/browser';
 import { useAdminContext } from './admin-context';
 import { Button } from './button';
 import { PinField } from './pin-field';
@@ -110,14 +109,14 @@ export const CopyChoresModal: Component<CopyChoresModalProps> = (props) => {
             style={`background-color: ${props.fromPerson.color}`}
             data-testid="person-color-badge"
           ></span>
-          <strong>From:</strong> {escapeHtml(props.fromPerson.name)}
+          <strong>From:</strong> {props.fromPerson.name}
         </div>
         <Show
           when={personalChores().length > 0}
           fallback={
             <div class="my-2.5 text-slate-500 italic" data-testid="empty-message">
               <p data-testid="empty-message-text">
-                No personal chores to copy for {escapeHtml(props.fromPerson.name)}.
+                No personal chores to copy for {props.fromPerson.name}.
               </p>
               <Button type="button" variant="secondary" onClick={() => props.closeModal()}>
                 Close
@@ -146,7 +145,7 @@ export const CopyChoresModal: Component<CopyChoresModalProps> = (props) => {
                 >
                   <option value="">-- Select a person --</option>
                   <For each={availablePeople()}>
-                    {(person) => <option value={person.id}>{escapeHtml(person.name)}</option>}
+                    {(person) => <option value={person.id}>{person.name}</option>}
                   </For>
                 </select>
               </div>
@@ -166,7 +165,7 @@ export const CopyChoresModal: Component<CopyChoresModalProps> = (props) => {
                           onInput={(e) => handleChoreToggle(chore.id, e.currentTarget.checked)}
                           class="size-4.5  cursor-pointer"
                         />
-                        {escapeHtml(chore.name)}
+                        {chore.name}
                       </label>
                     )}
                   </For>

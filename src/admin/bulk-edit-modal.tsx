@@ -18,7 +18,7 @@ import {
   SkipDayVisibility as SkipDayVisibilityEnum,
 } from '../types/chore-types';
 import type { UpdateChoreRequest } from '../types/request-types';
-import { escapeHtml, formatTime } from '../utils/browser';
+import { formatTime } from '../utils/browser';
 import { useAdminContext } from './admin-context';
 import { triggerBackupDownload } from './backup-actions';
 import { Button } from './button';
@@ -879,7 +879,7 @@ export const BulkEditModal: Component<BulkEditModalProps> = (props) => {
                             <Show when={group.person}>
                               {(person) => (
                                 <div class="border-t border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-600 first:border-t-0">
-                                  {escapeHtml(person().name)}
+                                  {person().name}
                                 </div>
                               )}
                             </Show>
@@ -903,7 +903,7 @@ export const BulkEditModal: Component<BulkEditModalProps> = (props) => {
                                         toggleChore(chore.id, e.currentTarget.checked)
                                       }
                                     />
-                                    <span>{escapeHtml(chore.name)}</span>
+                                    <span>{chore.name}</span>
                                     <span class="text-sm text-slate-500">
                                       — currently:{' '}
                                       {formatFieldValue(
@@ -1030,12 +1030,10 @@ export const BulkEditModal: Component<BulkEditModalProps> = (props) => {
                                           }
                                         />
                                       </td>
-                                      <td class="border-t border-slate-100 p-2">
-                                        {escapeHtml(chore.name)}
-                                      </td>
+                                      <td class="border-t border-slate-100 p-2">{chore.name}</td>
                                       <Show when={props.choreType === ChoreType.PERSONAL}>
                                         <td class="border-t border-slate-100 p-2">
-                                          {escapeHtml(group.person?.name ?? '')}
+                                          {group.person?.name ?? ''}
                                         </td>
                                       </Show>
                                       <td
@@ -1141,7 +1139,7 @@ export const BulkEditModal: Component<BulkEditModalProps> = (props) => {
                           <Show when={group.person}>
                             {(person) => (
                               <div class="border-t border-slate-100 bg-slate-50 px-4 py-1.5 text-sm font-semibold text-slate-600">
-                                {escapeHtml(person().name)}
+                                {person().name}
                               </div>
                             )}
                           </Show>
@@ -1151,9 +1149,7 @@ export const BulkEditModal: Component<BulkEditModalProps> = (props) => {
                                 class="grid grid-cols-[1.5fr_1fr_auto_1fr_auto] items-center gap-x-3 border-t border-slate-100 px-4 py-2"
                                 data-testid={`confirm-row-${chore.id}`}
                               >
-                                <span class="font-medium text-slate-800">
-                                  {escapeHtml(chore.name)}
-                                </span>
+                                <span class="font-medium text-slate-800">{chore.name}</span>
                                 <span class="text-sm text-slate-500">
                                   {formatFieldValue(
                                     f(),

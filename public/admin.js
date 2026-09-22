@@ -1520,18 +1520,6 @@
 		return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 	};
 	/**
-	* Escape HTML special characters to prevent XSS attacks
-	* Uses the browser's DOM API to properly escape HTML entities
-	*
-	* @param raw - The raw string to escape
-	* @returns The escaped HTML string
-	*/
-	var escapeHtml = (raw) => {
-		const div = document.createElement("div");
-		div.textContent = raw;
-		return div.innerHTML;
-	};
-	/**
 	* Detect whether the system locale prefers 12-hour or 24-hour time.
 	* Returns true if the system uses 12-hour format.
 	*/
@@ -1858,14 +1846,14 @@
 	//#endregion
 	//#region src/admin/advance-rotations-modal.tsx
 	var _tmpl$$19 = /*#__PURE__*/ template(`<div class="mb-5 overflow-hidden rounded-lg border border-slate-200"data-testid=rotation-preview-list><div class="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3 border-b border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold tracking-wide text-slate-500 uppercase"><span>Chore</span><span></span><span>Next Up`);
-	var _tmpl$2$15 = /*#__PURE__*/ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[560px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"data-testid=advance-rotations-modal><div class="mb-2 flex items-center justify-between"><h3 class="text-2xl text-indigo-600">Advance All Rotations</h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><p class="mb-5 text-sm text-slate-500">Each rotating chore will move to the next person in its rotation. Completion state will be cleared.</p><div class="mt-6 flex justify-end gap-2.5">`);
+	var _tmpl$2$15 = /*#__PURE__*/ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-140 scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"data-testid=advance-rotations-modal><div class="mb-2 flex items-center justify-between"><h3 class="text-2xl text-indigo-600">Advance All Rotations</h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><p class="mb-5 text-sm text-slate-500">Each rotating chore will move to the next person in its rotation. Completion state will be cleared.</p><div class="mt-6 flex justify-end gap-2.5">`);
 	var _tmpl$3$13 = /*#__PURE__*/ template(`<p class="my-4 text-slate-500 italic"data-testid=no-chores-message>No rotating chores with 2+ people to advance.`);
 	var _tmpl$4$11 = /*#__PURE__*/ template(`<div class="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3 px-4 py-3"><div><span class="font-medium text-slate-800"></span><div class="mt-0.5 text-sm text-slate-500"></div></div><span class="text-lg text-slate-400">→</span><div class="text-sm font-semibold text-indigo-600">`);
 	var AdvanceRotationsModal = (props) => {
 		const { choreData, pinRequired, cachedPin, setCachedPin } = useAdminContext();
 		const [pin, setPin] = createSignal("");
 		const [rememberPin, setRememberPin] = createSignal(false);
-		const getPersonName = (id) => escapeHtml(choreData().people.find((p) => p.id === id)?.name ?? "Unknown");
+		const getPersonName = (id) => choreData().people.find((p) => p.id === id)?.name ?? "Unknown";
 		const advanceable = () => props.rotatingChores.filter((c) => (c.rotation ?? []).length >= 2);
 		const getNextPersonId = (chore) => {
 			const rotation = chore.rotation ?? [];
@@ -1901,7 +1889,7 @@
 						},
 						children: (chore, index) => (() => {
 							var _el$1 = _tmpl$4$11(), _el$10 = _el$1.firstChild, _el$11 = _el$10.firstChild, _el$12 = _el$11.nextSibling, _el$14 = _el$10.nextSibling.nextSibling;
-							insert(_el$11, () => escapeHtml(chore.name));
+							insert(_el$11, () => chore.name);
 							insert(_el$12, () => getPersonName((chore.rotation ?? [])[chore.rotatingIndex ?? 0] ?? ""));
 							insert(_el$14, () => getPersonName(getNextPersonId(chore)));
 							createRenderEffect((_p$) => {
@@ -2774,7 +2762,7 @@
 												},
 												children: (person) => (() => {
 													var _el$84 = _tmpl$16();
-													insert(_el$84, () => escapeHtml(person().name));
+													insert(_el$84, () => person().name);
 													return _el$84;
 												})()
 											}), null);
@@ -2788,7 +2776,7 @@
 														var _el$85 = _tmpl$18(), _el$86 = _el$85.firstChild, _el$87 = _el$86.nextSibling, _el$88 = _el$87.nextSibling;
 														_el$88.firstChild;
 														_el$86.$$input = (e) => toggleChore(chore.id, e.currentTarget.checked);
-														insert(_el$87, () => escapeHtml(chore.name));
+														insert(_el$87, () => chore.name);
 														insert(_el$88, () => formatFieldValue(f(), getChoreValue(chore, f()), resolvedTimeFormat()), null);
 														insert(_el$85, createComponent(Show, {
 															get when() {
@@ -2864,14 +2852,14 @@
 													var _el$92 = _tmpl$20(), _el$93 = _el$92.firstChild, _el$94 = _el$93.firstChild, _el$95 = _el$93.nextSibling, _el$97 = _el$95.nextSibling, _el$98 = _el$97.nextSibling, _el$99 = _el$98.nextSibling, _el$100 = _el$99.nextSibling, _el$101 = _el$100.nextSibling, _el$102 = _el$101.nextSibling, _el$103 = _el$102.nextSibling;
 													_el$92.$$click = handleRowClick;
 													_el$94.$$input = (e) => toggleChore(chore.id, e.currentTarget.checked);
-													insert(_el$95, () => escapeHtml(chore.name));
+													insert(_el$95, () => chore.name);
 													insert(_el$92, createComponent(Show, {
 														get when() {
 															return props.choreType === ChoreType.PERSONAL;
 														},
 														get children() {
 															var _el$96 = _tmpl$19();
-															insert(_el$96, () => escapeHtml(group.person?.name ?? ""));
+															insert(_el$96, () => group.person?.name ?? "");
 															return _el$96;
 														}
 													}), _el$97);
@@ -3009,7 +2997,7 @@
 										},
 										children: (person) => (() => {
 											var _el$108 = _tmpl$22();
-											insert(_el$108, () => escapeHtml(person().name));
+											insert(_el$108, () => person().name);
 											return _el$108;
 										})()
 									}), createComponent(For, {
@@ -3018,7 +3006,7 @@
 										},
 										children: (chore) => (() => {
 											var _el$109 = _tmpl$23(), _el$110 = _el$109.firstChild, _el$111 = _el$110.nextSibling, _el$113 = _el$111.nextSibling.nextSibling, _el$114 = _el$113.nextSibling;
-											insert(_el$110, () => escapeHtml(chore.name));
+											insert(_el$110, () => chore.name);
 											insert(_el$111, () => formatFieldValue(f(), getChoreValue(chore, f()), resolvedTimeFormat()));
 											insert(_el$113, () => formatFieldValue(f(), value(), resolvedTimeFormat()));
 											insert(_el$114, () => statusLabel(submitStatus()[chore.id] ?? "pending"));
@@ -3315,7 +3303,7 @@
 		};
 		return (() => {
 			var _el$ = _tmpl$4$8(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.firstChild, _el$5 = _el$4.firstChild, _el$6 = _el$4.nextSibling, _el$13 = _el$3.nextSibling;
-			insert(_el$4, () => escapeHtml(props.person.name), _el$5);
+			insert(_el$4, () => props.person.name, _el$5);
 			_el$6.$$click = () => props.closeModal();
 			insert(_el$2, createComponent(Show, {
 				get when() {
@@ -3357,7 +3345,7 @@
 						},
 						children: (chore) => (() => {
 							var _el$16 = _tmpl$6$6(), _el$17 = _el$16.firstChild;
-							insert(_el$17, () => escapeHtml(chore.name), null);
+							insert(_el$17, () => chore.name, null);
 							insert(_el$17, createComponent(Show, {
 								get when() {
 									return chore.type === "rotating";
@@ -3541,7 +3529,7 @@
 			var _el$ = _tmpl$3$9(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$5 = _el$3.firstChild.nextSibling, _el$6 = _el$3.nextSibling, _el$7 = _el$6.firstChild;
 			_el$7.nextSibling.nextSibling;
 			_el$5.$$click = () => props.closeModal();
-			insert(_el$6, () => escapeHtml(props.fromPerson.name), null);
+			insert(_el$6, () => props.fromPerson.name, null);
 			insert(_el$2, createComponent(Show, {
 				get when() {
 					return personalChores().length > 0;
@@ -3550,7 +3538,7 @@
 					return (() => {
 						var _el$19 = _tmpl$4$7(), _el$20 = _el$19.firstChild, _el$23 = _el$20.firstChild.nextSibling;
 						_el$23.nextSibling;
-						insert(_el$20, () => escapeHtml(props.fromPerson.name), _el$23);
+						insert(_el$20, () => props.fromPerson.name, _el$23);
 						insert(_el$19, createComponent(Button, {
 							type: "button",
 							variant: "secondary",
@@ -3592,7 +3580,7 @@
 								},
 								children: (person) => (() => {
 									var _el$24 = _tmpl$5$5();
-									insert(_el$24, () => escapeHtml(person.name));
+									insert(_el$24, () => person.name);
 									createRenderEffect(() => _el$24.value = person.id);
 									return _el$24;
 								})()
@@ -3604,7 +3592,7 @@
 								children: (chore) => (() => {
 									var _el$25 = _tmpl$6$5(), _el$26 = _el$25.firstChild;
 									_el$26.$$input = (e) => handleChoreToggle(chore.id, e.currentTarget.checked);
-									insert(_el$25, () => escapeHtml(chore.name), null);
+									insert(_el$25, () => chore.name, null);
 									createRenderEffect(() => _el$26.value = chore.id);
 									createRenderEffect(() => _el$26.checked = selectedChoreIds().includes(chore.id));
 									return _el$25;
@@ -3677,7 +3665,7 @@
 		return (() => {
 			var _el$ = _tmpl$3$8(), _el$3 = _el$.firstChild.firstChild, _el$4 = _el$3.firstChild, _el$5 = _el$4.firstChild, _el$7 = _el$4.nextSibling.firstChild, _el$8 = _el$7.firstChild, _el$9 = _el$8.nextSibling, _el$0 = _el$7.nextSibling, _el$1 = _el$3.nextSibling;
 			_el$4.$$click = toggleExpanded;
-			insert(_el$7, () => escapeHtml(props.person.name), _el$8);
+			insert(_el$7, () => props.person.name, _el$8);
 			insert(_el$0, choreCountLabel);
 			insert(_el$1, createComponent(Button, {
 				type: "button",
@@ -3706,7 +3694,7 @@
 				},
 				get children() {
 					var _el$10 = _tmpl$2$9(), _el$12 = _el$10.firstChild.firstChild, _el$13 = _el$12.firstChild, _el$14 = _el$12.nextSibling;
-					insert(_el$12, () => escapeHtml(props.person.name), _el$13);
+					insert(_el$12, () => props.person.name, _el$13);
 					insert(_el$14, createComponent(Button, {
 						type: "button",
 						variant: "primary",
@@ -3745,7 +3733,7 @@
 									var _el$17 = _tmpl$7$4(), _el$18 = _el$17.firstChild, _el$19 = _el$18.firstChild, _el$22 = _el$19.nextSibling;
 									_el$22.firstChild;
 									var _el$24 = _el$18.nextSibling;
-									insert(_el$19, () => escapeHtml(chore.name));
+									insert(_el$19, () => chore.name);
 									insert(_el$18, createComponent(Show, {
 										get when() {
 											return chore.deadline || chore.startTime;
@@ -4327,7 +4315,7 @@
 				var _el$24 = _el$21.nextSibling, _el$26 = _el$24.firstChild.nextSibling, _el$28 = _el$24.nextSibling;
 				insert(_el$0, () => props.initialChore ? "Edit Personal Chore" : "Add Personal Chore");
 				_el$1.$$click = () => props.closeModal();
-				insert(_el$10, () => escapeHtml(person.name), null);
+				insert(_el$10, () => person.name, null);
 				_el$14.addEventListener("submit", handleSubmit);
 				_el$17.$$input = (e) => setName(e.currentTarget.value);
 				insert(_el$19, createComponent(HelpIcon, {
@@ -4497,14 +4485,14 @@
 	var _tmpl$2$5 = /*#__PURE__*/ template(`<strong>caught up`);
 	var _tmpl$3$5 = /*#__PURE__*/ template(`<br>`);
 	var _tmpl$4$3 = /*#__PURE__*/ template(`<div class="mb-5 overflow-hidden rounded-lg border border-slate-200"data-testid=overdue-chores-list><div class="grid grid-cols-[1fr_1fr] items-center gap-x-3 border-b border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold tracking-wide text-slate-500 uppercase"><span>Chore</span><span>Assigned To`);
-	var _tmpl$5$2 = /*#__PURE__*/ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-[560px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"data-testid=reset-caught-up-modal><div class="mb-2 flex items-center justify-between"><h3 class="text-2xl text-indigo-600">Reset All Caught Up</h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><div class="mt-6 flex justify-end gap-2.5">`);
+	var _tmpl$5$2 = /*#__PURE__*/ template(`<div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50"><div class="max-h-[90vh] w-[90%] max-w-140 scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"data-testid=reset-caught-up-modal><div class="mb-2 flex items-center justify-between"><h3 class="text-2xl text-indigo-600">Reset All Caught Up</h3><button type=button class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"aria-label=Close>×</button></div><div class="mt-6 flex justify-end gap-2.5">`);
 	var _tmpl$6$2 = /*#__PURE__*/ template(`<p class="my-4 text-slate-500 italic"data-testid=no-overdue-message>All chores are already caught up — nothing to reset.`);
 	var _tmpl$7$2 = /*#__PURE__*/ template(`<div class="grid grid-cols-[1fr_1fr] items-center gap-x-3 px-4 py-3"><span class="font-medium text-slate-800"></span><span class="text-sm text-slate-500">`);
 	var ResetCaughtUpModal = (props) => {
 		const { choreData, pinRequired, cachedPin, setCachedPin } = useAdminContext();
 		const [pin, setPin] = createSignal("");
 		const [rememberPin, setRememberPin] = createSignal(false);
-		const getPersonName = (id) => escapeHtml(choreData().people.find((p) => p.id === id)?.name ?? "Unknown");
+		const getPersonName = (id) => choreData().people.find((p) => p.id === id)?.name ?? "Unknown";
 		const getCurrentAssignee = (chore) => {
 			if (chore.type === ChoreType.PERSONAL) return getPersonName(chore.assignedTo);
 			const id = (chore.rotation ?? [])[chore.rotatingIndex ?? 0] ?? "";
@@ -4555,7 +4543,7 @@
 						},
 						children: (chore, index) => (() => {
 							var _el$12 = _tmpl$7$2(), _el$13 = _el$12.firstChild, _el$14 = _el$13.nextSibling;
-							insert(_el$13, () => escapeHtml(chore.name));
+							insert(_el$13, () => chore.name);
 							insert(_el$14, () => getCurrentAssignee(chore));
 							createRenderEffect((_p$) => {
 								var _v$ = !!(index() % 2 === 1), _v$2 = `overdue-row-${chore.id}`;
@@ -4789,7 +4777,7 @@
 					addEventListener(_el$31, "dragstart", handleDragStart(person.id));
 					setAttribute(_el$31, "draggable", true);
 					insert(_el$32, createComponent(GrabHandle, {}));
-					insert(_el$33, () => escapeHtml(person.name));
+					insert(_el$33, () => person.name);
 					createRenderEffect((_p$) => {
 						var _v$3 = !!(draggedPersonId() === person.id), _v$4 = `available-person-${person.id}`;
 						_v$3 !== _p$.e && _el$31.classList.toggle("opacity-50", _p$.e = _v$3);
@@ -4826,7 +4814,7 @@
 					_el$37.addEventListener("change", () => setActivePersonId(personId));
 					_el$37.value = personId;
 					setAttribute(_el$37, "data-testid", `active-person-radio-${personId}`);
-					insert(_el$38, () => escapeHtml(getPersonName(personId)));
+					insert(_el$38, () => getPersonName(personId));
 					createRenderEffect((_$p) => classList(_el$34, {
 						"border-t-2 border-indigo-500": dragOverColumn() === "rotation" && dragOverIndex() === index(),
 						"border-b-2 border-indigo-500": dragOverColumn() === "rotation" && dragOverIndex() === rotation().length && index() === rotation().length - 1,
@@ -4967,7 +4955,7 @@
 		const { resolvedTimeFormat } = useAdminContext();
 		const rotationNames = createMemo(() => props.chore.rotation.map((personId) => {
 			const person = props.people.find((p) => p.id === personId);
-			return person ? escapeHtml(person.name) : "Unknown";
+			return person ? person.name : "Unknown";
 		}).join(", "));
 		const includesEveryone = createMemo(() => {
 			const peopleLength = props.people.length ?? 0;
@@ -4977,7 +4965,7 @@
 		const currentAssignee = createMemo(() => {
 			const currentPersonId = props.chore.rotation[props.chore.rotatingIndex ?? 0];
 			const currentPerson = props.people.find((p) => p.id === currentPersonId);
-			return currentPerson ? escapeHtml(currentPerson.name) : "Unassigned";
+			return currentPerson ? currentPerson.name : "Unassigned";
 		});
 		return (() => {
 			var _el$ = _tmpl$3$3(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.firstChild, _el$5 = _el$3.nextSibling;
@@ -4987,7 +4975,7 @@
 			var _el$1 = _el$7.nextSibling;
 			_el$1.firstChild;
 			var _el$11 = _el$2.nextSibling;
-			insert(_el$3, () => escapeHtml(props.chore.name), _el$4);
+			insert(_el$3, () => props.chore.name, _el$4);
 			insert(_el$5, currentAssignee, null);
 			insert(_el$7, rotationText, null);
 			insert(_el$2, createComponent(Show, {

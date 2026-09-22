@@ -1220,18 +1220,6 @@
 	//#endregion
 	//#region src/utils/browser.ts
 	/**
-	* Escape HTML special characters to prevent XSS attacks
-	* Uses the browser's DOM API to properly escape HTML entities
-	*
-	* @param raw - The raw string to escape
-	* @returns The escaped HTML string
-	*/
-	var escapeHtml = (raw) => {
-		const div = document.createElement("div");
-		div.textContent = raw;
-		return div.innerHTML;
-	};
-	/**
 	* Detect whether the system locale prefers 12-hour or 24-hour time.
 	* Returns true if the system uses 12-hour format.
 	*/
@@ -1412,8 +1400,8 @@
 		return (() => {
 			var _el$ = _tmpl$$7(), _el$2 = _el$.firstChild, _el$3 = _el$2.firstChild, _el$4 = _el$3.firstChild, _el$6 = _el$3.nextSibling.firstChild, _el$7 = _el$6.nextSibling, _el$8 = _el$7.firstChild;
 			_el$4.addEventListener("change", handleChange);
-			insert(_el$6, () => escapeHtml(props.chore.name));
-			insert(_el$8, () => escapeHtml(personName()));
+			insert(_el$6, () => props.chore.name);
+			insert(_el$8, personName);
 			insert(_el$7, (() => {
 				var _c$ = memo(() => !!props.chore.deadline);
 				return () => _c$() && (() => {
@@ -1610,7 +1598,7 @@
 			},
 			children: (row) => (() => {
 				var _el$ = _tmpl$2$3(), _el$2 = _el$.firstChild, _el$3 = _el$2.nextSibling;
-				insert(_el$2, () => escapeHtml(row.person.name));
+				insert(_el$2, () => row.person.name);
 				insert(_el$3, () => row.celebrationEmoji, null);
 				insert(_el$3, () => row.celebrationEmoji && " ", null);
 				insert(_el$3, () => row.count, null);
@@ -1667,14 +1655,14 @@
 			},
 			children: (group) => (() => {
 				var _el$ = _tmpl$$3(), _el$2 = _el$.firstChild, _el$3 = _el$2.nextSibling;
-				insert(_el$2, () => escapeHtml(group.person.name));
+				insert(_el$2, () => group.person.name);
 				insert(_el$3, createComponent(For, {
 					get each() {
 						return group.displayChores;
 					},
 					children: (chore) => (() => {
 						var _el$4 = _tmpl$2$2();
-						insert(_el$4, () => escapeHtml(chore.name));
+						insert(_el$4, () => chore.name);
 						createRenderEffect(() => setAttribute(_el$4, "data-chore-id", chore.id));
 						return _el$4;
 					})()
@@ -1710,8 +1698,8 @@
 		};
 		return (() => {
 			var _el$ = _tmpl$$2(), _el$2 = _el$.firstChild, _el$3 = _el$2.nextSibling, _el$4 = _el$3.nextSibling;
-			insert(_el$2, () => escapeHtml(props.chore.name));
-			insert(_el$3, () => escapeHtml(personName()));
+			insert(_el$2, () => props.chore.name);
+			insert(_el$3, personName);
 			_el$4.addEventListener("change", handleChange);
 			createRenderEffect((_p$) => {
 				var _v$ = personColor(), _v$2 = props.chore.id;

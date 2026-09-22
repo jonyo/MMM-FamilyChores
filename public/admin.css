@@ -496,10 +496,6 @@ To make changes:
     position: relative;
   }
 
-  .static {
-    position: static;
-  }
-
   .sticky {
     position: sticky;
   }
@@ -782,6 +778,10 @@ To make changes:
 
   .max-w-5xl {
     max-width: var(--container-5xl);
+  }
+
+  .max-w-140 {
+    max-width: calc(var(--spacing) * 140);
   }
 
   .max-w-\[95vw\] {
