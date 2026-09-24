@@ -7,6 +7,7 @@ import {
   AfterDeadlineVisibility,
   BeforeStartTimeVisibility,
   ChoreType,
+  DayOfWeek,
   NotCaughtUpDisplay,
   SkipDayVisibility,
 } from '../types/chore-types';
@@ -23,7 +24,7 @@ vi.mock('./backup-actions', () => ({
 }));
 
 beforeEach(() => {
-  vi.clearAllMocks();
+  vi.resetAllMocks();
 });
 
 const alice: Person = { id: 'p1', name: 'Alice', color: '#FF6B6B' };
@@ -272,6 +273,7 @@ describe('BulkEditModal', () => {
       await expect.element(page.getByTestId('confirm-status-c1')).toHaveTextContent('✗ Failed');
       await expect.element(page.getByTestId('confirm-status-c2')).toHaveTextContent('Pending');
       expect(updateChore).toHaveBeenCalledTimes(1);
+      await expect.element(page.getByText(/Close this modal, refresh the page/)).toBeVisible();
       await expect.element(page.getByTestId('close-button')).toBeVisible();
     });
 
@@ -282,6 +284,7 @@ describe('BulkEditModal', () => {
       await page.getByTestId('apply-button').click();
 
       await expect.element(page.getByText(/Incorrect PIN/)).toBeVisible();
+      await expect.element(page.getByText(/Close this modal, refresh the page/)).toBeVisible();
       expect(updateChore).toHaveBeenCalledTimes(1);
     });
 
@@ -344,6 +347,342 @@ describe('BulkEditModal', () => {
       await page.getByTestId('next-button').click();
 
       await expect.element(page.getByTestId('chore-row-r1')).toBeVisible();
+    });
+  });
+
+  describe('Step 3 — Smart selection chips', () => {
+    it('selects all and clears all chores via the All and Clear chips', async () => {
+      render(() => (
+        <MockAdminProvider
+          choreDataOverride={{
+            people: [alice],
+            chores: [
+              makePersonalChore({ id: 'c1', name: 'Make bed' }),
+              makePersonalChore({ id: 'c2', name: 'Feed dog' }),
+            ],
+          }}
+        >
+          <BulkEditModal choreType={ChoreType.PERSONAL} closeModal={vi.fn()} />
+        </MockAdminProvider>
+      ));
+
+      await page.getByRole('radio', { name: 'Not Caught Up Display' }).click();
+      await page.getByTestId('next-button').click();
+      await page.getByTestId('next-button').click();
+
+      await page.getByTestId('select-all-chip').click();
+      expect(
+        (page.getByTestId('chore-row-c1').getByRole('checkbox').element() as HTMLInputElement)
+          .checked
+      ).toBe(true);
+      expect(
+        (page.getByTestId('chore-row-c2').getByRole('checkbox').element() as HTMLInputElement)
+          .checked
+      ).toBe(true);
+
+      await page.getByTestId('select-none-chip').click();
+      expect(
+        (page.getByTestId('chore-row-c1').getByRole('checkbox').element() as HTMLInputElement)
+          .checked
+      ).toBe(false);
+      expect(
+        (page.getByTestId('chore-row-c2').getByRole('checkbox').element() as HTMLInputElement)
+          .checked
+      ).toBe(false);
+    });
+
+    it('toggles a value bucket chip to select only chores with that current value', async () => {
+      render(() => (
+        <MockAdminProvider
+          choreDataOverride={{
+            people: [alice],
+            chores: [
+              makePersonalChore({
+                id: 'c1',
+                name: 'Make bed',
+                notCaughtUpDisplay: NotCaughtUpDisplay.OVERDUE,
+              }),
+              makePersonalChore({
+                id: 'c2',
+                name: 'Feed dog',
+                notCaughtUpDisplay: NotCaughtUpDisplay.NORMAL,
+              }),
+            ],
+          }}
+        >
+          <BulkEditModal choreType={ChoreType.PERSONAL} closeModal={vi.fn()} />
+        </MockAdminProvider>
+      ));
+
+      await page.getByRole('radio', { name: 'Not Caught Up Display' }).click();
+      await page.getByTestId('next-button').click();
+      await page.getByTestId('next-button').click();
+
+      await page.getByText('is currently "Normal styling"').click();
+      expect(
+        (page.getByTestId('chore-row-c1').getByRole('checkbox').element() as HTMLInputElement)
+          .checked
+      ).toBe(false);
+      expect(
+        (page.getByTestId('chore-row-c2').getByRole('checkbox').element() as HTMLInputElement)
+          .checked
+      ).toBe(true);
+
+      await page.getByText('is currently "Overdue styling"').click();
+      expect(
+        (page.getByTestId('chore-row-c1').getByRole('checkbox').element() as HTMLInputElement)
+          .checked
+      ).toBe(true);
+      expect(
+        (page.getByTestId('chore-row-c2').getByRole('checkbox').element() as HTMLInputElement)
+          .checked
+      ).toBe(true);
+    });
+  });
+
+  describe('Step 2 — Field value editing', () => {
+    it('clears a time field by selecting Not set and sends null to the backend', async () => {
+      vi.mocked(updateChore).mockImplementationOnce(() =>
+        Promise.resolve({ id: 'c1', startTime: null })
+      );
+
+      render(() => (
+        <MockAdminProvider
+          choreDataOverride={{
+            people: [alice],
+            chores: [makePersonalChore({ id: 'c1', name: 'Make bed', startTime: '08:00' })],
+          }}
+        >
+          <BulkEditModal choreType={ChoreType.PERSONAL} closeModal={vi.fn()} />
+        </MockAdminProvider>
+      ));
+
+      await page.getByRole('radio', { name: 'Start Time', exact: true }).click();
+      await page.getByTestId('next-button').click();
+      await page.getByRole('combobox').selectOptions('');
+      await page.getByTestId('next-button').click();
+      await page.getByTestId('chore-row-c1').getByRole('checkbox').click();
+      await page.getByTestId('next-button').click();
+      await page.getByTestId('apply-button').click();
+
+      expect(updateChore).toHaveBeenCalledTimes(1);
+      expect(updateChore).toHaveBeenNthCalledWith(1, 'c1', { startTime: null, pin: undefined });
+    });
+
+    it('sets the new skip days using Every day except mode', async () => {
+      vi.mocked(updateChore).mockImplementationOnce(() =>
+        Promise.resolve({ id: 'c1', skipDays: [DayOfWeek.SUNDAY, DayOfWeek.SATURDAY] })
+      );
+
+      render(() => (
+        <MockAdminProvider
+          choreDataOverride={{
+            people: [alice],
+            chores: [makePersonalChore({ id: 'c1', name: 'Make bed', skipDays: [] })],
+          }}
+        >
+          <BulkEditModal choreType={ChoreType.PERSONAL} closeModal={vi.fn()} />
+        </MockAdminProvider>
+      ));
+
+      await page.getByRole('radio', { name: 'Skip Days' }).click();
+      await page.getByTestId('next-button').click();
+      await page.getByRole('checkbox', { name: 'Sunday' }).click();
+      await page.getByRole('checkbox', { name: 'Saturday' }).click();
+      await page.getByTestId('next-button').click();
+      await page.getByTestId('chore-row-c1').getByRole('checkbox').click();
+      await page.getByTestId('next-button').click();
+      await page.getByTestId('apply-button').click();
+
+      expect(updateChore).toHaveBeenCalledTimes(1);
+      expect(updateChore).toHaveBeenNthCalledWith(1, 'c1', {
+        skipDays: [DayOfWeek.SUNDAY, DayOfWeek.SATURDAY],
+        pin: undefined,
+      });
+    });
+
+    it('sets the new skip days using Only on selected days mode', async () => {
+      vi.mocked(updateChore).mockImplementationOnce(() =>
+        Promise.resolve({
+          id: 'c2',
+          skipDays: [DayOfWeek.FRIDAY],
+        })
+      );
+
+      render(() => (
+        <MockAdminProvider
+          choreDataOverride={{
+            people: [alice],
+            chores: [makePersonalChore({ id: 'c2', name: 'Feed dog', skipDays: [] })],
+          }}
+        >
+          <BulkEditModal choreType={ChoreType.PERSONAL} closeModal={vi.fn()} />
+        </MockAdminProvider>
+      ));
+
+      await page.getByRole('radio', { name: 'Skip Days' }).click();
+      await page.getByTestId('next-button').click();
+      await page.getByRole('tab', { name: 'Only on selected days' }).click();
+      // In "Only on selected days" mode all days start active (checked). Unchecking Friday
+      // makes Friday a skip day.
+      await page.getByRole('checkbox', { name: 'Friday' }).click();
+      await page.getByTestId('next-button').click();
+      await page.getByTestId('chore-row-c2').getByRole('checkbox').click();
+      await page.getByTestId('next-button').click();
+      await page.getByTestId('apply-button').click();
+
+      expect(updateChore).toHaveBeenCalledTimes(1);
+      expect(updateChore).toHaveBeenNthCalledWith(1, 'c2', {
+        skipDays: [DayOfWeek.FRIDAY],
+        pin: undefined,
+      });
+    });
+  });
+
+  describe('PIN protection', () => {
+    it('disables Apply until a PIN is entered, sends the PIN, and remembers it on success', async () => {
+      vi.mocked(updateChore).mockImplementationOnce(() =>
+        Promise.resolve({ id: 'c1', notCaughtUpDisplay: NotCaughtUpDisplay.NORMAL })
+      );
+
+      render(() => (
+        <MockAdminProvider
+          choreDataOverride={{
+            people: [alice],
+            chores: [makePersonalChore({ id: 'c1', name: 'Make bed' })],
+          }}
+          pinRequired
+        >
+          <BulkEditModal choreType={ChoreType.PERSONAL} closeModal={vi.fn()} />
+        </MockAdminProvider>
+      ));
+
+      await page.getByRole('radio', { name: 'Not Caught Up Display' }).click();
+      await page.getByTestId('next-button').click();
+      await page.getByRole('radio', { name: 'Normal styling' }).click();
+      await page.getByTestId('next-button').click();
+      await page.getByTestId('chore-row-c1').getByRole('checkbox').click();
+      await page.getByTestId('next-button').click();
+
+      const apply = page.getByTestId('apply-button');
+      expect((apply.element() as HTMLButtonElement).disabled).toBe(true);
+
+      await page.getByPlaceholder('Enter admin PIN').fill('1234');
+      await page.getByRole('checkbox', { name: 'Remember PIN for 10 minutes' }).click();
+      expect((apply.element() as HTMLButtonElement).disabled).toBe(false);
+
+      await apply.click();
+
+      expect(updateChore).toHaveBeenCalledTimes(1);
+      expect(updateChore).toHaveBeenNthCalledWith(1, 'c1', {
+        notCaughtUpDisplay: NotCaughtUpDisplay.NORMAL,
+        pin: '1234',
+      });
+      expect(page.getByPlaceholder('Enter admin PIN').elements().length).toBe(0);
+    });
+
+    it('stops on Invalid PIN and clears the cached PIN', async () => {
+      vi.mocked(updateChore).mockRejectedValueOnce(new Error('Invalid PIN'));
+
+      render(() => (
+        <MockAdminProvider
+          choreDataOverride={{
+            people: [alice],
+            chores: [makePersonalChore({ id: 'c1', name: 'Make bed' })],
+          }}
+          pinRequired
+          initialCachedPin="bad"
+        >
+          <BulkEditModal choreType={ChoreType.PERSONAL} closeModal={vi.fn()} />
+        </MockAdminProvider>
+      ));
+
+      await page.getByRole('radio', { name: 'Not Caught Up Display' }).click();
+      await page.getByTestId('next-button').click();
+      await page.getByRole('radio', { name: 'Normal styling' }).click();
+      await page.getByTestId('next-button').click();
+      await page.getByTestId('chore-row-c1').getByRole('checkbox').click();
+      await page.getByTestId('next-button').click();
+      await page.getByTestId('apply-button').click();
+
+      expect(updateChore).toHaveBeenCalledTimes(1);
+      expect(updateChore).toHaveBeenNthCalledWith(1, 'c1', {
+        notCaughtUpDisplay: NotCaughtUpDisplay.NORMAL,
+        pin: 'bad',
+      });
+      await expect.element(page.getByText(/Incorrect PIN/)).toBeVisible();
+      await expect.element(page.getByPlaceholder('Enter admin PIN')).toBeVisible();
+      await expect.element(page.getByTestId('close-button')).toBeVisible();
+    });
+
+    it('prompts for a PIN before downloading a backup when one is required', async () => {
+      const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
+
+      render(() => (
+        <MockAdminProvider
+          choreDataOverride={{
+            people: [alice],
+            chores: [makePersonalChore({ id: 'c1', name: 'Make bed' })],
+          }}
+          pinRequired
+        >
+          <BulkEditModal choreType={ChoreType.PERSONAL} closeModal={vi.fn()} />
+        </MockAdminProvider>
+      ));
+
+      await page.getByTestId('backup-download-btn').click();
+
+      expect(alertSpy).toHaveBeenCalledWith(
+        'Enter your admin PIN below first, then click Download Backup again.'
+      );
+      expect(triggerBackupDownload).not.toHaveBeenCalled();
+
+      alertSpy.mockRestore();
+    });
+  });
+
+  describe('Modal close', () => {
+    it('refreshes choreData exactly once when closing after a successful apply', async () => {
+      const loadDataMock = vi.fn(() => Promise.resolve());
+      const closeModal = vi.fn(async () => {
+        await loadDataMock();
+      });
+      vi.mocked(updateChore)
+        .mockImplementationOnce(() =>
+          Promise.resolve({ id: 'c1', notCaughtUpDisplay: NotCaughtUpDisplay.NORMAL })
+        )
+        .mockImplementationOnce(() =>
+          Promise.resolve({ id: 'c2', notCaughtUpDisplay: NotCaughtUpDisplay.NORMAL })
+        );
+
+      render(() => (
+        <MockAdminProvider
+          choreDataOverride={{
+            people: [alice],
+            chores: [
+              makePersonalChore({ id: 'c1', name: 'Make bed' }),
+              makePersonalChore({ id: 'c2', name: 'Feed dog' }),
+            ],
+          }}
+          loadDataMock={loadDataMock}
+        >
+          <BulkEditModal choreType={ChoreType.PERSONAL} closeModal={closeModal} />
+        </MockAdminProvider>
+      ));
+
+      await page.getByRole('radio', { name: 'Not Caught Up Display' }).click();
+      await page.getByTestId('next-button').click();
+      await page.getByRole('radio', { name: 'Normal styling' }).click();
+      await page.getByTestId('next-button').click();
+      await page.getByTestId('select-all-chip').click();
+      await page.getByTestId('next-button').click();
+      await page.getByTestId('apply-button').click();
+
+      await expect.element(page.getByTestId('close-button')).toBeVisible();
+      await page.getByTestId('close-button').click();
+
+      expect(loadDataMock).toHaveBeenCalledTimes(1);
+      expect(closeModal).toHaveBeenCalled();
     });
   });
 });

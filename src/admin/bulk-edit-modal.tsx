@@ -356,8 +356,7 @@ const SelectionChip: Component<SelectionChipProps> = (props) => (
  * (personal or rotating) at once. See docs/plan for the full design rationale.
  */
 export const BulkEditModal: Component<BulkEditModalProps> = (props) => {
-  const { choreData, loadData, pinRequired, cachedPin, setCachedPin, resolvedTimeFormat } =
-    useAdminContext();
+  const { choreData, pinRequired, cachedPin, setCachedPin, resolvedTimeFormat } = useAdminContext();
 
   const [step, setStep] = createSignal<1 | 2 | 3 | 4>(1);
   const [field, setFieldRaw] = createSignal<EligibleField | null>(null);
@@ -516,12 +515,15 @@ export const BulkEditModal: Component<BulkEditModalProps> = (props) => {
 
     const payload = buildFieldPayload(f, value());
     const expected = value();
+    // Capture the PIN once at the start of the run so a mid-run cache change
+    // cannot silently alter the value sent with remaining requests.
+    const runPin = pinToUse();
     let stoppedEarly = false;
 
     for (const id of ids) {
       setSubmitStatus((prev) => ({ ...prev, [id]: 'in-progress' }));
       try {
-        const pinValue = pinRequired() ? pinToUse() || undefined : undefined;
+        const pinValue = pinRequired() ? runPin || undefined : undefined;
         const updated = (await updateChore(id, { ...payload, pin: pinValue })) as Chore;
         if (!valueMatchesChore(f, expected, updated)) {
           throw new Error('Update did not apply as expected');
@@ -538,6 +540,9 @@ export const BulkEditModal: Component<BulkEditModalProps> = (props) => {
         } else {
           setSubmitError(error instanceof Error ? error.message : 'Unknown error');
         }
+        // Stop at the first failure so the user can inspect which rows succeeded/failed.
+        // There is no in-wizard retry; the user should close the modal, refresh the page,
+        // and run the bulk edit again if the failure was temporary.
         stoppedEarly = true;
         break;
       }
@@ -550,8 +555,9 @@ export const BulkEditModal: Component<BulkEditModalProps> = (props) => {
     setFinished(true);
   };
 
-  const handleClose = async () => {
-    await loadData();
+  const handleClose = () => {
+    // The parent closeModal already refreshes choreData via loadData(), so the
+    // modal does not need to reload before unmounting.
     props.closeModal();
   };
 
@@ -1161,14 +1167,16 @@ export const BulkEditModal: Component<BulkEditModalProps> = (props) => {
 
                 <Show when={pinError()}>
                   <InfoBox icon class="mb-4 border-red-200 bg-red-50 text-red-700">
-                    Incorrect PIN — no further chores were attempted. Check the PIN and try again;
-                    none of the remaining chores were touched.
+                    Incorrect PIN — no further chores were attempted. Close this modal, refresh the
+                    page, and reopen the bulk editor to try again; none of the remaining chores were
+                    touched.
                   </InfoBox>
                 </Show>
                 <Show when={submitError() && !pinError()}>
                   <InfoBox icon class="mb-4 border-red-200 bg-red-50 text-red-700">
                     Applied to {doneCount()} of {selectedChoreIds().length} chores before failing:{' '}
-                    {submitError()}
+                    {submitError()}. Close this modal, refresh the page, and reopen the bulk editor
+                    to try again; no further chores were changed.
                   </InfoBox>
                 </Show>
 

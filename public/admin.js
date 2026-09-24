@@ -2427,7 +2427,7 @@
 	* (personal or rotating) at once. See docs/plan for the full design rationale.
 	*/
 	var BulkEditModal = (props) => {
-		const { choreData, loadData, pinRequired, cachedPin, setCachedPin, resolvedTimeFormat } = useAdminContext();
+		const { choreData, pinRequired, cachedPin, setCachedPin, resolvedTimeFormat } = useAdminContext();
 		const [step, setStep] = createSignal(1);
 		const [field, setFieldRaw] = createSignal(null);
 		const [value, setValue] = createSignal("");
@@ -2538,6 +2538,7 @@
 			setIsSubmitting(true);
 			const payload = buildFieldPayload(f, value());
 			const expected = value();
+			const runPin = pinToUse();
 			let stoppedEarly = false;
 			for (const id of ids) {
 				setSubmitStatus((prev) => ({
@@ -2545,7 +2546,7 @@
 					[id]: "in-progress"
 				}));
 				try {
-					const pinValue = pinRequired() ? pinToUse() || void 0 : void 0;
+					const pinValue = pinRequired() ? runPin || void 0 : void 0;
 					if (!valueMatchesChore(f, expected, await updateChore(id, {
 						...payload,
 						pin: pinValue
@@ -2571,8 +2572,7 @@
 			setIsSubmitting(false);
 			setFinished(true);
 		};
-		const handleClose = async () => {
-			await loadData();
+		const handleClose = () => {
 			props.closeModal();
 		};
 		const canApply = () => !(pinRequired() && !cachedPin() && !pin());
@@ -3095,7 +3095,7 @@
 							return createComponent(InfoBox, {
 								icon: true,
 								"class": "mb-4 border-red-200 bg-red-50 text-red-700",
-								children: "Incorrect PIN — no further chores were attempted. Check the PIN and try again; none of the remaining chores were touched."
+								children: "Incorrect PIN — no further chores were attempted. Close this modal, refresh the page, and reopen the bulk editor to try again; none of the remaining chores were touched."
 							});
 						}
 					}), _el$104);
@@ -3115,7 +3115,8 @@
 										memo(() => selectedChoreIds().length),
 										" chores before failing:",
 										" ",
-										memo(() => submitError())
+										memo(() => submitError()),
+										". Close this modal, refresh the page, and reopen the bulk editor to try again; no further chores were changed."
 									];
 								}
 							});
