@@ -2,7 +2,6 @@ import type { Component } from 'solid-js';
 import { createMemo, For } from 'solid-js';
 import type { Chore, Person } from '../types/chore-types';
 import { ChoreType } from '../types/chore-types';
-import { escapeHtml } from '../utils/browser';
 
 interface OverdueByPersonProps {
   /** Overdue chores to group and display */
@@ -57,7 +56,7 @@ export const OverdueByPerson: Component<OverdueByPersonProps> = (props) => {
       {(group) => (
         <div class="overdue-person-group">
           <div class="overdue-person-name" style={{ color: group.person.color }}>
-            {escapeHtml(group.person.name)}
+            {group.person.name}
           </div>
           <div class="overdue-chores-list">
             <For each={group.displayChores}>
@@ -67,7 +66,7 @@ export const OverdueByPerson: Component<OverdueByPersonProps> = (props) => {
                   data-testid="overdue-chore-item"
                   data-chore-id={chore.id}
                 >
-                  {escapeHtml(chore.name)}
+                  {chore.name}
                 </div>
               )}
             </For>

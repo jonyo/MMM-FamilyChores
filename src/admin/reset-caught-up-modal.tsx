@@ -3,7 +3,6 @@ import { createSignal, For, Show } from 'solid-js';
 import { resetCaughtUp } from '../api';
 import type { Chore } from '../types/chore-types';
 import { ChoreType } from '../types/chore-types';
-import { escapeHtml } from '../utils/browser';
 import { useAdminContext } from './admin-context';
 import { Button } from './button';
 import { InfoBox } from './info-box';
@@ -20,7 +19,7 @@ export const ResetCaughtUpModal: Component<ResetCaughtUpModalProps> = (props) =>
   const [rememberPin, setRememberPin] = createSignal(false);
 
   const getPersonName = (id: string) =>
-    escapeHtml(choreData().people.find((p) => p.id === id)?.name ?? 'Unknown');
+    choreData().people.find((p) => p.id === id)?.name ?? 'Unknown';
 
   const getCurrentAssignee = (chore: Chore): string => {
     if (chore.type === ChoreType.PERSONAL) {
@@ -49,7 +48,7 @@ export const ResetCaughtUpModal: Component<ResetCaughtUpModalProps> = (props) =>
   return (
     <div class="fixed inset-0 z-1000 flex items-center justify-center bg-black/50">
       <div
-        class="max-h-[90vh] w-[90%] max-w-[560px] scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"
+        class="max-h-[90vh] w-[90%] max-w-140 scale-95 overflow-y-auto rounded-xl bg-white p-8 shadow-2xl transition-transform duration-200"
         data-testid="reset-caught-up-modal"
       >
         <div class="mb-2 flex items-center justify-between">
@@ -96,7 +95,7 @@ export const ResetCaughtUpModal: Component<ResetCaughtUpModalProps> = (props) =>
                   classList={{ 'bg-slate-50/50': index() % 2 === 1 }}
                   data-testid={`overdue-row-${chore.id}`}
                 >
-                  <span class="font-medium text-slate-800">{escapeHtml(chore.name)}</span>
+                  <span class="font-medium text-slate-800">{chore.name}</span>
                   <span class="text-sm text-slate-500">{getCurrentAssignee(chore)}</span>
                 </div>
               )}

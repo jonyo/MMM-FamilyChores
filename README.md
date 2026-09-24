@@ -369,6 +369,21 @@ Replace `192.168.xxx.xxx` with the IP address of the device running MagicMirror 
 
 ![Admin History](docs/admin-history.png)
 
+### Bulk Edit Chore Settings
+
+The admin panel includes a bulk-edit wizard for changing a single chore setting across many chores at once — useful when you realize a default was wrong for an entire category of chores and don't want to open each chore individually. For example, setting "Not Caught Up Display" to Normal for all of one person's personal chores.
+
+A "Bulk Edit Settings" button appears at the top of the People tab (for personal chores) and the Rotating Chores tab (for rotating chores). It opens a step-by-step wizard:
+
+- **Step 1 — Field**: Pick which setting to change (e.g. Skip Days, After Deadline Visibility, Start Time). A backup download is recommended before proceeding.
+- **Step 2 — Value**: Choose the new value for that setting.
+- **Step 3 — Chores**: Select which chores to apply the change to, with an option to view a detailed table of every chore's current settings (helpful when your decision depends on a related setting).
+- **Step 4 — Confirm**: Review the change summary and confirm before anything is applied.
+
+Only one setting can be changed per run. Some settings only matter in combination with others (e.g. Skip Day Visibility has no effect unless the chore has skip days configured), so changing everything at once would be error-prone. Run the wizard again to change a different setting.
+
+The wizard uses the same PIN protection as other admin actions, and changes are applied one chore at a time with a live status indicator per row — so if something goes wrong partway through, you can see exactly which chores succeeded and which didn't.
+
 ### System Actions
 
 The **System Actions** section at the bottom of the admin panel provides tools for situations where the chore state no longer reflects reality — for example, after a vacation, after the mirror has been off for an extended period, or after manually editing `data.json`.
@@ -381,7 +396,7 @@ The **System Actions** section at the bottom of the admin panel provides tools f
 An optional admin PIN can be configured in the admin panel settings. When enabled, every action that changes data (or downloads a backup) requires the PIN:
 
 - **Enable/Disable**: Toggle PIN protection on or off from the Settings tab.
-- **Protected Actions**: Adding, editing, or deleting people and chores; reassigning rotating chores; resetting caught-up status; changing settings; restoring backups; and downloading backups. Viewing is always allowed without a PIN.
+- **Protected Actions**: Adding, editing, or deleting people and chores; bulk-editing chore settings; reassigning rotating chores; resetting caught-up status; changing settings; restoring backups; and downloading backups. Viewing is always allowed without a PIN.
 - **Remember PIN**: A "Remember PIN for 10 minutes" checkbox (unchecked by default) lets you perform multiple admin actions without re-entering the PIN during a session. The PIN is forgotten when you refresh or close the window.
 - **Forgot PIN**: If you forget your PIN, SSH into the MagicMirror and edit the `adminPin` value directly in the module's `data.json` file.
 

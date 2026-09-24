@@ -1,7 +1,6 @@
 import type { Component } from 'solid-js';
 import { createMemo, createSignal, For, Match, onMount, Show, Switch } from 'solid-js';
 import type { Chore, DayOfWeek, Person } from '../types/chore-types';
-import { escapeHtml } from '../utils/browser';
 import {
   getLocalDateString,
   getLocalDayName,
@@ -107,7 +106,7 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
         data-testid="modal-content"
       >
         <div class="mb-5 flex items-center justify-between">
-          <h3 class="text-2xl text-indigo-600">{escapeHtml(props.person.name)}'s Chore History</h3>
+          <h3 class="text-2xl text-indigo-600">{props.person.name}'s Chore History</h3>
           <button
             type="button"
             class="ml-4 cursor-pointer text-2xl leading-none text-slate-400 hover:text-slate-600"
@@ -176,7 +175,7 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
                   {(chore) => (
                     <tr>
                       <td class="border border-slate-200 p-2.5 text-base whitespace-nowrap text-slate-900">
-                        {escapeHtml(chore.name)}
+                        {chore.name}
                         <Show when={chore.type === 'rotating'}>
                           {' '}
                           <Tooltip
@@ -191,9 +190,11 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
                       </td>
                       <For each={getDays()}>
                         {(day) => {
-                          const completion = getCompletionDetails(chore.id, day.date);
-                          const skipDay = isSkipDay(chore, day);
-                          const emptyDay = !skipDay && !completion;
+                          const completion = createMemo(() =>
+                            getCompletionDetails(chore.id, day.date)
+                          );
+                          const skipDay = createMemo(() => isSkipDay(chore, day));
+                          const emptyDay = () => !skipDay() && !completion();
 
                           const getEmptyTooltip = () => {
                             return chore.type === 'rotating'
@@ -202,11 +203,11 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
                           };
 
                           const getTooltipText = () => {
-                            if (completion?.completed)
-                              return `Completed at ${completion.completedAt} (24h)`;
-                            if (completion && !completion.completed) return 'Not completed';
-                            if (skipDay) return 'Skip day';
-                            if (emptyDay) return getEmptyTooltip();
+                            if (completion()?.completed)
+                              return `Completed at ${completion()?.completedAt} (24h)`;
+                            if (completion() && !completion()?.completed) return 'Not completed';
+                            if (skipDay()) return 'Skip day';
+                            if (emptyDay()) return getEmptyTooltip();
                             return '';
                           };
 
@@ -214,7 +215,7 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
                             <td
                               class="border border-slate-200 p-2.5 text-center"
                               classList={{
-                                'bg-slate-100': skipDay,
+                                'bg-slate-100': skipDay(),
                               }}
                             >
                               <Switch
@@ -223,7 +224,7 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
                                     text={getTooltipText()}
                                     position="above"
                                     align="right"
-                                    multiline={emptyDay}
+                                    multiline={emptyDay()}
                                   >
                                     <span
                                       style={{
@@ -236,7 +237,7 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
                                   </Tooltip>
                                 }
                               >
-                                <Match when={completion?.completed}>
+                                <Match when={completion()?.completed}>
                                   <Tooltip
                                     text={getTooltipText()}
                                     position="above"
@@ -248,18 +249,20 @@ export const ChoreHistoryModal: Component<ChoreHistoryModalProps> = (props) => {
                                       'rounded-full': true,
                                       'text-center': true,
                                       'leading-8': true,
-                                      'bg-yellow-500': completion?.wasLate,
-                                      'bg-green-500': !completion?.wasLate,
+                                      'bg-yellow-500': completion()?.wasLate,
+                                      'bg-green-500': !completion()?.wasLate,
                                       'text-white': true,
                                     }}
                                     dataTestId={
-                                      completion?.wasLate ? 'completion-late' : 'completion-ontime'
+                                      completion()?.wasLate
+                                        ? 'completion-late'
+                                        : 'completion-ontime'
                                     }
                                   >
                                     ✓
                                   </Tooltip>
                                 </Match>
-                                <Match when={completion?.completed === false}>
+                                <Match when={completion()?.completed === false}>
                                   <Tooltip
                                     text={getTooltipText()}
                                     position="above"

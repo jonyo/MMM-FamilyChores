@@ -1,9 +1,10 @@
 import type { Component } from 'solid-js';
 import { createMemo, Show } from 'solid-js';
 import type { Person, RotatingChore } from '../types/chore-types';
-import { escapeHtml, formatTime } from '../utils/browser';
+import { formatTime } from '../utils/browser';
 import { useAdminContext } from './admin-context';
 import { Button } from './button';
+import { ScheduleDaysSummary } from './schedule-days-summary';
 
 /** Props for the RotatingChoreCard component */
 interface RotatingChoreCardProps {
@@ -17,12 +18,6 @@ interface RotatingChoreCardProps {
   onDelete: (choreId: string) => void;
 }
 
-/** Format skip days for display */
-const formatSkipDays = (skipDays: string[]): string => {
-  if (!skipDays || skipDays.length === 0) return 'None';
-  return skipDays.map((d) => d.charAt(0).toUpperCase() + d.slice(1)).join(', ');
-};
-
 /** Display card for a rotating chore in the admin interface */
 export const RotatingChoreCard: Component<RotatingChoreCardProps> = (props) => {
   const { resolvedTimeFormat } = useAdminContext();
@@ -31,7 +26,7 @@ export const RotatingChoreCard: Component<RotatingChoreCardProps> = (props) => {
     props.chore.rotation
       .map((personId) => {
         const person = props.people.find((p) => p.id === personId);
-        return person ? escapeHtml(person.name) : 'Unknown';
+        return person ? person.name : 'Unknown';
       })
       .join(', ')
   );
@@ -51,14 +46,14 @@ export const RotatingChoreCard: Component<RotatingChoreCardProps> = (props) => {
   const currentAssignee = createMemo(() => {
     const currentPersonId = props.chore.rotation[props.chore.rotatingIndex ?? 0];
     const currentPerson = props.people.find((p) => p.id === currentPersonId);
-    return currentPerson ? escapeHtml(currentPerson.name) : 'Unassigned';
+    return currentPerson ? currentPerson.name : 'Unassigned';
   });
 
   return (
     <div class="rounded-lg border border-slate-200 bg-slate-50 p-5 transition-all hover:border-indigo-600 hover:shadow-md">
       <div class="flex-1">
         <h3 class="mb-1.5 text-xl text-slate-900">
-          {escapeHtml(props.chore.name)}{' '}
+          {props.chore.name}{' '}
           <span class="ml-2 inline-block rounded bg-indigo-100 px-2 py-1 text-xs font-medium text-indigo-700">
             Rotating
           </span>
@@ -78,9 +73,7 @@ export const RotatingChoreCard: Component<RotatingChoreCardProps> = (props) => {
             </Show>
           </p>
         </Show>
-        <p class="mt-1.25 text-sm text-slate-500">
-          Skip days: {formatSkipDays(props.chore.skipDays)}
-        </p>
+        <ScheduleDaysSummary skipDays={props.chore.skipDays} />
       </div>
       <div class="flex gap-2.5">
         <Button

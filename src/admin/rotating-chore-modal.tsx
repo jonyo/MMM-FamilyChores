@@ -4,6 +4,7 @@ import { createChore, updateChore } from '../api';
 import type {
   AfterDeadlineVisibility,
   BeforeStartTimeVisibility,
+  DayOfWeek,
   NotCaughtUpDisplay,
   RotatingChore,
   SkipDayVisibility,
@@ -12,17 +13,16 @@ import {
   AfterDeadlineVisibility as AfterDeadlineVisibilityEnum,
   BeforeStartTimeVisibility as BeforeStartTimeVisibilityEnum,
   ChoreType,
-  DayOfWeek,
   NotCaughtUpDisplay as NotCaughtUpDisplayEnum,
   SkipDayVisibility as SkipDayVisibilityEnum,
 } from '../types/chore-types';
 import type { CreateChoreRequest, UpdateChoreRequest } from '../types/request-types';
-import { escapeHtml } from '../utils/browser';
 import { useAdminContext } from './admin-context';
 import { Button } from './button';
 import { DisplayOptionsSection } from './display-options-section';
 import { HelpIcon } from './help-icon';
 import { PinField } from './pin-field';
+import { ScheduleDaysSelector } from './schedule-days-selector';
 import { TimeSelect } from './time-select';
 
 interface RotatingChoreModalProps {
@@ -84,14 +84,6 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
 
   const getPersonName = (id: string) =>
     choreData().people.find((p) => p.id === id)?.name ?? 'Unknown';
-
-  const handleSkipDayChange = (day: DayOfWeek, checked: boolean) => {
-    if (checked) {
-      setSkipDays([...skipDays(), day]);
-    } else {
-      setSkipDays(skipDays().filter((d) => d !== day));
-    }
-  };
 
   const handleDragStart = (personId: string) => (e: DragEvent) => {
     setDraggedPersonId(personId);
@@ -300,7 +292,7 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
                         <span data-drag-handle class="shrink-0">
                           <GrabHandle />
                         </span>
-                        <span class="text-sm">{escapeHtml(person.name)}</span>
+                        <span class="text-sm">{person.name}</span>
                       </li>
                     )}
                   </For>
@@ -356,7 +348,7 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
                             class="size-4 cursor-pointer"
                             data-testid={`active-person-radio-${personId}`}
                           />
-                          <span class="text-sm">{escapeHtml(getPersonName(personId))}</span>
+                          <span class="text-sm">{getPersonName(personId)}</span>
                         </label>
                       </li>
                     )}
@@ -404,28 +396,7 @@ export const RotatingChoreModal: Component<RotatingChoreModalProps> = (props) =>
             </div>
             <TimeSelect id="deadline" value={deadline()} onChange={setDeadline} />
           </div>
-          <div class="mb-5">
-            <div class="mb-3 block font-medium text-slate-900">Skip Days</div>
-            <div
-              class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3"
-              data-testid="skip-days-checkbox-list"
-            >
-              <For each={Object.values(DayOfWeek)}>
-                {(day) => (
-                  <label class="flex cursor-pointer items-center gap-2 font-normal">
-                    <input
-                      type="checkbox"
-                      value={day}
-                      checked={skipDays().includes(day)}
-                      onInput={(e) => handleSkipDayChange(day, e.currentTarget.checked)}
-                      class="size-4.5 cursor-pointer"
-                    />
-                    {day.charAt(0).toUpperCase() + day.slice(1)}
-                  </label>
-                )}
-              </For>
-            </div>
-          </div>
+          <ScheduleDaysSelector skipDays={skipDays} setSkipDays={setSkipDays} />
           <DisplayOptionsSection
             startTime={startTime}
             deadline={deadline}

@@ -1,7 +1,6 @@
 import type { Component } from 'solid-js';
 import type { Chore, Person } from '../types/chore-types';
 import { ChoreType } from '../types/chore-types';
-import { escapeHtml } from '../utils/browser';
 
 interface RotatingChoreInlineProps {
   /** The rotating chore to display */
@@ -31,9 +30,9 @@ export const RotatingChoreInline: Component<RotatingChoreInlineProps> = (props) 
 
   return (
     <div class="rotating-inline" data-testid="rotating-inline">
-      <span class="chore-name">{escapeHtml(props.chore.name)}</span>
+      <span class="chore-name">{props.chore.name}</span>
       <span class="person-name" style={{ color: personColor() }}>
-        {escapeHtml(personName())}
+        {personName()}
       </span>
       <input
         type="checkbox"

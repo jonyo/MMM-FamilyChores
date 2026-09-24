@@ -301,18 +301,11 @@ src/api/
 └── index.ts       # Barrel exports
 ```
 
-### escapeHtml for User-Entered Text
+### User-Entered Text in SolidJS
 
-**ALWAYS call `escapeHtml()` when displaying user-entered text in JSX/HTML.**
+Render user-entered text directly in SolidJS JSX expressions, for example `{person.name}` or `{chore.name}`. Solid inserts JSX expressions as text and escapes HTML-sensitive characters safely.
 
-This module is for household use, not a high-security context — but `escapeHtml` is still required for correct display, not just safety. If a family member names a chore `<Sunday Chores>`, it must render as literal text, not be interpreted as an HTML tag and disappear or break the layout.
-
-- Import from `src/utils/browser`: `import { escapeHtml } from '../utils/browser';`
-- Apply at the point of display, not at the point of storage
-- Required for: person names, chore names, or any other field the user can type into
-- Not required for: IDs, enum values, system-generated values, or static strings
-- Examples: `{escapeHtml(person.name)}`, `{escapeHtml(chore.name)}`
-- This applies to all admin components, frontend templates, and anywhere user data is rendered
+Do not pre-escape text before rendering it in JSX. Doing so double-encodes values such as `&`, causing them to display as `&amp;`. User-entered values should remain raw in storage and be rendered through normal JSX text bindings; never inject them with `innerHTML` as this can bypass the automatic escaping.
 
 ### Admin Panel Styling
 

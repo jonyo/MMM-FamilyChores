@@ -1,7 +1,7 @@
 import type { Component } from 'solid-js';
 import type { Chore, Person, TimeFormat } from '../types/chore-types';
 import { ChoreType } from '../types/chore-types';
-import { escapeHtml, formatTime } from '../utils/browser';
+import { formatTime } from '../utils/browser';
 import { isChoreOverdue } from './chore-filters';
 
 interface ChoreItemProps {
@@ -67,10 +67,10 @@ export const ChoreItem: Component<ChoreItemProps> = (props) => {
           />
         </div>
         <div class="chore-details">
-          <div class="chore-name">{escapeHtml(props.chore.name)}</div>
+          <div class="chore-name">{props.chore.name}</div>
           <div class="chore-meta">
             <span class="assigned-to" style={{ color: personColor() }}>
-              {escapeHtml(personName())}
+              {personName()}
             </span>
             {props.chore.deadline && (
               <span class="deadline">{formatTime(props.chore.deadline, props.timeFormat)}</span>

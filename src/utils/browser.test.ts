@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { escapeHtml, generatePastelColor } from './browser';
+import { generatePastelColor } from './browser';
 
 describe('Browser Utilities', () => {
   describe('generatePastelColor', () => {
@@ -45,34 +45,6 @@ describe('Browser Utilities', () => {
       // All characters should be valid hex digits
       const validHexChars = /^[0-9a-f]{6}$/i;
       expect(hexPart).toMatch(validHexChars);
-    });
-  });
-
-  describe('escapeHtml', () => {
-    it('should escape HTML tags', () => {
-      expect(escapeHtml('<script>alert("xss")</script>')).toBe(
-        '&lt;script&gt;alert("xss")&lt;/script&gt;'
-      );
-    });
-
-    it('should escape ampersands', () => {
-      expect(escapeHtml('Tom & Jerry')).toBe('Tom &amp; Jerry');
-    });
-
-    it('should handle empty strings', () => {
-      expect(escapeHtml('')).toBe('');
-    });
-
-    it('should handle strings with no special characters', () => {
-      expect(escapeHtml('Hello World')).toBe('Hello World');
-    });
-
-    it('should escape multiple special characters', () => {
-      expect(escapeHtml('<div>&</div>')).toBe('&lt;div&gt;&amp;&lt;/div&gt;');
-    });
-
-    it('should escape less than and greater than signs', () => {
-      expect(escapeHtml('1 < 2 > 0')).toBe('1 &lt; 2 &gt; 0');
     });
   });
 });

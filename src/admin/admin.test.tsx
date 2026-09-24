@@ -283,7 +283,7 @@ describe('Admin Component Tests', () => {
     it('Settings opens SettingsModal', async () => {
       mockFetch();
       render(() => <Admin />);
-      await page.getByRole('button', { name: /Settings/ }).click();
+      await page.getByRole('button', { name: '⚙️ Settings', exact: true }).click();
       await expect.element(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
     });
 
@@ -343,7 +343,7 @@ describe('Admin Component Tests', () => {
       mockFetch();
       render(() => <Admin />);
       await page.getByRole('button', { name: 'Rotation Chores' }).click();
-      await page.getByRole('button', { name: 'Edit' }).click();
+      await page.getByRole('button', { name: 'Edit', exact: true }).click();
       await expect
         .element(page.getByTestId('modal-title'))
         .toHaveTextContent('Edit Rotating Chore');

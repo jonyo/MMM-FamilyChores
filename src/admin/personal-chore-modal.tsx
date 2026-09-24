@@ -1,9 +1,10 @@
 import type { Component } from 'solid-js';
-import { createSignal, For, Show } from 'solid-js';
+import { createSignal, Show } from 'solid-js';
 import { createChore, updateChore } from '../api';
 import type {
   AfterDeadlineVisibility,
   BeforeStartTimeVisibility,
+  DayOfWeek,
   NotCaughtUpDisplay,
   Person,
   PersonalChore,
@@ -13,17 +14,16 @@ import {
   AfterDeadlineVisibility as AfterDeadlineVisibilityEnum,
   BeforeStartTimeVisibility as BeforeStartTimeVisibilityEnum,
   ChoreType,
-  DayOfWeek,
   NotCaughtUpDisplay as NotCaughtUpDisplayEnum,
   SkipDayVisibility as SkipDayVisibilityEnum,
 } from '../types/chore-types';
 import type { CreateChoreRequest, UpdateChoreRequest } from '../types/request-types';
-import { escapeHtml } from '../utils/browser';
 import { useAdminContext } from './admin-context';
 import { Button } from './button';
 import { DisplayOptionsSection } from './display-options-section';
 import { HelpIcon } from './help-icon';
 import { PinField } from './pin-field';
+import { ScheduleDaysSelector } from './schedule-days-selector';
 import { TimeSelect } from './time-select';
 
 interface PersonalChoreModalProps {
@@ -55,14 +55,6 @@ export const PersonalChoreModal: Component<PersonalChoreModalProps> = (props) =>
   const [formError, setFormError] = createSignal('');
   const [pin, setPin] = createSignal('');
   const [rememberPin, setRememberPin] = createSignal(false);
-
-  const handleSkipDayChange = (day: DayOfWeek, checked: boolean) => {
-    if (checked) {
-      setSkipDays([...skipDays(), day]);
-    } else {
-      setSkipDays(skipDays().filter((d) => d !== day));
-    }
-  };
 
   const handleSubmit = async (event: Event) => {
     event.preventDefault();
@@ -183,7 +175,7 @@ export const PersonalChoreModal: Component<PersonalChoreModalProps> = (props) =>
                 style={`background-color: ${person.color}`}
                 data-testid="person-color-badge"
               ></span>
-              <strong>Assigned to:</strong> {escapeHtml(person.name)}
+              <strong>Assigned to:</strong> {person.name}
             </div>
             <form onSubmit={handleSubmit}>
               <div class="mb-5">
@@ -229,25 +221,7 @@ export const PersonalChoreModal: Component<PersonalChoreModalProps> = (props) =>
                 </div>
                 <TimeSelect id="deadline" value={deadline()} onChange={setDeadline} />
               </div>
-              <div class="mb-5">
-                <div class="mb-3 block font-medium text-slate-900">Skip Days</div>
-                <div class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
-                  <For each={Object.values(DayOfWeek)}>
-                    {(day) => (
-                      <label class="flex cursor-pointer items-center gap-2 font-normal">
-                        <input
-                          type="checkbox"
-                          value={day}
-                          checked={skipDays().includes(day)}
-                          onInput={(e) => handleSkipDayChange(day, e.currentTarget.checked)}
-                          class="size-4.5  cursor-pointer"
-                        />
-                        {day.charAt(0).toUpperCase() + day.slice(1)}
-                      </label>
-                    )}
-                  </For>
-                </div>
-              </div>
+              <ScheduleDaysSelector skipDays={skipDays} setSkipDays={setSkipDays} />
               <DisplayOptionsSection
                 startTime={startTime}
                 deadline={deadline}

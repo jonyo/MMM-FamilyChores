@@ -25,19 +25,6 @@ export const generatePastelColor = (): string => {
 };
 
 /**
- * Escape HTML special characters to prevent XSS attacks
- * Uses the browser's DOM API to properly escape HTML entities
- *
- * @param raw - The raw string to escape
- * @returns The escaped HTML string
- */
-export const escapeHtml = (raw: string): string => {
-  const div = document.createElement('div');
-  div.textContent = raw;
-  return div.innerHTML;
-};
-
-/**
  * Detect whether the system locale prefers 12-hour or 24-hour time.
  * Returns true if the system uses 12-hour format.
  */

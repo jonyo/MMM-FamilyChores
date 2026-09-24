@@ -2,7 +2,6 @@ import type { Component } from 'solid-js';
 import { createMemo, For, Show } from 'solid-js';
 import type { Chore, Person } from '../types/chore-types';
 import { ChoreType } from '../types/chore-types';
-import { escapeHtml } from '../utils/browser';
 
 interface IncompleteByPersonProps {
   /** Incomplete chores to group and display */
@@ -68,7 +67,7 @@ export const IncompleteByPerson: Component<IncompleteByPersonProps> = (props) =>
       {(row) => (
         <div class="incomplete-person-row">
           <span class="person-name" style={{ color: row.person.color }}>
-            {escapeHtml(row.person.name)}
+            {row.person.name}
           </span>
           <span class="incomplete-count">
             {row.celebrationEmoji}
